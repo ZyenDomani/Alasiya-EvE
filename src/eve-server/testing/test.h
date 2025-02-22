@@ -92,6 +92,8 @@ public:
     void InitTurn();
     void Turn();
 
+    void GetAgentPics();
+    
     // return percent change between from and to
     float getPctf(float from, float to, float pct) {
         return from + ((to - from) * pct);

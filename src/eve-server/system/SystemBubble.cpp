@@ -48,9 +48,8 @@ SystemBubble::SystemBubble(SystemManager* pSystem, const GPoint& center, double 
 m_system(pSystem), m_center(center), m_radius(radius),
 m_centerSE(nullptr), m_hasMarkers(false),m_hasBubble(false),
 m_spawnTimer(0),
-m_ice(false), m_belt(false), m_gate(false),
-m_anomaly(false), m_mission(false), m_incursion(false),
-m_spawned(false), m_bubbleID(sBubbleMgr.GetBubbleID()),m_systemID(pSystem->GetID())
+m_type(Bubble::Type::Normal),
+m_spawned(false), m_bubbleID(sBubbleMgr.GetBubbleID())
 {
     _log(BUBBLE__TRACE, "SysBubble::Constructor - Created new bubble %u(%p) at (%.2f,%.2f,%.2f)[%.1f m radius].",\
 	     m_bubbleID, this, m_center.x, m_center.y, m_center.z, m_radius);
@@ -58,27 +57,19 @@ m_spawned(false), m_bubbleID(sBubbleMgr.GetBubbleID()),m_systemID(pSystem->GetID
 
 SystemBubble::~SystemBubble() {
     // delete marker cans here
-    if (m_hasMarkers)
-        for (auto &cur : m_markers) {
-            cur.second->Delete();
-            SafeDelete(cur.second);
-        }
+    for (auto &cur : m_markers) {
+        cur.second->Delete();
+        SafeDelete(cur.second);
+    }
 }
 
 void SystemBubble::clear() {
-    if (m_hasMarkers)
-        for (auto &cur : m_markers) {
-            cur.second->Delete(); // delete marker cans here
-            SafeDelete(cur.second);
-        }
+    for (auto &cur : m_markers) {
+        cur.second->Delete(); // delete marker cans here
+        SafeDelete(cur.second);
+    }
 
-    m_ice = false;
-    m_belt = false;
-    m_gate = false;
-    m_anomaly = false;
-    m_mission = false;
     m_spawned = false;
-    m_incursion = false;
     m_hasBubble = false;
     m_hasMarkers = false;
 
@@ -86,6 +77,8 @@ void SystemBubble::clear() {
     m_players.clear();
     m_entities.clear();
     m_dynamicEntities.clear();
+
+    m_type = Bubble::Type::Normal;
 }
 
 void SystemBubble::Process() {
@@ -95,21 +88,35 @@ void SystemBubble::Process() {
      *    incursions for ??
      */
 
-    // config for belt or gate rats in secure empire space?  nope.  its secure
-    if ((m_belt or m_gate) and (m_system->GetSystemSecurityRating() > 0.9f))
+    // rats in secure empire space?  nope.  its secure
+    if (m_system->GetSystemSecurityRating() > 0.9f)
+        return;
+    if (!m_spawnTimer.Enabled())
         return;
 
-    // TODO:  verify this
-    // this must run a second time for spawn to actually hit.  first time only sets main system spawn timer.
-    // may be nuts, but will remain enabled as long as player in bubble and bubble has no rats.
-    if (m_spawnTimer.Enabled()) {
-        if (m_spawned or m_players.empty()) {
-            m_spawnTimer.Disable();
+    switch (m_type) {
+        case Bubble::Type::Normal: {
+            // we're not doing any spawns in normal Bubbles
             return;
-        }
-        if (m_spawnTimer.Check())
-            m_system->DoSpawnForBubble(this);
+        } break;
+        case Bubble::Type::Ice:
+        case Bubble::Type::Belt:
+        case Bubble::Type::Gate: {
+            if (m_spawned or m_players.empty()) {
+                m_spawnTimer.Disable();
+                return;
+            }
+        } break;
+        case Bubble::Type::Anomaly:
+        case Bubble::Type::Mission:
+        case Bubble::Type::Incursion:
+        case Bubble::Type::Escalation: {
+
+        } break;
     }
+
+    if (m_spawnTimer.Check())
+        m_system->DoSpawnForBubble(this, m_type);
 }
 
 //called from the bubble manager.
@@ -133,13 +140,14 @@ void SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
             wanderers.push_back(pSE);
             //17:38:57 [DestinyWarning] SysBubble::ProcessWander() - entity 140006173(sys:30002507) not in bubble 1 for systemID 30002510.
             _log(DESTINY__WARNING, "SysBubble::ProcessWander() - entity %u(sys:%u) not in bubble %u for systemID %u.", \
-                        pSE->GetID(), pSE->SystemMgr()->GetID(), m_bubbleID, m_systemID);
+                        pSE->GetID(), pSE->SystemMgr()->GetID(), m_bubbleID, m_system->GetID());
         }
         ++itr;
     }
 
-    if (!m_players.empty() and m_spawned)
-        ResetBubbleRatSpawn();
+    // why is this here?   why are we trying to reset a spawned bubble?
+    //if (!m_players.empty() and m_spawned)
+    //    ResetBubbleRatSpawn();
 }
 
 void SystemBubble::Add(SystemEntity* pSE) {
@@ -168,16 +176,28 @@ void SystemBubble::Add(SystemEntity* pSE) {
 
     if (pSE->HasPilot()) {
         // Set spawn timer for this bubble, if needed
-        if (m_belt) {
-            // check for roids and load/spawn as needed.
+        switch (m_type) {
+            case Bubble::Type::Normal: {
+            } break;
+            case Bubble::Type::Gate: {
+                if (sConfig.npc.StaticSpawns)
+                    if (!m_spawnTimer.Enabled())
+                        SetSpawnTimer(true);
+            } break;
+            case Bubble::Type::Ice:
+            case Bubble::Type::Belt: {
+            // check for roids and load/spawn as needed, but only on first player to enter
             m_system->GetBeltMgr()->CheckSpawn(m_bubbleID);
             if (sConfig.npc.RoamingSpawns)
                 if (!m_spawnTimer.Enabled())
                     SetSpawnTimer(true);
+            } break;
+            case Bubble::Type::Anomaly:
+            case Bubble::Type::Mission:
+            case Bubble::Type::Incursion:
+            case Bubble::Type::Escalation: {
+            } break;
         }
-        if (m_gate and sConfig.npc.StaticSpawns)
-            if (!m_spawnTimer.Enabled())
-                SetSpawnTimer(false);
 
         Client* pClient(pSE->GetPilot());
         // this is sent in state when undocking
@@ -195,6 +215,7 @@ void SystemBubble::Add(SystemEntity* pSE) {
 
         m_players[pClient->GetCharacterID()] = pClient;   //add to bubble's player list
     } else {
+        // do we need to check bubble types here?
         if (!m_players.empty())
             AddBallExclusive(pSE);
         if (pSE->IsDroneSE())
@@ -265,39 +286,75 @@ void SystemBubble::ResetBubbleRatSpawn() {
      *  this enables creating a new spawn after previous group was killed off
      */
     m_spawned = false;
-    if (m_belt and sConfig.npc.RoamingSpawns)
-        if (!m_spawnTimer.Enabled())
-            SetSpawnTimer(true);
-    if (m_gate and sConfig.npc.StaticSpawns) /* m_gate = false.  will fix when gate spawns are finished */
-        if (!m_spawnTimer.Enabled())
-            SetSpawnTimer(false);
+    switch (m_type) {
+        case Bubble::Type::Normal: {
+            _log(SPAWN__WARNING, "ResetBubbleRatSpawn() called for normal bubble %u in %s.", \
+                    m_bubbleID, m_system->GetID());
+        } break;
+        case Bubble::Type::Ice:
+        case Bubble::Type::Belt: {
+            if (sConfig.npc.RoamingSpawns)
+                if (!m_spawnTimer.Enabled())
+                    SetSpawnTimer(true);
+        } break;
+        case Bubble::Type::Gate: {
+            if (sConfig.npc.StaticSpawns)
+                if (!m_spawnTimer.Enabled())
+                    SetSpawnTimer(false);
+        } break;
+        case Bubble::Type::Anomaly:
+        case Bubble::Type::Mission:
+        case Bubble::Type::Incursion: {
+            // these will check for escalation...where?
+        } break;
+        case Bubble::Type::Escalation: {
+        } break;
+    }
 }
 
 void SystemBubble::SetSpawnTimer(bool isBelt/*false*/) {
-    if (m_system->GetSystemSecurityRating() > 0.90)
+    if (m_system->GetSystemSecurityRating() > 0.9)
         return;
+
     if (sConfig.debug.SpawnTest) {
-        m_spawnTimer.Start(5000); /* 5s for testing */
+        // if we're testing, set to 5s and continue.
+        m_spawnTimer.Start(5000);
     } else {
-        // these randoms should be changed to reflect this npc's faction presence in system
-        if (isBelt) {
-            m_spawnTimer.Start(MakeRandomInt(30, sConfig.npc.RoamingTimer) * 1000);
-        } else {
-            m_spawnTimer.Start(MakeRandomInt(60, sConfig.npc.StaticTimer) * 1000);
+        switch (m_type) {
+            case Bubble::Type::Normal: {
+                // no spawn in normal bubble
+                return;
+            } break;
+            case Bubble::Type::Ice:
+            case Bubble::Type::Belt: {
+                m_spawnTimer.Start(MakeRandomInt(30, sConfig.npc.RoamingTimer) * 1000);
+            } break;
+            case Bubble::Type::Gate: {
+                m_spawnTimer.Start(MakeRandomInt(60, sConfig.npc.StaticTimer) * 1000);
+            } break;
+            case Bubble::Type::Anomaly:
+            case Bubble::Type::Mission:
+            case Bubble::Type::Incursion:
+            case Bubble::Type::Escalation: {
+                // this will need specific timers set in ??
+                m_spawnTimer.Start(MakeRandomInt(60, sConfig.npc.StaticTimer) * 1000);
+            } break;
         }
     }
 }
 
 void SystemBubble::SetBelt(InventoryItemRef itemRef) {
-    m_belt = true;
     sBubbleMgr.AddSpawnID(m_bubbleID, itemRef->itemID());
     m_system->GetBeltMgr()->RegisterBelt(itemRef);
-    if (itemRef->typeID() == 17774)
-        m_ice = true;
+    if (itemRef->typeID() == 17774) {
+        m_type = Bubble::Type::Ice;
+    } else {
+        m_type = Bubble::Type::Belt;
+    }
 }
 
 void SystemBubble::SetGate(uint32 gateID) {
-    m_gate = true;
+    m_type = Bubble::Type::Gate;
     sBubbleMgr.AddSpawnID(m_bubbleID, gateID);
 }
 
@@ -359,8 +416,6 @@ void SystemBubble::GetPlayers(std::vector<Client*> &into) const {
     /* updated to send ONLY players to the following:         -allan 14Feb15
      *    NPCAIMgr::Process()             --for npc targeting
      *    SpawnEntry::Process()           --for npc spawning
-     *
-     * this will also send player drones once that system is completed
      */
     into.clear();
     if (m_players.empty())
@@ -391,6 +446,10 @@ uint32 SystemBubble::CountNPCs() {
             ++count;
 
     return count;
+}
+
+uint32 SystemBubble::GetSystemID() {
+    return m_system->GetID();
 }
 
 bool SystemBubble::InBubble(const GPoint& pt, bool inWarp/*false*/) const {
@@ -858,7 +917,7 @@ void SystemBubble::MarkCenter()
 void SystemBubble::MarkBubble(const GPoint& position, std::string& name, std::string& desc, bool center/*false*/)
 {
     // create new container item
-    ItemData idata(23, ownerSystem, m_systemID, flagNone, name.c_str(), position, desc.c_str());
+    ItemData idata(23, ownerSystem, m_system->GetID(), flagNone, name.c_str(), position, desc.c_str());
     CargoContainerRef cRef = CargoContainerRef::StaticCast(InventoryItem::SpawnTemp(idata));
     if (cRef.get() == nullptr) {
         _log(DESTINY__WARNING, "MarkBubble() could not create Item for %s (%s)", name.c_str(), desc.c_str());
@@ -941,3 +1000,19 @@ void SystemBubble::BubblecastSendNotification(const char* notifyType, const char
         cur.second->SendNotification(notifyType, idType, payload, seq);
     }
 }
+
+/*
+    switch (m_type) {
+        case Bubble::Type::Normal: {
+        } break;
+        case Bubble::Type::Ice:
+        case Bubble::Type::Belt:
+        case Bubble::Type::Gate: {
+        } break;
+        case Bubble::Type::Anomaly:
+        case Bubble::Type::Mission:
+        case Bubble::Type::Incursion:
+        case Bubble::Type::Escalation: {
+        } break;
+    }
+*/

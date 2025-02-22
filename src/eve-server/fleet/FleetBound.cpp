@@ -18,6 +18,8 @@
 #include "PyServiceCD.h"
 #include "PyBoundObject.h"
 #include "fleet/FleetBound.h"
+#include "system/SystemBubble.h"
+#include <system/SystemManager.h>
 
 /*
 FLEET__ERROR
@@ -360,6 +362,9 @@ PyResult FleetBound::Handle_AcceptInvite(PyCallArgs &call) {
 
     sFltSvc.AddMember(call.client, m_fleetID, data.wingID, data.squadID, Fleet::Job::None, data.role, booster);
     sFltSvc.RemoveInviteData(pChar->itemID());
+
+    // update this player's containers and wrecks in current system to new fleet group
+    call.client->SystemMgr()->UpdateContainerFleetID(call.client->GetCharID(), m_fleetID);
 
     // returns nodeID and timestamp
     PyTuple* tuple = new PyTuple(2);

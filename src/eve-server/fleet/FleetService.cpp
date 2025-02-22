@@ -119,6 +119,9 @@ uint32 FleetService::CreateFleet(Client *pClient)
     // update the fleet member map with new member for this fleet.
     m_fleetMembers.emplace(m_fleetID, pClient);
 
+    // update this player's containers and wrecks in current system to new fleet group
+    pClient->SystemMgr()->UpdateContainerFleetID(pClient->GetCharID(), m_fleetID);
+
     _log(FLEET__INFO, "FleetService::CreateFleet() - fleetID: %u, wingID: %u, squadID: %u, leaderID: %u", m_fleetID, m_wingID, m_squadID, pChar->itemID());
 
     sLog.Cyan("CreateFleet", "bData -- leader: %i, armored: %i, info: %i, siege: %i, skirmish: %i, mining: %i", \

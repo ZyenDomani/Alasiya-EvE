@@ -23,16 +23,10 @@ NOTE:  for calls that use internal methods that send a reply, model from InjectS
 *******************************************************
 **********  errors and other found shit...high priority
 
-module stop after roid depeleted will not allow restart in client...red circle, but timer runs
-  roids may not have enough ore...this one didnt last long.
-
 same acct can be logged in multiple times
 
 to avoid db hits for every dock/undock, implement postExpression processing
   -- yeah, easier to delete/reload
-
-market --  some queries dont work...sending price data returns null
-    - no clue how to fix this
 
 work on buglist, integrate this list in there where i can (in order)
     - modules/fitting  ...  see 'module system coding' below for list of current problems
@@ -63,10 +57,6 @@ also check containers for contents and remove/deny before repack
 check insurance payouts.   rounds full ship value up
     - this will need base prices fixed
 
-check for item ownership before rename
-    verify OnCfgDataChanged
-    Structure items have throw.  not sure if this is valid
-
 dungeon deco items need better placement
 
 char creation - figure certs and set skills accordingly
@@ -86,7 +76,8 @@ add agent portraits to server and update 'backupurl' in server code
 *******************************************************
 **********  coding errors/corrections/improvements ... med priority
 
-if implants changed while skill training, update all training times for new char attribs
+rewrite wreck creation tables.  wrecks are in invTypes table and listed as s/m/l +few extras
+   use npc ship groupID to determine faction and size
 
 remove GPoint/GVector code and just write my own using int64
   positioning is whole numbers, but large (distances in space use meters, mostly in the billions)
@@ -112,6 +103,8 @@ update sendGFX to distinguish between weapon and ewar for using AttrGfxTurretID 
     In particular, elite rats (see NPC Naming Convention) have a higher probability of attacking your drones.
     At the extreme end, Sleeper NPC are very fond of attacking drones.
 *** check m_entityChaseRange and m_entityAttackRange.  same value for drones (need to adjust logic)
+NPC hauler spawn has no loot defined.
+
 
 after using "Loot All" on yellow wreck, items dont show up in cargo.  (diff ownerID)
   inv::load should use locationID (and does) but not sure about ownerID bit...review
@@ -327,12 +320,6 @@ DATA RACE!!
  C       ImageServer: 19:07:07 [SetStateDump]           [16]   Args:   [ 9] Value:     String: 'Hulk'
  GetImage() called. Cat: Character, id: 90000000, size:32
 19:07:07 [SetStateDump]           [16]   Args:   [10]   Key:     String: 'allianceID'
-
-
-after all sDatabase.RunQuery(res, ...) queries that return result, add mysql_free_result(res);
-    * >655 matches @45% search
-    currently, this is only called on Reset() which is called before running a new query...
-    no...dtor and Reset() both call mysql_free_result().
 
 
 RefObjects -

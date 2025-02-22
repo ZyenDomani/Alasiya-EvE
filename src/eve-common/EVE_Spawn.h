@@ -15,7 +15,7 @@
 
 namespace Spawn {
 
-    // these class names correspond to the "type" of spawn data found in npcSpawnClass table
+    // these class names correspond to the type of spawn - data found in db.npcSpawnClass.notes
     namespace Class {
         enum {
             // belt and grav site spawns - grav rat class is system rat class +1
@@ -89,7 +89,6 @@ namespace Spawn {
             Looted = 65,
             Ransacked = 66,
             Pristine = 67,
-
             // radar site spawns    - 5 groups in each, from easy to deadly (Easy, Average, Medium, Hard, Insane)
             Shard = 70,
             Tower = 71,

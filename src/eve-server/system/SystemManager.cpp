@@ -1206,8 +1206,7 @@ recStoreItems = 'STOREITEMS'
     m_bountyMap.clear();
 }
 
-void SystemManager::DoSpawnForBubble(SystemBubble* pBubble)
-{
+void SystemManager::DoSpawnForBubble(SystemBubble* pBubble, uint8 type/*normal*/) {
     if (!m_spawnMgr->IsInitialized())
         return;
 
@@ -1219,30 +1218,77 @@ void SystemManager::DoSpawnForBubble(SystemBubble* pBubble)
             pBubble->GetID(), sBubbleMgr.GetBeltID(pBubble->GetID()), m_data.name.c_str(), \
             m_data.systemID, m_data.securityRating, m_data.regionID);
 
-    if ((m_activeRatSpawns < m_beltCount ) or (pBubble->IsGate())) {
-        if (m_spawnMgr->DoSpawnForBubble(pBubble)) {
-            m_ratBubbles.emplace(pBubble->GetID(), pBubble);
-            if (is_log_enabled(SPAWN__TRACE))
-                _log(SPAWN__TRACE, "SystemManager::DoSpawnForBubble() completed for %s(%u) in bubble %u.  %lu items in m_ratBubbles", \
-                        m_data.name.c_str(), m_data.systemID, pBubble->GetID(), m_ratBubbles.size());
-        } else {
-            if (is_log_enabled(SPAWN__TRACE))
-                _log(SPAWN__TRACE, "SystemManager::DoSpawnForBubble() returned false for bubble %u.", pBubble->GetID());
+    uint8 error(0);
+    switch (type) {
+        case Bubble::Type::Normal: {
+            // we're still not spawning anything in normal bubbles
+            error = Bubble::Error::NotAllowed;
+        } break;
+        case Bubble::Type::Ice:
+        case Bubble::Type::Belt: {
+            // asteroid belts share active rats
+            if (m_activeRatSpawns < m_beltCount) {
+                error = m_spawnMgr->DoSpawnForBubble(pBubble);
+            }
+        } break;
+        case Bubble::Type::Gate: {
+            error = m_spawnMgr->DoSpawnForBubble(pBubble);
+        } break;
+        case Bubble::Type::Anomaly:
+        case Bubble::Type::Mission:
+        case Bubble::Type::Incursion:
+        case Bubble::Type::Escalation: {
+            error = m_spawnMgr->DoSpawnForBubble(pBubble);
+        } break;
+    }
+
+    if (error == Bubble::Error::None) {
+        m_ratBubbles[pBubble->GetID()] = pBubble;
+        if (is_log_enabled(SPAWN__TRACE))
+            _log(SPAWN__TRACE, "SystemManager::DoSpawnForBubble() completed for bubble %u in %s(%u).  %u/%u active spawns.", \
+                        pBubble->GetID(), m_data.name.c_str(), m_data.systemID, m_activeRatSpawns, m_activeGateSpawns);
+    } else if (is_log_enabled(SPAWN__TRACE)) {
+        std::string msg = "Error: ";
+        switch (error) {
+            case Bubble::Error::BubbleNull: {
+                msg += "Bubble Null";
+            } break;
+            case Bubble::Error::BeltDisabled: {
+                msg += "Belt Spawns Disabled";
+            } break;
+            case Bubble::Error::RoamingDisabled: {
+                msg += "Roaming Spawns Disabled";
+            } break;
+            case Bubble::Error::StaticDisabled: {
+                msg += "Static Spawns Disabled";
+            } break;
+            case Bubble::Error::Spawned: {
+                msg += "Belt Already Spawned";
+            } break;
+            case Bubble::Error::PrepFail: {
+                msg += "Spawn Prep Fail";
+            } break;
+            case Bubble::Error::NotAllowed: {
+                msg += "Spawn Not Allowed in this Bubble";
+            } break;
+            default: {
+                msg += "Undefined";
+            } break;
         }
+        _log(SPAWN__TRACE, "SystemManager::DoSpawnForBubble() returned false for bubble %u.  %s", \
+                pBubble->GetID(), msg.c_str());
     }
 }
 
-void SystemManager::GetSpawnBubbles(SpawnBubbleMap* bubbleMap)
-{
+// not used
+void SystemManager::GetSpawnBubbles(SpawnBubbleMap &bubbleMap) {
     if (is_log_enabled(SPAWN__MESSAGE))
         _log(SPAWN__MESSAGE, "SystemManager::GetSpawnBubbles() - called for %s(%u)", m_data.name.c_str(), m_data.systemID);
-    SpawnBubbleMap::iterator itr = m_ratBubbles.begin();
-    while (itr != m_ratBubbles.end())
-        bubbleMap->emplace(itr->first, itr->second);
+    for (auto &cur : m_ratBubbles)
+        bubbleMap[cur.first] = cur.second;
 }
 
-void SystemManager::RemoveSpawnBubble(SystemBubble* pBubble)
-{
+void SystemManager::RemoveSpawnBubble(SystemBubble* pBubble) {
     if (pBubble->IsBelt()) {
         m_ratBubbles.erase(pBubble->GetID());
         --m_activeRatSpawns;
@@ -1251,11 +1297,11 @@ void SystemManager::RemoveSpawnBubble(SystemBubble* pBubble)
         --m_activeGateSpawns;
     }
     if (is_log_enabled(SPAWN__MESSAGE))
-        _log(SPAWN__MESSAGE, "SystemManager::RemoveSpawnBubble() - called for bubbleID %u in %s(%u).", pBubble->GetID(), m_data.name.c_str(), m_data.systemID);
+        _log(SPAWN__MESSAGE, "SystemManager::RemoveSpawnBubble() - called for bubble %u in %s(%u).  %u belt and %u gate spawns remain.", \
+                pBubble->GetID(), m_data.name.c_str(), m_data.systemID, m_activeRatSpawns, m_activeGateSpawns);
 }
 
-uint32 SystemManager::GetRandBeltID()
-{
+uint32 SystemManager::GetRandBeltID() {
     return m_beltVector.at(MakeRandomInt(0, m_beltCount));
 }
 
@@ -1497,7 +1543,7 @@ void SystemManager::GetClientList(std::vector< Client* >& cVec) {
         cVec.push_back(cur.second);
 }
 
-SystemEntity* SystemManager::GetEntityByID ( uint32 itemID ) {
+SystemEntity* SystemManager::GetEntityByID(uint32 itemID) {
     // only used by Cmd_Inventory()
     if (m_entities.find(itemID) == m_entities.end())
         return nullptr;
@@ -1688,6 +1734,19 @@ void SystemManager::ResetAsteroids() {
     }
     m_entityChanged = true;
     */
+}
+
+void SystemManager::UpdateContainerFleetID(uint32 ownerID, uint32 fleetID) {
+    // this shouldnt hit very often, but may have a ton of objects to update...
+    for (auto &cur : m_ticEntities) {
+        if (cur.second->IsContainerSE() or cur.second->IsWreckSE()) {
+            if (cur.second->GetOwnerID() == ownerID) {
+                cur.second->SetFleetID(fleetID);
+                //TODO:  this doesnt work right
+                //cur.second->MakeSlimItemChange();
+            }
+        }
+    }
 }
 
 

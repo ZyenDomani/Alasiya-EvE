@@ -191,9 +191,9 @@ struct SpawnGroup {
 };
 
 /* POD structure for spawn entries */
-struct SpawnEntry {     // notes for me while creating/writing/testing
-    bool enabled=false;       // is respawn enabled for this entry?  also provides conditional test for SpawnMgr::IsChaining() method
-    uint8 spawnClass=0;   // spawn class.  0 = none, 1-7 = easy to insance based on sysSec, 8 = hauler, 9 = commander, 10 = officer  - 20+ are anomalies
+struct SpawnEntry {     // this is a single entry for a particular spawn.  it is probably one of many
+    bool enabled=false;   // is respawn enabled for this entry?  also provides conditional test for SpawnMgr::IsChaining() method
+    uint8 spawnClass=0;   // spawn class.  0 = none, 1-7 = easy to insane based on sysSec, 8 = hauler, 9 = commander, 10 = officer  - 20+ are anomalies
     uint8 spawnGroup=0;   // spawn group.   1 = roaming, 2 = static, 3 = anomaly, 4 = combat, 5 = deadspace, 6 = mission, 7 = incursion, 8 = sleeper, 9 = escalation
     uint8 total=0;        // total number of this group spawned
     uint8 number=0;       // this rat's number in group (to match up with above total)
@@ -233,6 +233,7 @@ struct RatSpawnClass { // notes for me while creating/writing/testing
     uint8 cc=0;       // commander cruiser
     uint8 cbc=0;      // commander battlecruiser
     uint8 cbs=0;      // commander battleship
+    std::string desc; // defined ship counts
 };
 
 /* POD structure for loot groups */

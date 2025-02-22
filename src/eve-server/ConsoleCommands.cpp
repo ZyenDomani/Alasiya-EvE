@@ -311,9 +311,9 @@ bool ConsoleCommand::Process() {
                 testing t;
                 t.WarpTest(0);
             } else if (strncmp(buf, "1", 1) == 0) {
-                sLog.Green("  Alasiya's EvEMu", "15* TurnTest in progress:");
+                sLog.Green("  Alasiya's EvEMu", "wget test:");
                 testing t;
-                t.TurnTest(1);
+                t.GetAgentPics();
             } else if (strncmp(buf, "2", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "30* TurnTest in progress:");
                 testing t;

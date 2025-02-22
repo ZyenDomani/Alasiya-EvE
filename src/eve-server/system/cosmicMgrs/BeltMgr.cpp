@@ -88,9 +88,8 @@ void BeltMgr::CheckSpawn(uint16 bubbleID)
 {
     if (IsSpawned(bubbleID))
         return;
-    /*  if there are already roids created for this belt, they will be loaded in Load()
-     * if Load() has roids for this belt, this belt will have true already set, and checked in SpawnBelt()
-     */
+
+    //if Load() has roids for this belt, this belt will have true already set, and checked in SpawnBelt()
     if (!Load(bubbleID)) {
         std::unordered_multimap<float, uint16> roidTypes;
         SpawnBelt(bubbleID, roidTypes);
@@ -259,7 +258,7 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>&
     if (IsSpawned(bubbleID))
         return;
 
-    uint32 beltID = sBubbleMgr.GetBeltID(bubbleID);
+    uint32 beltID(sBubbleMgr.GetBeltID(bubbleID));
     if ((!IsCelestialID(beltID)) and (!anomaly))
         return;
 
@@ -267,7 +266,7 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>&
     if (pSE == nullptr)
         return;
 
-    bool ice = (pSE->GetTypeID() == 17774);
+    bool ice(pSE->GetTypeID() == 17774);
 
     float secRating = m_system->GetSystemSecurityRating();
     float secValue = m_system->GetSecValue();

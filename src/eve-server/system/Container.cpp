@@ -180,9 +180,11 @@ void CargoContainer::RemoveItem(InventoryItemRef iRef)
             sLog.Warning( "CargoContainer::RemoveItem()", "Launch Container %u is empty and being deleted.", m_itemID );
             PlanetDB::UpdateLaunchStatus(m_itemID, PI::Cargo::Claimed);
         } else if (typeID() == EVEDB::invTypes::CargoContainer) {
-            sLog.Warning( "CargoContainer::RemoveItem()", "Cargo Container %u is empty and being deleted.", m_itemID );
+            if (is_log_enabled(ITEM__MESSAGE))
+                sLog.Warning( "CargoContainer::RemoveItem()", "Cargo Container %u is empty and being deleted.", m_itemID );
         } else {
-            sLog.Warning( "CargoContainer::RemoveItem()", "Non-Cargo Container %u (type: %u) is empty and being deleted.", m_itemID, typeID() );
+            if (is_log_enabled(ITEM__MESSAGE))
+                sLog.Warning( "CargoContainer::RemoveItem()", "Non-Cargo Container %u (type: %u) is empty and being deleted.", m_itemID, typeID() );
         }
         Delete();
     }
@@ -363,6 +365,7 @@ PyDict *ContainerSE::MakeSlimItem() {
         slim->SetItemString("corpID",           IsCorpID(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
         slim->SetItemString("allianceID",       IsAllianceID(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
         slim->SetItemString("warFactionID",     IsFactionID(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
+        slim->SetItemString("fleetID",          IsFleetID(m_fleetID) ? new PyInt(m_fleetID) : PyStatic.NewNone());
         if (m_contRef->IsAnchored())        // not sure if this is right...testing
             slim->SetItemString("structureState",       new PyInt(EVEPOS::StructureState::Anchored));
 

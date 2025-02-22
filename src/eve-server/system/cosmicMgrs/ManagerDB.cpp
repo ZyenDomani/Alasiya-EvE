@@ -426,7 +426,7 @@ void ManagerDB::GetFactionGroups(DBQueryResult& res) {
 }
 
 void ManagerDB::GetSpawnClasses(DBQueryResult& res) {
-    if (!sDatabase.RunQuery(res, "SELECT type, sub, f, af, d, c, ac, bc, bs, h, o, cf, cd, cc, cbc, cbs FROM npcSpawnClass"))
+    if (!sDatabase.RunQuery(res, "SELECT type, sub, f, af, d, c, ac, bc, bs, h, o, cf, cd, cc, cbc, cbs, className FROM npcSpawnClass"))
         _log(DATABASE__ERROR, "Error in GetSpawnClasses query: %s", res.error.c_str());
 }
 

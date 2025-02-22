@@ -54,8 +54,7 @@ m_spawnID(1)    // gotta start somewhere
 {
 }
 
-bool SpawnMgr::Init()
-{
+bool SpawnMgr::Init() {
     // even if belt spawns arent activated, still allow anomaly spawning
     m_initalized = true;
 
@@ -71,7 +70,6 @@ bool SpawnMgr::Init()
 
     m_groupTimerSetTime = 150;  // (in seconds) 2.5m default check time. this will allow a max wait time of 7.5m for respawn
 
-
     _log(COSMIC_MGR__INIT, "SpawnMgr Initialized for %s(%u)", m_system->GetName(), m_system->GetID());
     _log(COSMIC_MGR__INIT, "Roaming Belt Spawns are %s", sConfig.npc.RoamingSpawns ? "enabled" : "disabled");
     _log(COSMIC_MGR__INIT, "Static Gate Spawns are %s", sConfig.npc.StaticSpawns ? "enabled" : "disabled");
@@ -85,28 +83,28 @@ void SpawnMgr::Process() {
         return;
 
     double profileStartTime(GetTimeUSeconds());
-    // called by SystemManager::Process() for each system.  this will need to be fast.
-    //  check timers and call approprate functions as needed.
+    // called by SystemManager::Process() for each system.  this will need to be fast.  (it is max 187us  feb25)
+    //  check timers and call appropriate functions as needed.
 
     // will have to think about this one a bit to implement properly (and quickly)
-    /*  current implentation uses a single timer for entire system
-	 * timer goes off, do the following...
-	 *   loop thru all spawned bubbles in system
-	 *   spawn rats as needed to fill spawn groups
-	 *   kill timer after all spawns are full
-	 * this should be a single check for each iteration.  if multiple rats are killed, timer remains counting down from initial setting.
-	 * if all rats are respawned, then a rat is killed again (in this system), the timer is reset and the system begins again.
-	 *   each time the group timer is hit, it will check for missing rats in each spawn group.  if there is a missing rat, that rat is
-	 *   respawned and the timer is reset, to check again.  this *should* enable chain-ratting.
+    /*  current implementation uses a single timer for entire system
+     * timer goes off, do the following...
+     *   loop thru all spawned bubbles in system
+     *   spawn rats as needed to fill spawn groups
+     *   kill timer after all spawns are full
+     * this should be a single check for each iteration.  if multiple rats are killed, timer remains counting down from initial setting.
+     * if all rats are respawned, then a rat is killed again (in this system), the timer is reset and the system begins again.
+     *   each time the group timer is hit, it will check for missing rats in each spawn group.  if there is a missing rat, that rat is
+     *   respawned and the timer is reset, to check again.  this *should* enable chain-ratting.
      *
      *  this will need work for correct operation as intended.
-     * process should look at all SpawnEntryDefs for each bubble, and spawn according to number/total for that bubble's spawnID
+     * process should look at all entryDefs for each bubble, and spawn according to number/total for that bubble's spawnID
      * right now, that number isnt updated when rats are killed.  will have to work on coding that correctly
-	 */
+     */
     if (m_ratGroupTimer.Enabled())
         if (m_ratGroupTimer.Check()) {
-            bool killTimer = true;
-            SpawnEntryDef::iterator itr = m_spawns.begin(), end = m_spawns.end();
+            bool killTimer(true);
+            std::multimap<uint16, SpawnEntry>::iterator itr = m_spawns.begin(), end = m_spawns.end();
             while (itr != end) {
                 if (itr->second.enabled) {
                     killTimer = false;
@@ -114,8 +112,8 @@ void SpawnMgr::Process() {
                         ++itr;
                         continue;
                     }
-                    _log(SPAWN__TRACE, "Process() calling Respawn for SpawnEntryID %u (0x%X)", \
-                            itr->second.spawnID, &itr->second);
+                    _log(SPAWN__TRACE, "Process() calling Respawn for SpawnEntryID %u  typeID %u", \
+                            itr->second.spawnID, itr->second.typeID);
                     // this means check SpawnEntry for 'missing' SpawnGroup members and respawn as needed.
                     ReSpawn(sBubbleMgr.FindBubbleByID(itr->first), itr->second);
                     itr->second.enabled = false;
@@ -134,8 +132,11 @@ void SpawnMgr::Process() {
         sProfiler.AddTime(Profile::spawn, GetTimeUSeconds() - profileStartTime);
 }
 
-void SpawnMgr::MoveSpawn(NPC* pNPC, SystemBubble* pBubble)
-{
+bool SpawnMgr::FindSpawnForBubble(uint16 bubbleID) {
+    return (m_spawns.find(bubbleID) != m_spawns.end());
+}
+
+void SpawnMgr::MoveSpawn(NPC* pNPC, SystemBubble* pBubble) {
     if (pNPC == nullptr)
         return;
     if (pBubble == nullptr)
@@ -162,8 +163,7 @@ void SpawnMgr::MoveSpawn(NPC* pNPC, SystemBubble* pBubble)
     //pBubble->SetSpawned(true);
 }
 
-void SpawnMgr::WarpOutSpawn(NPC* pNPC, SystemBubble* pBubble)
-{
+void SpawnMgr::WarpOutSpawn(NPC* pNPC, SystemBubble* pBubble) {
     if (pNPC == nullptr)
         return;
     if (pBubble == nullptr)
@@ -197,9 +197,8 @@ void SpawnMgr::WarpOutSpawn(NPC* pNPC, SystemBubble* pBubble)
     pBubble->SetSpawned(true);
 }
 
-
-void SpawnMgr::StartRatTimer()
-{
+// not used.  timer handled in SysBubble
+void SpawnMgr::StartRatTimer() {
     if (m_ratTimer.Enabled())
         return;
     uint16 time = sConfig.npc.RoamingTimer * 1000;  //  s to ms
@@ -212,8 +211,7 @@ void SpawnMgr::StartRatTimer()
             m_system->GetName(), m_system->GetID(), time);
 }
 
-void SpawnMgr::StartRatGroupTimer()
-{
+void SpawnMgr::StartRatGroupTimer() {
     if (m_ratGroupTimer.Enabled()) {
         if (is_log_enabled(SPAWN__MESSAGE))
             _log(SPAWN__MESSAGE, "SpawnMgr::StartRatGroupTimer() - Group Spawn Timer currently running.  Time left: %us", m_ratGroupTimer.GetRemainingTime() / 1000);
@@ -226,23 +224,22 @@ void SpawnMgr::StartRatGroupTimer()
             m_system->GetName(), m_system->GetID(), m_groupTimerSetTime);
 }
 
-void SpawnMgr::SpawnKilled(SystemBubble* pBubble, uint32 itemID)
-{
+void SpawnMgr::SpawnKilled(SystemBubble* pBubble, uint32 itemID) {
     if (pBubble == nullptr)
         return;
     if (pBubble->IsBelt()) {
         _log(SPAWN__DEPOP, "SpawnMgr::SpawnKilled::Belt - called by %u.", itemID);
         // if any SpawnEntry still exists for this bubble, reset group timer.
         // this enables chain ratting
-        bool killed = true;
+        bool killed(true);
         auto range = m_spawns.equal_range(pBubble->GetID());
         auto itr = range.first;
         while (itr != range.second) {
             if (itr->second.itemID == itemID) {
-                itr->second.stamp = sEntityMgr.GetStamp() + sConfig.npc.RespawnTimer; // in seconds
+                itr->second.stamp = sEntityMgr.GetStamp() + sConfig.npc.RespawnTimer; // set respawn time, in seconds
                 itr->second.enabled = true;
             }
-            if (!itr->second.enabled)
+            if (itr->second.enabled)
                 killed = false;     // at least one rat left.
             ++itr;
         }
@@ -250,11 +247,12 @@ void SpawnMgr::SpawnKilled(SystemBubble* pBubble, uint32 itemID)
             _log(SPAWN__DEPOP, "SpawnMgr::SpawnKilled - Belt Spawn has been destroyed.  Resetting spawn checks for bubble %u.", pBubble->GetID());
             // spawn destroyed.  delete from list and reset bubble checks.
             m_spawns.erase(pBubble->GetID()); // just in case....may/may not be in here.
-            m_bubbles.erase(std::find(m_bubbles.begin(), m_bubbles.end(), pBubble));
             pBubble->ResetBubbleRatSpawn();
             m_system->RemoveSpawnBubble(pBubble);
+            m_ratGroupTimer.Disable();  // stop group timer, if enabled.
             return;
         } else {
+            _log(SPAWN__TRACE, "SpawnMgr::SpawnKilled::Belt - %u npcs left in spawn.", m_spawns.count(pBubble->GetID()));
             StartRatGroupTimer();
         }
     } else if (pBubble->IsGate()) {
@@ -267,7 +265,7 @@ void SpawnMgr::SpawnKilled(SystemBubble* pBubble, uint32 itemID)
         _log(SPAWN__DEPOP, "SpawnMgr::SpawnKilled::Anomaly - called by %u.", itemID);
         if (m_spawns.count(pBubble->GetID()) == 1) {
             // last npc in this wave.  get data needed for next wave, if applicable.
-            SpawnEntryDef::iterator itr = m_spawns.find(pBubble->GetID());
+            std::multimap<uint16, SpawnEntry>::iterator itr = m_spawns.find(pBubble->GetID());
             if (itr == m_spawns.end())
                 return; // this is an error.
             MakeSpawn(pBubble, itr->second.factionID, itr->second.spawnClass, itr->second.level);
@@ -306,16 +304,14 @@ void SpawnMgr::SpawnKilled(SystemBubble* pBubble, uint32 itemID)
     }
 }
 
-void SpawnMgr::DoSpawnForAnomaly(SystemBubble* pBubble, uint8 spawnClass)
-{
+void SpawnMgr::DoSpawnForAnomaly(SystemBubble* pBubble, uint8 spawnClass) {
     if (pBubble == nullptr)
         return;
     pBubble->SetAnomaly();
     PrepSpawn(pBubble, spawnClass);
 }
 
-void SpawnMgr::DoSpawnForIncursion(SystemBubble* pBubble, uint32 regionID)
-{
+void SpawnMgr::DoSpawnForIncursion(SystemBubble* pBubble, uint32 regionID) {
     if (pBubble == nullptr)
         return;
     if (!IsRegionID(regionID))
@@ -324,11 +320,10 @@ void SpawnMgr::DoSpawnForIncursion(SystemBubble* pBubble, uint32 regionID)
     // unknown parameters at this time
 }
 
-void SpawnMgr::DoSpawnForMission(SystemBubble* pBubble, uint32 regionID)
-{
+void SpawnMgr::DoSpawnForMission(SystemBubble* pBubble, uint32 systemID) {
     if (pBubble == nullptr)
         return;
-    if (!IsRegionID(regionID))
+    if (!IsSolarSystemID(systemID))
         return;
     pBubble->SetMission();
     // unknown parameters at this time
@@ -341,32 +336,30 @@ void SpawnMgr::DoSpawnForMission(SystemBubble* pBubble, uint32 regionID)
      */
 }
 
-bool SpawnMgr::DoSpawnForBubble(SystemBubble* pBubble)
-{
+uint8 SpawnMgr::DoSpawnForBubble(SystemBubble* pBubble) {
     if (pBubble == nullptr)
-        return false;
-
+        return Bubble::Error::BubbleNull;
     if (pBubble->IsBelt()) {
         if (!sConfig.cosmic.BeltEnabled)
-            return false;
+            return Bubble::Error::BeltDisabled;
         if (!sConfig.npc.RoamingSpawns)
-            return false;
+            return Bubble::Error::RoamingDisabled;
     }
 
     if (pBubble->IsGate())
         if (!sConfig.npc.StaticSpawns)
-            return false;
+            return Bubble::Error::StaticDisabled;
 
     if (FindSpawnForBubble(pBubble->GetID())) {
         _log(SPAWN__TRACE, "SpawnMgr::FindSpawnForBubble() returned true for bubble %u.", pBubble->GetID());
         pBubble->SetSpawned(true);  // bubble flag to avoid multiple spawns in same bubble.
-        return false;
+        return Bubble::Error::Spawned;
     } else {
         if (PrepSpawn(pBubble)) {
             pBubble->SetSpawned(true);  // bubble flag to avoid multiple spawns in same bubble.
         } else {
             _log(SPAWN__TRACE, "SpawnMgr::PrepSpawn() returned false for bubble %u.", pBubble->GetID());
-            return false;
+            return Bubble::Error::PrepFail;
         }
     }
 
@@ -375,13 +368,10 @@ bool SpawnMgr::DoSpawnForBubble(SystemBubble* pBubble)
     if (pBubble->IsGate())
         m_system->IncGateSpawnCount();
 
-    return true;
+    return Bubble::Error::None;
 }
 
-bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None*/, uint8 level/*0*/)
-{
-    if (pBubble == nullptr)
-        return false;
+bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None*/, uint8 level/*0*/) {
     float secRating(m_system->GetSecValue());
     bool anomaly(false);
     // get faction for this region
@@ -443,17 +433,21 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
             if ((secRating < 0) and  (sClass < Spawn::Class::Hauler))
                 if (MakeRandomFloat() < 0.1)  // 10% chance to get hellspawn in nullsec
                     sClass = Spawn::Class::Hell;
-        } else if (pBubble->IsGate()) { // gate spawns are smaller/easier than roid spawns
+        } else if (pBubble->IsGate()) { // gate spawns are smaller/easier than roid spawns in hi-sec only
             if (secRating < -0.7) {
-                sClass = Spawn::Class::Hard;
+                sClass = Spawn::Class::Crazy;
             } else if (secRating < -0.4) {
-                sClass = Spawn::Class::Medium;
+                sClass = Spawn::Class::Hard;
             } else if (secRating < -0.1) {
-                sClass = Spawn::Class::Average;
+                sClass = Spawn::Class::Medium;
             } else if (secRating < 0.3) {
+                sClass = Spawn::Class::Average;
+            } else if (secRating < 0.6) {
+                sClass = Spawn::Class::Fair;
+            } else if (secRating < 0.8) {
                 sClass = Spawn::Class::Fair;
             } else {
-                sClass = Spawn::Class::Easy;
+                sClass = Spawn::Class::None;
             }
         } else {
             _log(SPAWN__WARNING, "Ratspawn location is neither belt nor gate in %s for bubble %u.", \
@@ -471,12 +465,13 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
         return false;
     }
 
-    RatSpawnClassVec spawnEntry;
+    std::vector<RatSpawnClass> spawnEntry;
+    //TODO:  this gets all levels for class...we dont need all, but level isnt calc'd yet...
     if (sDataMgr.GetNPCClasses(sClass, spawnEntry)) {
         if (is_log_enabled(SPAWN__MESSAGE))
-            _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - spawnEntry - size: %lu, class: %s(%u).", spawnEntry.size(), GetSpawnClassName(sClass).c_str(), sClass);
+            _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - spawnEntry - size: %lu, class: %s(%u).", spawnEntry.size(), GetSpawnClassName(sClass), sClass);
     } else {
-        _log(SPAWN__ERROR, "SpawnMgr::PrepSpawn() - No NPC Class data for %u(%s).  Cancelling spawn.", sClass, GetSpawnClassName(sClass).c_str());
+        _log(SPAWN__ERROR, "SpawnMgr::PrepSpawn() - No NPC Class data for %u(%s).  Cancelling spawn.", sClass, GetSpawnClassName(sClass));
         return false;
     }
 
@@ -485,19 +480,19 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
         ++level;    // increment wave
         // check wave # vs possible waves.  (oob check)
         if (spawnEntry.size() < level) {
-            _log(SPAWN__ERROR, "SpawnMgr::PrepSpawn() - spawnEntry.size (%lu) < level (%u) for anomaly class %s.  Canceling spawn.", spawnEntry.size(), level, GetSpawnClassName(sClass).c_str());
+            _log(SPAWN__ERROR, "SpawnMgr::PrepSpawn() - spawnEntry.size (%lu) < level (%u) for anomaly class %s.  Canceling spawn.", spawnEntry.size(), level, GetSpawnClassName(sClass));
             return false;
         }
         /** @todo  test for overseer wave and spawn correct overseer for this anomaly  */
         /** @todo  make templates/functions/whatever for sending msgs to players local for waves */
     } else if (sClass == Spawn::Class::Hauler) {
         // split hauler spawns based on trusec
-             if (secRating < -0.8)  { level = MakeRandomInt(4, 7); }
-        else if (secRating < -0.5)  { level = MakeRandomInt(3, 6); }
-        else if (secRating < -0.2)  { level = MakeRandomInt(2, 5); }
-        else if (secRating < 0.1)   { level = MakeRandomInt(1, 4); }
-        else if (secRating < 0.4)   { level = MakeRandomInt(1, 3); }
-        else if (secRating < 0.7)   { level = 2; }
+             if (secRating < -0.8)  { level = MakeRandomInt(5, 7); }
+        else if (secRating < -0.5)  { level = MakeRandomInt(4, 6); }
+        else if (secRating < -0.2)  { level = MakeRandomInt(3, 5); }
+        else if (secRating < 0.1)   { level = MakeRandomInt(2, 4); }
+        else if (secRating < 0.4)   { level = MakeRandomInt(2, 3); }
+        else if (secRating < 0.7)   { level = MakeRandomInt(1, 2); }
         else                        { level = 1; }
     } else if (sClass <= Spawn::Class::Hell) {
         level = MakeRandomInt(0, spawnEntry.size());  // random belt/gate spawn type.
@@ -521,6 +516,7 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
     uint8 cc = spawnEntry[level].cc;
     uint8 cbc = spawnEntry[level].cbc;
     uint8 cbs = spawnEntry[level].cbs;
+    std::string desc = spawnEntry[level].desc;
     spawnEntry.clear();
 
     // get typeIDs to spawn based on info in m_factionGroups and ship designators and put into Spawn Vector
@@ -631,7 +627,8 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
 
     if (m_toSpawn.size() > 0) {
         if (is_log_enabled(SPAWN__MESSAGE))
-            _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - toSpawn size is %lu.", m_toSpawn.size());    //variable
+            _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - Class: %s, Desc: %s - %lu ship class%s.", \
+                   GetSpawnClassName(sClass), desc.c_str(), m_toSpawn.size(), m_toSpawn.size() > 1?"es":"");
         MakeSpawn(pBubble, factionID, sClass, level, anomaly);
         return true;
     } else {
@@ -662,7 +659,7 @@ struct SpawnEntry {     // notes for me while creating/writing/testing
 void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, uint8 level, bool anomaly/*false*/)
 {
     _log(SPAWN__MESSAGE, "SpawnMgr::MakeSpawn() - Creating spawn class %s for %s in bubbleID %u (anomaly = %s).", \
-            GetSpawnClassName(sClass).c_str(), sDataMgr.GetFactionName(factionID).c_str(), pBubble->GetID(), anomaly?"true":"false");
+            GetSpawnClassName(sClass), sDataMgr.GetFactionName(factionID).c_str(), pBubble->GetID(), anomaly?"true":"false");
 
     /*  the point here is to have all belt rats spawn outside their belt's bubble.
      * to make it 'realistic', they will need the appearance of warping in from some random point,
@@ -704,7 +701,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
          *                  const GPoint &_position = NULL_ORIGIN, const char *_customInfo = "", bool _contraband = false);
          */
         ItemData idata(cur.typeID, corpID, m_system->GetID(), flagNone, "", startPos, name.c_str());
-        for (uint8 x=0; x < cur.quantity; ++x) {
+        for (uint8 x(0); x < cur.quantity;) {
             iRef = sItemFactory.SpawnItem(idata);
             if (iRef.get() == nullptr) {
                 _log(SPAWN__ERROR, "Failed to spawn item type %u.", cur.typeID);
@@ -740,7 +737,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
             se.groupID = iRef->type().groupID();
             se.itemID = iRef->itemID();
             se.total = cur.quantity;
-            se.number = x + 1;
+            se.number = ++x;
             se.typeID = cur.typeID;
             se.spawnID = m_spawnID;
             se.corpID = corpID;
@@ -754,20 +751,19 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
                 se.stamp = sEntityMgr.GetStamp(); // set time of this spawn for ??
             }
             m_spawns.emplace(pBubble->GetID(), se);
-            _log(SPAWN__TRACE, "MakeSpawn() adding SpawnEntry for %s with ID %u to m_spawns. Class: %s, Group: %s, Level: %u.", \
-                iRef->name(), se.spawnID, GetSpawnClassName(se.spawnClass).c_str(), GetSpawnGroupName(se.spawnGroup).c_str(), level);
+            _log(SPAWN__TRACE, "MakeSpawn() adding %s as entry %u of %u. SpawnID: %u, Class: %s, Group: %s, Level: %u.", \
+                    iRef->name(), x, cur.quantity, se.spawnID, GetSpawnClassName(se.spawnClass), GetSpawnGroupName(se.spawnGroup), level);
         }
     }
 
     ++m_spawnID;
-    m_bubbles.push_back(pBubble);
 
     //cleanup
     m_toSpawn.clear();
     m_ratSpawns.clear();
 
-    _log(SPAWN__TRACE, "MakeSpawn() completed in %s(%u) with %lu bubbles in m_bubbles and %lu entities in m_spawns.", \
-                m_system->GetName(), m_system->GetID(), m_bubbles.size(), m_spawns.size());
+    _log(SPAWN__TRACE, "MakeSpawn() completed in %s(%u) with %lu entities in m_spawns.", \
+                m_system->GetName(), m_system->GetID(), m_spawns.size());
 }
 
 void SpawnMgr::ReSpawn(SystemBubble* pBubble, SpawnEntry& spawnEntry)
@@ -818,24 +814,15 @@ void SpawnMgr::ReSpawn(SystemBubble* pBubble, SpawnEntry& spawnEntry)
     _log(SPAWN__TRACE, "ReSpawn() completed for spawnEntryID %u 0x%X in bubble %u.", spawnEntry.spawnID, &spawnEntry, pBubble->GetID());
 }
 
-bool SpawnMgr::FindSpawnForBubble(uint16 bubbleID) {
-    if (m_spawns.find(bubbleID) != m_spawns.end())
-        return true;
-
-    return false;
-}
-
-uint16 SpawnMgr::GetRandTypeID(uint8 sClass)
-{
-    uint16 groupID = 0;
-    RatFactionGroupsMap::iterator itr = m_factionGroups.find(sClass);
+uint16 SpawnMgr::GetRandTypeID(uint8 sClass) {
+    uint16 groupID(0);
+    std::map<uint8, uint16>::iterator itr = m_factionGroups.find(sClass);
     if (itr != m_factionGroups.end())
         groupID = itr->second;
     return sDataMgr.GetRandRatType(sClass, groupID);
 }
 
-bool SpawnMgr::IsChaining(uint16 bubbleID)
-{
+bool SpawnMgr::IsChaining(uint16 bubbleID) {
     bool rsp(false);
     auto range = m_spawns.equal_range(bubbleID);
     auto itr = range.first;
@@ -848,8 +835,7 @@ bool SpawnMgr::IsChaining(uint16 bubbleID)
     return rsp;
 }
 
-void SpawnMgr::RemoveSpawn(uint16 bubbleID, uint32 itemID)
-{
+void SpawnMgr::RemoveSpawn(uint16 bubbleID, uint32 itemID) {
     auto range = m_spawns.equal_range(bubbleID);
     auto itr = range.first;
     while (itr != range.second) {
@@ -940,7 +926,7 @@ uint8 SpawnMgr::GetSpawnGroup(uint8 sClass) {
     return Spawn::Group::None;
 }
 
-std::string SpawnMgr::GetSpawnGroupName(int8 sGroup) {
+const char* SpawnMgr::GetSpawnGroupName(int8 sGroup) {
     switch(sGroup) {
         case Spawn::Group::None:            return "None";
         case Spawn::Group::Roaming:         return "Roaming";
@@ -956,7 +942,7 @@ std::string SpawnMgr::GetSpawnGroupName(int8 sGroup) {
     return "Undefined";
 }
 
-std::string SpawnMgr::GetSpawnClassName(int8 sClass) {
+const char* SpawnMgr::GetSpawnClassName(int8 sClass) {
     switch(sClass) {
         case Spawn::Class::None:            return "None";
         case Spawn::Class::Easy:            return "Easy";

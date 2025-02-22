@@ -588,7 +588,7 @@ void StaticDataMgr::Populate()
 
     ManagerDB::GetSpawnClasses(*res);
     while (res->GetRow(row)) {
-        //SELECT type, sub, f, af, d, c, ac, bc, bs, h, o, cf, cd, cc, cbc, cbs FROM npcSpawnClass
+        //SELECT type, sub, f, af, d, c, ac, bc, bs, h, o, cf, cd, cc, cbc, cbs, className FROM npcSpawnClass
         RatSpawnClass spawnClass        = RatSpawnClass();
         spawnClass.type                 = row.GetInt(0);
         spawnClass.sub                  = row.GetInt(1);
@@ -606,6 +606,7 @@ void StaticDataMgr::Populate()
         spawnClass.cc                   = row.GetInt(13);
         spawnClass.cbc                  = row.GetInt(14);
         spawnClass.cbs                  = row.GetInt(15);
+        spawnClass.desc                 = row.GetText(16);
         m_npcClasses.emplace((uint8)row.GetInt(0), spawnClass);
     }
     sLog.Cyan("    StaticDataMgr", "%lu Rat Groups, %lu Rat Classes, and %u Rat Types for %lu regions loaded in %.3fms.",\
@@ -893,7 +894,7 @@ uint16 StaticDataMgr::GetRandRatType(uint8 sClass, uint16 groupID) {
                 break;
             }
     }
-    if (typeVec.size())
+    if (!typeVec.empty())
         return typeVec.at(MakeRandomInt(0, typeVec.size()));
 
     _log(DATA__WARNING, "Failed to get random rat for sClass %u and groupID %u", sClass, groupID);
@@ -914,31 +915,33 @@ bool StaticDataMgr::GetNPCTypes(uint16 groupID, std::vector< uint16 >& typeVec) 
 bool StaticDataMgr::GetNPCGroups(uint32 factionID, std::map< uint8, uint16 >& groupMap) {
     auto groupRange = m_npcGroups.equal_range(factionID);
     for (auto it = groupRange.first; it != groupRange.second; ++it)
-        groupMap.emplace(it->second.shipClass, it->second.groupID);
+        groupMap[it->second.shipClass] = it->second.groupID;
 
     return !groupMap.empty();
 }
 
+//TODO:  this is getting all levels for the class...we only need one level
 bool StaticDataMgr::GetNPCClasses(uint8 sClass, std::vector< RatSpawnClass >& classMap) {
     auto classRange = m_npcClasses.equal_range(sClass);
     for (auto it = classRange.first; it != classRange.second; ++it) {
-        RatSpawnClass spawnClass        = RatSpawnClass();
-        spawnClass.type                 = it->second.type;
-        spawnClass.sub                  = it->second.sub;
-        spawnClass.f                    = it->second.f;
-        spawnClass.af                   = it->second.af;
-        spawnClass.d                    = it->second.d;
-        spawnClass.c                    = it->second.c;
-        spawnClass.ac                   = it->second.ac;
-        spawnClass.bc                   = it->second.bc;
-        spawnClass.bs                   = it->second.bs;
-        spawnClass.h                    = it->second.h;
-        spawnClass.o                    = it->second.o;
-        spawnClass.cf                   = it->second.cf;
-        spawnClass.cd                   = it->second.cd;
-        spawnClass.cc                   = it->second.cc;
-        spawnClass.cbc                  = it->second.cbc;
-        spawnClass.cbs                  = it->second.cbs;
+        RatSpawnClass spawnClass   = RatSpawnClass();
+            spawnClass.type        = it->second.type;
+            spawnClass.sub         = it->second.sub;
+            spawnClass.f           = it->second.f;
+            spawnClass.af          = it->second.af;
+            spawnClass.d           = it->second.d;
+            spawnClass.c           = it->second.c;
+            spawnClass.ac          = it->second.ac;
+            spawnClass.bc          = it->second.bc;
+            spawnClass.bs          = it->second.bs;
+            spawnClass.h           = it->second.h;
+            spawnClass.o           = it->second.o;
+            spawnClass.cf          = it->second.cf;
+            spawnClass.cd          = it->second.cd;
+            spawnClass.cc          = it->second.cc;
+            spawnClass.cbc         = it->second.cbc;
+            spawnClass.cbs         = it->second.cbs;
+            spawnClass.desc        = it->second.desc;
         classMap.push_back(spawnClass);
     }
 

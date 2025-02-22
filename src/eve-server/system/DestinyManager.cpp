@@ -3431,7 +3431,7 @@ void DestinyManager::SendSingleDestinyUpdate(PyTuple **up, bool self_only/*false
                 if (is_log_enabled(DESTINY__UPDATES))
                     _log( DESTINY__UPDATES, "[%u] BubbleCasting destiny update to bubbleID %u from %s(%u)", \
                             sEntityMgr.GetStamp(), mySE->SysBubble()->GetID(), mySE->GetName(), mySE->GetID() );
-                mySE->SysBubble()->BubblecastDestinyUpdate(up, "DestinyUpdate");
+                mySE->SysBubble()->BubblecastDestinyUpdate(up, "Single DestinyUpdate");
             }
             return;
         }
@@ -3459,7 +3459,7 @@ void DestinyManager::SendSingleDestinyUpdate(PyTuple **up, bool self_only/*false
                     sEntityMgr.GetStamp(), mySE->SysBubble()->GetID(),   \
                     (mySE->HasPilot()?mySE->GetPilot()->GetName():mySE->GetName()),\
                     (mySE->HasPilot()?mySE->GetPilot()->GetCharID():mySE->GetID()) );
-        mySE->SysBubble()->BubblecastDestinyUpdate(up, "DestinyUpdate" );
+        mySE->SysBubble()->BubblecastDestinyUpdate(up, "Single DestinyUpdate to Bubble" );
     } else {
         _log(DESTINY__WARNING, "[%u] Cannot BubbleCast DestinyUpdate; entity %s(%u) is not in any bubble. (mySE->SysBubble() == nullptr)", \
         sEntityMgr.GetStamp(), mySE->GetName(), mySE->GetID() );

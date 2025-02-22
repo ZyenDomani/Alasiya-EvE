@@ -1150,7 +1150,7 @@ bool ActiveModule::CanActivate() {
                     allowed = true;
                 if (m_targetSE->GetWarFactionID() == m_shipRef->GetPilot()->GetWarFactionID())
                     allowed = true;
-                if (m_shipRef->GetPilot()->InFleet())
+                if (IsFleetID(m_targetSE->GetFleetID()))
                     if (m_shipRef->GetPilot()->GetFleetID() == m_targetSE->GetFleetID())
                         allowed = true;
 
@@ -1497,6 +1497,12 @@ void ActiveModule::LaunchMissile()
     Client* pClient = m_shipRef->GetPilot();
     if (pClient == nullptr)
         return;
+    if (m_chargeRef.get() == nullptr) {
+        // something fucked up....
+        m_chargeRef->Delete();
+        AbortCycle();
+        return;
+    }
     ItemData idata(m_chargeRef->typeID(), pClient->GetCharacterID(), pClient->GetLocationID(), flagMissile, m_chargeRef->name(), m_shipRef->position() );
     InventoryItemRef missileRef = sItemFactory.SpawnItem(idata);
     if (missileRef.get() == nullptr) {

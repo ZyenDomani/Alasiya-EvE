@@ -140,8 +140,7 @@ void SystemEntity::EncodeDestiny(Buffer& into)
     _log(SE__DESTINY, "SE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
-void SystemEntity::Killed(Damage& fatal_blow)
-{
+void SystemEntity::Killed(Damage& fatal_blow) {
     if (m_targMgr != nullptr) {
         // loop thru list of all modules targeting this entity and let them know it has been killed.
         m_targMgr->Destroyed();
@@ -151,10 +150,9 @@ void SystemEntity::Killed(Damage& fatal_blow)
     Delete();
 }
 
-void SystemEntity::Delete()
-{
+void SystemEntity::Delete() {
     if (m_targMgr != nullptr)
-        m_targMgr->ClearFromTargets(); //OnTarget(nullptr, TargMgr::Mode::Clear, TargMgr::Msg::Deleted);
+        m_targMgr->Destroyed(); //OnTarget(nullptr, TargMgr::Mode::Clear, TargMgr::Msg::Deleted);
     if (m_system != nullptr)
         m_system->RemoveEntity(this);
     if (!IsContainerSE())
@@ -199,7 +197,7 @@ void SystemEntity::MakeSlimItemChange() {
     updates->SetItem(0, new PyString("OnSlimItemChange"));
     updates->SetItem(1, shipData);
     //consumes updates
-    m_bubble->BubblecastDestinyUpdate(&updates, "destiny" );
+    m_bubble->BubblecastDestinyUpdate(&updates, "SlimItem Update" );
 }
 
 void SystemEntity::DropLoot(WreckContainerRef wreckRef, uint32 groupID, uint32 owner) {

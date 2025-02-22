@@ -415,7 +415,7 @@ InventoryItemRef InventoryItem::Spawn(ItemData &data)
         case EVEDB::invCategories::PlanetaryInteraction:
         case EVEDB::invCategories::PlanetaryResources:
         case EVEDB::invCategories::PlanetaryCommodities: {
-            _log(ITEM__WARNING, "II::Spawn creating generic item for type %u, cat %u.", iType->id(), iType->categoryID());
+            _log(ITEM__MESSAGE, "II::Spawn creating generic item for type %u, cat %u.", iType->id(), iType->categoryID());
             // Spawn generic item:
             uint32 itemID = InventoryItem::CreateItemID(data);
             return InventoryItem::SpawnItem(itemID, data);
@@ -833,10 +833,9 @@ InventoryItemRef InventoryItem::Split(int32 qty/*0*/, bool notify/*true*/, bool 
     if (iRef.get() == nullptr)
         return InventoryItemRef(nullptr);  // couldnt spawn new item...we'll get over it.
 
-    if (silent)
-        return iRef;
-
-    iRef->Move(m_data.locationID, m_data.flag, notify);
+    if (!silent)
+        iRef->Move(m_data.locationID, m_data.flag, notify);
+    
     return iRef;
 }
 

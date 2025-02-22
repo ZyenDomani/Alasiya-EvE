@@ -367,29 +367,32 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
         return nullptr;
     }
 
-    uint16 toFlag = m_flag;
+    uint16 toFlag(m_flag);
     if (call.byname.find("flag") != call.byname.end())
         toFlag = PyRep::IntegerValueU32(call.byname.find("flag")->second);
+    if (toFlag == flagLocked) {
+        call.client->SendNotifyMsg("The %s must be opened before loading.", m_self->type().name().c_str());
+        return nullptr;
+    }
 
-    int32 quantity = 1;
+    int32 quantity(0);
     if (call.byname.find("qty") != call.byname.end())
         quantity = PyRep::IntegerValue(call.byname.find("qty")->second);
 
     //bool byname(fromManyFlags):true == unload charges from module referenced
-    bool moveStack = false;
+    bool moveStack(false);
     if (call.byname.find("fromManyFlags") != call.byname.end())
         if (!call.byname.find("fromManyFlags")->second->IsNone())
             moveStack = true;
 
-    float capacity = 0.0f;
+    float capacity(0.0f);
     if (call.byname.find("capacity") != call.byname.end())
         capacity = PyRep::IntegerValueU32(call.byname.find("capacity")->second);
 
-    if (capacity > 1) {
+    if (capacity > 1)
         moveStack = true;
-    } else if (quantity < 1) {
+    if (quantity < 1)
         moveStack = true;
-    }
 
     // moving TO hangar...move all items in stack, if applicable...this includes ship corp hangars - is this what we want here?
     if (IsHangarFlag(toFlag))
@@ -405,14 +408,16 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
     _log(INV__MESSAGE, "IB::Handle_MultiAdd() - moving %lu items from (%u:%s) to me(%s:%u:%s).", \
                 args.itemIDs.size(), args.containerID, sDataMgr.GetFlagName(m_flag), m_self->name(), m_itemID, sDataMgr.GetFlagName(toFlag));
 
-    return MoveItems( call.client, args.itemIDs, (EVEItemFlags)toFlag, quantity, moveStack, capacity);
+    return MoveItems(call.client, args.itemIDs, (EVEItemFlags)toFlag, quantity, moveStack, capacity);
 }
 
 PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, EVEItemFlags toFlag, int32 quantity, bool moveStack, float capacity)
 {   // complete method rewrite -allan 21Dec17
     ShipItem* pShip = pClient->GetShip().get();
-    bool donating = false, ship = false, customs = false;
-    int32 origQty = quantity;
+    bool donating(false);
+    bool ship(false);
+    bool customs(false);
+    int32 origQty(quantity);
 
     // we will need to check *this for specific item-moving rules
     switch (m_self->categoryID()) {
@@ -503,6 +508,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
             //donating = true;
         } break;
     }
+//TODO:  check for wrecks and cans in fleet and call donate to allow salvager to take
 
     EVEItemFlags fromFlag(flagNone);
     EVEItemFlags origFlag(toFlag);

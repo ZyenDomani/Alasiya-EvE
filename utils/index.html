@@ -31,6 +31,15 @@ Constant lookout for bugs and other errors.<br>
 I am kinda working on my TODO list where I can.  As there is around 1000 lines, this will take a while<br>
 <br>
 UPDATES AND CHANGELOG:  (only major/significant updates are listed)<br>
+21Feb25 - Fixed multiple errors and other updates in following systems:<br>
+        Fleet - Creating fleet didn't update existing cans/wrecks (salvager couldn't tractor existing cans/wrecks)<br>
+        Modules - tractoring loot cans didn't turn off tractor when deleting empty can<br>
+        StaticData - Missing Spawn descriptions (server-side only)<br>
+        SystemBubble - Missing checks for bubble type (asteroid/ice/etc)<br>
+        SystemManager - Missing checks for rat spawning<br>
+        SpawnManager - Missing checks and not notifying other systems on changes<br>
+        BeltManager - Missing checks and not notifying other systems on changes<br>
+        Fixed few more segfaults and other errors found while testing fleet ratting/salvage<br><br>
 20Feb25 - Started NPC AI rewrite<br>
         Found and added many combat checks for NPCs<br>
         <font color=red>

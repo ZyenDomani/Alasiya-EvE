@@ -639,7 +639,7 @@ void DroneSE::StateChange() {
             du.targetID = (GetTargetID() == 0 ? PyStatic.NewNone() : new PyInt(GetTargetID()));
         PyTuple* up(du.Encode());
         if (m_bubble != nullptr)
-            m_bubble->BubblecastDestinyUpdate(&up, "destiny");
+            m_bubble->BubblecastDestinyUpdate(&up, "Drone State Change (online)");
     } else {
         PyList* list = new PyList();
             list->AddItemInt(m_self->itemID());
@@ -653,7 +653,7 @@ void DroneSE::StateChange() {
             up->SetItem(0, new PyString("OnDroneStateChange"));
             up->SetItem(1, list);
         if (m_bubble != nullptr)
-            m_bubble->BubblecastDestinyUpdate(&up, "destiny");
+            m_bubble->BubblecastDestinyUpdate(&up, "Drone State Change (offline)");
     }
 }
 
@@ -878,7 +878,7 @@ void DroneSE::SendBallData() {
         sbms.speed = m_self->GetAttribute(AttrMaxVelocity).get_double();
     updates.push_back(sbms.Encode());
     if (m_bubble != nullptr)
-        m_bubble->BubblecastDestinyUpdate(updates, "destiny");
+        m_bubble->BubblecastDestinyUpdate(updates, "Drone Ball Data");
 }
 
 

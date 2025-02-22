@@ -65,10 +65,8 @@ void BubbleManager::Process() {
 
     // this needs to be fast
     for (auto &cur : m_bubbles) {
-        // process each belt and gate bubble for spawns
-        // process each mission and incursion bubble  -placeholder
-        if (cur->IsBelt() or cur->IsGate() or cur->IsMission() or cur->IsIncursion())
-            cur->Process();
+        // process each bubble for spawns
+        cur->Process();
     }
 
     if (m_wanderTimer.Check()) {    //600s

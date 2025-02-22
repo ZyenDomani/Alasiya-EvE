@@ -939,8 +939,10 @@ PyResult DogmaIMBound::Handle_Deactivate(PyCallArgs& call)
 {
     //  return self.statemanager.Deactivate(self.itemID, self.effectName)
     //  dogmaLM.Deactivate(itemID, const.effectOnlineForStructures)
-    sLog.Warning("DogmaIMBound::Handle_Deactivate()", "size=%lu", call.tuple->size());
-    call.Dump(SHIP__MESSAGE);
+    if (is_log_enabled(SHIP__MESSAGE)) {
+        sLog.Warning("DogmaIMBound::Handle_Deactivate()", "size=%lu", call.tuple->size());
+        call.Dump(SHIP__MESSAGE);
+    }
 
     Client* pClient(call.client);
 

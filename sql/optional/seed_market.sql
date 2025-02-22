@@ -22,7 +22,7 @@ insert into tStations
 -- actual seeding
 INSERT INTO mktOrders (typeID, ownerID, regionID, stationID, price, volEntered, volRemaining, issued,
 minVolume, duration, solarSystemID, jumps)
-  SELECT typeID, corporationID, regionID, stationID, basePrice / security, 550, 550, 132478179209572976, 1, 250, solarSystemID, 1
+  SELECT typeID, corporationID, regionID, stationID, basePrice / security, 550, 550, 133846621040000000, 1, 250, solarSystemID, 1
   FROM tStations, invTypes inner join invGroups USING (groupID)
   WHERE invTypes.published = 1
   AND invGroups.categoryID IN (4, 5, 6, 7, 8, 9, 16, 17, 18, 22, 23, 24, 25, 32, 34, 35, 39, 40, 41, 42, 43, 46);
@@ -108,4 +108,13 @@ UPDATE mktOrders SET price = 100 WHERE price = 0;
 -- 	42  Planetary Resources
 -- 	43  Planetary Commodities
 -- 	46  Orbitals
+
+
+INSERT INTO mktOrders (typeID, ownerID, regionID, stationID, price, volEntered, volRemaining, issued,
+minVolume, duration, solarSystemID, jumps)
+  SELECT typeID, 1000160, 10000001, 60014137, basePrice / security, 550, 550, 133846621040000000, 1, 250, 30000053, 1
+  FROM invTypes 
+  WHERE invTypes.published = 1
+  AND invTypes.groupID = 12;
+UPDATE mktOrders SET price = 100 WHERE price = 0;
 

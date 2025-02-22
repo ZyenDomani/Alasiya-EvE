@@ -763,7 +763,7 @@ uint8 Character::InjectSkillIntoBrain(SkillRef skill) {
     SkillRef oldSkill = GetCharSkillRef(skill->typeID());
     if (oldSkill.get() != nullptr) {
         /** @todo: build and send proper UserError for CharacterAlreadyKnowsSkill. */
-        m_pClient->SendNotifyMsg("You already know this skill.");
+        //m_pClient->SendNotifyMsg("You already know this skill.");
         return 3;
     }
 
@@ -775,7 +775,7 @@ uint8 Character::InjectSkillIntoBrain(SkillRef skill) {
         /** @todo need to send back a response to the client.  need packet specs. */
         _log(SKILL__DEBUG, "%s(%u): Requested to inject %s (%u/%u) but prereq not complete.", \
                 name(), m_itemID, skill->name(), skill->typeID(), skill->itemID());
-        m_pClient->SendNotifyMsg("Injection failed.  Skill prerequisites incomplete.");
+        //m_pClient->SendNotifyMsg("Injection failed.  Skill prerequisites incomplete.");
         return 2;
     }
 

@@ -31,6 +31,33 @@
 
 #include "eve-core.h"
 
+namespace Bubble {
+    namespace Type {
+        enum {
+            Normal              = 0,    // bubble not specified below
+            Ice                 = 1,
+            Belt                = 2,
+            Gate                = 3,
+            Anomaly             = 4,
+            Mission             = 5,
+            Incursion           = 6,
+            Escalation          = 7
+            // should we classify pos here also?  what about poco?  station?
+        };
+    }
+    namespace Error {
+        enum {
+            None                 = 0,
+            BubbleNull           = 1,
+            BeltDisabled         = 2,
+            RoamingDisabled      = 3,
+            StaticDisabled       = 4,
+            Spawned              = 5,
+            PrepFail             = 6,
+            NotAllowed           = 7
+        };
+    }
+}
 
 class Client;
 class SetState;
@@ -61,18 +88,18 @@ public:
     void SetGate(uint32 gateID);
     void ResetBubbleRatSpawn();
 
-    bool IsIce()                                        { return m_ice; }
-    bool IsBelt()                                       { return m_belt; }
-    bool IsGate()                                       { return m_gate; }
-    bool IsAnomaly()                                    { return m_anomaly; }
-    bool IsMission()                                    { return m_mission; }
-    bool IsIncursion()                                  { return m_incursion; }
+    bool IsIce()                                        { return (m_type == Bubble::Type::Ice); }
+    bool IsBelt()                                       { return (m_type == Bubble::Type::Belt); }
+    bool IsGate()                                       { return (m_type == Bubble::Type::Gate); }
+    bool IsAnomaly()                                    { return (m_type == Bubble::Type::Anomaly); }
+    bool IsMission()                                    { return (m_type == Bubble::Type::Mission); }
+    bool IsIncursion()                                  { return (m_type == Bubble::Type::Incursion); }
     bool IsSpawned()                                    { return m_spawned; }
 
     // these are set in spawnMgr.
-    void SetAnomaly(bool set=true)                      { m_anomaly = set; }
-    void SetMission(bool set=true)                      { m_mission = set; }
-    void SetIncursion(bool set=true)                    { m_incursion = set; }
+    void SetAnomaly()                                   { m_type = Bubble::Type::Anomaly; }
+    void SetMission()                                   { m_type = Bubble::Type::Mission; }
+    void SetIncursion()                                 { m_type = Bubble::Type::Incursion; }
     void SetSpawned(bool set=true)                      { m_spawned = set; }
     void SetSpawnTimer(bool isBelt=false);
 
@@ -91,7 +118,7 @@ public:
     double y() const                                    { return m_center.y; }
     double z() const                                    { return m_center.z; }
     uint16 GetID()                                      { return m_bubbleID; }
-    uint32 GetSystemID()                                { return m_systemID; }
+    uint32 GetSystemID();
     GPoint GetCenter()                                  { return m_center; }
     ContainerSE* GetCenterMarker()                      { return m_centerSE; }
 
@@ -167,6 +194,7 @@ public:
     /* for command dropLoot - commands all npcs in bubble to jettison loot */
     void CmdDropLoot();
 
+
 protected:
     const GPoint m_center;
     const double m_radius;
@@ -192,16 +220,11 @@ private:
 
     // for spawn system     -allan 15July15
     Timer m_spawnTimer;
-    bool m_ice :1;
-    bool m_belt :1;
-    bool m_gate :1;
-    bool m_anomaly :1;
-    bool m_mission :1;
-    bool m_incursion :1;
     bool m_spawned :1;
 
+    uint8 m_type;                                       //Bubble::Type
+
     uint16 m_bubbleID;
-    uint32 m_systemID;
 
     std::map<uint32, Client*> m_players;                // testing with bubble player list (in std::map)
     std::map<uint32, DroneSE*> m_drones;                //we do not own these.

@@ -464,32 +464,55 @@ PyResult InvBrokerBound::Handle_TrashItems(PyCallArgs &call) {
     return nullptr;
 }
 
-/**     ***********************************************************************
- * @note   these do absolutely nothing at this time....
- */
-
 PyResult InvBrokerBound::Handle_AssembleCargoContainer(PyCallArgs &call) {
-    /* invMgr.AssembleCargoContainer(invItem.itemID, None, 0.0)
-     *
-     * 14:37:46 [BindDump]   Call Arguments:
-     * 14:37:46 [BindDump]       Tuple: 3 elements
-     * 14:37:46 [BindDump]         [ 0] Integer field: 140000489
-     * 14:37:46 [BindDump]         [ 1] (None)
-     * 14:37:46 [BindDump]         [ 2] Real field: 0.000000
-     *
-     * 14:37:46 L InvBrokerBound::Handle_AssembleCargoContainer(): [00msize= 3
-     * 14:37:46 [InvMsg]   Call Arguments:
-     * 14:37:46 [InvMsg]       Tuple: 3 elements
-     * 14:37:46 [InvMsg]         [ 0] Integer field: 140000489
-     * 14:37:46 [InvMsg]         [ 1] (None)
-     * 14:37:46 [InvMsg]         [ 2] Real field: 0.000000
-     */
+    // determine if these are in a stack, if so, split stack
+    //  set singleton and let code update client
+    int32 itemID = PyRep::IntegerValueI32(call.tuple->GetItem(0));
+    InventoryItemRef iRef = sItemFactory.GetItemRef(itemID);
+    if (iRef->quantity() > 1) {
+        InventoryItemRef newItem = iRef->Split(1);
+        if (newItem.get() == nullptr) {
+            _log(INV__ERROR, "IB::Handle_Add() - Error splitting item %u. Skipping.", iRef->itemID());
+            return nullptr;
+        }
 
-    sLog.Warning("InvBrokerBound::Handle_AssembleCargoContainer()", "size= %lu", call.tuple->size());
-    call.Dump(INV__DUMP);
+        iRef = newItem;
+    }
+
+    iRef->ChangeSingleton(true, true);
 
     return nullptr;
 }
+
+PyResult InvBrokerBound::Handle_SplitStack(PyCallArgs &call) {
+    /*
+    18:22:26 W InvBrokerBound::Handle_SplitStack(): size= 4
+    18:22:26 [InvDump]   Call Arguments:
+    18:22:26 [InvDump]      Tuple: 4 elements
+    18:22:26 [InvDump]       [ 0]    Integer: 60014140          << locationID
+    18:22:26 [InvDump]       [ 1]    Integer: 140024213         << itemID to split
+    18:22:26 [InvDump]       [ 2]    Integer: 100               << qty to take
+    18:22:26 [InvDump]       [ 3]    Integer: 98000001          << ownerID (corpID)
+    */
+
+    int32 locationID = PyRep::IntegerValueI32(call.tuple->GetItem(0));
+    int32 itemID = PyRep::IntegerValueI32(call.tuple->GetItem(1));
+    int32 qty = PyRep::IntegerValueI32(call.tuple->GetItem(2));
+    int32 ownerID = PyRep::IntegerValueI32(call.tuple->GetItem(3));
+
+    InventoryItemRef iRef = sItemFactory.GetItemRef(itemID);
+    if (iRef->ownerID() != ownerID)
+        return nullptr;
+
+    InventoryItemRef newItem = iRef->Split(qty);
+    newItem->Move(locationID, iRef->flag(), true);
+
+    return nullptr;
+}
+
+/**     ***********************************************************************
+ * @note   these do absolutely nothing at this time....
+ */
 
 PyResult InvBrokerBound::Handle_BreakPlasticWrap(PyCallArgs &call) {
     // ConfirmBreakCourierPackage   - this is for courier contracts
@@ -502,24 +525,6 @@ PyResult InvBrokerBound::Handle_BreakPlasticWrap(PyCallArgs &call) {
 PyResult InvBrokerBound::Handle_TakeOutTrash(PyCallArgs &call) {
     //self.invCache.GetInventory(const.containerHangar).TakeOutTrash([ invItem.itemID for invItem in invItems ])
     sLog.Warning("InvBrokerBound::Handle_TakeOutTrash()", "size= %lu", call.tuple->size());
-    call.Dump(INV__DUMP);
-
-    return nullptr;
-}
-
-PyResult InvBrokerBound::Handle_SplitStack(PyCallArgs &call) {
-    //
-    /*
-    18:22:26 W InvBrokerBound::Handle_SplitStack(): size= 4
-    18:22:26 [InvDump]   Call Arguments:
-    18:22:26 [InvDump]      Tuple: 4 elements
-    18:22:26 [InvDump]       [ 0]    Integer: 60014140          << locationID
-    18:22:26 [InvDump]       [ 1]    Integer: 140024213         << itemID to split
-    18:22:26 [InvDump]       [ 2]    Integer: 100               << qty to take
-    18:22:26 [InvDump]       [ 3]    Integer: 98000001          << ownerID (corpID)
-    */
-
-    sLog.Warning("InvBrokerBound::Handle_SplitStack()", "size= %lu", call.tuple->size());
     call.Dump(INV__DUMP);
 
     return nullptr;

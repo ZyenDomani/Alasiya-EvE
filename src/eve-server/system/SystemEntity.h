@@ -243,7 +243,7 @@ public:
     uint32                      GetCorporationID()      { return m_corpID; }
     uint32                      GetOwnerID()            { return m_ownerID; }
     uint32                      GetFleetID()            { return m_fleetID; }
-    void                        SetFleetID(uint32 set)  { m_fleetID = set; }
+    void                     SetFleetID(uint32 fleetID) { m_fleetID = fleetID; }
 
     int32                       GetHarmonic()           { return m_harmonic; }
     void                        SetHarmonic(int8 set)   { m_harmonic = set; }

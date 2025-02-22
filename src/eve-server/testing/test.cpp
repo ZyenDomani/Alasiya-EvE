@@ -8,6 +8,8 @@
   *
   */
 
+#include "iostream"
+
 #include "eve-server.h"
 #include "../../eve-core/math/Trig.h"
 
@@ -628,3 +630,24 @@ void testing::NumberTest() {
 }
 
 
+void testing::GetAgentPics() {
+    /* after not finding agent pictures and not wanting to keep hitting live,
+     *  i am tryin this....dl the pics from live once and store them on my server for disto
+     *  there's 10977 agents.  this may take a minute...
+     *
+     * http://images.evetech.net/Character/<charID>_64.jpg
+     */
+
+    std::vector<uint32> agentIDs;
+    DBQueryResult res;
+    DBResultRow row;
+    sDatabase.RunQuery(res, "SELECT agentID FROM agtAgents");
+    while (res.GetRow(row)) {
+        //SELECT agentID, locationID FROM agtAgents
+        agentIDs.push_back(row.GetInt(0));
+    }
+
+    for (auto &cur : agentIDs) {
+        std::cout << "wget http://images.evetech.net/Character/" << cur << "_256.jpg -P /srv/games/eve/Alasiya-EvE/image_cache/Agent/" << std::endl;
+    }
+}

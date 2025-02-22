@@ -37,10 +37,10 @@ public:
     // update SpawnMgr on npcs new location (change bubbles)
     void MoveSpawn(NPC* pNPC, SystemBubble* pBubble);
 
-    std::string GetSpawnClassName(int8 sClass);
-    std::string GetSpawnGroupName(int8 sGroup);
+    const char* GetSpawnClassName(int8 sClass);
+    const char* GetSpawnGroupName(int8 sGroup);
 
-    bool DoSpawnForBubble(SystemBubble* pBubble);
+    uint8 DoSpawnForBubble(SystemBubble* pBubble);
     void DoSpawnForAnomaly(SystemBubble* pBubble, uint8 spawnClass);
     void DoSpawnForMission(SystemBubble* pBubble, uint32 regionID);
     void DoSpawnForIncursion(SystemBubble* pBubble, uint32 regionID);
@@ -70,14 +70,6 @@ protected:
 
     uint16 GetRandTypeID(uint8 sClass);
 
-    typedef std::vector<NPC*> RatSpawningVec;
-    typedef std::vector<SystemBubble*> RatBubbleVec;
-    typedef std::vector<SpawnGroup> RatSpawnGroupVec;
-    typedef std::vector<RatSpawnClass> RatSpawnClassVec;
-    typedef std::vector<RatFactionGroups> RatFactionGroupsVec;
-    typedef std::map<uint8, uint16> RatFactionGroupsMap;    //map to enable 'find'  shipClass is key
-    typedef std::multimap<uint16, SpawnEntry> SpawnEntryDef;    //bubbleID is key
-    //typedef std::vector<uint32, SystemSpawnGroup> SystemSpawnGroupVec;  //systemID is key  *unused at this time*
 
 private:
     SystemManager* m_system;    //we do not own this
@@ -96,13 +88,13 @@ private:
 
     uint32 m_spawnID;       //in case i need to track a specific spawn group.
 
-    RatBubbleVec m_bubbles;
-    SpawnEntryDef m_spawns;
-    RatSpawningVec m_ratSpawns;
-    RatSpawnGroupVec m_toSpawn;
-    RatSpawnClassVec m_ratSpawnClass;               // not used
-    //SystemSpawnGroupVec m_spawnGroups;
-    RatFactionGroupsMap m_factionGroups;
+    std::vector<NPC*> m_ratSpawns;                      //vector of NPC* to spawn
+    std::vector<SpawnGroup> m_toSpawn;
+    std::map<uint8, uint16> m_factionGroups;            //shipClass/groupID
+    std::vector<RatSpawnClass>  m_ratSpawnClass;               // spawn class for ?
+    std::vector<RatFactionGroups> m_factionGroupVec;            // ?  not used
+    std::multimap<uint16, SpawnEntry> m_spawns;         //bubbleID/npc data  - each spawned npc has separate entry here
+    //std::vector<uint32, SystemSpawnGroup>  m_spawnGroups;
 };
 
 
