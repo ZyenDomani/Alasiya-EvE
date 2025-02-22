@@ -680,6 +680,14 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         snprintf(ci, sizeof(ci), "Docked: %s(%u)", GetName(), m_char->itemID());
         m_ship->SetCustomInfo(ci);
 
+        StationItemRef sRef = sEntityMgr.GetStationByID(m_locationID);
+        if (sRef.get() != nullptr) {
+            sRef->LoadStationOffice(GetCorporationID());
+            sRef->AddGuest(this);
+        } else {
+            SendErrorMsg("Error loading station. Try relogging or jumping to a new system.");
+        }
+
         m_char->Move(m_locationID, flagNone, true);
         m_ship->Move(m_locationID, flagHangar, true);
 
@@ -701,11 +709,6 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
 
         CharNowInStation();
         DestroyShipSE();
-        StationItemRef sRef = sEntityMgr.GetStationByID(m_locationID);
-        if (sRef.get() != nullptr) {
-            sRef->LoadStationOffice(GetCorporationID());
-            sRef->AddGuest(this);
-        }
         m_bubbleWait = true;     // deny client processing of subsequent destiny msgs
     } else {
         _log(PLAYER__WARNING, "MoveToLocation() - Character %s(%u) InSpace in %u. (setState %s, beyonce %s)", \
@@ -1652,7 +1655,12 @@ bool Client::IsHangarLoaded(uint32 hangarID) {
 void Client::LoadStationHangar(uint32 stationID) {
     _log(PLAYER__INFO, "Client::LoadStationHangar() is loading personal hangar for %s(%u) in stationID %u",  m_char->name(), m_char->itemID(), stationID);
     sItemFactory.SetUsingClient(this);
-    m_system->GetStationFromInventory(stationID)->GetMyInventory()->LoadContents();
+    StationItemRef sRef = m_system->GetStationFromInventory(stationID);
+    if (sRef.get() == nullptr) {
+        SendErrorMsg("Error loading station hangar.  Try undock/redock or relog.");
+    } else {
+        sRef->GetMyInventory()->LoadContents();
+    }
     sItemFactory.UnsetUsingClient();
 }
 
