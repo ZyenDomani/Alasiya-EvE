@@ -817,11 +817,18 @@ void DynamicSystemEntity::AwardBounty(Client* pClient)
     if (bounty < 1)
         return;
 
-    // add data to StatisticMgr
+    // add data to StatisticMgr  we are not including skill bonuses here, only base payouts
     sStatMgr.Add(Stat::npcBounties, bounty);
 
-    std::string reason = "Bounty for killing a pirate in ";
-    reason += pClient->GetSystemName();
+    if (IsNPCSE()) {
+        // DEDConnections adds 1k5 isk bonus per skillLvl
+        bounty += (1500 * pClient->GetChar()->GetSkillLevel(EvESkill::DEDConnections));
+    }
+
+    std::string reason = "Bounty for killing ";
+    reason += m_self->itemName();
+    reason += " in ";
+    reason += m_system->GetNameStr();
 
     BountyData data = BountyData();
     data.fromID = m_self->itemID();
@@ -830,7 +837,6 @@ void DynamicSystemEntity::AwardBounty(Client* pClient)
     data.fromKey = Account::KeyType::Cash;
     data.toKey = Account::KeyType::Cash;
     data.reason = reason;
-    data.amount = 0.0f;
 
     // handle distribution to fleets
     if (pClient->InFleet()) {
@@ -844,9 +850,10 @@ void DynamicSystemEntity::AwardBounty(Client* pClient)
             for (auto &cur :members)
                 m_system->AddBounty(cur, data);
         } else {
-            reason += " (FleetShare) ";
+            reason += " (FleetShare ";
             reason += " by ";
             reason += pClient->GetName();
+            reason += ")";
             data.reason = reason;
             for (auto &cur :members)
                 AccountService::TransferFunds(corpCONCORD, cur, bounty, reason.c_str(), Journal::EntryType::BountyPrize, -GetTypeID());

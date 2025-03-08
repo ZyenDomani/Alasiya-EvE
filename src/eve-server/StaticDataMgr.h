@@ -61,6 +61,7 @@ public:
     const char*         GetTypeName(uint16 typeID);     // not sure if this will be needed
     const char*         GetGroupName(uint16 grpID);
     const char*         GetCategoryName(uint8 catID);
+    const char*         GetCorpDivisionName(uint8 divisionID);
 
     void                GetAncestryBonuses(uint8 ancestryID, Char::AttrData& into);
     void                GetBloodlineBonuses(uint8 bloodlineID, Char::AttrData& into);
@@ -109,10 +110,20 @@ public:
     // return systemID for given stationID
     uint32              GetStationSystem(uint32 stationID);
 
+    // return regionID for given systemID
+    uint32              GetSystemRegion(uint32 stationID);
+    // return constellationID for given systemID
+    uint32              GetSystemConstellation(uint32 stationID);
+    // return vector of all systems in given region
+    void GetRegionSystems(uint32 regionID, std::vector<uint32>& into);
+    // return vector of all systems in given constellation
+    void GetConstellationSystems(uint32 constellationID, std::vector<uint32>& into);
+
+    // get system data for system via either systemID or stationID
+    bool                GetSolarSystemData(uint32 locationID, SolarSystemData &into);
+
     // not sure if we wanna put this in static data....503k items
     //bool                GetCelestialObjectData(uint32 celestialID, CelestialObjectData &into);
-    // get system data for given systemID
-    bool                GetSolarSystemData(uint32 sysID, SolarSystemData &into);
 
     uint8               GetStationCount(uint32 systemID);
     bool                GetStationList(uint32 systemID, std::vector< uint32 >& data);
@@ -145,10 +156,11 @@ public:
 
     const char*         GetFlagName(uint16 flag);
     const char*         GetFlagName(EVEItemFlags flag);
-
     const char*         GetRigSizeName(uint8 size);
 
+    uint32              GetAgentCorpID(uint32 agentID);
     PyInt*              GetAgentSystemID(int32 agentID);
+    const char*         GetAgentTypeName(uint8 typeID);
 
     // this will return owner's name from any type of ID...system, region, station, player item, etc.
     std::string         GetOwnerName(int32 ownerID);
@@ -160,6 +172,13 @@ public:
     // methods to verify valid locationID
     bool                IsStation(uint32 stationID=0);
     bool                IsSolarSystem(uint32 systemID=0);
+
+    // solar system methods for map system
+    bool                IsHubSystem(uint32 systemID=0);       // Hub: 3+ connections to this system
+    bool                IsFringeSystem(uint32 systemID=0);    // Fringe: 1 connection to this system (dead end system)
+    bool                IsCorridorSystem(uint32 systemID=0);  // Corridor: 2 connections to this system (in one side and out the other)
+    bool                IsRegionSystem(uint32 systemID=0);    // Regional: borders another region
+    bool                IsConSystem(uint32 systemID=0);       // Constellation: borders another constellation
 
     // common place for *FULL* DBRowDescriptor Header creation.
     //  this way all users have the exact same data
@@ -190,6 +209,7 @@ private:
     std::map<uint32, uint32>                            m_regions;          // regionID/ownerFactionID
     std::map<uint32, uint32>                            m_ratRegions;       // regionID/ratFactionID
     std::map<uint32, SystemData>                        m_systemData;       // systemID/data
+    std::map<uint32, uint32>                            m_agentCorp;        // agentID/corpID
     std::map<uint32, uint32>                            m_agentSystem;      // agentID/systemID
     std::map<uint32, std::string>                       m_factionName;      // factionID/name
     std::map<uint32, std::string>                       m_corpName;         // corpID/name
@@ -197,8 +217,10 @@ private:
     std::map<uint32, uint8>                             m_stationCount;     // systemID/count
     std::map<uint32, std::vector<uint32>>               m_stationList;      // systemID/data<stationID>
     std::map<uint32, uint32>                            m_stationRegion;    // stationID/regionID
-    std::map<uint32, uint32>                            m_stationConst;     // stationID/systemID
+    std::map<uint32, uint32>                            m_stationConst;     // stationID/constellationID
     std::map<uint32, uint32>                            m_stationSystem;    // stationID/systemID
+    std::map<uint32, uint32>                            m_systemRegion;     // systemID/regionID
+    std::map<uint32, uint32>                            m_systemConst;      // systemID/constellationID
     std::map<uint32, SolarSystemData>                   m_solSysData;       // systemID/data
     std::map<uint32, uint8>                             m_factionRaces;     // factionID/raceID
     std::map<uint16, EvERam::bpTypeData>                m_bpTypeData;       // typeID/data
@@ -214,6 +236,8 @@ private:
     std::multimap<std::string, OreTypeChance>           m_oreBySecClass;    // systemSecClass/data
 
     std::multimap<uint16, Inv::DmgTypeAttribute>        m_typeAttrMap;      // typeID/data
+    std::multimap<uint32, uint32>                       m_constSystems;     // constID/systemID
+    std::multimap<uint32, uint32>                       m_regionSystems;    // regionID/systemID
 
     /* spawn data */
     // roid rats

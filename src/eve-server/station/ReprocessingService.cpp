@@ -42,6 +42,7 @@
 #include "PyServiceCD.h"
 #include "packets/Manufacturing.h"
 #include "manufacturing/RamMethods.h"
+#include "standing/StandingMgr.h"
 #include "station/ReprocessingService.h"
 #include "Station.h"
 #include "system/SystemManager.h"
@@ -131,8 +132,8 @@ PyResult ReprocessingServiceBound::Handle_GetOptionsForItemTypes(PyCallArgs &cal
 PyResult ReprocessingServiceBound::Handle_GetReprocessingInfo(PyCallArgs &call) {
     Client *pClient = call.client;
     Rsp_GetReprocessingInfo rsp;
-        rsp.standing = GetStanding(pClient);
-        rsp.tax = CalcTax( rsp.standing );
+        rsp.standing = sStandingMgr.GetEffectiveStanding(m_stationCorpID, pClient->GetChar().get());
+        rsp.tax = CalcTax(rsp.standing);
         rsp.yield = m_staEfficiency;
         rsp.combinedyield = CalcReprocessingEfficiency(pClient);
     return rsp.Encode();
@@ -336,16 +337,8 @@ PyRep *ReprocessingServiceBound::GetQuote(uint32 itemID, Client* pClient) {
 }
 
 /** @todo  should this be moved to standings code?   yes!! */
-float ReprocessingServiceBound::GetStanding(const Client* pClient) const
-{
-    float standing = StandingDB::GetStanding(m_stationCorpID, pClient->GetCharacterID());
-    if (standing < 0.0f) {
-        standing += ((10.0f + standing) * 0.04f * pClient->GetChar()->GetSkillLevel(EvESkill::Diplomacy));
-    } else {
-        standing += ((10.0f - standing) * 0.04f * pClient->GetChar()->GetSkillLevel(EvESkill::Connections));
-    }
-
-    return EvE::max(standing, StandingDB::GetStanding(m_stationCorpID, pClient->GetCorporationID()));
+float ReprocessingServiceBound::GetStanding(const Client* pClient) const {
+    return sStandingMgr.GetEffectiveStanding(m_stationCorpID, pClient->GetChar().get());
 }
 
 // this should be moved to eve math or eve calc's or w/e

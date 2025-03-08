@@ -97,6 +97,8 @@ public:
 
     static void SetCharacterOnlineStatus(uint32 char_id, bool online=false);
 
+    static void GetMissionTracking(DBQueryResult &res, uint32 charID);
+
     static PyRep* List(uint32 ownerID);
     static PyRep* ListStations(uint32 ownerID, std::ostringstream& flagIDs, bool forCorp=false, bool bpOnly=false);
     static PyRep* ListStationItems(uint32 ownerID, uint32 stationID);

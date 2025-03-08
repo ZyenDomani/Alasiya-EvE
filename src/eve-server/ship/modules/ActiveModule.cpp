@@ -1399,6 +1399,7 @@ void ActiveModule::SendShipEffect(bool start/*false*/, bool abortCycle/*false*/)
             shipEff.error = tuple;
         } else if (m_needsTarget and (m_targetSE == nullptr)) {
             /*   these both give client warning -  [no messageID: 258855]
+             * found fix for this in agent code...send message path as string
             if (IsValidTarget(m_targetID)) {
                 PyDict* dict = new PyDict();
                     dict->SetItemString("moduleID", new PyInt(m_modRef->itemID()));

@@ -24,6 +24,7 @@
 #include "EVEServerConfig.h"
 #include "character/Character.h"
 #include "manufacturing/FactoryDB.h"
+#include "standing/StandingMgr.h"
 
 /** @todo  is there is a better way to do this??  */
 bool FactoryDB::IsProducableBy(const uint32 assemblyLineID, const ItemType *pType) {
@@ -453,8 +454,8 @@ bool FactoryDB::GetAssemblyLineProperties(const uint32 assemblyLineID, Character
     uint32 factionID(sDataMgr.GetCorpFaction(row.GetInt(5)));
     if (isCorpJob) {
         // this is only for PC corps.  take higher of (npc faction to pc corp)/2 or npc corp to pc corp
-        float cStanding(StandingDB::GetStanding(row.GetInt(5), pChar->corporationID()));
-        float fStanding(StandingDB::GetStanding(factionID, pChar->corporationID()));
+        float cStanding(sStandingMgr.GetRawStanding(row.GetInt(5), pChar->corporationID()));
+        float fStanding(sStandingMgr.GetRawStanding(factionID, pChar->corporationID()));
         fStanding /= 2;
         // this works for negative standings also
         if (cStanding > fStanding) {
@@ -465,10 +466,11 @@ bool FactoryDB::GetAssemblyLineProperties(const uint32 assemblyLineID, Character
 
         /** @todo  this shit will have to be verified for negative standings */
         // modify end result by 2.5% for char standings with station owner
-        standing *= (1 - (0.025f * StandingDB::GetStanding(row.GetInt(5), pChar->itemID())));
+        //TODO:  wtf am i doing here?  why??
+        standing *= (1 - (0.025f * sStandingMgr.GetRawStanding(row.GetInt(5), pChar->itemID())));
     } else {
         // else take personal standings with station corp only
-        standing = StandingDB::GetStanding(row.GetInt(5), pChar->itemID());
+        standing = sStandingMgr.GetEffectiveStanding(row.GetInt(5), pChar);
     }
 
     if (standing < 0) {

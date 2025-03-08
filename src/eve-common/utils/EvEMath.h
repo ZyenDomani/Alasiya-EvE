@@ -54,11 +54,9 @@ namespace EvEMath {
 
     namespace Agent {
         float EffectiveQuality(int8 AgentQuality, uint8 NegotiationSkillLevel, float AgentPersonalStanding);
-        float EffectiveStanding(float YourStanding, double standingBonus);
+        float EffectiveStanding( float YourStanding, float standingBonus );
         float RequiredStanding(uint8 AgentLevel, int8 AgentQuality);
-        float MissionStandingIncrease( float BaseMissionIncrease, uint8 YourSocialSkillLevel);
-        float Efficiency(uint8 AgentLevel, int8 AgentQuality);
-        float AgentStandingIncrease(float CurrentStanding, float PercentIncrease);
+        float StandingChange(uint8 AgentLevel, int8 AgentQuality);
         float GetStandingBonus(float fromStanding, uint32 fromFactionID, uint8 ConnectionsSkillLevel, uint8 DiplomacySkillLevel, uint8 CriminalConnectionsSkillLevel);
     }
 

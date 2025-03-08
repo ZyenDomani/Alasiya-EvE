@@ -285,11 +285,6 @@ public:
     void                    SetLogonMinutes();
 
     //  Standings functions
-    //  fromID = char|agent|corp|faction|alliance   toID = me|myCorp|myAlliance.
-    float                   GetStandingModified(uint32 fromID, uint32 toID=0);    // this IS adjusted for skills
-    //  fromID = char|agent|corp|faction|alliance   toID = me|myCorp|myAlliance.
-    float                   GetNPCCorpStanding(uint32 fromID, uint32 toID=0);
-    void                    SetStanding(uint32 fromID, uint32 toID, float standing);
     void                    FleetShareMissionRewards();
     void                    FleetShareMissionStandings(float newStanding);
 
@@ -320,6 +315,14 @@ public:
     void SetCharAttrBonus();
     PyResult GetCharacterBaseAttributes();
 
+    // populates map with corp, level, count for mission tracking
+    void LoadMissionTracking();
+    // increments count for corp and level
+    void AddMissionTracking(uint32 corpID, uint8 level);
+    // reset current count for mission tracking.  this will set count to 0 for corpID and level
+    void ResetMissionCount(uint32 corpID, uint8 level);
+    // has char completed 15 normal missions and ready for important?
+    bool RdyForImportantMission(uint32 corpID, uint8 level);
 
 protected:
     Character(
@@ -410,7 +413,7 @@ private:
     std::map<uint8, InventoryItemRef>  m_implantAttribMap;      // attribID/itemRef
     std::map<uint8, InventoryItemRef>  m_boosterMap;            // slotID/itemRef
     // for storyline mission counting
-    std::map<uint32, std::map<uint8, uint8>> m_missionMap;      // factionID, [level, count]
+    std::map<uint32, std::map<uint8, uint8>> m_missionLevelMap; // corpID, [level, count]
 };
 
 #endif /* !__CHARACTER__H__INCL__ */

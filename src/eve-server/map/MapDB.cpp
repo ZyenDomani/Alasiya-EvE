@@ -278,13 +278,6 @@ PyRep *MapDB::GetDynamicData(uint8 type, uint8 time) {
     return DBResultToRowset(res);
 }
 
-// for MapData class
-void MapDB::GetSystemJumps(DBQueryResult& res)
-{
-    //sDatabase.RunQuery(res, "SELECT ctype, fromreg, fromcon, fromsol, tosol, tocon, toreg FROM mapConnections");
-    sDatabase.RunQuery(res, "SELECT ctype, fromsol, tosol FROM mapConnections");
-}
-
 // methods and queries for Solar System Status page -- updated/moved 26Nov18
 void MapDB::SystemStartup()
 {
@@ -358,4 +351,11 @@ void MapDB::AddPodKill(uint32 sysID) {
 void MapDB::ManipulateTimeData()
 {
     // nothing to do here
+}
+
+// for MapData class
+void MapDB::GetSystemJumps(DBQueryResult& res)
+{
+    //sDatabase.RunQuery(res, "SELECT ctype, fromreg, fromcon, fromsol, tosol, tocon, toreg FROM mapConnections");
+    sDatabase.RunQuery(res, "SELECT ctype, fromsol, tosol FROM mapConnections");
 }

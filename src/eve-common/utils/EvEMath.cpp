@@ -143,41 +143,28 @@ float EvEMath::Refine::EffectiveRefiningYield(float EquipmentYield, uint8 Refini
 
 
 // Agent Equations
-float EvEMath::Agent::EffectiveQuality(int8 AgentQuality, uint8 NegotiationLevel, float AgentPersonalStanding)
-{
+float EvEMath::Agent::EffectiveQuality(int8 AgentQuality, uint8 NegotiationLevel, float AgentPersonalStanding) {
     return (AgentQuality + (5.0f * NegotiationLevel) + AgentPersonalStanding);
 }
 
-float EvEMath::Agent::EffectiveStanding(float YourStanding, double standingBonus)
-{
+float EvEMath::Agent::EffectiveStanding(float YourStanding, float standingBonus) {
     return (1.0f - (1.0f - YourStanding / 10.0f) * (1.0f - standingBonus / 10.0f)) * 10.0f;
 }
 
-float EvEMath::Agent::RequiredStanding( uint8 AgentLevel, int8 AgentQuality )
-{
-    return (((AgentLevel - 1.0f) * 2.0f) + (AgentQuality/20.0f));
+float EvEMath::Agent::RequiredStanding(uint8 AgentLevel, int8 AgentQuality) {
+    //new client formula:   m = (level - 1) * 2.0 - 1.0
+    return (((AgentLevel - 1.0f) * 2.0f) + (AgentQuality / 20.0f));
 }
 
-float EvEMath::Agent::MissionStandingIncrease( float BaseMissionIncrease, uint8 YourSocialSkillLevel )
-{
-    return (BaseMissionIncrease * (1.0f + 0.05f * YourSocialSkillLevel));
-}
-
-float EvEMath::Agent::Efficiency( uint8 AgentLevel, int8 AgentQuality )
-{
-    return (0.01f * ((8.0f * AgentLevel) + (0.1f * AgentQuality) - 4.0f));
-}
-
-float EvEMath::Agent::AgentStandingIncrease(float CurrentStanding, float PercentIncrease)
-{
-    return (((10.0f - CurrentStanding) * PercentIncrease) + CurrentStanding);
+float EvEMath::Agent::StandingChange(uint8 AgentLevel, int8 AgentQuality) {
+    return (0.001f * ((8.0f * AgentLevel) + (0.1f * AgentQuality) - 4.0f));
 }
 
 float EvEMath::Agent::GetStandingBonus(float fromStanding, uint32 fromFactionID, uint8 ConnectionsSkillLevel, uint8 DiplomacySkillLevel, uint8 CriminalConnectionsSkillLevel)
 {
     float bonus(0.0f);
     if (fromStanding < 0.0f) {
-        bonus = DiplomacySkillLevel * 0.4f;
+        bonus = DiplomacySkillLevel * 0.04f;
     } else if (fromStanding > 0.0f) {
         switch (fromFactionID) {
             case 500010:
@@ -185,10 +172,10 @@ float EvEMath::Agent::GetStandingBonus(float fromStanding, uint32 fromFactionID,
             case 500012:
             case 500019:
             case 500020: {
-                bonus = CriminalConnectionsSkillLevel * 0.4f;
+                bonus = CriminalConnectionsSkillLevel * 0.04f;
             } break;
             default: {
-                bonus = ConnectionsSkillLevel * 0.4f;
+                bonus = ConnectionsSkillLevel * 0.04f;
             } break;
         }
     }

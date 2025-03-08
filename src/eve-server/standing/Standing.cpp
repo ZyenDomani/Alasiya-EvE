@@ -63,6 +63,7 @@ Standing::~Standing() {
     delete m_dispatch;
 }
 
+//TODO:  update these to use standingMgr..may not be able to...these require DBResultToCRowset()
 PyResult Standing::Handle_GetCharStandings(PyCallArgs &call) {
     return m_db.GetCharStandings(call.client);
 }
@@ -126,7 +127,7 @@ PyResult Standing::Handle_GetStandingTransactions(PyCallArgs &call) {
 }
 
 PyResult Standing::Handle_GetStandingCompositions(PyCallArgs &call) {
-/**  no clue what this is yet
+/**  no clue what this is yet, but we sending shit anyway
                 self.sr.data = sm.RemoteSvc('standing2').GetStandingCompositions(fromID, toID)
             if self.sr.data:
                 prior = 0.0

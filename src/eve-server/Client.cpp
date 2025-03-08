@@ -1637,17 +1637,26 @@ std::string Client::GetStateName(int8 state)
     return "Undefined";
 }
 
-void Client::AddStationHangar(uint32 stationID) {
-    m_hangarLoaded.insert(std::make_pair(stationID, true));
+void Client::AddLoadedHangar(uint32 hangarID) {
+    m_stationHangars[hangarID] = true;
 }
 
 void Client::RemoveStationHangar(uint32 hangarID) {
-    m_hangarLoaded.erase(hangarID);
+    m_stationHangars.erase(hangarID);
+}
+
+void Client::SetHangarLoaded(uint32 hangarID, bool set) {
+    std::map<uint32, bool>::iterator itr = m_stationHangars.find(hangarID);
+    if (itr != m_stationHangars.end()) {
+        itr->second = set;
+    } else {
+        m_stationHangars[hangarID] = set;
+    }
 }
 
 bool Client::IsHangarLoaded(uint32 hangarID) {
-    std::map<uint32, bool>::const_iterator itr = m_hangarLoaded.find(hangarID);
-    if (itr != m_hangarLoaded.end())
+    std::map<uint32, bool>::const_iterator itr = m_stationHangars.find(hangarID);
+    if (itr != m_stationHangars.end())
         return itr->second;
     return false;
 }

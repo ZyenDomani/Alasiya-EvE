@@ -43,10 +43,12 @@ public:
     PyRep* GetCharStandings(Client* pClient);
     static PyRep* GetSystemSovInfo(uint32 systemID);
     PyRep* PrimeCharStandings(uint32 charID);
-    PyRep* GetCharNPCStandings(uint32 charID);
     PyRep* GetStandingTransactions(Call_GetStandingTransactions &args);
     PyRep* GetStandingCompositions(uint32 fromID, uint32 toID);
 
+
+    // quick data access for standings manager
+    static void GetAllStandings(DBQueryResult& res);
 
     /*  all standings are in same table now, but follow identical rules
      * NPC Faction<-->NPC Faction - populated, hard-coded  -- cant change
@@ -56,11 +58,10 @@ public:
      * character<-->character, character-->corporation  -- changed thru PnP window
      * NPC corp-->char, NPC corp-->PC corp  -- changed by missions and faction kills
      */
-    static float GetStanding(uint32 fromID, uint32 toID);
 
     static void SetStanding(uint32 fromID, uint32 toID, float standing);
     static void UpdateStanding(uint32 fromID, uint32 toID, float standing);
-    static void SaveStandingChanges(uint32 fromID, uint32 toID, uint16 eventType, float amount, std::string msg);
+    static void SaveStandingChanges(uint32 fromID, uint32 toID, uint16 eventType, float pctChange, std::string msg);
 
     static PyRep* GetMyStandings(uint32 charID);
 };

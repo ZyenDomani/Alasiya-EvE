@@ -294,15 +294,20 @@ struct SolarSystemData {
     bool corridor=false;
     bool hub=false;
     bool international=false;
-    bool regional=false;
+    bool region=false;
     bool constellation=false;
+    uint32 systemID=0;
+    uint32 constellationID=0;
+    uint32 regionID=0;
     uint32 factionID=0;
     uint32 sunTypeID=0;
-    double security=0.0;
+    float security=0.0f;
     double radius=0.0;
     double luminosity=0.0;
+    GPoint position = NULL_ORIGIN;
     GPoint minPosition = NULL_ORIGIN;
     GPoint maxPosition = NULL_ORIGIN;
+    std::string name="none";
     std::string securityClass="none";
 };
 struct SystemKillData {

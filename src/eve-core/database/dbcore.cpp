@@ -631,7 +631,16 @@ bool DBResultRow::GetBool(uint32 index) const {
         return false;
     }
 
-    return (mRow[index][0] != 0);
+    if (IsNull(index))
+        return false;
+
+    long int res = strtol(mRow[index], nullptr, 0);
+    if (res == 0)
+        return false;
+    if (res != 0)
+        return true;
+
+    return false;
 }
 
 uint8 DBResultRow::GetUInt8(uint32 index) const {

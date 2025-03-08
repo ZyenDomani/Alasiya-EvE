@@ -65,7 +65,8 @@ actions = {24: localization.GetByLabel('UI/RedeemWindow/RedeamMessages/GIFTFROMC
  //  -allan 21Mar14
   enum {  //thanks positron96 for this query
       //  ***** NOTE:  items marked with '//*' are not published  (incomplete)
-
+// default init value for raii
+     None                      = 0,
 // Corporation Management
      CorporationManagement      = 3363,
      StationManagement      = 3364,

@@ -349,7 +349,7 @@ void SystemDB::GetLootGroupTypes(DBQueryResult& res) {
 bool SystemDB::GetCelestialObjectData(uint32 celestialID, CelestialObjectData &into) {
     DBQueryResult res;
 
-    if ( IsStaticMapItem(celestialID)) {
+    if (IsStaticMapItem(celestialID)) {
         // This Celestial object is a static celestial, so get its data from the 'mapDenormalize' table:
         if (!sDatabase.RunQuery(res,
             "SELECT"
@@ -399,50 +399,6 @@ bool SystemDB::GetCelestialObjectData(uint32 celestialID, CelestialObjectData &i
         into.celestialIndex = 0;
         into.orbitIndex = 0;
     }
-
-    return true;
-}
-
-bool SystemDB::GetSolarSystemData(uint32 solarSystemID, SolarSystemData &into) {
-    DBQueryResult res;
-
-    if (!sDatabase.RunQuery(res,
-        "SELECT"
-        "  xMin, yMin, zMin,"
-        "  xMax, yMax, zMax,"
-        "  luminosity,"
-        "  border, fringe, corridor, hub, international, regional, constellation,"
-        "  security, factionID, radius, sunTypeID, securityClass"
-        " FROM mapSolarSystems"
-        " WHERE solarSystemID=%u", solarSystemID))
-    {
-        codelog(DATABASE__ERROR, "Error in GetSolarSystem query for system %u: %s.", solarSystemID, res.error.c_str());
-        return false;
-    }
-
-    DBResultRow row;
-    if (!res.GetRow(row)) {
-        _log(DATABASE__MESSAGE, "No data found for solar system %u.", solarSystemID);
-        return false;
-    }
-
-    into.minPosition = GPoint(row.GetDouble(0), row.GetDouble(1), row.GetDouble(2));
-    into.maxPosition = GPoint(row.GetDouble(3), row.GetDouble(4), row.GetDouble(5));
-    into.luminosity = row.GetDouble(6);
-
-    into.border = row.GetBool(7);
-    into.fringe = row.GetBool(8);
-    into.corridor = row.GetBool(9);
-    into.hub = row.GetBool(10);
-    into.international = row.GetBool(11);
-    into.regional = row.GetBool(12);
-    into.constellation = row.GetBool(13);
-
-    into.security = row.GetDouble(14);
-    into.factionID = (row.IsNull(15) ? 0 : row.GetUInt(15));
-    into.radius = row.GetDouble(16);
-    into.sunTypeID = row.GetUInt(17);
-    into.securityClass = (row.IsNull(18) ? (std::string("")) : row.GetText(18));
 
     return true;
 }

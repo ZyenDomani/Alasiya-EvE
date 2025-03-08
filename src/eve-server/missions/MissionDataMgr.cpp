@@ -5,6 +5,7 @@
   *
   * @Author:        Allan
   * @date:      24 June 2018
+  * @update:    02 March 2025
   *
   * @note:  MemMgmt data:
   *     no leaks with 0 clients - 12Mar23
@@ -30,8 +31,11 @@ MissionDataMgr::MissionDataMgr()
 
 MissionDataMgr::~MissionDataMgr() {
     SafeDelete(KillPNG);
+    SafeDelete(TalkPNG);
+    SafeDelete(SmashPNG);
     SafeDelete(MiningPNG);
     SafeDelete(CourierPNG);
+    SafeDelete(InteractPNG);
 }
 
 void MissionDataMgr::Clear() {
@@ -43,21 +47,18 @@ void MissionDataMgr::Clear() {
     m_missions.clear();
 }
 
-int MissionDataMgr::Initialize()
-{
+int MissionDataMgr::Initialize() {
     Populate();
     sLog.Blue("   MissionDataMgr", "Mission Data Manager Initialized.");
     return 1;
 }
 
-void MissionDataMgr::GetInfo()
-{
+void MissionDataMgr::GetInfo() {
     // nothing to do here
 }
 
 // called every minute from EntityMgr::Process()
-void MissionDataMgr::Process()
-{
+void MissionDataMgr::Process() {
     // process open offers every 10m
     if (++m_procCount > 10) {
         m_procCount = 0;
@@ -100,17 +101,17 @@ void MissionDataMgr::Process()
 }
 
 
-void MissionDataMgr::Populate()
-{
+void MissionDataMgr::Populate() {
     double start = GetTimeMSeconds();
     double begin = GetTimeMSeconds();
 
+    InteractPNG = new PyString("<img src='res:/UI/netres/mission_content/agent_interaction.png' align=center hspace=4 vspace=4>");
     CourierPNG = new PyString("<img src='res:/UI/netres/mission_content/couriermission.png' align=center hspace=4 vspace=4>");
     MiningPNG = new PyString("<img src='res:/UI/netres/mission_content/miningmission.png' align=center hspace=4 vspace=4>");
     KillPNG = new PyString("<img src='res:/UI/netres/mission_content/killmission.png' align=center hspace=4 vspace=4>");
+    TalkPNG = new PyString("<img src='res:/UI/netres/mission_content/agent_talkto.png' align=center hspace=4 vspace=4>");
+    SmashPNG = new PyString("<img src='res:/UI/netres/mission_content/smash_and_grab.png' align=center hspace=4 vspace=4>");
     /*  not sure if these are used/needed....
-    PNG = new PyString("<img src='res:/UI/netres/mission_content/agent_interaction.png' align=center hspace=4 vspace=4>");
-    PNG = new PyString("<img src='res:/UI/netres/mission_content/agent_talkto.png' align=center hspace=4 vspace=4>");
     PNG = new PyString("<img src='res:/UI/netres/mission_content/arc_amarr.png' align=center hspace=4 vspace=4>");
     PNG = new PyString("<img src='res:/UI/netres/mission_content/arc_caldari.png' align=center hspace=4 vspace=4>");
     PNG = new PyString("<img src='res:/UI/netres/mission_content/arc_gallente.png' align=center hspace=4 vspace=4>");
@@ -118,7 +119,6 @@ void MissionDataMgr::Populate()
     PNG = new PyString("<img src='res:/UI/netres/mission_content/arc_npe.png' align=center hspace=4 vspace=4>");
     PNG = new PyString("<img src='res:/UI/netres/mission_content/blood_stained.png' align=center hspace=4 vspace=4>");
     PNG = new PyString("<img src='res:/UI/netres/mission_content/angels_and_artifacts.png' align=center hspace=4 vspace=4>");
-    PNG = new PyString("<img src='res:/UI/netres/mission_content/smash_and_grab.png' align=center hspace=4 vspace=4>");
     */
 
     sLog.Cyan("   MissionDataMgr", "Loading Mission Data.  Loaded counts are '#normal(#important)'.");
@@ -128,29 +128,27 @@ void MissionDataMgr::Populate()
 
     MissionDB::LoadCourierData(*res);
     while (res->GetRow(row)) {
-        //SELECT id, briefingID, name, level, typeID, important, storyline, itemTypeID, itemQty, rewardISK, rewardItemID, rewardItemQty, bonusISK, bonusTime, sysRange, raceID FROM qstCourier
-        CourierData data = CourierData();
-        data.missionID     = row.GetInt(0);
-        data.briefingID    = row.GetInt(1);
-        data.name          = row.GetText(2);
-        data.level         = row.GetInt(3);
-        data.typeID        = row.GetInt(4);
-        data.important     = row.GetBool(5);
-        data.storyline     = row.GetBool(6);
-        data.itemTypeID    = row.GetInt(7);
-        data.itemQty       = row.GetInt(8);
-        data.itemVolume    = row.GetFloat(9);
-        data.rewardISK     = row.GetInt(10);
-        data.rewardItemID  = row.GetInt(11);
-        data.rewardItemQty = row.GetInt(12);
-        data.bonusISK      = row.GetInt(13);
-        data.bonusTime     = row.GetInt(14);
-        data.range         = row.GetInt(15);
-        data.raceID        = row.GetInt(16);
+        //SELECT q.id, q.briefingID, q.name, q.level, q.typeID, q.important, q.storyline, q.itemTypeID, q.itemQty, it.volume,
+        //q.rewardItemID, q.rewardItemQty, q.bonusTime, q.raceID" FROM qstCourier
+        CourierData data        = CourierData();
+        data.missionID          = row.GetUInt(0);
+        data.briefingID         = row.GetUInt(1);
+        data.name               = row.GetText(2);
+        data.level              = row.GetUInt8(3);
+        data.typeID             = row.GetUInt8(4);
+        data.important          = row.GetBool(5);
+        data.storyline          = row.GetBool(6);
+        data.itemTypeID         = row.GetUInt(7);
+        data.itemQty            = row.GetUInt(8);
+        data.itemVolume         = row.GetFloat(9);
+        data.rewardItemID       = row.GetUInt(10);
+        data.rewardItemQty      = row.GetUInt(11);
+        data.bonusTime          = row.GetUInt(12);
+        data.raceID             = row.GetUInt8(13);
         if (data.important) {
-            m_courierImp.emplace(row.GetInt(3), data);
+            m_courierImp.emplace(row.GetUInt8(3), data);
         } else {
-            m_courier.emplace(row.GetInt(3), data);
+            m_courier.emplace(row.GetUInt8(3), data);
         }
     }
     sLog.Cyan("   MissionDataMgr", "%lu(%lu) Courier Mission Data Sets loaded in %.3fms.", m_courier.size(), m_courierImp.size(),(GetTimeMSeconds() - start));
@@ -159,83 +157,82 @@ void MissionDataMgr::Populate()
     start = GetTimeMSeconds();
     MissionDB::LoadMiningData(*res);
     while (res->GetRow(row)) {
-        //SELECT id, briefingID, name, level, typeID, important, storyline, itemTypeID, itemQty, rewardISK, rewardItemID, rewardItemQty, bonusISK, bonusTime, sysRange, raceID FROM qstMining
-        CourierData data = CourierData();
-        data.missionID     = row.GetInt(0);
-        data.briefingID    = row.GetInt(1);
-        data.name          = row.GetText(2);
-        data.level         = row.GetInt(3);
-        data.typeID        = row.GetInt(4);
-        data.important     = row.GetBool(5);
-        data.storyline     = row.GetBool(6);
-        data.itemTypeID    = row.GetInt(7);
-        data.itemQty       = row.GetInt(8);
-        data.itemVolume    = row.GetFloat(9);
-        data.rewardISK     = row.GetInt(10);
-        data.rewardItemID  = row.GetInt(11);
-        data.rewardItemQty = row.GetInt(12);
-        data.bonusISK      = row.GetInt(13);
-        data.bonusTime     = row.GetInt(14);
-        data.range         = row.GetInt(15);
-        data.raceID        = row.GetInt(16);
-        if (data.important) {
-            m_miningImp.emplace(row.GetInt(3), data);
-        } else {
-            m_mining.emplace(row.GetInt(3), data);
-        }
+        //SELECT q.id, q.briefingID, q.name, q.level, q.typeID, q.itemTypeID, q.itemQty, it.volume,
+        //q.rewardItemID, q.rewardItemQty, q.bonusTime FROM qstMining
+        CourierData data        = CourierData();
+        data.missionID          = row.GetUInt(0);
+        data.briefingID         = row.GetUInt(1);
+        data.name               = row.GetText(2);
+        data.level              = row.GetUInt8(3);
+        data.typeID             = row.GetUInt8(4);
+        data.itemTypeID         = row.GetUInt(5);
+        data.itemQty            = row.GetUInt(6);
+        data.itemVolume         = row.GetFloat(7);
+        data.rewardItemID       = row.GetUInt(8);
+        data.rewardItemQty      = row.GetUInt(9);
+        data.bonusTime          = row.GetUInt(10);
+        m_mining.emplace(row.GetUInt8(3), data);
     }
-    sLog.Cyan("   MissionDataMgr", "%lu(%lu) Mining Mission Data Sets loaded in %.3fms.", m_mining.size(), m_miningImp.size(), (GetTimeMSeconds() - start));
+    sLog.Cyan("   MissionDataMgr", "%lu Mining Mission Data Sets loaded in %.3fms.", m_mining.size(), (GetTimeMSeconds() - start));
 
     start = GetTimeMSeconds();
-    sLog.Cyan("   MissionDataMgr", "0(0) Encounter Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
+    sLog.Cyan("   MissionDataMgr", "0 Encounter Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
+
+    start = GetTimeMSeconds();
+    sLog.Cyan("   MissionDataMgr", "0 Career Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
+
+    start = GetTimeMSeconds();
+    sLog.Cyan("   MissionDataMgr", "0 Research Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
+
+    start = GetTimeMSeconds();
+    sLog.Cyan("   MissionDataMgr", "0 Anomic Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
+
+    start = GetTimeMSeconds();
+    sLog.Cyan("   MissionDataMgr", "0 Data Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
+
+    start = GetTimeMSeconds();
+    sLog.Cyan("   MissionDataMgr", "0 Trade Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
+
+    start = GetTimeMSeconds();
+    sLog.Cyan("   MissionDataMgr", "0 Burner Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
 
     start = GetTimeMSeconds();
     sLog.Cyan("   MissionDataMgr", "0(0) Storyline Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
 
     start = GetTimeMSeconds();
-    sLog.Cyan("   MissionDataMgr", "0(0) Tutorial Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
+    sLog.Cyan("   MissionDataMgr", "0(0) MultiPart Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
 
-    start = GetTimeMSeconds();
-    sLog.Cyan("   MissionDataMgr", "0(0) Research Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
+    //start = GetTimeMSeconds();
+    //sLog.Cyan("   MissionDataMgr", "0(0) Cosmos Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
 
-    start = GetTimeMSeconds();
-    sLog.Cyan("   MissionDataMgr", "0(0) Anomic Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
-
-    start = GetTimeMSeconds();
-    sLog.Cyan("   MissionDataMgr", "0(0) Data Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
-
-    start = GetTimeMSeconds();
-    sLog.Cyan("   MissionDataMgr", "0(0) Trade Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
-
-    start = GetTimeMSeconds();
-    sLog.Cyan("   MissionDataMgr", "0(0) Burner Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
-
-    start = GetTimeMSeconds();
-    sLog.Cyan("   MissionDataMgr", "0(0) Cosmos Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
-
-    start = GetTimeMSeconds();
-    sLog.Cyan("   MissionDataMgr", "0(0) Arc Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
+    //start = GetTimeMSeconds();
+    //sLog.Cyan("   MissionDataMgr", "0(0) Arc Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
 
     //res->Reset();
     start = GetTimeMSeconds();
     MissionDB::LoadMissionData(*res);
     while (res->GetRow(row)) {
-        //SELECT id, briefingID, name, level, typeID, important, storyline, raceID, constellationID, corporationID, dungeonID,
-        // rewardISK, rewardItemID, rewardISKQty, rewardItemQty, bonusISK, bonusTime FROM agtMissions
-        MissionData data = MissionData();
-        data.missionID = row.GetInt(0);
-        data.briefingID = row.GetInt(1);
-        data.name = row.GetText(2);
-        data.level = row.GetInt(3);
-        data.typeID = row.GetInt(4);
-        data.important = row.GetBool(5);
-        data.constellationID = row.GetInt(8);
-        data.corporationID = row.GetInt(9);
-        data.dungeonID = row.GetInt(10);
+        //SELECT id, briefingID, name, level, typeID, important, storyline, raceID, constellationID, corporationID,
+        // dungeonID, rewardItemID, rewardItemQty, bonusTime FROM agtMission
+        MissionData data        = MissionData();
+        data.missionID          = row.GetUInt(0);
+        data.briefingID         = row.GetUInt(1);
+        data.name               = row.GetText(2);
+        data.level              = row.GetUInt8(3);
+        data.typeID             = row.GetUInt8(4);
+        data.important          = row.GetBool(5);
+        data.storyLine          = row.GetBool(6);
+        data.raceID             = row.GetUInt8(7);
+        data.constellationID    = row.GetUInt(8);
+        data.corporationID      = row.GetUInt(9);
+        data.dungeonID          = row.GetUInt(10);
+        data.rewardItemID       = row.GetUInt(11);
+        data.rewardItemQty      = row.GetUInt(12);
+        data.bonusTime          = row.GetUInt(13);
         if (data.important) {
-            m_missionsImp.emplace(row.GetInt(3), data);
+            m_missionsImp.emplace(row.GetUInt8(3), data);
         } else {
-            m_missions.emplace(row.GetInt(3), data);
+            m_missions.emplace(row.GetUInt8(3), data);
         }
     }
     sLog.Cyan("   MissionDataMgr", "%lu(%lu) Unsorted Mission Data Sets loaded in %.3fms.", m_missions.size(), m_missionsImp.size(), (GetTimeMSeconds() - start));
@@ -247,46 +244,46 @@ void MissionDataMgr::Populate()
         //SELECT acceptFee, agentID, characterID, courierAmount, courierTypeID, courierItemVolume, dateAccepted, dateIssued, destinationID, destinationTypeID, destinationOwnerID, destinationSystemID,
         // expiryTime, important, storyline, missionID, briefingID, name, offerID, originID, originOwnerID, originSystemID, remoteCompletable, remoteOfferable,
         // rewardISK, rewardItemID, rewardItemQty, rewardLP, bonusISK, bonusTime, stateID, typeID, dungeonLocationID, dungeonSolarSystemID FROM agtOffers
-        MissionOffer offer = MissionOffer();
-        offer.acceptFee = row.GetInt(0);
-        offer.agentID = row.GetInt(1);
-        offer.characterID = row.GetInt(2);
-        offer.courierAmount = row.GetInt(3);
-        offer.courierTypeID = row.GetInt(4);
-        offer.courierItemVolume = row.GetFloat(5);
-        offer.dateAccepted = row.GetInt64(6);
-        offer.dateIssued = row.GetInt64(7);
-        offer.destinationID = row.GetInt(8);
-        offer.destinationTypeID = row.GetInt(9);
-        offer.destinationOwnerID = row.GetInt(10);
-        offer.destinationSystemID = row.GetInt(11);
-        offer.expiryTime = row.GetInt64(12);
-        offer.important = row.GetInt(13);
-        offer.storyline = row.GetInt(14);
-        offer.missionID = row.GetInt(15);
-        offer.briefingID = row.GetInt(16);
-        offer.name = row.GetText(17);
-        offer.offerID = row.GetInt(18);
-        offer.originID = row.GetInt(19);
-        offer.originOwnerID = row.GetInt(20);
-        offer.originSystemID = row.GetInt(21);
-        offer.remoteCompletable = row.GetInt(22);
-        offer.remoteOfferable = row.GetInt(23);
-        offer.rewardISK = row.GetInt(24);
-        offer.rewardItemID = row.GetInt(25);
-        offer.rewardItemQty = row.GetInt(26);
-        offer.rewardLP = row.GetInt(27);
-        offer.bonusISK = row.GetInt(28);
-        offer.bonusTime = row.GetInt(29);
-        offer.stateID = row.GetInt(30);
-        offer.typeID = row.GetInt(31);
-        offer.dungeonLocationID = row.GetInt(32);
-        offer.dungeonSolarSystemID = row.GetInt(33);
-        offer.dateCompleted = 0;
+        MissionOffer offer              = MissionOffer();
+        offer.acceptFee                 = row.GetUInt(0);
+        offer.agentID                   = row.GetUInt(1);
+        offer.characterID               = row.GetUInt(2);
+        offer.courierAmount             = row.GetUInt(3);
+        offer.courierTypeID             = row.GetUInt(4);
+        offer.courierItemVolume         = row.GetFloat(5);
+        offer.dateAccepted              = row.GetInt64(6);
+        offer.dateIssued                = row.GetInt64(7);
+        offer.destinationID             = row.GetUInt(8);
+        offer.destinationTypeID         = row.GetUInt(9);
+        offer.destinationOwnerID        = row.GetUInt(10);
+        offer.destinationSystemID       = row.GetUInt(11);
+        offer.expiryTime                = row.GetInt64(12);
+        offer.important                 = row.GetBool(13);
+        offer.storyline                 = row.GetBool(14);
+        offer.missionID                 = row.GetUInt(15);
+        offer.briefingID                = row.GetUInt(16);
+        offer.name                      = row.GetText(17);
+        offer.offerID                   = row.GetUInt(18);
+        offer.originID                  = row.GetUInt(19);
+        offer.originOwnerID             = row.GetUInt(20);
+        offer.originSystemID            = row.GetUInt(21);
+        offer.remoteCompletable         = row.GetBool(22);
+        offer.remoteOfferable           = row.GetBool(23);
+        offer.rewardISK                 = row.GetUInt(24);
+        offer.rewardItemID              = row.GetUInt(25);
+        offer.rewardItemQty             = row.GetUInt(26);
+        offer.rewardLP                  = row.GetUInt(27);
+        offer.bonusISK                  = row.GetUInt(28);
+        offer.bonusTime                 = row.GetUInt(29);
+        offer.stateID                   = row.GetUInt8(30);
+        offer.typeID                    = row.GetUInt8(31);
+        offer.dungeonLocationID         = row.GetUInt(32);
+        offer.dungeonSolarSystemID      = row.GetUInt(33);
+        offer.dateCompleted             = 0;
         // will need to determine how to store/retrieve bookmarks as a list of dicts here
-        offer.bookmarks = new PyList();
-        m_offers.emplace(row.GetInt(2), offer);
-        m_aoffers.emplace(row.GetInt(1), offer);    // do we really want dupe data here?  yes.  need offer by char and by agent
+        offer.bookmarks                 = new PyList();
+        m_offers.emplace(row.GetUInt(2), offer);
+        m_aoffers.emplace(row.GetUInt(1), offer);    // do we really want dupe data here?  yes.  need offer by char and by agent
     }
     sLog.Cyan("   MissionDataMgr", "%lu Open Mission Offers loaded in %.3fms.", m_offers.size(), (GetTimeMSeconds() - start));
 
@@ -296,78 +293,51 @@ void MissionDataMgr::Populate()
     if (sConfig.server.LoadOldMissions)
         MissionDB::LoadClosedOffers(*res);
     while (res->GetRow(row)) {
+        //TODO: determine if these are used.  if so, complete data population
         //SELECT agentID, characterID, courierAmount, courierTypeID, dateAccepted, dateCompleted, dateIssued, destinationID, expiryTime, important, storyline, missionID, name,
         // offerID, originID, rewardISK, rewardItemID, rewardItemQty, rewardLP, stateID, typeID FROM agtOffers
-        MissionOffer offer = MissionOffer();
-        offer.agentID = row.GetInt(0);
-        offer.characterID = row.GetInt(1);
-        offer.courierAmount = row.GetInt(2);
-        offer.courierTypeID = row.GetInt(3);
-        offer.dateAccepted = row.GetInt64(4);
-        offer.dateCompleted = row.GetInt64(5);
-        offer.dateIssued = row.GetInt64(6);
-        offer.destinationID = row.GetInt(7);
-        offer.expiryTime = row.GetInt64(8);
-        offer.important = row.GetInt(9);
-        offer.storyline = row.GetInt(10);
-        offer.missionID = row.GetInt(11);
-        offer.name = row.GetText(12);
-        offer.offerID = row.GetInt(13);
-        offer.originID = row.GetInt(14);
-        offer.rewardISK = row.GetInt(15);
-        offer.rewardItemID = row.GetInt(16);
-        offer.rewardItemQty = row.GetInt(17);
-        offer.rewardLP = row.GetInt(18);
-        offer.stateID = row.GetInt(19);
-        offer.typeID = row.GetInt(20);
-        offer.briefingID = 0;
-        offer.acceptFee = 0;
-        offer.bonusISK = 0;
-        offer.bonusTime = 0;
-        offer.remoteCompletable = 0;
-        offer.remoteOfferable = 0;
-        offer.originOwnerID = 0;
-        offer.originSystemID = 0;
-        offer.destinationTypeID = 0;
-        offer.destinationOwnerID = 0;
-        offer.destinationSystemID = 0;
-        offer.dungeonLocationID = 0;
-        offer.dungeonSolarSystemID = 0;
-        offer.bookmarks = new PyList(); //invalid offers will not have bms
-        m_xoffers.emplace(row.GetInt(2), offer);
+        MissionOffer offer              = MissionOffer();
+        offer.agentID                   = row.GetUInt(0);
+        offer.characterID               = row.GetUInt(1);
+        offer.courierAmount             = row.GetUInt(2);
+        offer.courierTypeID             = row.GetUInt(3);
+        offer.dateAccepted              = row.GetInt64(4);
+        offer.dateCompleted             = row.GetInt64(5);
+        offer.dateIssued                = row.GetInt64(6);
+        offer.destinationID             = row.GetUInt(7);
+        offer.expiryTime                = row.GetInt64(8);
+        offer.important                 = row.GetBool(9);
+        offer.storyline                 = row.GetBool(10);
+        offer.missionID                 = row.GetUInt(11);
+        offer.name                      = row.GetText(12);
+        offer.offerID                   = row.GetUInt(13);
+        offer.originID                  = row.GetUInt(14);
+        offer.rewardISK                 = row.GetUInt(15);
+        offer.rewardItemID              = row.GetUInt(16);
+        offer.rewardItemQty             = row.GetUInt(17);
+        offer.rewardLP                  = row.GetUInt(18);
+        offer.stateID                   = row.GetUInt8(19);
+        offer.typeID                    = row.GetUInt8(20);
+        offer.briefingID                = 0;
+        offer.acceptFee                 = 0;
+        offer.bonusISK                  = 0;
+        offer.bonusTime                 = 0;
+        offer.remoteCompletable         = 0;
+        offer.remoteOfferable           = 0;
+        offer.originOwnerID             = 0;
+        offer.originSystemID            = 0;
+        offer.destinationTypeID         = 0;
+        offer.destinationOwnerID        = 0;
+        offer.destinationSystemID       = 0;
+        offer.dungeonLocationID         = 0;
+        offer.dungeonSolarSystemID      = 0;
+        offer.bookmarks                 = new PyList(); //invalid offers will not have bms
+        m_xoffers.emplace(row.GetUInt(2), offer);
     }
     sLog.Cyan("   MissionDataMgr", "%lu Closed Mission Offers loaded in %.3fms.", m_xoffers.size(), (GetTimeMSeconds() - start));
 
     // cleanup
     SafeDelete(res);
-/*
-    m_names.emplace("Arisite Envy",   45000 );
-    m_names.emplace("Asteroid Catastrophe",    1080 );
-    m_names.emplace("Better World", 6000    );
-    m_names.emplace("Beware They Live",    9000   );
-    m_names.emplace("Bountiful Bandine",   2000         );
-    m_names.emplace("Burnt Traces",    1080           );
-    m_names.emplace("Cheap Chills",    20000  );
-    m_names.emplace("Claimjumpers",    1800       );
-    m_names.emplace("Data Mining", 299   );
-    m_names.emplace("Down and Dirty",  2250       );
-    m_names.emplace("Drone Distribution",  4000   );
-    m_names.emplace("Feeding the Giant",   44800 );
-    m_names.emplace("Gas Injections",  4250  );
-    m_names.emplace("Geodite and Gemology",    44800 );
-    m_names.emplace("Ice Installation",    20000  );
-    m_names.emplace("Like Drones to a Cloud",  4250 );
-    m_names.emplace("Mercium Belt",    6000   );
-    m_names.emplace("Mercium Experiments", 1080     );
-    m_names.emplace("Mother Lode", 44800  );
-    m_names.emplace("Not Gneiss at All",   45000 );
-    m_names.emplace("Pile of Pithix",  9000   );
-    m_names.emplace("Persistent Pests",    4000   );
-    m_names.emplace("Starting Simple", 2000     );
-    m_names.emplace("Stay Frosty", 10000   );
-    m_names.emplace("Understanding Augmene",   2625  );
-    m_names.emplace("Unknown Events",  6000 );
-    */
     sLog.Cyan("   MissionDataMgr", "Mission Data loaded in %.3fms.", (GetTimeMSeconds() - begin));
 }
 
@@ -422,35 +392,35 @@ void MissionDataMgr::CreateMissionOffer(uint8 typeID, uint8 level, uint8 raceID,
     data = MissionOffer();
     data.stateID                = Mission::State::Allocated;
     data.dateIssued             = GetFileTimeNow();
-    data.bookmarks              = new PyList();
 
-    /** @todo  this will need to be adjusted for raceID eventually */
     switch (typeID) {
         case Mission::Type::Courier: {
             CourierData cData = CourierData();
             std::vector<CourierData> cVec;
             if (important) {
                 auto itr = m_courierImp.equal_range(level);
-                for (auto it = itr.first; it != itr.second; it++)
-                    cVec.push_back(it->second);
+                for (auto it = itr.first; it != itr.second; ++it) {
+                    if (it->second.raceID == 0) {
+                        cVec.push_back(it->second);
+                    } else if (it->second.raceID == raceID) {
+                        cVec.push_back(it->second);
+                    }
+                }
             } else {
                 auto itr = m_courier.equal_range(level);
-                for (auto it = itr.first; it != itr.second; it++)
-                    cVec.push_back(it->second);
-            }
-            cData = cVec[MakeRandomInt(0, (cVec.size() - 1))];
-            // verify mission race acceptable
-            if ((cData.raceID) and ((cData.raceID & raceID) != raceID)) {
-                for (auto &cur :cVec) {
-                    if ((cur.raceID & raceID) == raceID)
-                        cData = cur;
+                for (auto it = itr.first; it != itr.second; ++it) {
+                    if (it->second.raceID == 0) {
+                        cVec.push_back(it->second);
+                    } else if (it->second.raceID == raceID) {
+                        cVec.push_back(it->second);
+                    }
                 }
             }
 
+            // pick random mission from group
+            cData = cVec[MakeRandomInt(0, (cVec.size() - 1))];
             data.name               = cData.name;
             data.typeID             = cData.typeID;
-            data.bonusISK           = cData.bonusISK;
-            data.rewardISK          = cData.rewardISK;
             data.bonusTime          = cData.bonusTime;
             data.important          = cData.important;
             data.storyline          = cData.storyline;
@@ -461,26 +431,23 @@ void MissionDataMgr::CreateMissionOffer(uint8 typeID, uint8 level, uint8 raceID,
             data.courierTypeID      = cData.itemTypeID;
             data.courierAmount      = cData.itemQty;
             data.courierItemVolume  = cData.itemVolume;
-            data.range              = cData.range;
         } break;
         case Mission::Type::Mining: {
             CourierData cData = CourierData();
             std::vector<CourierData> cVec;
-            if (important) {
-                auto itr = m_miningImp.equal_range(level);
-                for (auto it = itr.first; it != itr.second; it++)
+            auto itr = m_mining.equal_range(level);
+            for (auto it = itr.first; it != itr.second; ++it) {
+                if (it->second.raceID == 0) {
                     cVec.push_back(it->second);
-            } else {
-                auto itr = m_mining.equal_range(level);
-                for (auto it = itr.first; it != itr.second; it++)
+                } else if (it->second.raceID == raceID) {
                     cVec.push_back(it->second);
+                }
             }
-            cData = cVec[MakeRandomInt(0, (cVec.size() - 1))];
 
+            // pick random mission from group
+            cData = cVec[MakeRandomInt(0, (cVec.size() - 1))];
             data.name               = cData.name;
             data.typeID             = cData.typeID;
-            data.bonusISK           = cData.bonusISK;
-            data.rewardISK          = cData.rewardISK;
             data.bonusTime          = cData.bonusTime;
             data.important          = cData.important;
             data.storyline          = cData.storyline;
@@ -491,9 +458,9 @@ void MissionDataMgr::CreateMissionOffer(uint8 typeID, uint8 level, uint8 raceID,
             data.courierTypeID      = cData.itemTypeID;
             data.courierAmount      = cData.itemQty;
             data.courierItemVolume  = cData.itemVolume;
-            data.range              = cData.range;
         } break;
         case Mission::Type::Tutorial: {
+            // maybe use these for career agents
         } break;
         case Mission::Type::Encounter: {
         } break;
@@ -513,12 +480,14 @@ void MissionDataMgr::CreateMissionOffer(uint8 typeID, uint8 level, uint8 raceID,
         } break;
     }
 
+    // create and save bookmarks for this offer.... not sure how yet.
+    data.bookmarks              = new PyList();
+
     _log(AGENT__DEBUG, "Created %s level %u %s offer - '%s'", (important?"an important":"a"), level, GetTypeName(data.typeID).c_str(), data.name.c_str());
 }
 
 
-std::string MissionDataMgr::GetTypeName(uint8 typeID)
-{
+std::string MissionDataMgr::GetTypeName(uint8 typeID) {
     using namespace Mission::Type;
     switch (typeID) {
         case Tutorial:          return "Tutorial";
@@ -537,8 +506,7 @@ std::string MissionDataMgr::GetTypeName(uint8 typeID)
     }
 }
 
-std::string MissionDataMgr::GetTypeLabel(uint8 typeID)
-{
+std::string MissionDataMgr::GetTypeLabel(uint8 typeID) {
     using namespace Mission::Type;
     switch (typeID) {
         case Tutorial:          return "UI/Agents/MissionTypes/Tutorial";
@@ -557,17 +525,16 @@ std::string MissionDataMgr::GetTypeLabel(uint8 typeID)
     }
 }
 
-void MissionDataMgr::UpdateMissionData(uint32 charID, MissionOffer& data)
-{
+void MissionDataMgr::UpdateMissionData(uint32 charID, MissionOffer& data) {
     auto itr = m_offers.equal_range(charID);
-    for (auto it = itr.first; it != itr.second; it++)
+    for (auto it = itr.first; it != itr.second; ++it)
         if (it->second.agentID == data.agentID) {
             it->second = data;
             break;
         }
 
     itr = m_aoffers.equal_range(data.agentID);
-    for (auto it = itr.first; it != itr.second; it++)
+    for (auto it = itr.first; it != itr.second; ++it)
         if (it->second.characterID == charID) {
             it->second = data;
             break;

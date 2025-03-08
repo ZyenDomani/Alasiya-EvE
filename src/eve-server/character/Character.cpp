@@ -37,6 +37,7 @@
 #include "fleet/FleetService.h"
 #include "inventory/AttributeEnum.h"
 #include "ship/Ship.h"
+#include "standing/StandingMgr.h"
 
 /*
  * CharacterTypeData
@@ -258,6 +259,7 @@ bool Character::_Load() {
         sLog.Warning("Character::_Load","LoadCertificates returned false for char %u", m_itemID);
 
     LoadImplants();
+    LoadMissionTracking();
 
     m_cloneRef = sItemFactory.GetItemRefFromID(m_db.GetCloneID(m_itemID));
     if (m_cloneRef.get() == nullptr) {
@@ -1627,42 +1629,6 @@ void Character::SaveCertificates() {
     m_cdb.SaveCertificates(m_itemID, m_certificates);
 }
 
-
-// functions and methods for standings system
-/** @todo  this needs to be moved to common standings code */
-/** @todo  these need to use common standings methods for formulas  */
-/** @todo  these need secStatus tests and calcs for negative secStatus */
-float Character::GetStandingModified(uint32 fromID, uint32 toID)
-{
-    if (toID == 0)
-        toID = m_itemID;
-    float res = StandingDB::GetStanding(fromID, toID);
-    if (res < 0.0f) {
-        res += ((10.0f + res) * (0.04f * GetSkillLevel(EvESkill::Diplomacy)));
-    } else {
-        res += ((10.0f - res) * (0.04f * GetSkillLevel(EvESkill::Connections)));
-    }
-    return res;
-}
-
-float Character::GetNPCCorpStanding(uint32 fromID, uint32 toID) {
-    if (toID == 0)
-        toID = m_itemID;
-    float res = StandingDB::GetStanding(fromID, toID);
-    if (res < 0.0f) {
-        res += ((10.0f + res) * (0.04f * GetSkillLevel(EvESkill::Diplomacy)));
-    } else {
-        res += ((10.0f - res) * (0.04f * GetSkillLevel(EvESkill::Connections)));
-    }
-    return res;
-}
-
-void Character::SetStanding(uint32 fromID, uint32 toID, float standing) {
-    StandingDB::SetStanding(fromID, toID, standing);
-    PyTuple* payload = new PyTuple(0);
-    m_pClient->SendNotification("OnStandingSet", "charid", payload, false);
-}
-
 // for map system
 void Character::VisitSystem(uint32 solarSystemID) {
 	m_db.VisitSystem(solarSystemID, m_itemID);
@@ -1715,4 +1681,66 @@ PyResult Character::GetCharacterBaseAttributes() {
     result->SetItem(new PyInt(AttrMemory), new PyInt(memory));
 
     return result;
+}
+
+void Character::LoadMissionTracking() {
+    //SELECT `corpID`, `level`, `count` FROM `chrCharacterMissionTracking` WHERE `charID`
+    DBQueryResult res;
+    CharacterDB::GetMissionTracking(res, m_itemID);
+    DBResultRow row;
+    while (res.GetRow(row)) {
+        std::map<uint32, std::map<uint8, uint8>>::iterator itr = m_missionLevelMap.find(row.GetUInt(0));
+        if (itr != m_missionLevelMap.end()) {
+            std::map<uint8, uint8>::iterator itr2 = itr->second.find(row.GetUInt(1));
+            if (itr2 != itr->second.end()) {
+                itr2->second += row.GetUInt8(2);
+            } else {
+                itr->second[row.GetUInt(1)] = row.GetUInt8(2);
+            }
+        } else {
+            std::map<uint8, uint8> data;
+            data[row.GetUInt8(1)] = row.GetUInt8(2);
+            m_missionLevelMap[row.GetUInt(0)] = data;
+        }
+    }
+}
+
+void Character::AddMissionTracking(uint32 corpID, uint8 level) {
+    std::map<uint32, std::map<uint8, uint8>>::iterator itr = m_missionLevelMap.find(corpID);
+    if (itr != m_missionLevelMap.end()) {
+        std::map<uint8, uint8>::iterator itr2 = itr->second.find(level);
+        if (itr2 != itr->second.end()) {
+            ++(itr2->second);
+        } else {
+            itr->second[level] = 1;
+        }
+    } else {
+        std::map<uint8, uint8> data;
+        data[level] = 1;
+        m_missionLevelMap[corpID] = data;
+    }
+}
+
+void Character::ResetMissionCount(uint32 corpID, uint8 level) {
+    std::map<uint32, std::map<uint8, uint8>>::iterator itr = m_missionLevelMap.find(corpID);
+    if (itr != m_missionLevelMap.end()) {
+        std::map<uint8, uint8>::iterator itr2 = itr->second.find(level);
+        if (itr2 != itr->second.end()) {
+            itr2->second = 0;
+        }
+    }
+}
+
+bool Character::RdyForImportantMission(uint32 corpID, uint8 level) {
+    std::map<uint32, std::map<uint8, uint8>>::iterator itr = m_missionLevelMap.find(corpID);
+    if (itr != m_missionLevelMap.end()) {
+        std::map<uint8, uint8>::iterator itr2 = itr->second.find(level);
+        if (itr2 != itr->second.end()) {
+            if (itr2->second > 14) {
+                // dont reset this until char accepts mission
+                return true;
+            }
+        }
+    }
+    return false;
 }

@@ -49,3 +49,22 @@ private:
 
 
 #endif /* !_EVE_SERVER_CONTRACT_UTILS_H_ */
+
+/*{'FullPath': u'UI/Messages', 'messageID': 259310;  //MisMissionExpiredBody:  This mission has already expired.
+ {'FullPath': u'UI/Messages', 'messageID': 259311;  //MisNoItemsTitle:  No items available
+ {'FullPath': u'UI/Messages', 'messageID': 259312;  //MisNoItemsBody'}(u"There's nothing available at this station.
+ {'FullPath': u'UI/Messages', 'messageID': 259313;  //MisNoShipsInCourierTitle:  Cannot create courier mission
+ {'FullPath': u'UI/Messages', 'messageID': 259314;  //MisNoShipsInCourierBody:  Only packaged ships can be couriered.
+ {'FullPath': u'UI/Messages', 'messageID': 259315;  //MisNoSuchMissionTitle:  Mission not found
+ {'FullPath': u'UI/Messages', 'messageID': 259316;  //MisNoSuchMissionBody:  This mission is no longer available.
+ {'FullPath': u'UI/Messages', 'messageID': 259317;  //MisNotAvailableBody:  "This mission is no longer available"
+ {'FullPath': u'UI/Messages', 'messageID': 259318;  //MisPackageNotHereTitle'}(u"Can't deliver package
+ {'FullPath': u'UI/Messages', 'messageID': 259319;  //MisPackageNotHereBody:  The package is not on your hangar floor.
+ {'FullPath': u'UI/Messages', 'messageID': 259320;  //MisPilotOnBoardBody'}(u"Can't add ships with people in it in a courier mission.
+ {'FullPath': u'UI/Messages', 'messageID': 259321;  //MisRewardLessAcceptTitle:  Too unfair
+ {'FullPath': u'UI/Messages', 'messageID': 259322;  //MisRewardLessAcceptBody:  Please make the reward higher than the accept fee.
+ {'FullPath': u'UI/Messages', 'messageID': 259323;  //MissMissionAcceptedHelpTitle:  Mission Accepted
+ {'FullPath': u'UI/Messages', 'messageID': 259325;  //MissionItemAlreadyThereTitle:  Create the Mission
+ {'FullPath': u'UI/Messages', 'messageID': 259326;  //MissionItemAlreadyThereBody:  The item is already here. Are you sure you want to continue?
+ {'FullPath': u'UI/Messages', 'messageID': 259327;  //MissionNotIssuedBody:  This mission cannot be accepted.
+ */

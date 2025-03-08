@@ -31,6 +31,7 @@
 #include "Client.h"
 #include "packets/Repair.h"
 #include "ship/ShipDB.h"
+#include "standing/StandingMgr.h"
 #include "station/RepairService.h"
 #include "station/Station.h"
 #include "system/SystemManager.h"
@@ -239,13 +240,7 @@ PyResult RepairSvcBound::Handle_GetDamageReports(PyCallArgs &call) {
     Client* pClient(call.client);
     StationItemRef sRef = pClient->SystemMgr()->GetStationFromInventory(m_locationID);
     Inventory* pInv = sRef->GetMyInventory();
-    float standing = 0.0f;
-    // standing system isnt complete, but this is the correct data methods for station standing checks
-    if (IsNPCCorp(sRef->ownerID())) {
-        standing = pClient->GetChar()->GetNPCCorpStanding(sRef->ownerID(), pClient->GetCharacterID());
-    } else {
-        standing = pClient->GetChar()->GetStandingModified(sRef->ownerID(), pClient->GetCharacterID());
-    }
+    float standing(sStandingMgr.GetEffectiveStanding(sRef->ownerID(), pClient->GetChar().get()));
 
     for (auto &cur : args.ints) {
         RepairListRsp rlr;

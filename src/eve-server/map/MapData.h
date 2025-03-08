@@ -36,7 +36,7 @@ public:
     PyTuple*            GetStationExtraInfo()           { PyIncRef(m_stationExtraInfo); return m_stationExtraInfo; }
     PyObject*           GetPseudoSecurities()           { PyIncRef(m_pseudoSecurities); return m_pseudoSecurities; }
 
-    void                GetMissionDestination(Agent* pAgent, uint8 misionType, MissionOffer& offer);
+    void                GetMissionDestination(Agent* pAgent, MissionOffer& offer);
 
 
     void                GetMoons(uint32 systemID);   // incomplete
@@ -53,6 +53,7 @@ public:
 
 protected:
     void                Populate();
+    bool                GetSystemJumps (uint8 step, uint32 sysID, std::multimap<uint8, uint32>& jumpMap );
 
 private:
     PyTuple*            m_stationExtraInfo;
@@ -61,6 +62,8 @@ private:
     std::multimap<uint32, uint32>        m_regionJumps;  //fromSys/toSys
     std::multimap<uint32, uint32>        m_constJumps;   //fromSys/toSys
     std::multimap<uint32, uint32>        m_systemJumps;  //fromSys/toSys
+
+
 };
 
 

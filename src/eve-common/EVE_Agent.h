@@ -12,6 +12,7 @@ struct AgentData {
     bool gender;
     bool locator;
     bool research;
+    bool storyline;
     int8 quality;
     uint8 level;
     uint8 raceID;
@@ -42,54 +43,50 @@ namespace Agents {
         enum {
             //  -allan 20Dec14
             None                = 1,
-            Basic               = 2,
+            Basic               = 2,       //checks standings for Availability in station
             Tutorial            = 3,
-            Research            = 4,        //249
-            GenericStoryLine    = 6,
-            StoryLine           = 7,
-            Event               = 8,
-            FacWar              = 9,
-            EpicArc             = 10,
-            Aura                = 11
+            Research            = 4,       //checks standings for Availability in station
+            Unknown             = 5,       // there are 144 agents with this type..no ref to it that i can find.  wont show in station
+            GenericStoryLine    = 6,       // 654 total  not sure of diff between this and specific
+            StoryLine           = 7,       // specific story line.   11 of these
+            Event               = 8,       //checks standings for Availability in station
+            FacWar              = 9,       //checks faction warfare and standings for Availability in station
+            EpicArc             = 10,      //checks standings and epic arc for Availability
+            Aura                = 11,      // always available
+            Career              = 12     //checks standings for Availability in station
         };
     }
 
     namespace Range {
         enum {
             SameSystem = 1,
-            SameOrNeighboringSystemSameConstellation = 2,
-            SameOrNeighboringSystem = 3,
-            NeighboringSystemSameConstellation = 4,
-            NeighboringSystem = 5,
-            SameConstellation = 6,
-            SameOrNeighboringConstellationSameRegion = 7,
-            SameOrNeighboringConstellation = 8,
-            NeighboringConstellationSameRegion = 9,
-            NeighboringConstellation = 10,
-            NearestEnemyCombatZone = 11,
-            NearestCareerHub = 12
+            SameOrNeighboringSystem = 2,        // L1 courier
+            NeighboringSystem = 3,              // L2 courier; one jump, same constellation
+            SameConstellation = 4,              // L3 courier; any jumps in same constellation
+            NeighboringConstellation = 5,       // L4 courier; any jumps, neighbor constellation
+            NeighboringRegion = 6,              // L5 courier; any jumps in neighbor region
+            NearestEnemyCombatZone = 10,
+            NearestCareerHub = 11
         };
     }
 
-    namespace IskMult {
+    namespace Level {
         enum {
-            Level1 = 1,
-            Level2 = 2,
-            Level3 = 4,
-            Level4 = 8,
-            Level5 = 16,
-            RandomLow = 11000,
-            RandomHigh = 16500
+            Level1      = 1,
+            Level2      = 2,
+            Level3      = 4,
+            Level4      = 8,
+            Level5      = 16
         };
     }
 
     namespace LpMult {
         enum {
-            Level1 = 20,
-            Level2 = 60,
-            Level3 = 180,
-            Level4 = 540,
-            Level5 = 4860
+            Level1      = 20,
+            Level2      = 60,
+            Level3      = 180,
+            Level4      = 540,
+            Level5      = 4860
         };
     }
 
@@ -102,6 +99,30 @@ namespace Agents {
             AdvMilitary = 5
         };
     }
+
+    namespace Response {
+        enum {
+            NoStanding          = 0,
+            Greeting            = 1,
+            Accept              = 2,
+            Complete            = 3,
+            Available           = 4,
+            Decline             = 5,
+            Defer               = 6,
+            Quit                = 7,
+            Fail                = 8,
+            StartResearch       = 9,
+            CancelResearch      = 10,
+            BuyDatacores        = 11,
+            LocateCharacter     = 12,
+            LocateAccept        = 13,
+            LocateReject        = 14,
+            Expired             = 15,
+            InProgress          = 16,
+            NoWork              = 17
+        };
+    }
+
 
 /*  see Corp::Division for this data...
     namespace Division {
@@ -127,16 +148,9 @@ namespace Agents {
             Security            = 19, //  94%    6%      0%      0%
             Storage             = 20, //   6%   71%      6%     17%
             Surveillance        = 21, //  84%   11%      5%      0%
-
-            // 724 new agents with one of these new divisions compared to RMR
-            //281 l1
-            //101 l2
-            //112 l3
-            //189 l4
-            //41 l5     (all dID 24)
-            DistributionNew     = 22,
-            MiningNew           = 23,
-            SecurityNew         = 24
+            DistributionNew     = 22, //   5%   85%      5%      5%
+            MiningNew           = 23, //   0%   10%      5%     85%
+            SecurityNew         = 24  //  94%    6%      0%      0%
         };
     }*/
 }
@@ -237,7 +251,6 @@ namespace Dialog {
  {'FullPath': u'UI/Agents/StandardMission', 'messageID': 235489, 'label': u'CargoCapacityWarningAccept'}(u'To accept this mission, your ship would have to have space for {[numeric]neededCapacity, decimalPlaces=2} more cargo units in its cargo hold.', None, {u'{[numeric]neededCapacity, decimalPlaces=2}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 512, 'kwargs': {'decimalPlaces': 2}, 'variableName': 'neededCapacity'}})
  {'FullPath': u'UI/Agents/StandardMission', 'messageID': 235490, 'label': u'MissingMissionObjectiveItem'}(u'One or more mission objectives have not been completed. For example, you must deliver {[item]objectiveTypeID.quantityName, quantity=objectiveQuantity} to complete this mission.  Please check your mission journal for further information.', None, {u'{[item]objectiveTypeID.quantityName, quantity=objectiveQuantity}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'quantityName', 'args': 0, 'kwargs': {'quantity': 'objectiveQuantity'}, 'variableName': 'objectiveTypeID'}})
  {'FullPath': u'UI/Agents/StandardMission', 'messageID': 235491, 'label': u'DeclineMessageGeneric'}(u'Declining a mission from a particular agent more than once every 4 hours will result in a loss of standing with that agent.', None, None)
- {'FullPath': u'UI/Agents/StandardMission', 'messageID': 235492, 'label': u'MissingMissionObjectivePlayerLocation'}(u'You have to be at the drop off location to deliver the items in person', None, None)
  {'FullPath': u'UI/Agents/StandardMission', 'messageID': 235493, 'label': u'MissingMissionObjectiveNonItem'}(u'One or more mission objectives have not been completed.  The item(s) must be located in your cargo hold or in your personal hangar (if the objective was within a station).  If you have multiple objectives of the same item type in the same location, please use either the hangar or your cargo hold, but not both.  If a specific item was requested as opposed to any item of the specified type, please be sure that the correct specific item is indeed being provided.  Otherwise, please make sure that the item is not assembled, packaged or damaged.  Please check your mission journal for further information.', None, None)
  {'FullPath': u'UI/Agents/StandardMission', 'messageID': 235494, 'label': u'AcceptFailureMessageTitle'}(u'Cannot Accept Mission', None, None)
  {'FullPath': u'UI/Agents/StandardMission', 'messageID': 235495, 'label': u'CompletionError'}(u'Ahem... there seems to have been a problem giving out your rewards.  Well, at least if you see this, all the other stuff should still work (standings, LP, next mission, storyline counter, etc)...', None, None)

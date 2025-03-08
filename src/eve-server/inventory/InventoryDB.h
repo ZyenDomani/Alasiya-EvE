@@ -62,7 +62,6 @@ public:
     /** @todo update these below to use static data manager */
     // get this shit outta here.....
     bool GetCelestialObject(uint32 celestialID, CelestialObjectData &into);
-    bool GetSolarSystem(uint32 solarSystemID, SolarSystemData &into);
 };
 
 #endif

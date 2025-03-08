@@ -13,6 +13,7 @@
 #include "Client.h"
 #include "manufacturing/Blueprint.h"
 #include "manufacturing/RamMethods.h"
+#include "standing/StandingMgr.h"
 #include "station/StationDataMgr.h"
 
 static const uint32 RAM_PRODUCTION_TIME_LIMIT = 60*60*24*30;   //30 days
@@ -195,10 +196,10 @@ void RamMethods::LinePermissionCheck(Client*const pClient, const Call_InstallJob
     if ((data.rMask & EvERam::RestrictionMask::ByStanding) == EvERam::RestrictionMask::ByStanding) {
         // get standings
         if (args.isCorpJob) {
-            if (data.minStanding > StandingDB::GetStanding(data.ownerID, pClient->GetCorporationID()))
+            if (data.minStanding > sStandingMgr.GetRawStanding(data.ownerID, pClient->GetCorporationID()))
                 throw UserError("RamAccessDeniedCorpStandingTooLow");
         } else {
-            if (data.minStanding > pClient->GetChar()->GetStandingModified(data.ownerID))
+            if (data.minStanding > sStandingMgr.GetEffectiveStanding(data.ownerID, pClient->GetChar().get()))
                 throw UserError("RamAccessDeniedStandingTooLow");
         }
     }

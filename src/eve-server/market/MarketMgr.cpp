@@ -307,8 +307,8 @@ void MarketMgr::InvalidateOrdersCache(uint32 regionID, int32 typeID)
  *        if stationOwnerID:
  *            if util.IsNPC(stationOwnerID):
  *                factionID = sm.GetService('faction').GetFaction(stationOwnerID)
- *                factionChar = sm.GetService('standing').GetStanding(factionID, eve.session.charid) or 0.0
- *            corpChar = sm.GetService('standing').GetStanding(stationOwnerID, eve.session.charid) or 0.0
+ *                factionChar = sm.GetService('standing').GetRawStanding(factionID, eve.session.charid) or 0.0
+ *            corpChar = sm.GetService('standing').GetRawStanding(stationOwnerID, eve.session.charid) or 0.0
  *        weightedStanding = (0.7 * factionChar + 0.3 * corpChar) / 10.0
  *        commissionPercentage = commissionPercentage * 2.0 ** (-2 * weightedStanding)
  *        tax = util.KeyVal()

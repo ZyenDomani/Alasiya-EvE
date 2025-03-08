@@ -52,6 +52,7 @@ private:
     PyTuple* GetMissionObjectives(Client* pClient, MissionOffer& offer);
     PyDict* GetMissionObjectiveInfo(Client* pClient, MissionOffer& offer);
 
+    bool m_showObjectives;      // used to show objectives on right-hand pane when no args are sent
 };
 
 #endif  // _EVE_SERVER_AGENTBOUND_H

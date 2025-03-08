@@ -124,7 +124,7 @@ bool Inventory::LoadContents() {
         if (sDataMgr.IsStation(m_myID)) {
             if (m_loadClient->IsHangarLoaded(m_myID))
                 return true;
-            m_loadClient->AddStationHangar(m_myID);
+            m_loadClient->AddLoadedHangar(m_myID);
             mContentsLoaded = false;
         }
     }

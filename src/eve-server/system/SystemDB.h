@@ -53,7 +53,6 @@ public:
     static void GetLootGroups(DBQueryResult& res);
     static void GetLootGroupTypes(DBQueryResult& res);
 
-    static bool GetSolarSystemData(uint32 solarSystemID, SolarSystemData &into);
     static bool GetCelestialObjectData(uint32 celestialID, CelestialObjectData &into);
 
     static uint32 GetObjectLocationID( uint32 itemID );

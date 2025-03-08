@@ -326,6 +326,17 @@ void ManagerDB::GetSystemData(DBQueryResult& res)
         codelog(DATABASE__ERROR, "Error in GetSystemData query: %s", res.error.c_str());
 }
 
+void ManagerDB::GetAllSystemData(DBQueryResult& res) {
+    if (!sDatabase.RunQuery(res,
+        "SELECT solarSystemID, constellationID, regionID, solarSystemName, x, y, z, "
+        " xMin, xMax, yMin, yMax, zMin, zMax, luminosity, "
+        " border, fringe, corridor, hub, international, regional, constellation, "
+        " security, factionID, radius, sunTypeID, securityClass "
+        "FROM mapSolarSystems "
+    ))
+        codelog(DATABASE__ERROR, "Error in GetAllSystemData query: %s", res.error.c_str());
+}
+
 void ManagerDB::GetStaticData(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res,
@@ -333,9 +344,9 @@ void ManagerDB::GetStaticData(DBQueryResult& res)
         codelog(DATABASE__ERROR, "Error in GetStaticInfo query: %s", res.error.c_str());
 }
 
-void ManagerDB::GetAgentLocation(DBQueryResult& res)
+void ManagerDB::GetAgentData(DBQueryResult& res)
 {
-    if (!sDatabase.RunQuery(res, "SELECT agentID, locationID FROM agtAgents"))
+    if (!sDatabase.RunQuery(res, "SELECT agentID, corporationID, locationID FROM agtAgents"))
         codelog(DATABASE__ERROR, "Error in GetAgentLocation query: %s", res.error.c_str());
 }
 

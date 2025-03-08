@@ -28,11 +28,12 @@ The special comment looks like a python decorator.
 
 The first argument is the codeType.  This tells liveUpdateSvc the patch method.  There are three patch types.
 
-- globalObjectMethod "{object name}.{function name}" I don't recommend using this
+- globalObjectMethod "{object name}" I don't recommend using this
 - globalFunction "{object name}.{function name}"
 - globalClassMethod "{__guid__}::{class}"
 
 The last argument is the method/function name to patch.
+NOTE:  no newline/space between the descriptor line and def to patch
 
 ### devtools.raw
 

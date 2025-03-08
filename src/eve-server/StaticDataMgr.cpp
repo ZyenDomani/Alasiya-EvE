@@ -24,6 +24,7 @@
 
 #include "../eve-common/EVE_Character.h"
 #include "../eve-common/EVE_POS.h"
+#include <EVE_Agent.h>
 
 /*
  * DATA__ERROR          # specific "data not found but should be there" msgs
@@ -243,6 +244,7 @@ void StaticDataMgr::Populate()
     }
     sLog.Cyan("    StaticDataMgr", "%lu Attribute data sets loaded in %.3fms.", m_attrTypeData.size(), (GetTimeMSeconds() - startTime));
 
+    //TODO:  combine these next 2
     startTime = GetTimeMSeconds();
     ManagerDB::GetSystemData(*res);
     while (res->GetRow(row)) {
@@ -258,23 +260,42 @@ void StaticDataMgr::Populate()
         m_systemData[row.GetInt(0)] = std::move(sysData);
     }
     sLog.Cyan("    StaticDataMgr", "%lu Static System data sets loaded in %.3fms.", m_systemData.size(), (GetTimeMSeconds() - startTime));
-/*
+
     startTime = GetTimeMSeconds();
-    ManagerDB::GetSolarSystemData(*res);
+    ManagerDB::GetAllSystemData(*res);
     while (res->GetRow(row)) {
-        //SELECT solarSystemID, solarSystemName, constellationID, regionID, securityClass, security FROM mapSolarSystems
+        // SELECT solarSystemID, constellationID, regionID, solarSystemName, x, y, z,
+        // xMin, xMax, yMin, yMax, zMin, zMax, luminosity,
+        // border, fringe, corridor, hub, international, regional, constellation,
+        // security, factionID, radius, sunTypeID, securityClass FROM mapSolarSystems
         SolarSystemData sysData   = SolarSystemData();
-        sysData.systemID          = row.GetInt(0);
-        sysData.name              = row.GetText(1);
-        sysData.constellationID   = row.GetInt(2);
-        sysData.regionID          = row.GetInt(3);
-        sysData.securityClass     = (row.IsNull(4) ? "0" : row.GetText(4));
-        sysData.securityRating    = row.GetFloat(5);    // this gives system trueSec
-        sysData.factionID         = (row.IsNull(6) ? 0 : row.GetUInt(6));
-        m_solSysData[row.GetInt(0)] = std::move(sysData);
+        sysData.systemID                = row.GetInt(0);
+        sysData.constellationID         = row.GetInt(1);
+        sysData.regionID                = row.GetInt(2);
+        sysData.name                    = row.GetText(3);
+        sysData.position                = GPoint(row.GetDouble(4), row.GetDouble(5), row.GetDouble(6));
+        sysData.minPosition             = GPoint(row.GetDouble(7), row.GetDouble(8), row.GetDouble(9));
+        sysData.maxPosition             = GPoint(row.GetDouble(10), row.GetDouble(11), row.GetDouble(12));
+        sysData.luminosity              = row.GetDouble(13);
+        sysData.border                  = row.GetBool(14);
+        sysData.fringe                  = row.GetBool(15);
+        sysData.corridor                = row.GetBool(16);
+        sysData.hub                     = row.GetBool(17);
+        sysData.international           = row.GetBool(18);
+        sysData.region                  = row.GetBool(19);
+        sysData.constellation           = row.GetBool(20);
+        sysData.security                = row.GetFloat(21);    // this gives system trueSec
+        sysData.factionID               = (row.IsNull(22) ? 0 : row.GetUInt(22));
+        sysData.radius                  = row.GetDouble(23);
+        sysData.sunTypeID               = row.GetUInt(24);
+        sysData.securityClass           = (row.IsNull(25) ? "0" : row.GetText(25));
+        m_solSysData[row.GetInt(0)]     = std::move(sysData);
+        m_systemConst[row.GetInt(0)]    = row.GetInt(1);
+        m_systemRegion[row.GetInt(0)]   = row.GetInt(2);
+        m_constSystems.emplace(row.GetInt(1), row.GetInt(0));
+        m_regionSystems.emplace(row.GetInt(2), row.GetInt(0));
     }
-    sLog.Cyan("    StaticDataMgr", "%lu Static SolarSystem data sets loaded in %.3fms.", m_solSysData.size(), (GetTimeMSeconds() - startTime));
-*/
+    sLog.Cyan("    StaticDataMgr", "%li Static SolarSystem data sets loaded in %.3fms.", m_solSysData.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
     ManagerDB::GetWHSystemClass(*res);
@@ -366,7 +387,7 @@ void StaticDataMgr::Populate()
             m_stationList.emplace(std::pair<uint32, std::vector<uint32>>(cur.second, sVec));
         }
     }
-    sLog.Cyan("    StaticDataMgr", "%lu Static Station query sets loaded in %.3fms.", (m_stationConst.size() + m_stationRegion.size() + m_stationSystem.size() + m_stationList.size()), (GetTimeMSeconds() - startTime));
+    sLog.Cyan("    StaticDataMgr", "%lu Static Station data sets loaded in %.3fms.", (m_stationConst.size() + m_stationRegion.size() + m_stationSystem.size() + m_stationList.size()), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
     ManagerDB::GetTypeAttributes(*res);
@@ -647,10 +668,10 @@ void StaticDataMgr::Populate()
 
     startTime = GetTimeMSeconds();
     uint32 locationID(0);
-    ManagerDB::GetAgentLocation(*res);
+    ManagerDB::GetAgentData(*res);
     while (res->GetRow(row)) {
-        //SELECT agentID, locationID FROM agtAgents
-        locationID = row.GetInt(1);
+        //SELECT agentID, corporationID, locationID FROM agtAgents
+        locationID = row.GetInt(2);
         if (IsStationID(locationID)) {
             locationID = GetStationSystem(locationID);
         }
@@ -658,10 +679,10 @@ void StaticDataMgr::Populate()
             _log(DATA__MESSAGE, "Failed to query info:  locationID %u is neither station nor system.", locationID);
             continue;
         }
-
-        m_agentSystem.emplace(row.GetInt(0), locationID);
+        m_agentCorp[row.GetInt(0)] = row.GetInt(1);
+        m_agentSystem[row.GetInt(0)] = locationID;
     }
-    sLog.Cyan("    StaticDataMgr", "%lu Agent Data Sets loaded in %.3fms.", m_agentSystem.size(), (GetTimeMSeconds() - startTime));
+    sLog.Cyan("    StaticDataMgr", "%lu Agent Data Sets loaded in %.3fms.", m_agentCorp.size() + m_agentSystem.size(), (GetTimeMSeconds() - startTime));
 
     //cleanup
     SafeDelete(res);
@@ -747,8 +768,14 @@ const char* StaticDataMgr::GetAttrName(uint16 attrID)
     return "None";
 }
 
-PyInt* StaticDataMgr::GetAgentSystemID(int32 agentID)
-{
+uint32 StaticDataMgr::GetAgentCorpID(uint32 agentID) {
+    std::map<uint32, uint32>::iterator itr = m_agentCorp.find(agentID);
+    if (itr != m_agentCorp.end())
+        return itr->second;
+    return 0;
+}
+
+PyInt* StaticDataMgr::GetAgentSystemID(int32 agentID) {
     std::map<uint32, uint32>::iterator itr = m_agentSystem.find(agentID);
     if (itr != m_agentSystem.end())
         return new PyInt(itr->second);
@@ -1145,34 +1172,61 @@ bool StaticDataMgr::GetStationList(uint32 systemID, std::vector< uint32 >& data)
     return false;
 }
 
-uint32 StaticDataMgr::GetStationRegion(uint32 stationID)
-{
+uint32 StaticDataMgr::GetStationRegion(uint32 stationID) {
     std::map<uint32, uint32>::iterator itr = m_stationRegion.find(stationID);
     if (itr != m_stationRegion.end())
         return itr->second;
 
-    _log(DATA__MESSAGE, "Failed to query region info for station %u: Station not found.", stationID);
+    _log(DATA__MESSAGE, "Failed to get regionID for station %u.", stationID);
     return 0;
 }
 
-uint32 StaticDataMgr::GetStationConstellation(uint32 stationID)
-{
+uint32 StaticDataMgr::GetStationConstellation(uint32 stationID) {
     std::map<uint32, uint32>::iterator itr = m_stationConst.find(stationID);
     if (itr != m_stationConst.end())
         return itr->second;
 
-    _log(DATA__MESSAGE, "Failed to query constellation info for station %u: Station not found.", stationID);
+    _log(DATA__MESSAGE, "Failed to get constellationID for station %u.", stationID);
     return 0;
 }
 
-uint32 StaticDataMgr::GetStationSystem(uint32 stationID)
-{
+uint32 StaticDataMgr::GetStationSystem(uint32 stationID) {
     std::map<uint32, uint32>::iterator itr = m_stationSystem.find(stationID);
     if (itr != m_stationSystem.end())
         return itr->second;
 
-    _log(DATA__MESSAGE, "Failed to query system info for station %u: Station not found.", stationID);
+    _log(DATA__MESSAGE, "Failed to get systemID for station %u.", stationID);
     return 0;
+}
+
+uint32 StaticDataMgr::GetSystemConstellation(uint32 stationID) {
+    std::map<uint32, uint32>::iterator itr = m_systemConst.find(stationID);
+    if (itr != m_systemConst.end())
+        return itr->second;
+
+    _log(DATA__MESSAGE, "Failed to get constellationID for system %u.", stationID);
+    return 0;
+}
+
+uint32 StaticDataMgr::GetSystemRegion(uint32 stationID) {
+    std::map<uint32, uint32>::iterator itr = m_systemRegion.find(stationID);
+    if (itr != m_systemRegion.end())
+        return itr->second;
+
+    _log(DATA__MESSAGE, "Failed to get regionID for system %u.", stationID);
+    return 0;
+}
+
+void StaticDataMgr::GetConstellationSystems(uint32 constellationID, std::vector<uint32>& into) {
+    auto itr = m_constSystems.equal_range(constellationID);
+    for (auto &it = itr.first; it != itr.second; ++it)
+        into.push_back(it->second);
+}
+
+void StaticDataMgr::GetRegionSystems(uint32 regionID, std::vector<uint32>& into) {
+    auto itr = m_regionSystems.equal_range(regionID);
+    for (auto &it = itr.first; it != itr.second; ++it)
+        into.push_back(it->second);
 }
 
 uint8 StaticDataMgr::GetWHSystemClass(uint32 systemID)
@@ -1229,21 +1283,27 @@ const char* StaticDataMgr::GetSystemName(uint32 locationID)
         return "Error";
     }
 
-    std::map<uint32, SystemData>::iterator itr = m_systemData.find(locationID);
-    if (itr != m_systemData.end())
+    std::map<uint32, SolarSystemData>::iterator itr = m_solSysData.find(locationID);
+    if (itr != m_solSysData.end())
         return itr->second.name.c_str();
 
     _log(DATA__MESSAGE, "Failed to query info for system %u: System not found.", locationID);
     return "Invalid";
 }
 
-bool StaticDataMgr::GetSolarSystemData(uint32 sysID, SolarSystemData& into)
+bool StaticDataMgr::GetSolarSystemData(uint32 locationID, SolarSystemData& into)
 {
-    if (!IsSolarSystem(sysID)) {
-        _log(DATA__MESSAGE, "Failed to query info:  locationID %u is not system.", sysID);
+    if (IsStation(locationID))
+        locationID = GetStationSystem(locationID);
+
+    if (!IsSolarSystem(locationID)) {
+        _log(DATA__MESSAGE, "Failed to query info:  locationID %u is neither station nor system.", locationID);
         return false;
     }
-    m_solSysData;
+    std::map<uint32, SolarSystemData>::iterator itr = m_solSysData.find(locationID);
+    if (itr == m_solSysData.end())
+        return false;
+    into = itr->second;
     return true;
 }
 
@@ -1324,6 +1384,42 @@ bool StaticDataMgr::IsSolarSystem(uint32 systemID/*0*/)
     std::map<uint32, SystemData>::iterator itr = m_systemData.find(systemID);
     return (itr != m_systemData.end());
 }
+
+bool StaticDataMgr::IsConSystem(uint32 systemID) {
+    std::map<uint32, SolarSystemData>::const_iterator itr = m_solSysData.find(systemID);
+    if (itr != m_solSysData.end())
+        return itr->second.constellation;
+    return false;
+}
+
+bool StaticDataMgr::IsCorridorSystem(uint32 systemID) {
+    std::map<uint32, SolarSystemData>::const_iterator itr = m_solSysData.find(systemID);
+    if (itr != m_solSysData.end())
+        return itr->second.corridor;
+    return false;
+}
+
+bool StaticDataMgr::IsFringeSystem(uint32 systemID) {
+    std::map<uint32, SolarSystemData>::const_iterator itr = m_solSysData.find(systemID);
+    if (itr != m_solSysData.end())
+        return itr->second.fringe;
+    return false;
+}
+
+bool StaticDataMgr::IsHubSystem(uint32 systemID) {
+    std::map<uint32, SolarSystemData>::const_iterator itr = m_solSysData.find(systemID);
+    if (itr != m_solSysData.end())
+        return itr->second.hub;
+    return false;
+}
+
+bool StaticDataMgr::IsRegionSystem(uint32 systemID) {
+    std::map<uint32, SolarSystemData>::const_iterator itr = m_solSysData.find(systemID);
+    if (itr != m_solSysData.end())
+        return itr->second.region;
+    return false;
+}
+
 
 bool StaticDataMgr::IsStation(uint32 stationID/*0*/)
 {
@@ -1577,16 +1673,14 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
 /** @todo  finish this.
  *      - only used by GetCurrentEntities().  custom call for alasiya eve
  */
-std::string StaticDataMgr::GetOwnerName(int32 ownerID)
-{
+std::string StaticDataMgr::GetOwnerName(int32 ownerID) {
     if (ownerID == 1)
         return "System";
 
     return "Unknown - WIP";
 }
 
-uint8 StaticDataMgr::GetRegionQuarter(uint32 regionID)
-{
+uint8 StaticDataMgr::GetRegionQuarter(uint32 regionID) {
     uint32 factionID = 0;
     std::map<uint32, uint32>::iterator itr = m_regions.find(regionID);
     if (itr != m_regions.end())
@@ -1624,8 +1718,7 @@ uint8 StaticDataMgr::GetRegionQuarter(uint32 regionID)
     return 5;
 }
 
-uint32 StaticDataMgr::GetFactionCorp(uint32 factionID)
-{
+uint32 StaticDataMgr::GetFactionCorp(uint32 factionID) {
     switch (factionID) {
         case factionAngel:          return corpArchangels;
         case factionSanshas:        return corpTruePower;
@@ -1661,8 +1754,7 @@ uint32 StaticDataMgr::GetFactionCorp(uint32 factionID)
     return 0;
 }
 
-const char* StaticDataMgr::GetRaceName(uint8 raceID)
-{
+const char* StaticDataMgr::GetRaceName(uint8 raceID) {
     switch (raceID) {
         case Char::Race::Caldari:       return "Caldari";
         case Char::Race::Minmatar:      return "Minmatar";
@@ -1677,8 +1769,7 @@ const char* StaticDataMgr::GetRaceName(uint8 raceID)
     return "Race Not Defined";
 }
 
-uint32 StaticDataMgr::GetRaceFaction(uint8 raceID)
-{
+uint32 StaticDataMgr::GetRaceFaction(uint8 raceID) {
     switch (raceID) {
         case Char::Race::Caldari:       return factionCaldari;
         case Char::Race::Minmatar:      return factionMinmatar;
@@ -1693,8 +1784,7 @@ uint32 StaticDataMgr::GetRaceFaction(uint8 raceID)
     return factionNoFaction;
 }
 
-uint8 StaticDataMgr::GetFactionRace(uint32 factionID)
-{
+uint8 StaticDataMgr::GetFactionRace(uint32 factionID) {
     switch (factionID) {
         case factionCaldari:        return Char::Race::Caldari;
         case factionMinmatar:       return Char::Race::Minmatar;
@@ -1710,8 +1800,7 @@ uint8 StaticDataMgr::GetFactionRace(uint32 factionID)
     return Char::Race::Gallente;
 }
 
-const char* StaticDataMgr::GetRigSizeName(uint8 size)
-{
+const char* StaticDataMgr::GetRigSizeName(uint8 size) {
     switch (size) {
         case 0:      return "Undefined";
         case 1:      return "Small";
@@ -1722,8 +1811,7 @@ const char* StaticDataMgr::GetRigSizeName(uint8 size)
     return "Undefined";
 }
 
-const char* StaticDataMgr::GetProcStateName(int8 state)
-{
+const char* StaticDataMgr::GetProcStateName(int8 state) {
     using namespace EVEPOS;
     switch(state) {
         case ProcState::Invalid:            return "Invalid";
@@ -1740,13 +1828,11 @@ const char* StaticDataMgr::GetProcStateName(int8 state)
     return "Undefined";
 }
 
-const char* StaticDataMgr::GetFlagName(uint16 flag)
-{
+const char* StaticDataMgr::GetFlagName(uint16 flag) {
     return GetFlagName((EVEItemFlags)flag);
 }
 
-const char* StaticDataMgr::GetFlagName(EVEItemFlags flag)
-{
+const char* StaticDataMgr::GetFlagName(EVEItemFlags flag) {
     switch (flag) {
         case flagNone:                          return "AutoFit";
         case flagWallet:                        return "Wallet";
@@ -1867,8 +1953,55 @@ const char* StaticDataMgr::GetFlagName(EVEItemFlags flag)
     return "Undefined";
 }
 
-uint32 StaticDataMgr::GetWreckFaction(uint32 typeID)
-{
+const char* StaticDataMgr::GetCorpDivisionName(uint8 divisionID) {
+    switch (divisionID) {
+        case Corp::Division::Accounting:        return "Accounting";
+        case Corp::Division::Administration:    return "Administration";
+        case Corp::Division::Advisory:          return "Advisory";
+        case Corp::Division::Archives:          return "Archives";
+        case Corp::Division::Astrosurveying:    return "Astrosurveying";
+        case Corp::Division::Command:           return "Command";
+        case Corp::Division::Distribution:      return "Distribution";
+        case Corp::Division::Financial:         return "Financial";
+        case Corp::Division::Intelligence:      return "Intelligence";
+        case Corp::Division::InternalSecurity:  return "Internal Security";
+        case Corp::Division::Legal:             return "Legal";
+        case Corp::Division::Manufacturing:     return "Manufacturing";
+        case Corp::Division::Marketing:         return "Marketing";
+        case Corp::Division::Mining:            return "Mining";
+        case Corp::Division::Personnel:         return "Personnel";
+        case Corp::Division::Production:        return "Production";
+        case Corp::Division::PublicRelations:   return "Public Relations";
+        case Corp::Division::RnD:               return "R & D";
+        case Corp::Division::Security:          return "Security";
+        case Corp::Division::Storage:           return "Storage";
+        case Corp::Division::Surveillance:      return "Surveillance";
+        case Corp::Division::DistributionNew:   return "New Distribution";
+        case Corp::Division::MiningNew:         return "New Mining";
+        case Corp::Division::SecurityNew:       return "New Security";
+    }
+    return "Undefined";
+}
+
+const char* StaticDataMgr::GetAgentTypeName(uint8 typeID) {
+    switch (typeID) {
+        case Agents::Type::None:                return "None";
+        case Agents::Type::Basic:               return "Basic";
+        case Agents::Type::Tutorial:            return "Tutorial";
+        case Agents::Type::Research:            return "Research";
+        case Agents::Type::Unknown:             return "Unknown";
+        case Agents::Type::GenericStoryLine:    return "Generic StoryLine";
+        case Agents::Type::StoryLine:           return "Specific StoryLine";
+        case Agents::Type::Event:               return "Event";
+        case Agents::Type::FacWar:              return "Faction Warfare";
+        case Agents::Type::EpicArc:             return "Epic Arc";
+        case Agents::Type::Aura:                return "Security";
+        case Agents::Type::Career:              return "Career";
+    }
+    return "Undefined";
+}
+
+uint32 StaticDataMgr::GetWreckFaction(uint32 typeID) {
     // these will need to be separated and updated after detailed salvage table is completed
     switch(typeID) {
         case 26469:  //   Amarr Battlecruiser Wreck

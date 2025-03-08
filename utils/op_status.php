@@ -23,8 +23,8 @@ Items listed as "<font color=orange>Skeleton Code Only</font>" has a basic outli
 The server may not respond or only partially respond to these requests. You may get an error from these requests, and the server may crash.<BR><BR>
 Items listed as "<font color=yellow>Preliminary Implementation</font>" have a first draft of their specific code, possibably a step or two above skeleton code, and may not function properly or completely. <BR>
 There will be some response, like opening windows, but *should not* generate an error or crash the server.</font><BR><BR><BR>
-<font color=magenta>Server Version:</font>&nbsp;&nbsp;&nbsp;<font color=orange>0.75.07</font><BR>
-<font color=magenta>Latest Update:</font>&nbsp;&nbsp;&nbsp;<font color=green>14 February 2025</font><BR>
+<font color=magenta>Server Version:</font>&nbsp;&nbsp;&nbsp;<font color=orange>0.75.61</font><BR>
+<font color=magenta>Latest Update:</font>&nbsp;&nbsp;&nbsp;<font color=green>07 March 2025</font><BR>
 <font color=magenta>Page Status:</font>&nbsp;&nbsp;&nbsp;<font color=green>Current</font><BR>
 <font color=magenta>Incomplete Data:</font>&nbsp;&nbsp;&nbsp;<font color=brown>Anything not listed as (<font color=green>Current</font>) is pending review.</font><BR><BR>
 <a href="https://scan.coverity.com/projects/zyendomani-alasiyaeve">
@@ -311,14 +311,14 @@ This led to much faster runtime than I expected, and will be updating all system
 <td><font color=brown>Mostly Complete</font><BR><font color=yellow>Few Odd Bugs</font><BR>8Mar23</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Standings"> Standings (<font color=yellow>needs review</font>)</span></h2>
+<h2> <span class="mw-headline" id="Standings"> Standings (<font color=magenta>Complete Rewrite/Incomplete</font> - <font color=green>Current</font>)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:23%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:74%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:23%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
-<tr><td> &#160;<font color=red><b>22.3</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+<table style="background: transparent; width:74%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
+<tr><td> &#160;<font color=red><b>74.2</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
 <tr><td><font color=red><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
@@ -331,56 +331,71 @@ This led to much faster runtime than I expected, and will be updating all system
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=green>COMPLETE</font><BR>6Mar14</td></tr>
-<tr><td> - <font color=lime>CONCORD Standings (Security Rating)</font>&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by npc/pc kills</font></td><td class="working">30%
+<tr><td> - <font color=lime>CONCORD Standings (Security Rating)</font>&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by npc/pc kills</font></td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Needs More Testing</font><BR>3Feb23</td></tr>
-<tr><td> - Agent to Character&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by missions</font></td><td class="working">30%
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>2Mar25</td></tr>
+<tr><td> - Agents respond to Character standings (personal, corp, faction)</td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Needs More Testing</font><BR>3Feb23</td></tr>
-<tr><td> - Agent to Player Corp&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by missions</font></td><td class="broken">10%
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>2Mar25</td></tr>
+<tr><td> - NPC Station Corps respond to Character personal standings (repair, reprocessing, market)</td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=orange>Skeleton Code Only</font><BR>2Feb20</td></tr>
-<tr><td> - Agents respond to Character standings (personal, corp, ally)</td><td class="broken">15%
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>2Mar25</td></tr>
+<tr><td> - Agent to Character&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by missions</font></td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Preliminary Implementation</font><BR>2Feb20</td></tr>
-<tr><td> - NPC Corp to Character&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by missions and faction kills</font></td><td class="broken">15%
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>2Mar25</td></tr>
+<tr><td> - Agent to Player Corp&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by missions</font></td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Preliminary Implementation</font><BR>2Feb20</td></tr>
-<tr><td> - NPC Corp to Player Corp&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by missions and faction kills</font></td><td class="broken">15%
+<td><font color=teal>Working</font> - <font color=pink>Testing</font><BR>2Mar25</td></tr>
+<tr><td> - Agent Corp to Character&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by missions and corp kills</font></td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Preliminary Implementation</font><BR>2Feb20</td></tr>
-<tr><td> - Character to Character&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by PnP window</font></td><td class="broken">15%
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>2Mar25</td></tr>
+<tr><td> - Agent Corp to Player Corp&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by missions and corp kills</font></td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Preliminary Implementation</font><BR>2Feb20</td></tr>
-<tr><td> - Character to Player Corp&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by PnP window</font></td><td class="broken">10%
+<td><font color=teal>Working</font> - <font color=pink>Testing</font><BR>2Mar25</td></tr>
+<tr><td> - Agent Faction to Character&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by missions and faction kills</font></td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=orange>Skeleton Code Only</font><BR>2Feb20</td></tr>
-<tr><td> - Player Corp to Character&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by Corp Management window</font></td><td class="broken">10%
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>2Mar25</td></tr>
+<tr><td> - Agent Faction to Player Corp&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by missions and faction kills</font></td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=orange>Skeleton Code Only</font><BR>2Feb20</td></tr>
-<tr><td> - Player Corp to Player Corp&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by Corp Management window</font></td><td class="broken">10%
+<td><font color=teal>Working</font> - <font color=pink>Testing</font><BR>2Mar25</td></tr>
+<tr><td> - Character to Character&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by PnP window</font></td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=orange>Skeleton Code Only</font><BR>2Feb20</td></tr>
+<td><font color=teal>Working</font> - <font color=pink>Testing</font><BR>2Mar25</td></tr>
+<tr><td> - Character to Player Corp&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by PnP window</font></td><td class="working">75%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=teal>Working</font> - <font color=pink>Testing</font><BR>2Mar25</td></tr>
+<tr><td> - Player Corp to Character&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by Corp Management window</font></td><td class="working">75%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=teal>Working</font> - <font color=pink>Testing</font><BR>2Mar25</td></tr>
+<tr><td> - Player Corp to Player Corp&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by Corp Management window</font></td><td class="working">75%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=teal>Working</font> - <font color=pink>Testing</font><BR>2Mar25</td></tr>
 <tr><td> - Alliance to Player Corp&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by Corp Management window</font></td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
@@ -527,14 +542,15 @@ This led to much faster runtime than I expected, and will be updating all system
 <td><font color=green>COMPLETE</font><BR>1Feb14</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Agents"> Agents (<font color=green>Current</font>)</span></h2>
+<h2> <span class="mw-headline" id="Agents"> Agents (<font color=green>Current</font>) - <font color=yellow>v0.75</font></span></h2>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color=yellow size=+1>NOTE: See forums for agent details, quirks and my alterations/updates</font>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:63%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:84%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:63%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
-<tr><td> &#160;<font color=red><b>63.1</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+<table style="background: transparent; width:84%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
+<tr><td> &#160;<font color=red><b>83.3</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color=red><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
@@ -542,41 +558,52 @@ This led to much faster runtime than I expected, and will be updating all system
 <tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
-<tr><td> - Agents Tab</td><td class="working">75%
+<tr><td> - Agents Tab in Station<br>Agent portraits not working in station listing</td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>19Nov18</td></tr>
-<tr><td> - Can initiate conversation with agent</td><td class="working">75%
+<td><font color=teal>Working</font> - <font color=pink>Testing</font><BR>2Mar25</td></tr>
+<tr><td> - Initiate conversation with agent</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>19Nov18</td></tr>
-<tr><td> - Agents offer Missions</td><td class="working">75%
+<td><font color=lime>Final Testing</font><BR>2Mar25</td></tr>
+<tr><td> - Agents respond based on your standings</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>19Nov18</td></tr>
-<tr><td> - Can View Mission Offer</td><td class="working">75%
+<td><font color=lime>Final Testing</font><BR>5Mar25</td></tr>
+<tr><td> - Agents respond based on availability<br>
+This includes agents on cooldown and storyline agents.</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>19Nov18</td></tr>
-<tr><td> - Can Accept Mission Offer</td><td class="working">75%
+<td><font color=lime>Final Testing</font><BR>5Mar25</td></tr>
+<tr><td> - Agents offer Missions<BR>
+<font color=cyan>Currently, all agents offer Courier missions, as these are the easiest to code/test</font><br>
+<font color=yellow>NOTE: this includes important (faction) missions</font></td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>19Nov18</td></tr>
-<tr><td> - Can Complete Mission Offer</td><td class="working">75%
+<td><font color=lime>Final Testing</font><BR>2Mar25</td></tr>
+<tr><td> - Agents respond based on mission status</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>19Nov18</td></tr>
-<tr><td> - Can Search Agents</td><td class="broken">15%
+<td><font color=lime>Final Testing</font><BR>6Mar25</td></tr>
+<tr><td> - Agents Give Personal and Corporate Standings<BR>
+Important missions are the only courier missions that give faction standings<br>
+<font color=cyan>Derived standings not implemented yet</font></td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Preliminary Implementation</font><BR>19Nov18</td></tr>
+<td><font color=lime>Final Testing</font><BR>7Mar25</td></tr>
+<tr><td> - Can Search Agents (using AgentFinder in stations)<br>
+Agent portraits are working in the agent finder.</td><td class="working">95%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=lime>Final Testing</font><BR>7Mar25</td></tr>
 <tr><td> - Can Search for character by agent</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
@@ -584,14 +611,15 @@ This led to much faster runtime than I expected, and will be updating all system
 <td><font color=orange>Skeleton Code Only</font><BR>19Nov18</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2><span class="mw-headline" id="Missions"> Missions (<font color=green>Current</font>)</span></h2>&nbsp;&nbsp;&nbsp;&nbsp;See forums for details on types and offers
+<h2><span class="mw-headline" id="Missions"> Missions (<font color=green>Current</font>) - <font color=yellow>v0.45</font></span></h2>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color=yellow size=+1>NOTE: See forums for details on types and offers</font>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:15%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:44%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:15%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
-<tr><td> &#160;<font color=red><b>13.5</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+<table style="background: transparent; width:44%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
+<tr><td> &#160;<font color=red><b>43.5</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color=red><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
@@ -599,88 +627,148 @@ This led to much faster runtime than I expected, and will be updating all system
 <tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
-<tr><td> - Missions Give Rewards (isk/standings)</td><td class="working">75%
+<tr><td> - Can View Mission Offer</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=pink>Testing</font><BR>19Nov18</td></tr>
-<tr><td> - Missions Give LP</td><td class="broken">10%
+<td><font color=lime>Final Testing</font><BR>2Mar25</td></tr>
+<tr><td> - Can Accept Mission Offer</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=orange>Skeleton Code Only</font><BR>19Nov18</td></tr>
+<td><font color=lime>Final Testing</font><BR>2Mar25</td></tr>
+<tr><td> - Can Delay Mission Offer (24h)</td><td class="working">95%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=lime>Final Testing</font><BR>2Mar25</td></tr>
+<tr><td> - Can Decline Mission Offer<BR>
+<font color=yellow>Declining more than one mission from the same agent within 4 hours will result in a standings loss with that agent</font></td><td class="working">95%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=lime>Final Testing</font><BR>2Mar25</td></tr>
+<tr><td> - Can Complete Mission</td><td class="working">95%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=lime>Final Testing</font><BR>2Mar25</td></tr>
+<tr><td> - Can Quit Mission</td><td class="working">95%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=lime>Final Testing</font><BR>2Mar25</td></tr>
+<tr><td> - Missions Give Rewards (ISK/LP)<br>
+NOTE: LP store not implemented yet.</td><td class="working">95%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=lime>Final Testing</font><BR>2Mar25</td></tr>
+<tr><td> - Missions Expire (24h)</td><td class="working">95%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=lime>Final Testing</font><BR>2Mar25</td></tr>
 <tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Basic Mission Types</h3></font></td></tr>
-<tr><td> - <font color=lime>Courier Missions</font><BR>Simple delivery where you are requested to move items from one location to another.<BR>
-Item(s) to deliver are supplied by Agent.<BR>No standing loss from opposing faction.</td><td class="working">75%
+<tr><td> - <font color=lime>Courier Missions</font><BR>
+Agent supplies item(s) to deliver to requested location.<BR>
+Destination can be anywhere from same system to different region<BR>
+No standing loss from opposing faction.</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>19Nov18</td></tr>
-<tr><td> - <font color=lime>Mining Missions</font> - 2 Types. <BR>Mine specific ore at specific location.<BR>
-Supply agent with ore or minerals.</td><td class="broken">15%
+<td><font color=lime>Final Testing</font><BR>2Mar25</td></tr>
+<tr><td> - <font color=lime>Mining Missions</font> - 2 Types. <BR>
+Mine and deliver specific ore from specific location.<BR>
+Supply agent with ore or minerals.<br>
+Deadspace locations will have rats, either region-specific or wanderers</td><td class="broken">15%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Preliminary Implementation</font><BR>19Nov18</td></tr>
-<tr><td> - <font color=lime>Security Missions</font> - 2 Types.<BR>Destroy ships at given location in space.<BR>
-Destroy ships in deadspace pockets using acceleration gates.</td><td class="broken">0%
+<td><font color=yellow>Preliminary Implementation</font><BR>
+<font color=red>Not Given out yet</font><BR>2Mar25</td></tr>
+<tr><td> - <font color=lime>Security Missions</font><BR>
+Destroy ships at given location in space.</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=red>NOT IMPLEMENTED</font><BR>19Nov18</td></tr>
-<tr><td> - <font color=lime>Trade Missions</font><BR>Provide item(s) to specific station.<BR>Can be either crafted or bought. <BR> No standing loss from opposing faction.</td><td class="broken">0%
+<tr><td> - <font color=lime>Trade Missions</font><BR>
+Provide item(s) to specific station.<BR>
+Can be either crafted or bought. <BR>
+No standing loss from opposing faction.</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=red>NOT IMPLEMENTED</font><BR>19Nov18</td></tr>
 <tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Special Mission Types</h3></font></td></tr>
-<tr><td> - <font color=lime>Tutorial Missions</font><BR> Missions for beginning pilots to learn game basics.<BR>
-<font color=yellow>On Hold...May not be implemented on Alasiya.</font></td><td class="broken">0%
+<tr><td> - <font color=lime>Important & Storyline Missions</font><BR>
+Offered from Special agent after completion of 15 same-level missions for same corporation.<BR>
+These missions give faction standings<br>Repeatable.</td><td class="working">75%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=teal>Working</font> - <font color=pink>Testing</font><BR>
+<font color=yellow>NOTE: Currently only Courier missions</font><BR>2Mar25</td></tr>
+<tr><td> - <font color=lime>Research Missions</font><BR>
+Special Missions given by Research Agents during ongoing research.</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=red>NOT IMPLEMENTED</font><BR>19Nov18</td></tr>
-<tr><td> - <font color=lime>Storyline Missions</font><BR>Offered from Special agent after completion of 16 same-level missions for same faction.<BR> Repeatable.</td><td class="broken">15%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
-<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Preliminary Implementation</font><BR>8Mar23</td></tr>
-<tr><td> - <font color=lime>Research Missions</font><BR>Special Missions given by Research Agents during ongoing research.</td><td class="broken">0%
+<tr><td> - <font color=lime>Circular Missions</font><BR>
+Given by L1 & L2  Agents. Entire chain runs a large loop around a given region, ending back at the start point.</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=red>NOT IMPLEMENTED</font><BR>19Nov18</td></tr>
-<tr><td> - <font color=lime>Data Missions</font><BR>Turn in pirate tags for standings.<BR>Higher Agents may give basic missions for higher rewards.</td><td class="broken">0%
+<tr><td> - <font color=lime>Anomic Missions</font><BR>
+Given by L4 Security Agents. Tougher than 'regular' L4 missions.  Can be declined without penalty.  Ship Restrictions.</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=red>NOT IMPLEMENTED</font><BR>19Nov18</td></tr>
-<tr><td> - <font color=lime>Cosmos Missions</font><BR> Mission Chains given from CONCORD agents.  Can only be completed once. <BR>Expiration, Failure or Denial forever blocks giving agent.<BR><font color=yellow>On Hold...May not be implemented on Alasiya.</font></td><td class="broken">0%
+<tr><td> - <font color=lime>Burner Missions</font><BR>
+Can be offered from any Agent. Can be declined without penalty.  Ship Restrictions.</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=red>NOT IMPLEMENTED</font><BR>19Nov18</td></tr>
-<tr><td> - <font color=lime>Anomic Missions</font><BR> Given by L4 Security Agents. Tougher than 'regular' L4 missions.  Can be declined without penalty.  Ship Restrictions.</td><td class="broken">0%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
-<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=red>NOT IMPLEMENTED</font><BR>19Nov18</td></tr>
-<tr><td> - <font color=lime>Arc Missions</font><BR> Large Mission Chains broken into chapters.  7 total Epic Arcs.  Can be repeated every 3 months.<BR>
-<font color=yellow>On Hold...May not be implemented on Alasiya.</font></td><td class="broken">0%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
-<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=red>NOT IMPLEMENTED</font><BR>19Nov18</td></tr>
-<tr><td> - <font color=lime>Burner Missions</font><BR>Can be offered from any Agent. Can be declined without penalty.  Ship Restrictions.</td><td class="broken">0%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
-<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=red>NOT IMPLEMENTED</font><BR>19Nov18</td></tr>
-<tr><td> - <font color=lime>Unsorted Missions</font><BR> Custom missions separate from other categories.</td><td class="broken">10%
+<tr><td> - <font color=lime>Unsorted Missions</font><BR>
+Custom missions separate from other categories.</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=orange>Skeleton Code Only</font><BR>19Nov18</td></tr></table>
+<td><font color=orange>Skeleton Code Only</font><BR>19Nov18</td></tr>
+<tr><td> - <font color=lime>Data Missions</font><BR>
+Turn in pirate tags for standings.<BR>
+Higher Agents may give basic missions for higher rewards.</td><td class="broken">0%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=red>NOT IMPLEMENTED</font><BR>19Nov18</td></tr>
+<tr><td> - <font color=lime>Arc Missions</font><BR>
+Large Mission Chains broken into chapters.  7 total Epic Arcs.  Can be repeated every 3 months.<BR>
+<font color=yellow>On Hold...May not be implemented on Alasiya.</font></td><td class="broken">0%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=red>NOT IMPLEMENTED</font><BR>19Nov18</td></tr>
+<tr><td> - <font color=lime>Tutorial Missions</font><BR>
+Missions for beginning pilots to learn game basics.<BR>
+<font color=yellow>On Hold...May not be implemented on Alasiya.</font></td><td class="broken">0%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=red>NOT IMPLEMENTED</font><BR>19Nov18</td></tr>
+<tr><td> - <font color=lime>Cosmos Missions</font><BR>
+Mission Chains given from CONCORD agents.  Can only be completed once. <BR>
+Expiration, Failure or Denial forever blocks giving agent.<BR>
+<font color=yellow>On Hold...May not be implemented on Alasiya.</font></td><td class="broken">0%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=red>NOT IMPLEMENTED</font><BR>19Nov18</td></tr></table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="Chats_-_Local_Corp_Custom_Private"> LSC - Large Scale Chat System (<font color=pink>Rewrite on hold</font>) </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">

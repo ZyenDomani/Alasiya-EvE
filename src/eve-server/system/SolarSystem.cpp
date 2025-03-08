@@ -49,7 +49,7 @@ SolarSystem::SolarSystem(
   m_corridor(_ssData.corridor),
   m_hub(_ssData.hub),
   m_international(_ssData.international),
-  m_regional(_ssData.regional),
+  m_regional(_ssData.region),
   m_constellation(_ssData.constellation),
   m_security(_ssData.security),
   m_factionID(_ssData.factionID),

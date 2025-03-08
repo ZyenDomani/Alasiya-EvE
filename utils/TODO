@@ -1,7 +1,7 @@
 
 *******************************************************
 ****  Allan's EvEmu TODO LIST
-****     12 July 2024
+****     2 March 2025
 
     note:  this whole file needs to be reorganized (wip)
 
@@ -22,6 +22,9 @@ NOTE:  for calls that use internal methods that send a reply, model from InjectS
 *******************************************************
 *******************************************************
 **********  errors and other found shit...high priority
+
+**!
+ship cargo (and probably others) not being updated in server while docked.  cargo shows 1752.0m3 but cant load more than 1500 (ship default)
 
 same acct can be logged in multiple times
 
@@ -75,6 +78,10 @@ add agent portraits to server and update 'backupurl' in server code
 *******************************************************
 *******************************************************
 **********  coding errors/corrections/improvements ... med priority
+
+any client message errors like  [no messageID: xxxxxx]
+needs the call sent as text, not as integer  i.e. send message as follows:
+PyString("UI/Agents/DefaultMessages/NoMission1")
 
 rewrite wreck creation tables.  wrecks are in invTypes table and listed as s/m/l +few extras
    use npc ship groupID to determine faction and size
@@ -534,6 +541,7 @@ journal msgs need to be implemented (wip)
 
 standings
     - this is singleton (sStandingMgr)
+    - this currently isnt used correctly...update db online...fix to do all standings calc's and updates
     - basic standings hit db on every call.  probably way too much for static data
     - reproc/ram to remove individual standing code in favor of common code (evemath::standing?)
     - faction/corp standings should be static for npc groups

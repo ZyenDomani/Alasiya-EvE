@@ -24,3 +24,8 @@ liveupdates --
 ==16109==
 ==16109== ERROR SUMMARY: 119 errors from 119 contexts (suppressed: 0 from 0)
 
+
+ for reference.  not sure how/if this works, but is on the books for C++/11  (variadic maybe?)
+template <typename... Args> void test(const char* f, Args... args) {
+    printf(f, args...);
+}

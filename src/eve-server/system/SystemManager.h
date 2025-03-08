@@ -82,6 +82,7 @@ public:
     const std::string& GetNameStr() const               { return m_data.name; }
     const char* GetName() const                         { return m_data.name.c_str(); }
     const char* GetSystemSecurityClass()                { return m_data.securityClass.c_str(); }
+    // 1.0 to -0.9
     const float GetSystemSecurityRating()               { return m_data.securityRating; }
 
     PyServiceMgr* GetServiceMgr()                       { return &m_services; }
@@ -150,7 +151,7 @@ public:
     void GetAllEntities(std::vector<CosmicSignature>& vector);
 
     std::map<uint32, SystemEntity*> GetOperationalStatics() { return m_opStaticEntities; }
-    std::map<uint32, SystemEntity*> GetGates() { return m_gateMap; }
+    std::map<uint32, SystemEntity*> GetGates()          { return m_gateMap; }
 
     SystemEntity* GetEntityByID(uint32 itemID);
 
@@ -163,7 +164,7 @@ public:
     void ResetAsteroids();
 
     // adds SEs to deleteLater list, which is purged on next tic
-    void AddToDeleteLater(SystemEntity* pSE)     { m_deleteLater[pSE->GetID()] = pSE; }
+    void AddToDeleteLater(SystemEntity* pSE)            { m_deleteLater[pSE->GetID()] = pSE; }
 
     // find all cans and wrecks in this system owned by calling char and set new fleetID
     void UpdateContainerFleetID(uint32 ownerID, uint32 fleetID);           // this will allow fleet salvagers to tractor wrecks and cans
@@ -227,8 +228,8 @@ private:
 
     // system entity lists:
     bool m_entityChanged :1;
-    std::map<uint32, NPC*> m_npcs;
-    std::map<uint32, Client*> m_clients;
+    std::map<uint32, NPC*> m_npcs;                      //npcID/ptr  we do not own these
+    std::map<uint32, Client*> m_clients;                //charID/ptr  we do not own these
     std::map<uint32, SystemEntity*> m_entities;         // this list is all entities in this system.  we own these.
     std::map<uint32, SystemEntity*> m_ticEntities;      // this list is for entities that need process tics (objects, npc, client ships)
     std::map<uint32, SystemEntity*> m_staticEntities;   // this list is for static entities to send in setstate

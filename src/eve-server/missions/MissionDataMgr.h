@@ -37,14 +37,18 @@ public:
     void                RemoveMissionOffer(uint32 charID, MissionOffer& data);
     void                LoadMissionOffers(uint32 charID, std::vector<MissionOffer>& data);
     void                LoadAgentOffers(const uint32 agentID, std::map<uint32, MissionOffer>& data);
+    // this clears offer data before populating
     void                CreateMissionOffer(uint8 typeID, uint8 level, uint8 raceID, bool important, MissionOffer& data);
 
     std::string         GetTypeName(uint8 typeID);
     std::string         GetTypeLabel(uint8 typeID);
 
-    PyString* GetKillRes()                               { PyIncRef(KillPNG); return KillPNG; }
-    PyString* GetMiningRes()                             { PyIncRef(MiningPNG); return MiningPNG; }
-    PyString* GetCourierRes()                            { PyIncRef(CourierPNG); return CourierPNG; }
+    PyString*           GetKillRes()                    { PyIncRef(KillPNG); return KillPNG; }
+    PyString*           GetMiningRes()                  { PyIncRef(MiningPNG); return MiningPNG; }
+    PyString*           GetCourierRes()                 { PyIncRef(CourierPNG); return CourierPNG; }
+    PyString*           GetTalkPNG()                    { PyIncRef(TalkPNG); return TalkPNG; }
+    PyString*           GetSmashPNG()                   { PyIncRef(SmashPNG); return SmashPNG; }
+    PyString*           GetInteractPNG()                { PyIncRef(InteractPNG); return InteractPNG; }
 
 protected:
     void                Populate();
@@ -53,20 +57,22 @@ private:
     uint8 m_procCount;
 
     std::map<std::string, uint32> m_names;
-    std::multimap<uint8, CourierData> m_courier;    // level/data
-    std::multimap<uint8, CourierData> m_courierImp;    // level/data
-    std::multimap<uint8, CourierData> m_mining;     // level/data
-    std::multimap<uint8, CourierData> m_miningImp;     // level/data
-    std::multimap<uint8, MissionData> m_missions;   // level/data
-    std::multimap<uint8, MissionData> m_missionsImp;   // level/data
-    std::multimap<uint32, MissionOffer> m_offers;   // charID/data      current mission offers by charID
-    std::multimap<uint32, MissionOffer> m_aoffers;   // agentID/data    current mission offers by agentID
-    std::multimap<uint32, MissionOffer> m_xoffers;   // charID/data     expired/completed offers by charID
+    std::multimap<uint8, CourierData> m_courier;        // level/data
+    std::multimap<uint8, CourierData> m_courierImp;     // level/data
+    std::multimap<uint8, CourierData> m_mining;         // level/data
+    std::multimap<uint8, MissionData> m_missions;       // level/data
+    std::multimap<uint8, MissionData> m_missionsImp;    // level/data
+    std::multimap<uint32, MissionOffer> m_offers;       // charID/data     current mission offers by charID
+    std::multimap<uint32, MissionOffer> m_aoffers;      // agentID/data    current mission offers by agentID
+    std::multimap<uint32, MissionOffer> m_xoffers;      // charID/data     expired/completed offers by charID
 
     //  mission png resources...
+    PyString* InteractPNG;
     PyString* CourierPNG;
     PyString* MiningPNG;
     PyString* KillPNG;
+    PyString* TalkPNG;
+    PyString* SmashPNG;
 };
 
 //Singleton

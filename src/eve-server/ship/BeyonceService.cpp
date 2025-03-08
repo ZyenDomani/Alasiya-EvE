@@ -707,7 +707,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             // fudge the distance a bit for these... its' a lil close by default
             GVector vectorFromOrigin(pClient->GetShipSE()->GetPosition(), warpToPoint);
             vectorFromOrigin.normalize();   //we now have a direction
-            GPoint stopPoint = (vectorFromOrigin * (radius + 3500 + pClient->GetShip()->radius()));
+            GPoint stopPoint = (vectorFromOrigin * (radius + 2000 + pClient->GetShip()->radius()));
             warpToPoint -= stopPoint;
             // this makes ship warp to station dock elevation (y), instead of warping to stations "center point" position (where icon is)
             warpToPoint.y = stDataMgr.GetDockPosY(pSE->GetID());
@@ -809,7 +809,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuffAutopilot(PyCallArgs &call) {
     GPoint warpToPoint = pSE->GetPosition();
     GVector vectorFromOrigin(call.client->GetShipSE()->GetPosition(), warpToPoint);
     vectorFromOrigin.normalize();   //we now have a direction
-    GPoint stopPoint = (vectorFromOrigin * sConfig.world.apWarptoDistance * pSE->GetRadius());
+    GPoint stopPoint = (vectorFromOrigin * (sConfig.world.apWarptoDistance + call.client->GetShipSE()->GetRadius()));
     warpToPoint -= stopPoint;
 
     _log(AUTOPILOT__MESSAGE, "%s called WarpToStuffAutopilot. AP: %s  Target:%s(%u)", \
@@ -832,10 +832,10 @@ PyResult BeyonceBound::Handle_CmdDock(PyCallArgs &call) {
     if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return PyStatic.NewNone();
-    } else if (pDestiny->IsWarping()) {
+    } /*else if (pDestiny->IsWarping()) {
         call.client->SendNotifyMsg( "You can't do this while warping");
         return PyStatic.NewNone();
-    }
+    }*/
     SystemManager* pSystem = call.client->SystemMgr();
     if (pSystem == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no system manager.", call.client->GetName());

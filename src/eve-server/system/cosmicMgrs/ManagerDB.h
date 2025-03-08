@@ -34,13 +34,14 @@ public:
     static void GetCategoryData(DBQueryResult& res);
 
     static void GetOreBySSC(DBQueryResult& res);
+    static void GetAgentData(DBQueryResult& res);
     static void GetSkillList(DBQueryResult& res);
     static void LoadCorpNames(DBQueryResult& res);
     static void GetSystemData(DBQueryResult& res);
     static void GetStaticData(DBQueryResult& res); // static items in a solar system
     static void GetMoonResouces(DBQueryResult& res);
     static void GetFactionNames(DBQueryResult& res);
-    static void GetAgentLocation(DBQueryResult& res);
+    static void GetAllSystemData(DBQueryResult& res);
     static void GetSalvageGroups(DBQueryResult& res);
     static void GetAttributeTypes(DBQueryResult& res);
     static void GetTypeAttributes(DBQueryResult& res);

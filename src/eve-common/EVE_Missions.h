@@ -9,19 +9,7 @@
 
 #ifndef EVE_MISSIONS_H
 #define EVE_MISSIONS_H
-
-struct MissionData {
-        bool important = false;
-        uint8 level = 0;
-        uint8 typeID = 0;
-        uint8 range = 0;
-        uint16 missionID = 0;
-        uint32 briefingID = 0;
-        uint32 constellationID = 0;
-        uint32 corporationID = 0;
-        uint32 dungeonID = 0;
-        std::string name = "none";
-};
+#include <eve-compat.h>
 
 class PyList;
 struct MissionOffer {
@@ -30,23 +18,23 @@ struct MissionOffer {
     bool remoteOfferable = false;
     bool remoteCompletable = false;
     uint8 stateID = 0;
-    uint8 typeID = 0;
-    uint8 range = 0;
-    uint16 bonusTime = 0;           // time in minutes
-    uint16 missionID = 0;           // this is mission title messageID for locale
+    uint8 typeID = 0;                   //Mission::Type::xxx
+    uint16 bonusTime = 0;               // time in minutes
+    uint16 missionID = 0;               // this is mission title messageID for locale
     uint16 rewardLP = 0;
     uint16 rewardItemID = 0;
     uint16 rewardItemQty = 0;
-    uint16 courierTypeID = 0;
-    uint16 courierAmount = 0;
+    uint16 courierTypeID = 0;           // item to bring
+    uint16 courierAmount = 0;           // amount of typeID
     uint16 destinationTypeID = 0;
     uint32 offerID = 0;
     uint32 agentID = 0;
-    uint32 briefingID = 0;          // this is mission briefing messageID for locale
-    //uint32 contentID;           // on live, this is specific char data for mission keywords.  we're not using it
+    uint32 briefingID = 0;              // this is mission briefing messageID for locale
+    //uint32 contentID;                 // on live, this is specific char data for mission keywords.  we're not using it
     uint32 characterID = 0;
-    uint32 rewardISK = 0;
-    uint32 bonusISK = 0;
+    uint32 rewardISK = 0;               // base reward for completion
+    uint32 bonusLP = 0;                // additional reward for completion within bonusTime
+    uint32 bonusISK = 0;                // additional reward for completion within bonusTime
     uint32 originID = 0;
     uint32 originOwnerID = 0;
     uint32 originSystemID = 0;
@@ -55,22 +43,39 @@ struct MissionOffer {
     uint32 destinationSystemID = 0;
     uint32 dungeonLocationID = 0;
     uint32 dungeonSolarSystemID = 0;
-    uint32 acceptFee = 0;
-    float courierItemVolume = 0.0f;
-    double expiryTime = 0.0;
-    double dateIssued = 0.0;
-    double dateAccepted = 0.0;
-    double dateCompleted = 0.0;
+    uint32 acceptFee = 0;               // collateral, if defined
+    float courierItemVolume = 0.0f;     //items volume
+    int64 expiryTime = 0;               // windows filetime (GetFileTimeNow())
+    int64 dateIssued = 0;               // time offer was created - windows filetime (GetFileTimeNow())
+    int64 dateAccepted = 0;             // time offer was accepted - windows filetime (GetFileTimeNow())
+    int64 dateCompleted = 0;            // time offer was completed, failed or rejected - windows filetime (GetFileTimeNow())
     std::string name = "none";
     PyList* bookmarks = nullptr;
 };
 
-struct CourierData {
-    bool important;
-    bool storyline;
+//generic unsorted mission
+struct MissionData {
+    bool important = false;
+    bool storyLine = false;
     uint8 level = 0;
     uint8 typeID = 0;
-    uint8 range = 0;
+    uint8 raceID = 0;
+    uint16 missionID = 0;
+    uint32 briefingID = 0;
+    uint32 constellationID = 0;
+    uint32 corporationID = 0;
+    uint32 dungeonID = 0;
+    uint32 rewardItemID = 0;
+    uint32 rewardItemQty = 0;
+    uint32 bonusTime = 0;
+    std::string name = "none";
+};
+
+struct CourierData {
+    bool important = false;
+    bool storyline = false;
+    uint8 level = 0;
+    uint8 typeID = 0;
     uint8 raceID = 0;
     uint16 bonusTime = 0;
     uint16 missionID = 0;
@@ -79,8 +84,6 @@ struct CourierData {
     uint16 rewardItemID = 0;
     uint16 rewardItemQty = 0;
     uint32 briefingID = 0;
-    uint32 rewardISK = 0;
-    uint32 bonusISK = 0;
     float itemVolume = 0.0f;
     std::string name = "none";
 };
@@ -110,26 +113,50 @@ namespace Mission {
 
     namespace Type {
         enum {
-            // i think these are arbitrary
-            Tutorial    = 1,
-            Encounter   = 2,
-            Courier     = 3,
-            Trade       = 4,
-            Mining      = 5,
-            Research    = 6,
-            Data        = 7,
-            Storyline   = 8,  // After every 15 regular missions completed you will be offered a storyline mission.
-            Cosmos      = 9,
-            Arc         = 10, //Throughout the arc, you will be offered choices which will branch the arc in one or more directions, and thus the arcs have different outcomes depending on your choices. The missions that make up these arcs typically have very good ISK rewards and the last mission of the arc typically carries a handsome reward. There are seven Epic Mission Arcs. Most players begin with The Blood-Stained Stars, an arc that can be completed in a T1 frigate and gives a boost in standings withe Sisters of Eve. Seasoned L4 runners will be doing the four empire epic arcs while the fearless pilots can do the two pirate epic arcs. Epic arcs can be repeated once every three months.
-            Anomic      = 11, //optional security missions that are given out by level 4 agents. They can always be declined without penalty. Anomic missions present a different and higher challenge compared to other security missions. You will encounter a small number of very powerful adversaries and you are restricted in ship size.
-            Burner      = 12  //Miscellanous offers that can be completed in T1 frig/dessy, that have no bearing on corp/ally standings.  these are purely personal agent requests.  all agents have a chance to give these "courier" missions, which can be decliened without penalty.
+            // these are arbitrary/internal.  actual type sent to client via sMissionDataMgr.GetTypeLabel()
+            Tutorial    = 1,    //gameplay intro.  probably wont have them here.
+            Encounter   = 2,    //kill missions
+            Courier     = 3,    //moving goods from one station to another
+            Trade       = 4,    //differ from courier as they need a pilot to provide the agent with the goods requested
+            Mining      = 5,    //delivering volumes of minerals or ore to a certain location
+            Research    = 6,    //these missions award Research Points that can be used to buy datacores from the agent who gives the missions
+            Data        = 7,    //handing in tags to the agent for standing gain
+            Storyline   = 8,    // After every 15 regular missions completed you will be offered a storyline mission.
+            Cosmos      = 9,    //special missions found in certain regions of space and vary wildly in difficulty
+            Arc         = 10,   //Throughout the arc, you will be offered choices which will branch the arc in one or more directions, and thus the arcs have different outcomes depending on your choices. The missions that make up these arcs typically have very good ISK rewards and the last mission of the arc typically carries a handsome reward. There are seven Epic Mission Arcs. Most players begin with The Blood-Stained Stars, an arc that can be completed in a T1 frigate and gives a boost in standings withe Sisters of Eve. Seasoned L4 runners will be doing the four empire epic arcs while the fearless pilots can do the two pirate epic arcs. Epic arcs can be repeated once every three months.
+            Anomic      = 11,   //optional security missions that are given out by level 4 agents. They can always be declined without penalty. Anomic missions present a different and higher challenge compared to other security missions. You will encounter a small number of very powerful adversaries and you are restricted in ship size.
+            Burner      = 12,   //Miscellaneous offers that can be completed in T1 frig/dessy, that have no bearing on corp/ally standings.  these are purely personal agent requests.  all agents have a chance to give these "courier" missions, which can be declined without penalty.
+            Circle      = 13    //group of missions in a loop around constellation/region, ending at begin point
         };
     }
-
+/*
+    switch (offer.typeID) {
+        case Mission::Type::Tutorial:
+        case Mission::Type::Encounter:
+        case Mission::Type::Courier:
+        case Mission::Type::Trade:
+        case Mission::Type::Mining:
+        case Mission::Type::Research:
+        case Mission::Type::Data:
+        case Mission::Type::Storyline:
+        case Mission::Type::Cosmos:
+        case Mission::Type::Arc:
+        case Mission::Type::Anomic:
+        case Mission::Type::Burner: {
+        } break;
+    }
+*/
 }
 
 #endif  // EVE_MISSIONS_H
 
+/* courier mission data
+ * l1   <5j same constellation  < 350m3
+ * l2   <5j neighbor const      < 450m3
+ * l3   <12j neighbor const     < 2km3
+ * l4   1-12j neighbor const    1k - 4k2m3
+ * l5   5-15j neighbor region   3k - 7k5m3
+ */
 
 /* {'FullPath': u'UI/Agents/StandardMission', 'messageID': 235484, 'label': u'DeclineImportantMessageTitle'}(u'Decline Important Mission?', None, None)
  * {'FullPath': u'UI/Agents/StandardMission', 'messageID': 235485, 'label': u'CargoCapacityWarningTitle'}(u'Cargo Capacity Warning', None, None)
@@ -139,7 +166,6 @@ namespace Mission {
  * {'FullPath': u'UI/Agents/StandardMission', 'messageID': 235489, 'label': u'CargoCapacityWarningAccept'}(u'To accept this mission, your ship would have to have space for {[numeric]neededCapacity, decimalPlaces=2} more cargo units in its cargo hold.', None, {u'{[numeric]neededCapacity, decimalPlaces=2}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 512, 'kwargs': {'decimalPlaces': 2}, 'variableName': 'neededCapacity'}})
  * {'FullPath': u'UI/Agents/StandardMission', 'messageID': 235490, 'label': u'MissingMissionObjectiveItem'}(u'One or more mission objectives have not been completed. For example, you must deliver {[item]objectiveTypeID.quantityName, quantity=objectiveQuantity} to complete this mission.  Please check your mission journal for further information.', None, {u'{[item]objectiveTypeID.quantityName, quantity=objectiveQuantity}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'quantityName', 'args': 0, 'kwargs': {'quantity': 'objectiveQuantity'}, 'variableName': 'objectiveTypeID'}})
  * {'FullPath': u'UI/Agents/StandardMission', 'messageID': 235491, 'label': u'DeclineMessageGeneric'}(u'Declining a mission from a particular agent more than once every 4 hours will result in a loss of standing with that agent.', None, None)
- * {'FullPath': u'UI/Agents/StandardMission', 'messageID': 235492, 'label': u'MissingMissionObjectivePlayerLocation'}(u'You have to be at the drop off location to deliver the items in person', None, None)
  * {'FullPath': u'UI/Agents/StandardMission', 'messageID': 235493, 'label': u'MissingMissionObjectiveNonItem'}(u'One or more mission objectives have not been completed.  The item(s) must be located in your cargo hold or in your personal hangar (if the objective was within a station).  If you have multiple objectives of the same item type in the same location, please use either the hangar or your cargo hold, but not both.  If a specific item was requested as opposed to any item of the specified type, please be sure that the correct specific item is indeed being provided.  Otherwise, please make sure that the item is not assembled, packaged or damaged.  Please check your mission journal for further information.', None, None)
  * {'FullPath': u'UI/Agents/StandardMission', 'messageID': 235494, 'label': u'AcceptFailureMessageTitle'}(u'Cannot Accept Mission', None, None)
  * {'FullPath': u'UI/Agents/StandardMission', 'messageID': 235495, 'label': u'CompletionError'}(u'Ahem... there seems to have been a problem giving out your rewards.  Well, at least if you see this, all the other stuff should still work (standings, LP, next mission, storyline counter, etc)...', None, None)

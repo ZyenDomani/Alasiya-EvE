@@ -62,6 +62,10 @@ PyObjectEx* StandingDB::GetFactionStandings() {
     return DBResultToCRowset(res);
 }
 
+void StandingDB::GetAllStandings(DBQueryResult& res) {
+    sDatabase.RunQuery(res, "SELECT fromID,toID,standing FROM repStandings");
+}
+
 PyRep* StandingDB::GetMyStandings(uint32 charID) {
     DBQueryResult res;
     sDatabase.RunQuery(res, "SELECT fromID, standing AS rank FROM repStandings WHERE toID = %u", charID);
@@ -81,14 +85,9 @@ PyRep* StandingDB::GetCorpStandings(Client* pClient) {
     return DBResultToCRowset(res);
 }
 
-PyRep* StandingDB::GetCharNPCStandings(uint32 charID) {
-    DBQueryResult res;
-    sDatabase.RunQuery(res, "SELECT fromID, toID, standing FROM chrNPCStandings WHERE toID = %u", charID );
-    return DBResultToCRowset(res);
-}
-
 /** @todo not sure about this yet.... wip   ....not used? */
 PyRep* StandingDB::PrimeCharStandings(uint32 charID) {
+    sLog.Error("PrimeCharStandings", "Called by %u", charID);
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         "SELECT "
@@ -132,17 +131,6 @@ PyRep* StandingDB::GetStandingTransactions(Call_GetStandingTransactions& args) {
     return DBResultToRowset(res);
 }
 
-float StandingDB::GetStanding(uint32 fromID, uint32 toID) {
-    DBQueryResult res;
-    sDatabase.RunQuery(res, "SELECT standing FROM repStandings WHERE fromID=%u AND toID=%u", fromID, toID);
-    DBResultRow row;
-    if (res.GetRow(row)) {
-        return row.GetFloat(0);
-    } else {
-        return 0.0f;
-    }
-}
-
 void StandingDB::SetStanding(uint32 fromID, uint32 toID, float standing) {
     DBerror err;
     sDatabase.RunQuery(err, "INSERT INTO repStandings (fromID, toID, standing) VALUES (%u,%u,%f)", fromID, toID, standing );
@@ -153,17 +141,16 @@ void StandingDB::UpdateStanding(uint32 fromID, uint32 toID, float standing) {
     sDatabase.RunQuery(err,
         "INSERT INTO repStandings (fromID, toID, standing)"
         " VALUES (%u,%u,%f)"
-        " ON DUPLICATE KEY UPDATE standing = standing + %f", fromID, toID, standing, standing);
+        " ON DUPLICATE KEY UPDATE standing = %f", fromID, toID, standing, standing);
 }
 
-/** @todo  implement repStandingChanges after standing system is working  */
-void StandingDB::SaveStandingChanges(uint32 fromID, uint32 toID, uint16 eventType, float amount, std::string msg) {
+void StandingDB::SaveStandingChanges(uint32 fromID, uint32 toID, uint16 eventType, float pctChange, std::string msg) {
     /* eventTypeID,eventDateTime,fromID,toID,modification,originalFromID,originalToID,int_1,int_2,int_3,msg */
     DBerror err;
     sDatabase.RunQuery(err,
         "INSERT INTO repStandingChanges (eventTypeID, eventDateTime, fromID, toID, modification, msg)"
-        " VALUES (%u, %f, %u, %u, %f, '%s' )",
-        eventType, GetFileTimeNow(), fromID, toID, amount, msg.c_str() );
+        " VALUES (%u, %f, %u, %u, %f, '%s')",
+        eventType, GetFileTimeNow(), fromID, toID, pctChange, msg.c_str());
 }
 
 PyRep* StandingDB::GetStandingCompositions(uint32 fromID, uint32 toID) {

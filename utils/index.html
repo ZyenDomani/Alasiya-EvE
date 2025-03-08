@@ -13,24 +13,38 @@
 
 This is the updates page for Alasiya-EvE.<br>
 I will eventually make this a little more aesthetically pleasing  (maybe)<br><br>
-<font color=cyan>CURRENT TEST POINTS</font><br>
- - NPC Combat (AI update/rewrite)<br>
+<font color=teal>CURRENT TEST POINTS</font><br>
+ - Courier Missions<br>
  - Drones (except delegate)<br>
  - Modules (most are working correctly.  gang modules not coded)<br>
  - Graphic Effects for modules, NPCs, and Drones (most working correctly)<br>
 <br>
-<font color=cyan>NOTABLE UPDATES:</font><br>
-Rewrote NPC AI code.  Implemented many missing attributes, calls and checks.<br>
-**NOTE:  this will require a rewrite of current spawn group code, eta:tbd<br>
+<font color=teal>NOTABLE UPDATES:</font><br>
+Rewrote standings, agent and mission code.  Agent greetings are now based on personal standing instead of random<br>
+Updated existing and added remaining 120 Courier missions for 151 total, including storyline/important missions which give faction rep<br>
 Drone System mostly complete and live.<br>
 Recent Destiny rewrites have movement tracking around 98% with client except orbit.<br>
 The Implant system is implemented and working quite well.<br>
 <br>
-<font color=cyan>NOTES:</font><br>
+<font color=teal>NOTES:</font><br>
 Constant lookout for bugs and other errors.<br>
 I am kinda working on my TODO list where I can.  As there is around 1000 lines, this will take a while<br>
 <br>
 UPDATES AND CHANGELOG:  (only major/significant updates are listed)<br>
+07Mar25 - Found standings math error in client and fixed it<br>
+        Major standings rewrite using completely new system.<br>
+        Major Agent updates, including rewriting convo responses and adding multiple checks and other fixes<br>
+        Courier Mission updates to include more missions and better level checks<br>
+        General Mission updates including better tracking, dynamic isk rewards, added LP, better destination system code<br>
+        Thought i found and fixed very elusive segfault when loading player hangars in stations...but i was wrong<br>
+        Fixed multiple minor errors and made updates/revisions to other systems<br>
+        67 files with 3881 lines changed<br><br>
+24Feb25 - Got sidetracked and started running missions  (needed rep to reduce waste while reprocessing rat loot)<br>
+        Current mission code is hacked as POC, only to show agent&mission systems are possible;   need major rewrite<br>
+        ~30 courier missions are coded to work using hacked mission code<br>
+        Fixed multiple segfaults and other minor errors in agent and mission code<br>
+        Added multiple notes for starting mining missions:  still need couple other systems more complete first<br>
+        Found current Standings code is horribly broken.  Currently hacked to shit and needs complete rewrite.<br><br>
 21Feb25 - Fixed multiple errors and other updates in following systems:<br>
         Fleet - Creating fleet didn't update existing cans/wrecks (salvager couldn't tractor existing cans/wrecks)<br>
         Modules - tractoring loot cans didn't turn off tractor when deleting empty can<br>
@@ -69,7 +83,7 @@ UPDATES AND CHANGELOG:  (only major/significant updates are listed)<br>
         NOTE:  drones are not enabled on main server yet<br><br>
 <font color=red>
 31Jan25 - MAJOR UPDATES<br></font>
-<font color=cyan>
+<font color=teal>
         Fixed long-time error with module buttons not showing proper cycles, including running indefinitely<br>
         Fixed error with modules not stopping properly on deactivate<br>
         Rewrote GFX code for proper packet sending - all module gfx show properly now (unless missing from db)<br>

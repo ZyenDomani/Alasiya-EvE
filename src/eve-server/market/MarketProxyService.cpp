@@ -32,6 +32,7 @@
 #include "cache/ObjCacheService.h"
 #include "market/MarketMgr.h"
 #include "market/MarketProxyService.h"
+#include "standing/StandingMgr.h"
 #include "station/StationDataMgr.h"
 #include "system/SystemManager.h"
 
@@ -334,9 +335,10 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
         reason += stDataMgr.GetStationName(args.stationID).c_str();
         // get data for computing broker fees
         uint8 lvl(call.client->GetChar()->GetSkillLevel(EvESkill::BrokerRelations));
-        //call.client->GetChar()->GetStandingModified();
-        /** @todo standings incomplete.  need to finish */
-        float fee(EvEMath::Market::BrokerFee(lvl, 1, 1));
+        uint32 stationOwnerID = stDataMgr.GetOwnerID(data.stationID);
+        float corpStanding = sStandingMgr.GetRawStanding(stationOwnerID, data.ownerID);
+        float facStanding = sStandingMgr.GetRawStanding(sDataMgr.GetCorpFaction(stationOwnerID), data.ownerID);
+        float fee(EvEMath::Market::BrokerFee(lvl, facStanding, corpStanding));
         fee *= money;
         _log(MARKET__DEBUG, "PlaceCharOrder(buy) - %s: Escrow: %.2f, Fee: %.2f", args.useCorp?"Corp":"Player", money, fee);
         // take monies and record actions
@@ -524,10 +526,11 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
         std::string reason = "DESC:  Setting up sell order in ";
         reason += stDataMgr.GetStationName(args.stationID).c_str();
         // get data for computing broker fees
-        uint8 lvl = call.client->GetChar()->GetSkillLevel(EvESkill::BrokerRelations);
-        //call.client->GetChar()->GetStandingModified();
-        /** @todo standings incomplete.  need to finish */
-        float fee = EvEMath::Market::BrokerFee(lvl, 1, 1);
+        uint8 lvl(call.client->GetChar()->GetSkillLevel(EvESkill::BrokerRelations));
+        uint32 stationOwnerID = stDataMgr.GetOwnerID(data.stationID);
+        float corpStanding = sStandingMgr.GetRawStanding(stationOwnerID, data.ownerID);
+        float facStanding = sStandingMgr.GetRawStanding(sDataMgr.GetCorpFaction(stationOwnerID), data.ownerID);
+        float fee(EvEMath::Market::BrokerFee(lvl, facStanding, corpStanding));
         fee *= total;
         _log(MARKET__DEBUG, "PlaceCharOrder(sell) - %s: Total: %.2f, Fee: %.2f", args.useCorp?"Corp":"Player", total, fee);
 

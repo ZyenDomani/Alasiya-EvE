@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    11.6
+    Version:    12.5
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -242,6 +242,7 @@ public:
         bool autoReconnect;
         uint dbTimeout;
         uint8 pingTime;
+        uint8 connectionPoolSize;
         /// A port at which the database server listens.
         uint16 port;
         /// Hostname of database server.
@@ -371,6 +372,19 @@ public:
         float ShipTrackingTime;
     } debug;
 
+    // From <mission>
+    struct {
+        uint8 OfferExpiryTime;
+        uint8 AcceptExpiryTime;
+        uint16 IskRewardLo;
+        uint16 IskRewardHi;
+    } mission;
+
+    // From <agent>
+    struct {
+        bool AllowAdminMenu;
+    } agent;
+
 protected:
     bool ProcessEveServer(const TiXmlElement* ele);
     bool ProcessServer(const TiXmlElement* ele);
@@ -393,6 +407,8 @@ protected:
     bool ProcessBPTimes(const TiXmlElement* ele);
     bool ProcessTesting(const TiXmlElement* ele);
     bool ProcessDebug(const TiXmlElement* ele);
+    bool ProcessAgent(const TiXmlElement* ele);
+    bool ProcessMission(const TiXmlElement* ele);
 };
 
 /// A macro for easier access to the singleton.

@@ -48,3 +48,17 @@ private:
 };
 
 #endif
+
+
+/*
+ * (236000, `Insurance Contract Issued`)
+ * (236001, `Report: Starbase low on resources in {[location]solarSystemID.name}`)
+ * (236003, `Report: "{[item]typeID.name, linkify}" at "{[location]stationID.name, linkify}" has been disabled`)
+ * (236006, `{[character]newCeoID.name} is the new CEO of {corporationName}`)
+ * (236007, `Welcome to {corporationName}`)
+ * (236008, `Rejected application to join {corporationName}`)
+ * (236009, `Report: "{[item]typeID.name, linkify}" at "{[location]stationID.name, linkify}" has been reenabled`)
+ * (236014, `Report: Infrastructure hub %22{name}%22 has been conquered`)
+ * (236018, `Report: Starbase in {[location]solarSystemID.name, linkify} is under attack`)
+ * (236019, `Report: Station '{[location]stationID.name}' has been conquered`)
+ */

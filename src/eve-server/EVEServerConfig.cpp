@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    11.6
+    Version:    12.5
 */
 
 
@@ -263,6 +263,15 @@ EVEServerConfig::EVEServerConfig()
     debug.ProfileTraceTime = 150/*ms*/;
     debug.ShipTrackingTime = 0.05f;/*ASF min speed*/
 
+    // agent
+    agent.AllowAdminMenu = false;
+
+    // mission
+    mission.AcceptExpiryTime = 30;/*m*/
+    mission.OfferExpiryTime = 24;/*h*/
+    mission.IskRewardLo = 11500;
+    mission.IskRewardHi = 16500;
+
     // database
     database.host = "localhost";
     database.port = 3306;
@@ -275,6 +284,7 @@ EVEServerConfig::EVEServerConfig()
     database.autoReconnect = false;
     database.dbTimeout = 2/*s*/;
     database.pingTime = 10/*m*/;
+    database.connectionPoolSize = 3;
 
     // files
     files.logDir = "../log/";
@@ -317,6 +327,8 @@ bool EVEServerConfig::ProcessEveServer(const TiXmlElement* ele) {
     AddMemberParser("net",         &EVEServerConfig::ProcessNet);
     AddMemberParser("testing",     &EVEServerConfig::ProcessTesting);
     AddMemberParser("threads",     &EVEServerConfig::ProcessThreads);
+    AddMemberParser("agent",       &EVEServerConfig::ProcessAgent);
+    AddMemberParser("mission",     &EVEServerConfig::ProcessMission);
 
     // parse the element
     const bool result = ParseElementChildren(ele);
@@ -342,6 +354,8 @@ bool EVEServerConfig::ProcessEveServer(const TiXmlElement* ele) {
     RemoveParser("net");
     RemoveParser("testing");
     RemoveParser("threads");
+    RemoveParser("agent");
+    RemoveParser("mission");
 
     // return status of parsing
     return result;
@@ -641,17 +655,18 @@ bool EVEServerConfig::ProcessNPC(const TiXmlElement* ele) {
 }
 
 bool EVEServerConfig::ProcessDatabase(const TiXmlElement* ele) {
-    AddValueParser("host",             database.host);
-    AddValueParser("port",             database.port);
-    AddValueParser("username",         database.username);
-    AddValueParser("password",         database.password);
-    AddValueParser("db",               database.db);
-    AddValueParser("compress",         database.compress);
-    AddValueParser("ssl",              database.ssl);
-    AddValueParser("useSocket",        database.useSocket);
-    AddValueParser("autoReconnect",    database.autoReconnect);
-    AddValueParser("dbTimeout",        database.dbTimeout);
-    AddValueParser("pingTime",         database.pingTime);
+    AddValueParser("host",                      database.host);
+    AddValueParser("port",                      database.port);
+    AddValueParser("username",                  database.username);
+    AddValueParser("password",                  database.password);
+    AddValueParser("db",                        database.db);
+    AddValueParser("compress",                  database.compress);
+    AddValueParser("ssl",                       database.ssl);
+    AddValueParser("useSocket",                 database.useSocket);
+    AddValueParser("autoReconnect",             database.autoReconnect);
+    AddValueParser("dbTimeout",                 database.dbTimeout);
+    AddValueParser("pingTime",                  database.pingTime);
+    AddValueParser("connectionPoolSize",        database.connectionPoolSize);
 
     const bool result = ParseElementChildren(ele);
 
@@ -666,6 +681,7 @@ bool EVEServerConfig::ProcessDatabase(const TiXmlElement* ele) {
     RemoveParser("autoReconnect");
     RemoveParser("dbTimeout");
     RemoveParser("pingTime");
+    RemoveParser("connectionPoolSize");
 
     return result;
 }
@@ -918,6 +934,32 @@ bool EVEServerConfig::ProcessTesting(const TiXmlElement* ele) {
 
     RemoveParser("ShipHeat");
     RemoveParser("EnableDrones");
+
+    return result;
+}
+
+bool EVEServerConfig::ProcessAgent(const TiXmlElement* ele) {
+    AddValueParser("AllowAdminMenu",       agent.AllowAdminMenu);
+
+    const bool result = ParseElementChildren(ele);
+
+    RemoveParser("AllowAdminMenu");
+
+    return result;
+}
+
+bool EVEServerConfig::ProcessMission(const TiXmlElement* ele) {
+    AddValueParser("IskRewardLo",          mission.IskRewardLo);
+    AddValueParser("IskRewardHi",          mission.IskRewardHi);
+    AddValueParser("OfferExpiryTime",      mission.OfferExpiryTime);
+    AddValueParser("AcceptExpiryTime",     mission.AcceptExpiryTime);
+
+    const bool result = ParseElementChildren(ele);
+
+    RemoveParser("IskRewardLo");
+    RemoveParser("IskRewardHi");
+    RemoveParser("OfferExpiryTime");
+    RemoveParser("AcceptExpiryTime");
 
     return result;
 }

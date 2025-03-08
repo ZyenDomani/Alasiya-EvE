@@ -198,7 +198,8 @@ private:
 public:
     // misc char functions
     bool SelectCharacter(int32 char_id=0);
-    bool IsHangarLoaded(uint32 stationID);
+    bool IsHangarLoaded(uint32 hangarID);
+    void SetHangarLoaded(uint32 hangarID, bool set=false);
 
     void WarpIn();
     void WarpOut();
@@ -215,7 +216,7 @@ public:
     void SetDestiny(const GPoint& pt, bool update=false);
     ShipItemRef SpawnNewRookieShip(uint32 stationID);
     void LoadStationHangar(uint32 stationID);
-    void AddStationHangar(uint32 stationID);
+    void AddLoadedHangar(uint32 stationID);
     void RemoveStationHangar(uint32 stationID);
 
     //destiny stuff...
@@ -405,8 +406,8 @@ protected:
     // dock location in space (absolute)
     GPoint m_dockPoint;
 
-    std::set<LSCChannel*>   m_channels;    //we do not own these.
-    std::map<uint32, bool>  m_hangarLoaded;
+    std::set<LSCChannel*>   m_channels;         //we do not own these.
+    std::map<uint32, bool>  m_stationHangars;   // hangarID/bool
 
     int64                   m_skillTimer;
 

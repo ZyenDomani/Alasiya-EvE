@@ -267,26 +267,36 @@ void SystemManager::UnloadSystem() {
 
     sLog.Magenta("    SystemManager", "UnloadSystem() called for %s(%u).", m_data.name.c_str(), m_data.systemID);
 
-    // inform MarketBot of system unloading to remove system stations from proc loop.
-    //sMktBotMgr.RemoveSystem();
-
-    std::map<uint32, Client*> clients = m_clients;
-    std::map<uint32, Client*>::iterator cItr = clients.begin();
-    while (cItr != clients.end())
-        delete cItr->second;
-
     // system is being unloaded.  pay bounties now
     PayBounties();
+
+    // set system inactive for system status page
+    MapDB::SetSystemActive(m_data.systemID, false);
+
+    /** @todo finish this for lsc */
+    m_services.lsc_service->SystemUnload(m_data.systemID, m_data.constellationID, m_data.regionID);
+
+    // remove dungeon shit for this system
+    //  are we saving it for later or is it make-on-boot?
+    ManagerDB::ClearDungeons(m_data.systemID);
+
     // unload belts, which saves and removes roids from system
     m_beltMgr->ClearAll();
     // close anomaly mgr, which saves and removes sigs from system
     m_anomMgr->Close();
 
-    // remove static and dynamic entities
+    // this still needs some work... seems ok to me.  26Dec18
+    sBubbleMgr.ClearSystemBubbles(m_data.systemID);
+
+    // inform MarketBot of system unloading to remove system stations from proc loop.
+    //sMktBotMgr.RemoveSystem();
+
+    // remove all loaded entities
     std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin();
     SystemEntity* pSE(nullptr);
     while (itr != m_entities.end()) {
         if ((itr->first == 0) or (itr->second == nullptr)) {
+            // this will catch entities we deleted earlier (roids, dungeons, etc)
             itr = m_entities.erase(itr);
             continue;
         }
@@ -297,6 +307,12 @@ void SystemManager::UnloadSystem() {
 
         if (pSE->IsStaticEntity() or pSE->isGlobal()) {
             if (pSE->IsStationSE()) {
+                // tell all client this station is being unloaded  (elusive segfault fix)
+                std::vector<Client*> cVec;
+                sEntityMgr.GetClients(cVec);
+                for (auto &cur : cVec)
+                    cur->SetHangarLoaded(pSE->GetID(), false);
+
                 pSE->GetStationSE()->UnloadStation();
                 sEntityMgr.RemoveStation(itr->first);
             }
@@ -310,10 +326,6 @@ void SystemManager::UnloadSystem() {
         } else if (pSE->IsProbeSE()) {
             sEntityMgr.RemoveProbe(itr->first);
         }
-
-        //if (pSE->IsOperSE()) //Remove operational statics from list
-        //    m_opStaticEntities.erase(m_opStaticEntities.find(itr->first));
-
 
         sItemFactory.RemoveItem(itr->first);
         m_ticEntities.erase(itr->first);
@@ -332,24 +344,12 @@ void SystemManager::UnloadSystem() {
 
     // at this point, these lists should be clear
     m_npcs.clear();
+    m_clients.clear();
     m_entities.clear();
     m_deleteLater.clear();
     m_ticEntities.clear();
     m_staticEntities.clear();
     m_opStaticEntities.clear();
-
-    // this still needs some work... seems ok to me.  26Dec18
-    sBubbleMgr.ClearSystemBubbles(m_data.systemID);
-
-    // remove dungeon shit for this system?
-    //  are we saving it for later or is it make-on-boot?
-    ManagerDB::ClearDungeons(m_data.systemID);
-
-    // set system inactive for system status page
-    MapDB::SetSystemActive(m_data.systemID, false);
-
-    /** @todo finish this for lsc */
-    m_services.lsc_service->SystemUnload(m_data.systemID, m_data.constellationID, m_data.regionID);
 
     // remove solar system item from ItemFactory
     sItemFactory.RemoveItem(m_data.systemID);

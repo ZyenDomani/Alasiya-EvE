@@ -10,6 +10,14 @@
 
 
 namespace Standings {
+
+//these are agent/corp/faction -> char
+    static const float Bad    = -1.0f;
+    static const float Lo     =  1.5f;
+    static const float LoMid  =  3.5f;
+    static const float MidHi  =  5.5f;
+    static const float Hi     =  7.5f;
+
 //eve standing change messages in db.repStandingChanges.eventTypeID
 //  these come from /eve/common/script/mgt/appLogConst.py
 

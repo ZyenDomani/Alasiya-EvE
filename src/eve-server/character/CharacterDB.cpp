@@ -2044,3 +2044,7 @@ bool CharacterDB::GetBloodlineByCharacterType(uint16 characterTypeID, uint8 &blo
 
     return true;
 }
+
+void CharacterDB::GetMissionTracking(DBQueryResult &res, uint32 charID) {
+    sDatabase.RunQuery(res, "SELECT `corpID`, `level`, `count` FROM `chrCharacterMissionTracking` WHERE `charID` = %u", charID);
+}
