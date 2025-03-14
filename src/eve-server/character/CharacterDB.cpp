@@ -1574,10 +1574,19 @@ void CharacterDB::SetLogOffTime(uint32 charID)
 
 void CharacterDB::AddOwnerCache(uint32 ownerID, std::string ownerName, uint32 typeID) {
     DBerror err;
+    std::string safename;
+    sDatabase.DoEscapeString(safename, ownerName);
+
     sDatabase.RunQuery(err,
         "INSERT INTO cacheOwners(ownerID, ownerName, typeID)"
         " VALUES (%u, '%s', %u)",
-        ownerID, ownerName.c_str(), typeID);
+            ownerID, safename.c_str(), typeID);
+
+    // It has to go into the eveStaticOwners too
+    sDatabase.RunQuery(err,
+        "INSERT INTO eveStaticOwners (ownerID,ownerName,typeID)"
+        " VALUES (%u, '%s', %u)",
+            ownerID, safename.c_str(), typeID);
 }
 
 PyRep* CharacterDB::GetBounty(uint32 charID, uint32 ownerID) {

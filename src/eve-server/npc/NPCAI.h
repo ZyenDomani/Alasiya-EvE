@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
-    Updates:    Allan
+    Rewrite:    Allan
 */
 
 #ifndef __NPCAI_H_INCL__
@@ -151,7 +151,7 @@ private:
     uint32 m_maxAttackRange;// max firing range   default:15000
     uint32 m_warpScramRange;
 
-    //in order of distance  far to close
+    //in order of distance  far to close  (from droneAI code)
     int32               m_maxDistance;                  //[5] maximum engagement distance
     int32               m_chaseDistance;                //[4] min distance to activate mwd, if equipped
     int32               m_engageDistance;               //[3] max distance drone will engage a target

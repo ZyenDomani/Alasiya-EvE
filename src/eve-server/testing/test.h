@@ -68,6 +68,7 @@ public:
 
     static void posTest(Client* pClient);
     void CharAttribTest();
+    void UpdateCharOwners();
 
     void WarpTest(uint8 type);
     int64  m_targetDistance;

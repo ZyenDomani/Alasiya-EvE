@@ -32,7 +32,7 @@
  *      - this should take system sov, npc anomalies, destruction speed, and pirate faction
  *   add methods to check target/targeter warping out and chance of npc following (and possibly calling backup)
  *
- *   TODO:  since orbit is disabled, have npcs fly tangents to targets, using actual arc tracking
+ *   TODO:  use fake orbit like drones do
  *
  * NOTE:  elite npc target drones first!
  *   recall drones -> npc target player -> deploy drones -> timer countdown -> npc target drones again

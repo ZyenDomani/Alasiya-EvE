@@ -24,6 +24,22 @@ void testing::posTest(Client* pClient) {
     sLog.Warning("\ttesting","Test competed (did nothing)");
 }
 
+void testing::UpdateCharOwners() {
+    // characters should be in eveStaticOwners data...they werent, but are added now.
+    // this is fix to add existing chars to data
+    DBQueryResult res;
+    DBResultRow row;
+    DBerror err;
+    std::string safename;
+    sDatabase.RunQuery(res,"SELECT characterID, characterName, typeID FROM chrCharacters");
+    while (res.GetRow(row)) {
+        sDatabase.DoEscapeString(safename, row.GetText(1));
+        sDatabase.RunQuery(err,
+            "INSERT INTO eveStaticOwners (ownerID,ownerName,typeID)"
+            " VALUES (%u, '%s', %u)",
+                row.GetUInt(0), safename.c_str(), row.GetUInt(2));
+    }
+}
 void testing::CharAttribTest() {
     /* this is for testing and setting default character attributes
      * it will need names, Base, Ancestry.Bonus, BL.Bonus
@@ -733,7 +749,7 @@ void testing::UpdateDungeons() {
 
         //insert room into dunRooms table
         sDatabase.RunQuery(err, "INSERT INTO dunRooms(dungeonID, roomID, roomOrdinal, roomName)"
-        " VALUES (%u, %u, 1, '%s room')", row.GetInt(0), row.GetInt(2), safename.c_str());
+        " VALUES (%u, %u, 1, '%s')", row.GetInt(0), row.GetInt(2), safename.c_str());
     }
 
 
