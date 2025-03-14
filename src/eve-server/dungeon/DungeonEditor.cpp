@@ -8,7 +8,7 @@
   *
   */
 
- 
+
 /* Dungeon Logging
  * DUNG__ERROR
  * DUNG__WARNING
@@ -28,5 +28,8 @@
 
 #include "DungeonEditor.h"
 #include "DungeonDB.h"
+
+//NOTE:  this class is used to access the 'keeper' bound object to make items for dungeon service
+
 
 

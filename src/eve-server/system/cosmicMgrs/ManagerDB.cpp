@@ -150,6 +150,16 @@ PyObject* ManagerDB::GetBillTypes() {
     return DBResultToRowset(res);
 }
 
+PyObjectEx* ManagerDB::LoadFactionIDs() {
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res, "SELECT factionID FROM facFactions")) {
+        _log(DATABASE__ERROR, "Error in GetFactions query: %s", res.error.c_str());
+        return nullptr;
+    }
+
+    return DBResultToCRowset(res);
+}
+
 PyObjectEx* ManagerDB::GetAgents() {
     // NOTE:  havent found data for agents in space yet....still looking.
     DBQueryResult res;
@@ -678,12 +688,6 @@ void ManagerDB::GetDunSpawnInfo(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res, "SELECT dunRoomSpawnID, dunRoomSpawnType, xpos, ypos, zpos FROM dunRoomSpawnInfo"))
         _log(DATABASE__ERROR, "Error in GetDunSpawnInfo query: %s", res.error.c_str());
-}
-
-void ManagerDB::GetDunTemplates(DBQueryResult& res)
-{
-    if (!sDatabase.RunQuery(res, "SELECT dunTemplateID, dunTemplateName, dunEntryID, dunSpawnID, dunRoomID FROM dunTemplates"))
-        _log(DATABASE__ERROR, "Error in GetDunTemplates query: %s", res.error.c_str());
 }
 
 bool ManagerDB::GetSavedDungeons(uint32 systemID, std::vector< Dungeon::ActiveData >& into)

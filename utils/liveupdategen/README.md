@@ -24,15 +24,17 @@ Tool to generate liveupdates for evemu
 Patches are python files with a special comment that tells liveupdategen what to patch.
 
 The special comment looks like a python decorator.
+`#@liveupdate("globalFunction", "standingUtil", "GetStandingBonus")`
 `#@liveupdate("globalClassMethod", "uicls.CharacterCreationLayer::CharacterCreationLayer", "AskForPortraitConfirmation")`
 
 The first argument is the codeType.  This tells liveUpdateSvc the patch method.  There are three patch types.
 
 - globalObjectMethod "{object name}" I don't recommend using this
-- globalFunction "{object name}.{function name}"
+- globalFunction "{object name}"
 - globalClassMethod "{__guid__}::{class}"
 
 The last argument is the method/function name to patch.
+
 NOTE:  no newline/space between the descriptor line and def to patch
 
 ### devtools.raw

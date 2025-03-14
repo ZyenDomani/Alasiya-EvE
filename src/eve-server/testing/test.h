@@ -93,7 +93,12 @@ public:
     void Turn();
 
     void GetAgentPics();
-    
+
+    void FixDungeonGroupData();
+    const char* GetDungeonGroupName( uint16 grpID );
+
+    void UpdateDungeons();
+
     // return percent change between from and to
     float getPctf(float from, float to, float pct) {
         return from + ((to - from) * pct);

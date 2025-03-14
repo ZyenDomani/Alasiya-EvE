@@ -315,13 +315,13 @@ bool ConsoleCommand::Process() {
                 testing t;
                 t.GetAgentPics();
             } else if (strncmp(buf, "2", 1) == 0) {
-                sLog.Green("  Alasiya's EvEMu", "30* TurnTest in progress:");
+                sLog.Green("  Alasiya's EvEMu", "FixDungeonGroupData()");
                 testing t;
-                t.TurnTest(2);
+                t.FixDungeonGroupData();
             } else if (strncmp(buf, "3", 1) == 0) {
-                sLog.Green("  Alasiya's EvEMu", "45* TurnTest in progress:");
+                sLog.Green("  Alasiya's EvEMu", "UpdateDungeons()");
                 testing t;
-                t.TurnTest(3);
+                t.UpdateDungeons();
             } else if (strncmp(buf, "4", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "60* TurnTest in progress:");
                 testing t;

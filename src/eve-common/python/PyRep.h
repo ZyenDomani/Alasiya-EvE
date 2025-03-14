@@ -205,6 +205,7 @@ public:
     static uint32 IntegerValueU32(PyRep* pRep);// None returns 0. Returned as unsigned 32b int
     // this is used when PyRep can be Int, Long, Float or None
     static int32 IntegerValueI32(PyRep* pRep);// None returns 0. Returned as signed 32b int
+    static double FloatValue(PyRep* pRep);
     // uses any numeric value.  string data is compared to on/true/off/false.  None return false.
     static bool GetBool(PyRep* pRep);
 

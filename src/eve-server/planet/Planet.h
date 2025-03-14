@@ -12,6 +12,8 @@
 #ifndef EVEMU_PLANET_PLANET_H_
 #define EVEMU_PLANET_PLANET_H_
 
+#include "../../eve-common/EVE_Planet.h"
+
 #include "EntityMgr.h"
 #include "StaticDataMgr.h"
 #include "system/SystemEntity.h"

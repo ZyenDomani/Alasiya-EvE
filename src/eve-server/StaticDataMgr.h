@@ -49,6 +49,7 @@ public:
     PyObjectEx*         GetOperands()                   { PyIncRef(m_operands); return m_operands; }
     PyObject*           GetBillTypes()                  { PyIncRef(m_billTypes); return m_billTypes; }
     PyObject*           GetEntryTypes()                 { PyIncRef(m_entryTypes); return m_entryTypes; }
+    PyObjectEx*         GetFactionIDs()                 { PyIncRef(m_factionIDs); return m_factionIDs; }
     PyTuple*            GetFactionInfo()                { PyIncRef(m_factionInfo); return m_factionInfo; }
     PyObject*           GetNPCDivisions()               { PyIncRef(m_npcDivisions); return m_npcDivisions; }
 
@@ -197,6 +198,7 @@ private:
     PyObject*                                           m_npcDivisions;
     PyObjectEx*                                         m_agents;
     PyObjectEx*                                         m_operands;
+    PyObjectEx*                                         m_factionIDs;
 
     std::map<uint16, Inv::CatData>                      m_catData;
     std::map<uint16, Inv::GrpData>                      m_grpData;

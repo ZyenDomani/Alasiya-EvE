@@ -44,6 +44,25 @@ public:
     //just to say who we are:
     virtual PyResult Call(const std::string &method, PyCallArgs &args);
 
+    /** @returns BoundID The id of the bound service */
+    //BoundID GetBoundID() const  { return this->mBoundId; }
+
+    void NewReference (Client* client) {
+        // ensure the client is not there yet
+        auto it = this->mClients.find (client);
+
+        if (it != this->mClients.end ())
+            return;
+
+        // the client didn't hold a reference to this service
+        // so add it to the list and increase the RefCount
+        mClients.emplace(client, true);
+        // also add it to the bind list of the client
+        //client->AddBindID(GetBoundID());
+    }
+
+    PyTuple* GetOID() const                             { return mOID; }
+
 protected:
     friend class PyServiceMgr;    //for access to _SetNodeBindID only.
     void _SetNodeBindID(uint32 nodeID, uint32 bindID)   { m_nodeID = nodeID; m_bindID = bindID; }
@@ -54,6 +73,10 @@ protected:
 private:
     uint32 m_nodeID;
     uint32 m_bindID;
+
+    PyTuple* mOID;
+
+    std::map <Client*, bool> mClients;
 };
 
 #endif

@@ -62,6 +62,7 @@ public:
     static PyObject* GetBillTypes();
     static PyObjectEx* GetAgents();
     static PyObjectEx* GetOperands();
+    static PyObjectEx* LoadFactionIDs();
 
     /* belt manager */
     static void ClearAsteroids();
@@ -84,7 +85,6 @@ public:
     static void GetDunRoomData(DBQueryResult& res);
     static void GetDunRoomInfo(DBQueryResult& res);
     static void GetDunEntryData(DBQueryResult& res);
-    static void GetDunTemplates(DBQueryResult& res);
     static void GetDunGroupData(DBQueryResult& res);
     static void GetDunSpawnInfo(DBQueryResult& res);
     static void SaveActiveDungeon(Dungeon::ActiveData& dun);

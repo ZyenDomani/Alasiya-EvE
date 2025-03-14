@@ -154,9 +154,6 @@ void StandingMgr::UpdateStandings(uint32 fromID, uint32 toID, uint16 eventType, 
 
     StandingDB::UpdateStanding(fromID, toID, newStanding);
     StandingDB::SaveStandingChanges(fromID, toID, eventType, pctChange, msg);
-
-    // do derived standings
-    UpdateDerivedStandings(fromID, toID, eventType, pctChange, msg);
 }
 
 void StandingMgr::UpdateDerivedStandings(uint32 fromID, uint32 toID, uint16 eventType, float pctChange, std::string msg) {
@@ -168,6 +165,9 @@ void StandingMgr::UpdateDerivedStandings(uint32 fromID, uint32 toID, uint16 even
 /*
     // save data
     SetStanding(fromID, toID, newStanding);
+
+    DerivedModificationPleased
+    DerivedModificationDispleased
 
     StandingDB::UpdateStanding(fromID, toID, newStanding);
     StandingDB::SaveStandingChanges(fromID, toID, eventType, pctChange, msg);
@@ -226,12 +226,34 @@ void StandingMgr::UpdateStandings(Character* pChar, Agent* pAgent, uint8 eventID
 
     if (IsFleetID(pChar->fleetID()) and (pctChange > 0)) {
         pctChange *= sConfig.standings.FleetMissionMultiplier;  // live does half, we do 75%.
-        // shared mission standings are from agent & agent's corp to character only, no char corp or derived (yet)
-        // no faction, basic only
+        // distribute shared mission standings to fleet
         std::vector<Client*> clientVec;
         sFltSvc.GetFleetClientsInSystem(pChar->GetClient(), clientVec);
         for (auto &cur : clientVec) {
             UpdateStandings(pAgent->GetID(), cur->GetCharacterID(), eventID, pctChange, msg);
+            float change = pctChange * sConfig.standings.ACorp2CharMissionMultiplier;
+            UpdateStandings(pAgent->GetCorpID(), charID, eventID, change, msg);
+            if (important) {
+                change = pctChange * sConfig.standings.AFaction2CharMissionMultiplier;
+                UpdateStandings(pAgent->GetFactionID(), charID, eventID, change, msg);
+                // do derived standings
+                change = pctChange * sConfig.standings.AFaction2CharMissionMultiplier;
+                UpdateDerivedStandings(pAgent->GetFactionID(), charID, eventID, change, msg);
+            }
+
+            if (IsPlayerCorp(pChar->GetClient()->GetCorporationID())) {
+                change = pctChange * sConfig.standings.Agent2PCorpMissionMultiplier;
+                UpdateStandings(pAgent->GetID(), pChar->GetClient()->GetCorporationID(), eventID, change, msg);
+                change = pctChange * sConfig.standings.ACorp2PCorpMissionMultiplier;
+                UpdateStandings(pAgent->GetCorpID(), pChar->GetClient()->GetCorporationID(), eventID, change, msg);
+                if (important) {
+                    change = pctChange * sConfig.standings.AFaction2PCorpMissionMultiplier;
+                    UpdateStandings(pAgent->GetFactionID(), pChar->GetClient()->GetCorporationID(), eventID, change, msg);
+                    // do derived standings
+                    change = pctChange * sConfig.standings.FactionDerivedMultiplier;
+                    UpdateDerivedStandings(pAgent->GetFactionID(), pChar->GetClient()->GetCorporationID(), eventID, change, std::move(msg));
+                }
+            }
             PyTuple* agent = new PyTuple(5);
                 agent->SetItem(0, new PyInt(pAgent->GetID()));
                 agent->SetItem(1, new PyInt(cur->GetCharacterID()));
@@ -241,17 +263,26 @@ void StandingMgr::UpdateStandings(Character* pChar, Agent* pAgent, uint8 eventID
             PyTuple* corp = new PyTuple(5);
                 corp->SetItem(0, new PyInt(pAgent->GetCorpID()));
                 corp->SetItem(1, new PyInt(charID));
-                float change = pctChange * sConfig.standings.ACorp2CharMissionMultiplier;
+                change = pctChange * sConfig.standings.ACorp2CharMissionMultiplier;
                 corp->SetItem(2, new PyFloat(change));
                 corp->SetItem(3, PyStatic.NewNegOne());
                 corp->SetItem(4, PyStatic.NewOne());
             PyList* list = new PyList();
                 list->AddItem(agent);
                 list->AddItem(corp);
+            if (important) {
+                PyTuple* faction = new PyTuple(5);
+                faction->SetItem(0, new PyInt(pAgent->GetFactionID()));
+                faction->SetItem(1, new PyInt(charID));
+                change = pctChange * sConfig.standings.AFaction2CharMissionMultiplier;
+                faction->SetItem(2, new PyFloat(change));
+                faction->SetItem(3, PyStatic.NewNegOne());
+                faction->SetItem(4, PyStatic.NewOne());
+                list->AddItem(faction);
+            }
             PyTuple* payload = new PyTuple(1);
                 payload->SetItem(0, list);
             cur->SendNotification("OnStandingsModified", "charid", payload, false);
-            // fleet will share corp standings on some missions.  fix later.
         }
     }
 
@@ -261,6 +292,9 @@ void StandingMgr::UpdateStandings(Character* pChar, Agent* pAgent, uint8 eventID
     if (important) {
         change = pctChange * sConfig.standings.AFaction2CharMissionMultiplier;
         UpdateStandings(pAgent->GetFactionID(), charID, eventID, change, msg);
+        // do derived standings
+        change = pctChange * sConfig.standings.AFaction2CharMissionMultiplier;
+        UpdateDerivedStandings(pAgent->GetFactionID(), charID, eventID, change, msg);
     }
 
     if (IsPlayerCorp(pChar->GetClient()->GetCorporationID())) {
@@ -270,7 +304,10 @@ void StandingMgr::UpdateStandings(Character* pChar, Agent* pAgent, uint8 eventID
         UpdateStandings(pAgent->GetCorpID(), pChar->GetClient()->GetCorporationID(), eventID, change, msg);
         if (important) {
             change = pctChange * sConfig.standings.AFaction2PCorpMissionMultiplier;
-            UpdateStandings(pAgent->GetFactionID(), pChar->GetClient()->GetCorporationID(), eventID, change, std::move(msg));
+            UpdateStandings(pAgent->GetFactionID(), pChar->GetClient()->GetCorporationID(), eventID, change, msg);
+            // do derived standings
+            change = pctChange * sConfig.standings.FactionDerivedMultiplier;
+            UpdateDerivedStandings(pAgent->GetFactionID(), pChar->GetClient()->GetCorporationID(), eventID, change, std::move(msg));
         }
     }
 

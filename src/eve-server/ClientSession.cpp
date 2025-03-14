@@ -104,6 +104,11 @@ void ClientSession::SetLong(const char* name, int64 value)
     _Set(name, new PyLong(value));
 }
 
+void ClientSession::SetFloat(const char* name, double value)
+{
+    _Set(name, new PyFloat(value));
+}
+
 void ClientSession::SetString(const char* name, const char* value)
 {
     _Set(name, new PyString(value));
@@ -127,6 +132,16 @@ int64 ClientSession::GetLastLong(const char* name) const
 int64 ClientSession::GetCurrentLong(const char* name) const
 {
     return PyRep::IntegerValue(_GetCurrent(name));
+}
+
+double ClientSession::GetLastFloat(const char* name) const
+{
+    return PyRep::FloatValue(_GetLast(name));
+}
+
+double ClientSession::GetCurrentFloat(const char* name) const
+{
+    return PyRep::FloatValue(_GetCurrent(name));
 }
 
 std::string ClientSession::GetLastString(const char* name) const

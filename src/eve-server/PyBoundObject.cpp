@@ -33,6 +33,19 @@ PyBoundObject::PyBoundObject(PyServiceMgr *mgr)
   m_bindID(0)
 {
     m_strBoundObjectName = "PyBoundObject";
+/*
+    // build the id string
+    std::stringstream strBuilder;
+    strBuilder << "N=" << this->GetServiceManager().GetNodeID() << ":" << this->mBoundId;
+
+    // store it
+    this->mIdString = strBuilder.str();
+
+    // build the OID
+    this->mOID = new PyTuple(2);
+    this->mOID->SetItem (0, new PyString (this->mIdString));
+    this->mOID->SetItem (1, new PyLong(GetFileTimeNow())); // this isn't really the datetime, should be a unique ID
+    */
 }
 
 PyBoundObject::~PyBoundObject()

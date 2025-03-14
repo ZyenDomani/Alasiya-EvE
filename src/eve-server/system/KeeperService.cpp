@@ -63,6 +63,7 @@ public:
 
         PyCallable_REG_CALL(KeeperBound, EditDungeon);
         PyCallable_REG_CALL(KeeperBound, PlayDungeon);
+        PyCallable_REG_CALL(KeeperBound, Bind);
         PyCallable_REG_CALL(KeeperBound, Reset);
         PyCallable_REG_CALL(KeeperBound, GotoRoom); //(int room)
         PyCallable_REG_CALL(KeeperBound, GetCurrentlyEditedRoomID);
@@ -72,6 +73,7 @@ public:
 
     PyCallable_DECL_CALL(EditDungeon);
     PyCallable_DECL_CALL(PlayDungeon);
+    PyCallable_DECL_CALL(Bind);
     PyCallable_DECL_CALL(Reset);
     PyCallable_DECL_CALL(GotoRoom);
     PyCallable_DECL_CALL(GetCurrentlyEditedRoomID);
@@ -80,7 +82,6 @@ protected:
     SystemDB *const m_db;
     Dispatcher *const m_dispatch;   //we own this
 };
-
 
 PyCallable_Make_InnerDispatcher(KeeperService)
 
@@ -143,16 +144,18 @@ PyResult KeeperService::Handle_ActivateAccelerationGate(PyCallArgs &call) {
     _log(DUNG__CALL,  "KeeperService::Handle_ActivateAccelerationGate  size: %lu", call.tuple->size());
     call.Dump(DUNG__CALL_DUMP);
 
-    SingleIntegerArg args;
-    if (!args.Decode(&call.tuple)) {
+    SingleIntegerArg arg;
+    if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
     Client *pClient(call.client);
 
-    /** @todo   this should be called for gate by gate in destiny... */
-    //pClient->GetShipSE()->DestinyMgr()->SendGFX10(args.arg, "effects.WarpGateEffect");
+    SystemEntity* pSE = pClient->SystemMgr()->GetEntityByID(arg.arg);
+    if (pSE != nullptr)
+        if (pSE->DestinyMgr() != nullptr)
+            pSE->DestinyMgr()->SendGFX10(arg.arg, "effects.WarpGateEffect");
 
     double distance = MakeRandomFloat(5, 25) * ONE_AU_IN_METERS;
     GPoint currentPosition(pClient->GetShipSE()->GetPosition());
@@ -166,17 +169,43 @@ PyResult KeeperService::Handle_ActivateAccelerationGate(PyCallArgs &call) {
     pClient->GetShipSE()->DestinyMgr()->WarpTo(warpToPoint, distanceToDestination);
 
     /* return error msg from this call, if applicable, else nodeid and timestamp */
-    return new PyLong(Win32TimeNow());
+    return new PyLong(GetFileTimeNow());
 }
 
 
+
+PyResult KeeperBound::Handle_Bind(PyCallArgs &call)
+{
+    _log(DUNG__CALL,  "KeeperBound::Handle_Bind  size: %lu", call.tuple->size());
+    call.Dump(DUNG__CALL_DUMP);
+    /*
+     * 19:45:21 [Bound] KeeperBound::Bind()
+     * 19:45:21 [DungCall] KeeperBound::Handle_Bind  size: 0
+     * 19:45:21 [DungCallDump]   Call Arguments:
+     * 19:45:21 [DungCallDump]      Tuple: Empty
+     * 19:45:21 [DungCallDump]  Named Arguments:
+     * 19:45:21 [DungCallDump]   machoVersion
+     * 19:45:21 [DungCallDump]        Integer: 1
+     */
+    return nullptr;
+}
 
 PyResult KeeperBound::Handle_EditDungeon(PyCallArgs &call)
 {
     //ed.EditDungeon(dungeonID, roomID=roomID)
     _log(DUNG__CALL,  "KeeperBound::Handle_EditDungeon  size: %lu", call.tuple->size());
     call.Dump(DUNG__CALL_DUMP);
-
+    /*
+     * 18:22:35 [DungCall] KeeperBound::Handle_EditDungeon  size: 1
+     * 18:22:35 [DungCallDump]   Call Arguments:
+     * 18:22:35 [DungCallDump]      Tuple: 1 elements
+     * 18:22:35 [DungCallDump]       [ 0]    Integer: 31515
+     * 18:22:35 [DungCallDump]  Named Arguments:
+     * 18:22:35 [DungCallDump]   machoVersion
+     * 18:22:35 [DungCallDump]        Integer: 1
+     * 18:22:35 [DungCallDump]   roomID
+     * 18:22:35 [DungCallDump]        Integer: 5515
+     */
     return nullptr;
 }
 
@@ -185,7 +214,19 @@ PyResult KeeperBound::Handle_PlayDungeon(PyCallArgs &call)
     //ed.PlayDungeon(dungeonID, roomID=roomID, godmode=godmode)
     _log(DUNG__CALL,  "KeeperBound::Handle_PlayDungeon  size: %lu", call.tuple->size());
     call.Dump(DUNG__CALL_DUMP);
-
+    /*
+     * 18:26:35 [DungCall] KeeperBound::Handle_PlayDungeon  size: 1
+     * 18:26:35 [DungCallDump]   Call Arguments:
+     * 18:26:35 [DungCallDump]      Tuple: 1 elements
+     * 18:26:35 [DungCallDump]       [ 0]    Integer: 31515
+     * 18:26:35 [DungCallDump]  Named Arguments:
+     * 18:26:35 [DungCallDump]   godmode
+     * 18:26:35 [DungCallDump]        Integer: 1
+     * 18:26:35 [DungCallDump]   machoVersion
+     * 18:26:35 [DungCallDump]        Integer: 1
+     * 18:26:35 [DungCallDump]   roomID
+     * 18:26:35 [DungCallDump]        Integer: 5515
+     */
     return nullptr;
 }
 
@@ -193,7 +234,14 @@ PyResult KeeperBound::Handle_Reset(PyCallArgs &call)
 {
     _log(DUNG__CALL,  "KeeperBound::Handle_Reset  size: %lu", call.tuple->size());
     call.Dump(DUNG__CALL_DUMP);
-
+    /*
+     * 18:27:02 [DungCall] KeeperBound::Handle_Reset  size: 0
+     * 18:27:02 [DungCallDump]   Call Arguments:
+     * 18:27:02 [DungCallDump]      Tuple: Empty
+     * 18:27:02 [DungCallDump]  Named Arguments:
+     * 18:27:02 [DungCallDump]   machoVersion
+     * 18:27:02 [DungCallDump]        Integer: 1
+     */
     return nullptr;
 }
 
@@ -201,7 +249,15 @@ PyResult KeeperBound::Handle_GotoRoom(PyCallArgs &call)
 {
     _log(DUNG__CALL,  "KeeperBound::Handle_GotoRoom  size: %lu", call.tuple->size());
     call.Dump(DUNG__CALL_DUMP);
-
+    /*
+     * 18:22:48 [DungCall] KeeperBound::Handle_GotoRoom  size: 1
+     * 18:22:48 [DungCallDump]   Call Arguments:
+     * 18:22:48 [DungCallDump]      Tuple: 1 elements
+     * 18:22:48 [DungCallDump]       [ 0]    Integer: 5515
+     * 18:22:48 [DungCallDump]  Named Arguments:
+     * 18:22:48 [DungCallDump]   machoVersion
+     * 18:22:48 [DungCallDump]        Integer: 1
+     */
     return nullptr;
 }
 
@@ -211,6 +267,10 @@ PyResult KeeperBound::Handle_GetCurrentlyEditedRoomID(PyCallArgs &call)
     _log(DUNG__CALL,  "KeeperBound::Handle_GetCurrentlyEditedRoomID  size: %lu", call.tuple->size());
     call.Dump(DUNG__CALL_DUMP);
 
+    // this is how i return objects for method chaining
+    //we just bind up a new voucher object for item requested and give it back to them.
+    //VoucherBound *vb = new VoucherBound(m_manager, iRef);
+    //return m_manager->BindObject(call.client, vb );
     return nullptr;
 }
 

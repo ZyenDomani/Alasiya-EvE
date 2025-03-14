@@ -31,14 +31,6 @@
 PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
     // separate list of ids into respective groups
     std::vector<int32> player, corp, ally, owner, npc, station;
-    /*
-    player.clear();
-    corp.clear();
-    ally.clear();
-    owner.clear();
-    npc.clear();
-    station.clear();
-    */
 
     for (auto &cur : entityIDs) {
         if (IsCorpID(cur)) {
@@ -113,6 +105,7 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
         ids = "";
     }
 
+    //TODO:  is this right?
     if (npc.size()) {
         ListToINString(npc, ids);
         if (!sDatabase.RunQuery(res,
@@ -145,6 +138,7 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
         ids = "";
     }
 
+    //TODO: fix gender
     if (owner.size()) {
         ListToINString(owner, ids);
         if (!sDatabase.RunQuery(res,

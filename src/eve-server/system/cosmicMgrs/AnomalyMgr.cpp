@@ -306,7 +306,6 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/)
             sig.scanAttributeID = AttrScanAllStrength;  // Unknown
         } break;
         // error or denied
-        case 0:
         default:
             return;
     }

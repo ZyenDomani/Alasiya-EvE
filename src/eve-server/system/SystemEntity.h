@@ -27,6 +27,8 @@
 #ifndef _EVE_SERVER_SYSTEM_ENTITY_H_
 #define _EVE_SERVER_SYSTEM_ENTITY_H_
 
+#include "../../eve-common/EVE_Dungeon.h"
+
 #include "SystemDB.h"
 #include "inventory/InventoryItem.h"
 #include "pos/PosMgrDB.h"
@@ -64,7 +66,7 @@ class CustomsSE;
 class DeployableSE;
 class AsteroidSE;
 class ShipSE;
-class DungeonSE;
+class DungeonEditSE;
 
 class TowerSE;
 class TCUSE;
@@ -153,6 +155,7 @@ public:
     virtual TCUSE*              GetTCUSE()              { return nullptr; }
     virtual SBUSE*              GetSBUSE()              { return nullptr; }
     virtual IHubSE*             GetIHubSE()             { return nullptr; }
+    virtual DungeonEditSE*      GetDungeonEditSE()      { return nullptr; }
     /* Dynamic */
     virtual DynamicSystemEntity* GetDynamicSE()         { return nullptr; }
     virtual NPC*                GetNPCSE()              { return nullptr; }
@@ -203,6 +206,7 @@ public:
     virtual bool                IsJumpBridgeSE()        { return false; }
     virtual bool                IsReactorSE()           { return false; }
     virtual bool                IsOperSE()              { return false; }
+    virtual bool                IsDungeonEditSE()       { return false; }
     /* Dynamic */
     virtual bool                IsDynamicEntity()       { return false; }
     virtual bool                IsLogin()               { return false; }
@@ -614,6 +618,28 @@ public:
     virtual bool                IsDeployableSE()        { return true; }
 };
 
+class DungeonEditSE
+: public ObjectSystemEntity
+{
+public:
+    DungeonEditSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system, Dungeon::RoomObject data);
+    virtual ~DungeonEditSE()                            { /* Do nothing here */ }
+
+    /* class type pointer querys. */
+    virtual DungeonEditSE*      GetDungeonEditSE()      { return this; }
+    /* class type tests. */
+    /* Base */
+    virtual bool                IsDungeonEditSE()       { return true; }
+    Dungeon::RoomObject         GetData()               { return m_data; }
+
+    /* SystemEntity interface */
+    //virtual void                EncodeDestiny( Buffer& into );
+
+    virtual PyDict*             MakeSlimItem();
+
+private:
+    Dungeon::RoomObject m_data;
+};
 
 
 /* Non-Static / Mobile / Destructible / Celestial Objects

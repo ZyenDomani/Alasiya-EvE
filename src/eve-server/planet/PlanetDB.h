@@ -27,6 +27,8 @@
 #ifndef EVEMU_PLANET_PLANETDB_H_
 #define EVEMU_PLANET_PLANETDB_H_
 
+#include "../../eve-common/EVE_Planet.h"
+
 #include "../eve-server.h"
 #include "../POD_containers.h"
 //#include "../DataClasses.h"

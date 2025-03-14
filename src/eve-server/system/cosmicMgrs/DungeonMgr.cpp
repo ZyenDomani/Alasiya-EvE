@@ -15,6 +15,7 @@
 #include "PyServiceMgr.h"
 #include "StaticDataMgr.h"
 #include "math/Trig.h"
+#include "dungeon/DungeonDB.h"
 #include "system/SystemBubble.h"
 #include "system/cosmicMgrs/AnomalyMgr.h"
 #include "system/cosmicMgrs/BeltMgr.h"
@@ -22,7 +23,8 @@
 #include "system/cosmicMgrs/SpawnMgr.h"
 
 DungeonDataMgr::DungeonDataMgr()
-:  m_dungeonID(DUNGEON_ID)
+:  m_dungeonID(DUNGEON_ID),
+m_paletteGroups(nullptr)
 {
 }
 
@@ -39,12 +41,15 @@ int DungeonDataMgr::Initialize()
 void DungeonDataMgr::Populate()
 {
     double start = GetTimeMSeconds();
+
+    m_paletteGroups = DungeonDB::GetPaletteGroups();
+
     DBQueryResult* res = new DBQueryResult();
     DBResultRow row;
 
-    ManagerDB::GetDunTemplates(*res);
+    DungeonDB::GetDunTemplates(*res);
     while (res->GetRow(row)) {
-        // SELECT dunTemplateID, dunTemplateName, dunEntryID, dunSpawnID, dunRoomID FROM dunTemplates
+        // SELECT templateID, templateName, dunEntryID, dunSpawnID, dunRoomID FROM dunTemplates
         Dungeon::Template dtemplates = Dungeon::Template();
         dtemplates.dunName = row.GetText(1);
         dtemplates.dunRoomID = row.GetInt(4);
@@ -417,9 +422,8 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
     // need to determine region sov, region rat or other here also
     int8 faction(GetFaction(sig.ownerID));
 
-    using namespace Dungeon::Type;
     switch (sig.dungeonType) {
-        case Gravimetric: {       // 2
+        case Dungeon::Type::Gravimetric: {       // 2
             faction = 8;  // region rat
             // all roid types can spawn in grav sites.
             level = MakeRandomFloat();
@@ -446,7 +450,7 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
                 type = MakeRandomInt(0,2);
             }
         } break;
-        case Magnetometric: {     // 3
+        case Dungeon::Type::Magnetometric: {     // 3
             level = MakeRandomFloat();
             if (sec == 3) { // nullsec
                 if (level < 0.1) { // 10% to be drone site
@@ -479,7 +483,7 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
                 faction = GetFaction(sDataMgr.GetRegionRatFaction(m_system->GetRegionID()));
             }
         } break;
-        case Radar: {             // 4
+        case Dungeon::Type::Radar: {             // 4
             // type 1, level 1 are covert research (ghost sites)
             // level 2 are digital sites and region-specific (only in nullsec)
             // both are incomplete and will be harder than reg sites.
@@ -507,7 +511,7 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
                 }
             }
         } break;
-        case Ladar: {             // 5
+        case Dungeon::Type::Ladar: {             // 5
             faction = 0;
             type = MakeRandomInt(1,8);
             if (sec == 1) {
@@ -518,7 +522,7 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
                 sig.sigStrength = 0.025; // 1/40
             }
         } break;
-        case Anomaly: {           // 7
+        case Dungeon::Type::Anomaly: {           // 7
             type = MakeRandomInt(1,5);
             // if anomaly is non-drone, set template variables for types.
             //   looking over this again (years later) it dont make much sense.
@@ -545,15 +549,15 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
             }
         } break;
         // yes, these will 'fall thru' to 'Unrated' here.  this is on purpose
-        case Escalation:  // 9
-        case Rated: {  // 10
+        case Dungeon::Type::Escalation:  // 9
+        case Dungeon::Type::Rated: {  // 10
             //sig.dungeonType = 9;
         };
-        case Mission: {   // 1
+        case Dungeon::Type::Mission: {   // 1
             // not sure how im gonna do this one yet...make it unrated for now
             sig.dungeonType = 8;
         };
-        case Unrated: {           // 8
+        case Dungeon::Type::Unrated: {           // 8
             if (faction == 6) {
                 type = MakeRandomInt(1,3);
             } else {
@@ -561,7 +565,6 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
                 type = MakeRandomInt(1,5);
             }
         } break;
-        case 0:
         default: {
             sig.dungeonType = 7;
             MakeDungeon(sig);
@@ -582,8 +585,7 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
     return Create(templateID, sig);
 }
 
-int8 DungeonMgr::GetFaction(uint32 factionID)
-{
+int8 DungeonMgr::GetFaction(uint32 factionID) {
     switch (factionID) {
         case factionAngel:          return 2;
         case factionSanshas:        return 5;
@@ -603,8 +605,7 @@ int8 DungeonMgr::GetFaction(uint32 factionID)
     }
 }
 
-int8 DungeonMgr::GetRandLevel()
-{
+int8 DungeonMgr::GetRandLevel() {
     double level = MakeRandomFloat();
     _log(COSMIC_MGR__TRACE, "DungeonMgr::GetRandLevel() - level = %.2f", level);
 
@@ -634,8 +635,8 @@ struct CosmicSignature {
     GPoint position;
 };
 */
-void DungeonMgr::CreateDeco(uint32 templateID, CosmicSignature& sig)
-{
+
+void DungeonMgr::CreateDeco(uint32 templateID, CosmicSignature& sig) {
     /** @todo this needs work for proper sizing of deco.  */
     /* templateID format.  ABCDE
      *       A = site - 1:mission, 2:grav, 3:mag, 4:radar, 5:ladar, 6:ded, 7:anomaly, 8:unrated, 9:escalation

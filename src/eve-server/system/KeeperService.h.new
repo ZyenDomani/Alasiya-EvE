@@ -21,59 +21,79 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
+    Updates:    Allan
 */
 
-#ifndef __SCENARIO_SERVICE_H_INCL__
-#define __SCENARIO_SERVICE_H_INCL__
+#ifndef __KEEPER_SERVICE_H_INCL__
+#define __KEEPER_SERVICE_H_INCL__
 
 #include "system/SystemDB.h"
 #include "PyService.h"
+#include "PyBoundObject.h"
+#include "PyServiceCD.h"
 
-class ScenarioService
+class KeeperBound;
+
+class KeeperService
 : public PyService
 {
 public:
-    ScenarioService(PyServiceMgr *mgr);
-    virtual ~ScenarioService();
+    KeeperService(PyServiceMgr *mgr);
+    virtual ~KeeperService();
+
+    KeeperBound* GetBound()                             { return m_instance; }
+
+    void BoundReleased(KeeperBound* bound);
 
 protected:
-    class Dispatcher;
     Dispatcher *const m_dispatch;
 
     SystemDB m_db;
 
-    PyCallable_DECL_CALL(ResetD);
-    PyCallable_DECL_CALL(PlayDungeon);
-    PyCallable_DECL_CALL(EditRoom);
-    PyCallable_DECL_CALL(GotoRoom);
-    PyCallable_DECL_CALL(GetDunObjects);
-    PyCallable_DECL_CALL(GetSelObjects);
-    PyCallable_DECL_CALL(IsSelectedByObjID);
-    PyCallable_DECL_CALL(DuplicateSelection);
-    PyCallable_DECL_CALL(SetSelectionByID);
-    PyCallable_DECL_CALL(SetSelectedRadius);
-    PyCallable_DECL_CALL(SetRotate);
-    PyCallable_DECL_CALL(DeleteObjects);
-    PyCallable_DECL_CALL(GetEditingRoomID);
-    PyCallable_DECL_CALL(WaitForObjectCreationByID);
-    PyCallable_DECL_CALL(GetEditingRoomPosition);
-    PyCallable_DECL_CALL(RotateSelected);
-    PyCallable_DECL_CALL(JitterSelection);
-    PyCallable_DECL_CALL(JitterRotationSelection);
-    PyCallable_DECL_CALL(ArrangeSelection);
-    PyCallable_DECL_CALL(SaveAllChanges);
-    PyCallable_DECL_CALL(DeleteSelected);
-    PyCallable_DECL_CALL(AddHardGroup);
-    PyCallable_DECL_CALL(RenameHardGroup);
-    PyCallable_DECL_CALL(RemoveAllHardGroups);
-    PyCallable_DECL_CALL(RefreshSelection);
-    PyCallable_DECL_CALL(AreAllSelected);
-    PyCallable_DECL_CALL(SetActiveHardGroup);
-    PyCallable_DECL_CALL(SetSelectedQuantity);
-    PyCallable_DECL_CALL(GetBallAndSlimItemFromObjectID);
+    PyCallable_DECL_CALL(GetLevelEditor);
+    PyCallable_DECL_CALL(ActivateAccelerationGate);
+    PyCallable_DECL_CALL(CanWarpToPathPlex);
 
     //overloaded in order to support bound objects:
-    //virtual PyBoundObject *CreateBoundObject(Client *pClient, const PyRep *bind_args);
+    virtual PyBoundObject *CreateBoundObject(Client *pClient, const PyRep *bind_args);
+
+private:
+    KeeperBound* m_instance;
+
+};
+
+
+class KeeperBound
+: public PyBoundObject
+{
+public:
+
+    KeeperBound(PyServiceMgr *mgr, SystemDB *db);
+
+    virtual ~KeeperBound()                              { delete m_dispatch; }
+
+    PyCallable_DECL_CALL(EditDungeon);
+    PyCallable_DECL_CALL(PlayDungeon);
+    PyCallable_DECL_CALL(Reset);
+    PyCallable_DECL_CALL(GotoRoom);
+    PyCallable_DECL_CALL(GetCurrentlyEditedRoomID);
+    PyCallable_DECL_CALL(GetRoomObject);
+    PyCallable_DECL_CALL(GetRoomObjects);
+    PyCallable_DECL_CALL(GetRoomGroups);
+    PyCallable_DECL_CALL(ObjectSelection);
+    PyCallable_DECL_CALL(BatchStart);
+    PyCallable_DECL_CALL(BatchEnd);
+    PyCallable_DECL_CALL(RemoveRoomObject);
+
+protected:
+    SystemDB *const m_db;
+    Dispatcher *const m_dispatch;   //we own this
+
+private:
+    uint32 m_currentDungeon;
+    uint32 m_currentRoom;
+    std::vector<DungeonEditSE*> m_roomObjects;
+    std::vector<int32> m_selectedObjects;
 };
 
 #endif

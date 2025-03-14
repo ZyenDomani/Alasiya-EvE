@@ -39,9 +39,10 @@ namespace Standings {
         CombatPodKill                   = 78,   //Combat - Pod Kill
         CombatOther                     = 79,
         MissionBonus                    = 80,   //_msg: name of mission
-        DerivedModificationPleased      = 82,   //fromID was pleased
-        DerivedModificationDispleased   = 83,   //fromID was displeased
+        DerivedModificationPleased      = 82,   //<name> was pleased
+        DerivedModificationDispleased   = 83,   //<name> was displeased
         GMInterventionDirect            = 84,   //Mod directly by _int1. Reason: _msg
+        SucceededMission                = 86,
         MissionAccepted                 = 88,   //_msg: name of mission
         LawEnforcement                  = 89,   //Granted by Concord for actions against _int1
         MissionOfferExpired             = 90,   //Mission Offer Expired - _msg
@@ -58,6 +59,64 @@ namespace Standings {
         //anything up to 500 is 'Standing Change'
     };
 
+    /* UI/Generic/FormatStandingTransactions/subjectDecay: 235078: Standing Decay
+     * UI/Generic/FormatStandingTransactions/messageDecay: 235079: All standings decay by a certain amount on a regular basis.\r\n\r\nAn exception to this rule is made for players that haven't logged in\r\nrecently.
+     * UI/Generic/FormatStandingTransactions/subjectDerivedModificatonPositive: 235080: Derived Modification
+     * UI/Generic/FormatStandingTransactions/messageDerivedModificatonPositive: 235081: {name} was pleased by actions on you performed for {name}'s friends, or against {name}'s enemies
+     * UI/Generic/FormatStandingTransactions/subjectDerivedModificatonNegitive: 235082: Derived Modification
+     * UI/Generic/FormatStandingTransactions/messageDerivedModificatonNegitive: 235083: {name} was displeased by actions on you performed against {name}'s friends, or for {name}'s enemies.
+     * UI/Generic/FormatStandingTransactions/subjectCombatAgression: 235084: Combat - Aggression
+     * UI/Generic/FormatStandingTransactions/messageCombatAgression: 235085: This penalty was incurred for attacking {ownerName}'s {[item]typeID.name} in {[location]locationID.name}
+     * UI/Generic/FormatStandingTransactions/subjectCombatAssistence: 235086: Combat - Assistance
+     * UI/Generic/FormatStandingTransactions/messageCombatAssistence: 235087: This penalty was incurred for Assisting {name}'s {[item]typeID.name} in {[location]locationID.name}
+     * UI/Generic/FormatStandingTransactions/subjectCombatShipKill: 235088: Combat - Ship Kill
+     * UI/Generic/FormatStandingTransactions/messageCombatShipKill: 235089: This penalty was incurred for destroying {name}'s {[item]typeID.name} in {[location]locationID.name}
+     * UI/Generic/FormatStandingTransactions/subjectPropertyDamage: 235090: Property Damage
+     * UI/Generic/FormatStandingTransactions/messagePropertyDamage: 235091: This penalty was incurred for destroying {name}'s {[item]typeID.name} in {[location]locationID.name}
+     * UI/Generic/FormatStandingTransactions/subjectCombatPodKill: 235092: Combat - Pod Kill
+     * UI/Generic/FormatStandingTransactions/messageCombatPodKill: 235093: This penalty was incurred for podding {name} in {locationName}
+     * UI/Generic/FormatStandingTransactions/subjectSetBySlashCmd: 235094: GM Intervention
+     * UI/Generic/FormatStandingTransactions/messageSetBySlashCmd: 235095: This modification was performed directly by {name}. The reason specified was: {message}
+     * UI/Generic/FormatStandingTransactions/messageResetBySlashCmd: 235096: This standing was reset by a GM.
+     * UI/Generic/FormatStandingTransactions/subjectPlayerSet: 235097: Player Set
+     * UI/Generic/FormatStandingTransactions/messagePlayerSet: 235098: This player standing was set by the player himself/herself. The reason specified was: {message}
+     * UI/Generic/FormatStandingTransactions/subjectCorporationSet: 235099: Corp Set
+     * UI/Generic/FormatStandingTransactions/messageCorporationSet: 235100: This player corp standing was set by {name}. The reason specified was: {message}
+     * UI/Generic/FormatStandingTransactions/subjectMissionComplete: 235101: Mission Completed - {message}
+     * UI/Generic/FormatStandingTransactions/messageMissionComplete: 235102: This standing increase was granted for the successful completion of the mission '{message}'
+     * UI/Generic/FormatStandingTransactions/subjectMissionDeclined: 235103: Mission Declined - {message}
+     * UI/Generic/FormatStandingTransactions/messageMissionDecline: 235104: This standing penalty was incurred by declining the mission '{message}'
+     * UI/Generic/FormatStandingTransactions/subjectMissionFailed: 235105: Mission Failed - {message}
+     * UI/Generic/FormatStandingTransactions/messageMissionFailed: 235106: This standing penalty was incurred for failing mission '{message}'
+     * UI/Generic/FormatStandingTransactions/subjectMissionExpired: 235107: Mission Offer Expired - {message}
+     * UI/Generic/FormatStandingTransactions/messageMissionExpiredNoMsg: 235108: This standing penalty was incurred for not accepting a mission
+     * UI/Generic/FormatStandingTransactions/messageMissionExpiredMsg: 235109: This standing penalty was incurred for not accepting mission '{message}'
+     * UI/Generic/FormatStandingTransactions/subjectMissionBonus: 235110: Mission Bonus - {message}
+     * UI/Generic/FormatStandingTransactions/messageMissionBonus: 235111: This standing change was granted as a bonus within the mission '{message}'
+     * UI/Generic/FormatStandingTransactions/subjectMissionPenalty: 235112: Mission Penalty - {message}
+     * UI/Generic/FormatStandingTransactions/messageMissionPenalty: 235113: This standing change was granted as a penalty within the mission '{message}'
+     * UI/Generic/FormatStandingTransactions/subjectLawEnforcmentGain: 235114: Law Enforcement - Security Status Gain
+     * UI/Generic/FormatStandingTransactions/messageLawEnforcmentGain: 235115: This standing change was granted by CONCORD as an award for actions performed against {name}
+     * UI/Generic/FormatStandingTransactions/subjectFacwarPromotion: 235116: Promotion
+     * UI/Generic/FormatStandingTransactions/messageFacwarPromotion: 235117: This standing change was granted for promotion to rank {rankName} within the {corpName}
+     * UI/Generic/FormatStandingTransactions/messageCombatSkipKillOwnFaction: 235118: This penalty was incurred for destroying {[item]typeID.name} belonging to a member of the {factionName} in {[location]locationID.name}
+     * UI/Generic/FormatStandingTransactions/messageCombatPodKillOwnFaction: 235119: This penalty was incurred for podding a member of the {factionName} in {[location]locationID.name}
+     * UI/Generic/FormatStandingTransactions/messageCombatAgressionOwnFaction: 235120: This penalty was incurred for attacking {[item]typeID.name} belonging to a member of the {factionName} in {[location]locationID.name}
+     * UI/Generic/FormatStandingTransactions/messageCombatAssistanceOwnFaction: 235121: This penalty was incurred for assisting {[item]typeID.name} belonging to a member of the {factionName} when attacking a member of your militia in {[location]locationID.name}
+     * UI/Generic/FormatStandingTransactions/messageCombatProprtyDamageOwnFaction: 235122: This penalty was incurred for destroying {[item]typeID.name} belonging to a member of the {factionName} in {[location]locationID.name}
+     * UI/Generic/FormatStandingTransactions/subjectFacwarSiteDefened: 235127: Tactical site defended
+     * UI/Generic/FormatStandingTransactions/messageFacwarSiteDefened: 235128: This standing change was granted for helping the {factionName} defend a tactical site from the {enemyFactionName}
+     * UI/Generic/FormatStandingTransactions/subjectFacwarSiteConquered: 235129: Tactical site conquered
+     * UI/Generic/FormatStandingTransactions/messageFacwarSiteConquered: 235130: This standing change was granted for helping the {factionName} conquer a tactical site from the {enemyFactionName}
+     * UI/Generic/FormatStandingTransactions/subjectRecomendationLetterUsed: 235131: Letter of Recommendation used
+     * UI/Generic/FormatStandingTransactions/messageRecomendationLetterUsed: 235132: A Letter of Recommendation used to instantly join the war effort for this faction.
+     * UI/Generic/FormatStandingTransactions/subjectStandingChange: 235133: Standing Change
+     * UI/Generic/FormatStandingTransactions/messageGraduation: 235134: This standing increase was granted as part of the capsuleer graduation process.
+     * UI/Generic/FormatStandingTransactions/subjectContraband: 235135: Contraband
+     * UI/Generic/FormatStandingTransactions/messageContraband: 235136: Your standing was lowered with the {factionName} for transporting contraband in {systemName}.
+     * UI/Generic/FormatStandingTransactions/labelSomeone: 235137: Someone
+     * UI/Generic/FormatStandingTransactions/labelSomewhere: 235138: Somewhere
+     */
     /*Standing Events
      *  SlashHeal = 100
      *  SlashSetQty = 30
@@ -164,8 +223,6 @@ namespace Standings {
      *  DeclinedMission = 120
      *  DeployPermissions = 163
      *  DepositSelected = 295
-     *  DerivedModificationNegative = 83
-     *  DerivedModificationPositive = 82
      *  DividendsPayed = 193
      *  Dock = 4
      *  EditItemFrom = 141

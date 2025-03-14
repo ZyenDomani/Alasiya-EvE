@@ -48,6 +48,7 @@ DungeonExplorationMgrService::~DungeonExplorationMgrService()
 
 PyResult DungeonExplorationMgrService::Handle_GetMyEscalatingPathDetails(PyCallArgs &call) {
     // cached response
+    //self.expeditionRowset = sm.RemoteSvc('dungeonExplorationMgr').GetMyEscalatingPathDetails()
     /**00:51:32 L DungeonExplorationMgrService::Handle_GetMyEscalatingPathDetails(): size= 0
      * 00:51:32 [SvcCall]   Call Arguments:
      * 00:51:32 [SvcCall]       Tuple: Empty
@@ -113,7 +114,10 @@ PyResult DungeonExplorationMgrService::Handle_GetMyEscalatingPathDetails(PyCallA
   dungeonTracking.GetEscalatingPathDungeonsEntered()
   dungeonTracking.GetDistributionDungeonsEntered()
         (OnDistributionDungeonEntered)
-sm.RemoteSvc('dungeonExplorationMgr').DeleteExpiredPathStep
+
+def DeleteExpeditionEntry
+...
+uthread.new(sm.RemoteSvc('dungeonExplorationMgr').DeleteExpiredPathStep, instanceID)
 
 
 */

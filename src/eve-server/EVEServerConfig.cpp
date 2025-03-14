@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    12.5
+    Version:    12.6
 */
 
 
@@ -220,6 +220,7 @@ EVEServerConfig::EVEServerConfig()
     standings.ImportantMissionBonus = 3.0f;
     standings.BaseMissionMultiplier = 1.0f;
     standings.FleetMissionMultiplier = 0.5f;
+    standings.FactionDerivedMultiplier = 0.0125f;
     standings.Agent2CharMissionMultiplier = 1.0f;
     standings.ACorp2CharMissionMultiplier = 0.25f;
     standings.Agent2PCorpMissionMultiplier = 0.1f;
@@ -812,6 +813,7 @@ bool EVEServerConfig::ProcessStandings(const TiXmlElement* ele) {
     AddValueParser("ImportantMissionBonus",            standings.ImportantMissionBonus);
     AddValueParser("BaseMissionMultiplier",            standings.BaseMissionMultiplier);
     AddValueParser("FleetMissionMultiplier",           standings.FleetMissionMultiplier);
+    AddValueParser("FactionDerivedMultiplier",         standings.FactionDerivedMultiplier);
     AddValueParser("Agent2CharMissionMultiplier",      standings.Agent2CharMissionMultiplier);
     AddValueParser("ACorp2CharMissionMultiplier",      standings.ACorp2CharMissionMultiplier);
     AddValueParser("Agent2PCorpMissionMultiplier",     standings.Agent2PCorpMissionMultiplier);
@@ -830,6 +832,7 @@ bool EVEServerConfig::ProcessStandings(const TiXmlElement* ele) {
     RemoveParser("ImportantMissionBonus");
     RemoveParser("BaseMissionMultiplier");
     RemoveParser("FleetMissionMultiplier");
+    RemoveParser("FactionDerivedMultiplier");
     RemoveParser("Agent2CharMissionMultiplier");
     RemoveParser("ACorp2CharMissionMultiplier");
     RemoveParser("Agent2PCorpMissionMultiplier");

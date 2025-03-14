@@ -202,7 +202,7 @@ bool SystemEntity::ApplyDamage(Damage &damage) {
              GetName(), GetID(), shield_damage, new_charge);
     } else {
         // get fraction of damage partial shield absorbs, and lower total damage by that fraction
-        damage *= (1 - (available_shield /shield_damage));
+        damage *= (1 - (available_shield / shield_damage));
         total_damage += available_shield;
 
         if (available_shield > 0.0f) {
@@ -241,7 +241,7 @@ bool SystemEntity::ApplyDamage(Damage &damage) {
             _log(DAMAGE__DEBUG, "%s(%u): Applying %.2f damage to armor. New armor damage: %.2f",
                  GetName(), GetID(), armor_damage, new_damage);
         } else {
-            damage *= (1 - (available_armor /armor_damage));
+            damage *= (1 - (available_armor / armor_damage));
             total_damage += available_armor;
 
             if (available_armor > 0) {

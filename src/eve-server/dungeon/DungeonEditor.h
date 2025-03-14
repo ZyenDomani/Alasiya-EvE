@@ -18,9 +18,9 @@
 class DungeonEditor {
 public:
     DungeonEditor()                                     { /* do nothing here */ }
-    ~DungeonEditor()                                     { /* do nothing here */ }
+    ~DungeonEditor()                                    { /* do nothing here */ }
 
-
+    //AddRoomObject
 
 protected:
 

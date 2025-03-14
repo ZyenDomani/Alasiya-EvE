@@ -44,8 +44,8 @@ protected:
     SystemDB m_db;
 
     PyCallable_DECL_CALL(GetLevelEditor);
-	PyCallable_DECL_CALL(ActivateAccelerationGate);
-	PyCallable_DECL_CALL(CanWarpToPathPlex);
+    PyCallable_DECL_CALL(ActivateAccelerationGate);
+    PyCallable_DECL_CALL(CanWarpToPathPlex);
 
     //overloaded in order to support bound objects:
     virtual PyBoundObject *CreateBoundObject(Client *pClient, const PyRep *bind_args);
@@ -58,3 +58,12 @@ protected:
 #endif
 
 
+/*
+ PyCallable_REG_CALL(KeeperBound, GetRoomObject);
+ PyCallable_REG_CALL(KeeperBound, GetRoomObjects);
+ PyCallable_REG_CALL(KeeperBound, GetRoomGroups);
+ PyCallable_REG_CALL(KeeperBound, ObjectSelection);
+ PyCallable_REG_CALL(KeeperBound, BatchStart);
+ PyCallable_REG_CALL(KeeperBound, BatchEnd);
+ PyCallable_REG_CALL(KeeperBound, RemoveRoomObject);
+ */

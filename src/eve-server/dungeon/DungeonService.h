@@ -62,6 +62,9 @@ protected:
     PyCallable_DECL_CALL(TemplateAdd);
     PyCallable_DECL_CALL(TemplateObjectAddDungeonList);
 
+    PyResult DEGetRooms(PyCallArgs& call);
+    PyResult DEGetRoomObjectPaletteData(PyCallArgs& call);
+    PyResult DEGetFactions(PyCallArgs& call);
 };
 
 

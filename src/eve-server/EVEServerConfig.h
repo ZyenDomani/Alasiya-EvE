@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    12.5
+    Version:    12.6
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -328,6 +328,7 @@ public:
         float ACorp2PCorpMissionMultiplier;
         float AFaction2CharMissionMultiplier;
         float AFaction2PCorpMissionMultiplier;
+        float FactionDerivedMultiplier;
     } standings;
 
     // From <chat>

@@ -484,7 +484,7 @@ void testing::RunDroneAttribs() {
     // get drone ids from db  138 total
     std::vector<InventoryItemRef> droneRefs;
     DBQueryResult res;
-    sDatabase.RunQuery(res, "SELECT `typeID` FROM `invTypes` WHERE `groupID` IN (SELECT `groupID`  FROM `invGroups` WHERE `categoryID` = 18)");
+    sDatabase.RunQuery(res, "SELECT typeID FROM invTypes WHERE groupID IN (SELECT groupID  FROM invGroups WHERE categoryID = 18)");
     DBResultRow row, row2;
     while (res.GetRow(row)) {
         ItemData data = ItemData();
@@ -633,7 +633,7 @@ void testing::NumberTest() {
 void testing::GetAgentPics() {
     /* after not finding agent pictures and not wanting to keep hitting live,
      *  i am tryin this....dl the pics from live once and store them on my server for disto
-     *  there's 10977 agents.  this may take a minute...
+     *  there's 10977 agents.  this may take a minute...(took 2.3h)
      *
      * http://images.evetech.net/Character/<charID>_64.jpg
      */
@@ -650,4 +650,92 @@ void testing::GetAgentPics() {
     for (auto &cur : agentIDs) {
         std::cout << "wget http://images.evetech.net/Character/" << cur << "_256.jpg -P /srv/games/eve/Alasiya-EvE/image_cache/Agent/" << std::endl;
     }
+}
+
+void testing::FixDungeonGroupData() {
+    std::vector<uint16> typeIDs;
+    DBerror err;
+    DBQueryResult res;
+    DBResultRow row;
+    /*
+    sDatabase.RunQuery(res, "SELECT itemTypeID FROM dunGroupData");
+    while (res.GetRow(row)) {
+        Inv::TypeData data = Inv::TypeData();
+        sDataMgr.GetType(row.GetInt(0), data);
+        sDatabase.RunQuery(err, "UPDATE dunGroupData SET itemName='%s',itemGroupID=%u  WHERE itemTypeID=%u",
+            data.name.c_str(), data.groupID, data.id);
+    }
+*/
+    sDatabase.RunQuery(res, "SELECT dunGroupID, itemGroupID FROM dunGroupData");
+    while (res.GetRow(row)) {
+        std::string name;
+        if (row.GetInt(0) > 1000) {
+            name = sDataMgr.GetGroupName(row.GetInt(1));
+        } else if ((row.GetInt(0) > 619) and (row.GetInt(0) < 700)) {
+            name = sDataMgr.GetGroupName(row.GetInt(1));
+        } else {
+            name = GetDungeonGroupName(row.GetInt(0));
+        }
+        std::string safename;
+        sDatabase.DoEscapeString(safename, name);
+
+        sDatabase.RunQuery(err, "UPDATE dunGroupData SET groupName='%s' WHERE dunGroupID=%u",
+            name.c_str(), row.GetInt(0));
+    }
+
+}
+
+const char* testing::GetDungeonGroupName(uint16 grpID) {
+    return "none";
+}
+
+/*
+ *    templateID = (sig.dungeonType * 10000) + (sec * 1000) + (type * 100) + (level * 10) + factionID;
+ *
+ *    uint8 factionID   = templateID % 10;
+ *    uint8 level       = templateID / 10 % 10;
+ *    uint8 type        = templateID / 100 % 10;
+ *    uint8 sec         = templateID / 1000 % 10;
+ *    uint8 dungeonType = templateID / 10000 % 10;
+ */
+void testing::UpdateDungeons() {
+    DBerror err;
+    DBQueryResult res;
+    DBResultRow row;
+    uint8 typeID(0);
+    uint32 factionID(0);
+    uint8 archetypeID(0);
+    sDatabase.RunQuery(res, "SELECT templateID, templateName, dunRoomID FROM dunTemplates");
+    while (res.GetRow(row)) {
+        std::string name = row.GetText(1);
+        std::string safename;
+        sDatabase.DoEscapeString(safename, name);
+
+        factionID = row.GetInt(0) % 10;
+        typeID = row.GetInt(0) / 100 % 10;
+        archetypeID = row.GetInt(0) / 10000 % 10;
+
+        switch (factionID) {
+            // A = site - 1:mission, 2:grav, 3:mag, 4:radar, 5:ladar, 6:ded, 7:anomaly, 8:unrated, 9:escalation
+            // E = faction - 0=code defined, 1=Serpentis, 2=Angel, 3=Blood, 4=Guristas, 5=Sansha, 6=Drones
+            case 1:  factionID = factionSerpentis;  break;
+            case 2:  factionID = factionAngel;  break;
+            case 3:  factionID = factionBloodRaider;  break;
+            case 4:  factionID = factionGuristas;  break;
+            case 5:  factionID = factionSanshas;  break;
+            case 6:  factionID = factionRogueDrones;  break;
+        }
+
+        sDatabase.RunQuery(err, "INSERT INTO dunDungeons("
+            "dungeonID, dungeonName, dungeonStatus, dungeonNameID, factionID, archetypeID, dungeonTemplateID) "
+            " VALUES (%u,'%s',2,null,%u,%u,%u)",
+                           row.GetInt(0), safename.c_str(), factionID, archetypeID, row.GetInt(0));
+
+        //insert room into dunRooms table
+        sDatabase.RunQuery(err, "INSERT INTO dunRooms(dungeonID, roomID, roomOrdinal, roomName)"
+        " VALUES (%u, %u, 1, '%s room')", row.GetInt(0), row.GetInt(2), safename.c_str());
+    }
+
+
+    sLog.Cyan("UpdateDungeons", " completed");
 }

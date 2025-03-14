@@ -150,13 +150,15 @@ PyRep *SovereigntyDataMgr::GetSystemSovereignty(uint32 systemID)
             args->SetItemString("solarSystemID", new PyInt(sData.solarSystemID));
         } else {
             _log(SOV__INFO, "SovereigntyDataMgr::GetSystemSovereignty(): No data for solarSystemID %u. Sending blank SovereigntyData object.", systemID);
-            args->SetItemString("contested", PyStatic.NewNone());
+            /*args->SetItemString("contested", PyStatic.NewNone());
             args->SetItemString("corporationID", PyStatic.NewNone());
             args->SetItemString("claimTime", PyStatic.NewNone());
             args->SetItemString("claimStructureID", PyStatic.NewNone());
             args->SetItemString("hubID", PyStatic.NewNone());
             args->SetItemString("allianceID", PyStatic.NewNone());
             args->SetItemString("solarSystemID", new PyInt(systemID));
+            */
+            return PyStatic.NewNone();
         }
     }
     return new PyObject("util.KeyVal", args);
@@ -208,7 +210,7 @@ PyRep *SovereigntyDataMgr::GetCurrentSovData(uint32 locationID)
 {
     DBRowDescriptor *header = new DBRowDescriptor();
     header->AddColumn("locationID", DBTYPE_I4);
-    header->AddColumn("allianceID", DBTYPE_I4); // can be None 
+    header->AddColumn("allianceID", DBTYPE_I4); // can be None
     header->AddColumn("stationCount", DBTYPE_I2);
     header->AddColumn("militaryPoints", DBTYPE_I2);
     header->AddColumn("industrialPoints", DBTYPE_I2);

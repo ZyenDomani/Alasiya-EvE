@@ -31,10 +31,8 @@
 #define EVE_PACKET_TYPES_H
 
 #include "../EVE_Corp.h"
-#include "../EVE_Dungeon.h"
 #include "../EVE_Effects.h"
 #include "../EVE_Inventory.h"
-#include "../EVE_Planet.h"
 #include "../EVE_Wallet.h"
 
 

@@ -131,39 +131,39 @@ bool PyRep::visit(PyVisitor& v) const
 
 std::string PyRep::StringContent(PyRep* pRep)
 {
-    if (pRep == nullptr) {
+    if (pRep == nullptr)
         return "";
-    }
-    if (pRep->IsString()) {
+
+    if (pRep->IsString())
         return pRep->AsString()->content();
-    }
-    if (pRep->IsWString()) {
+
+    if (pRep->IsWString())
         return pRep->AsWString()->content();
-    }
-    if (pRep->IsNone()) {
+
+    if (pRep->IsNone())
         return "";
-    }
+
 
     //sLog.Error("PyRep::StringContent()", "Expected PyString or PyWString but got %s.", pRep->TypeString());
     return "";
 }
 
 int64 PyRep::IntegerValue(PyRep* pRep) {
-    if (pRep == nullptr) {
+    if (pRep == nullptr)
         return 0;
-    }
-    if (pRep->IsLong()) {
+
+    if (pRep->IsLong())
         return pRep->AsLong()->value();
-    }
-    if (pRep->IsInt()) {
+
+    if (pRep->IsInt())
         return (int64)pRep->AsInt()->value();
-    }
-    if (pRep->IsFloat()) {
+
+    if (pRep->IsFloat())
         return (int64)pRep->AsFloat()->value();
-    }
-    if (pRep->IsBool()) {
+
+    if (pRep->IsBool())
         return (int64)pRep->AsBool()->value();
-    }
+
 
     //sLog.Error("PyRep::IntegerValue()", "Expected integer type but got %s.", pRep->TypeString());
     //EvE::traceStack();
@@ -171,21 +171,21 @@ int64 PyRep::IntegerValue(PyRep* pRep) {
 }
 
 uint32 PyRep::IntegerValueU32(PyRep* pRep) {
-    if (pRep == nullptr) {
+    if (pRep == nullptr)
         return 0;
-    }
-    if (pRep->IsInt()) {
+
+    if (pRep->IsInt())
         return (uint32)pRep->AsInt()->value();
-    }
-    if (pRep->IsLong()) {
+
+    if (pRep->IsLong())
         return (uint32)pRep->AsLong()->value();
-    }
-    if (pRep->IsFloat()) {
+
+    if (pRep->IsFloat())
         return (uint32)pRep->AsFloat()->value();
-    }
-    if (pRep->IsBool()) {
+
+    if (pRep->IsBool())
         return (uint32)pRep->AsBool()->value();
-    }
+
 
     //sLog.Error("PyRep::IntegerValueU32()", "Expected integer type but got %s.", pRep->TypeString());
     //EvE::traceStack();
@@ -193,43 +193,58 @@ uint32 PyRep::IntegerValueU32(PyRep* pRep) {
 }
 
 int32 PyRep::IntegerValueI32 ( PyRep* pRep ) {
-    if (pRep == nullptr) {
+    if (pRep == nullptr)
         return 0;
-    }
-    if (pRep->IsInt()) {
+
+    if (pRep->IsInt())
         return pRep->AsInt()->value();
-    }
-    if (pRep->IsLong()) {
+
+    if (pRep->IsLong())
         return (int32)pRep->AsLong()->value();
-    }
-    if (pRep->IsFloat()) {
+
+    if (pRep->IsFloat())
         return (int32)pRep->AsFloat()->value();
-    }
-    if (pRep->IsBool()) {
+
+    if (pRep->IsBool())
         return (int32)pRep->AsBool()->value();
-    }
+
 
     //sLog.Error("PyRep::IntegerValueI32()", "Expected integer type but got %s.", pRep->TypeString());
     //EvE::traceStack();
     return 0;
 }
 
-bool PyRep::GetBool(PyRep* pRep) {
-    if (pRep == nullptr) {
-        return false;
-    }
-    if (pRep->IsInt()) {
-        return (pRep->AsInt()->value() != 0);
-    }
-    if (pRep->IsLong()) {
-        return (pRep->AsLong()->value() != 0);
-    }
-    if (pRep->IsFloat()) {
-        return (pRep->AsFloat()->value() != 0);
-    }
-    if (pRep->IsBool()) {
+double PyRep::FloatValue(PyRep* pRep) {
+    if (pRep == nullptr)
+        return 0.0;
+    if (pRep->IsInt())
+        return pRep->AsInt()->value();
+    if (pRep->IsLong())
+        return pRep->AsLong()->value();
+    if (pRep->IsFloat())
+        return pRep->AsFloat()->value();
+    if (pRep->IsBool())
         return pRep->AsBool()->value();
-    }
+
+    return 0.0;
+}
+
+bool PyRep::GetBool(PyRep* pRep) {
+    if (pRep == nullptr)
+        return false;
+
+    if (pRep->IsInt())
+        return (pRep->AsInt()->value() != 0);
+
+    if (pRep->IsLong())
+        return (pRep->AsLong()->value() != 0);
+
+    if (pRep->IsFloat())
+        return (pRep->AsFloat()->value() != 0);
+
+    if (pRep->IsBool())
+        return pRep->AsBool()->value();
+
     if (pRep->IsString()) {
         if (pRep->AsString()->content().compare("true"))
             return true;
@@ -252,9 +267,9 @@ bool PyRep::GetBool(PyRep* pRep) {
             return false;
         return false;
     }
-    if (pRep->IsNone()) {
+    if (pRep->IsNone())
         return false;
-    }
+    
 
     return false;
 }

@@ -129,6 +129,10 @@ void StaticDataMgr::Populate()
     if (m_npcDivisions == nullptr)
         sLog.Error("    StaticDataMgr", "m_npcDivisions is null");
 
+    m_factionIDs = ManagerDB::LoadFactionIDs();
+    if (m_factionIDs == nullptr)
+        sLog.Error("    StaticDataMgr", "m_factionIDs is null");
+
     sLog.Cyan("    StaticDataMgr", "Base Static data sets loaded in %.3fms.", (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();

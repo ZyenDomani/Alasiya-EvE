@@ -7,10 +7,15 @@
 #ifndef EVE_DUNGEON_H
 #define EVE_DUNGEON_H
 
+#include "../eve-core/eve-core.h"
+#include "../eve-core/math/gpoint.h"
+
+
 namespace Dungeon {
     namespace Type {
         enum {
-            None            = 0, // placeholder to correctly init data
+            None            = -1,
+            Rated           = 0, // DED rated dungeon
             Mission         = 1, // npc mission
             Gravimetric     = 2, // roids
             Magnetometric   = 3, // salvage and archeology
@@ -19,8 +24,7 @@ namespace Dungeon {
             Wormhole        = 6, // wtf is a 'wormhole'??
             Anomaly         = 7, // non-rated dungeon that isnt required to scan with probes
             Unrated         = 8, // non-rated dungeon  no waves, possible escalation to complex
-            Escalation      = 9, // new dungeon from previous site. very limited access
-            Rated           = 10 // DED rated dungeon
+            Escalation      = 9  // new dungeon from previous site. very limited access
         };
     }
 
@@ -36,6 +40,7 @@ namespace Dungeon {
             Concord         = 7
         };
     }
+
     namespace Status {
         enum {
             Started         = 0,
@@ -164,8 +169,10 @@ namespace Dungeon {
         uint8 dunTypeID;
         uint8 dunSpawnClass;
         uint16 dunEntryID;
-        int32 dunRoomID;
+        uint32 dunRoomID;
+        uint32 dunFactionID;
         std::string dunName;
+        std::string dunDescription;
     };
 
     struct RoomInfo {
@@ -174,6 +181,20 @@ namespace Dungeon {
         uint8 dunRoomSpawnID;
         uint8 dunRoomSpawnType;
         uint16 dunRoomID;
+    };
+
+    struct RoomObject {
+        uint16 typeID;
+        uint16 groupID;
+        uint32 objectID;
+        uint32 roomID;
+        double x;
+        double y;
+        double z;
+        double yaw;
+        double pitch;
+        double roll;
+        double radius;
     };
 
     struct RoomData {
@@ -209,6 +230,17 @@ namespace Dungeon {
         uint16 dunEntryID;
     };
 
+    // These structures are used for dungeons which are actually spawned in space
+    struct LiveRoom {
+        GPoint position;
+        std::vector<uint32> items;
+    };
+
+    struct LiveDungeon {
+        uint32 systemID;
+        uint32 anomalyID;
+        std::map<uint16, LiveRoom> rooms;
+    };
 }
 
 /*
