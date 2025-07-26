@@ -148,7 +148,7 @@ void ShipItem::SetPlayer(Client* pClient) {
 
 void ShipItem::Init()
 {
-    SetFlag(flagNone);
+    SetFlag(flagAutoFit);
 
     // pods have 57 attribs and 0 effects
     if (groupID() == EVEDB::invGroups::Capsule) {
@@ -507,9 +507,9 @@ uint32 ShipItem::AddItemByFlag(EVEItemFlags flag, InventoryItemRef iRef, Client*
     if (iRef.get() == nullptr)
         return 0;
 
-    if (flag == flagNone) {
+    if (flag == flagAutoFit) {
         // make error.  nothing at this point should be "autoFit"
-        codelog(SHIP__ERROR, "ShipItem::AddItem() - flag = flagNone.");
+        codelog(SHIP__ERROR, "ShipItem::AddItem() - flag = flagAutoFit.");
         if (sConfig.debug.IsTestServer)
             EvE::traceStack();
         flag = flagCargoHold;   //default to cargo (cause this is a ship)
@@ -527,21 +527,18 @@ uint32 ShipItem::AddItemByFlag(EVEItemFlags flag, InventoryItemRef iRef, Client*
             return iRef->itemID();
         } else if (iRef->categoryID() == EVEDB::invCategories::Module) {
             ModuleItemRef mRef = ModuleItemRef::StaticCast(iRef);
-            mRef->ChangeSingleton(true, false);
             // rigs are classed in the module category.  check here and call appropriate method as needed.
             if (IsRigSlot(flag)) {
                 if (!m_ModuleManager->InstallRig(mRef, flag))
                     return 0;
-            } else if (!m_ModuleManager->AddModule(mRef, flag))
+            } else if (!m_ModuleManager->AddModule(mRef, flag)) {
                 return 0;
+            }
         } else if (iRef->categoryID() == EVEDB::invCategories::Subsystem) {
             ModuleItemRef mRef = ModuleItemRef::StaticCast(iRef);
-            //mRef->SetOnline(true);  // is this needed here?
-            mRef->ChangeSingleton(true, false);
             if (!m_ModuleManager->InstallSubSystem(mRef, flag))
                 return 0;
         }
-        //m_ModuleManager->UpdateModules(flag);
     }
 
     iRef->Move(m_itemID, flag, true);
@@ -2768,7 +2765,7 @@ bool ShipSE::LaunchDrone(InventoryItemRef dRef) {
     Character* pChar = GetPilot()->GetChar().get();
     sLog.Magenta("ShipSE::LaunchDrone()","%s: Launching drone %s(%u)",  pChar->name(), dRef->name(), dRef->itemID());
 
-    dRef->Move(GetLocationID(), flagNone, true);
+    dRef->Move(GetLocationID(), flagAutoFit, true);
 
     //now we create an SE to represent it.
     FactionData data = FactionData();

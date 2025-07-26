@@ -990,7 +990,7 @@
     <tupleInline>
       <int name="corpID" />
       <int name="locationID" />
-      <string name="flag" none_marker="*flagNone*" />
+      <string name="flag" none_marker="*flagAutoFit*" />
     </tupleInline>
   </elementDef>
 

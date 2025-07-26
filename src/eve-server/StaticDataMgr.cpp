@@ -1838,7 +1838,7 @@ const char* StaticDataMgr::GetFlagName(uint16 flag) {
 
 const char* StaticDataMgr::GetFlagName(EVEItemFlags flag) {
     switch (flag) {
-        case flagNone:                          return "AutoFit";
+        case flagAutoFit:                          return "AutoFit";
         case flagWallet:                        return "Wallet";
         //case flagFactory:                       return "Factory";
         case flagWardrobe:                      return "Wardrobe";

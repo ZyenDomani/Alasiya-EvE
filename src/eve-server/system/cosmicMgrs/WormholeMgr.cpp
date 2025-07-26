@@ -110,7 +110,7 @@ void WormholeMgr::Create(CosmicSignature& sig)
     // create k162 here
     sig.sigName = "WormHole K162";
     GPoint pos(sig.position);
-    ItemData wData(30831, sig.ownerID, sig.systemID, flagNone, sig.sigName.c_str(), pos);
+    ItemData wData(30831, sig.ownerID, sig.systemID, flagAutoFit, sig.sigName.c_str(), pos);
     InventoryItemRef iRef = InventoryItem::SpawnItem(sItemFactory.GetNextTempID(), wData);
     if (iRef.get() == nullptr) // we'll survive...anomaly is temp item, so not worried about deleting it here.
         return;

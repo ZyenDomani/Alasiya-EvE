@@ -414,7 +414,7 @@ void ShipSE::Killed(Damage &damage) {
 
     if (!m_self->HasPilot()) {
         // Spawn a wreck for the Ship that was destroyed:
-        ItemData wreckItemData(wreckTypeID, killerID, locationID, flagNone, wreck_name.c_str(), wreckPosition, itoa(m_allyID));
+        ItemData wreckItemData(wreckTypeID, killerID, locationID, flagAutoFit, wreck_name.c_str(), wreckPosition, itoa(m_allyID));
         WreckContainerRef wreckItemRef = sItemFactory.SpawnWreckContainer( wreckItemData );
         if (wreckItemRef.get() == nullptr) {
             sLog.Error("Ship::Killed()", "Creating Wreck Item Failed for %s of type %u", wreck_name.c_str(), wreckTypeID);
@@ -567,7 +567,7 @@ void ShipSE::Killed(Damage &damage) {
         std::string corpse_name = pPilot->GetName();
         corpse_name += "'s Frozen Corpse";
         uint32 corpseTypeID = 10041; // typeID from 'invTypes' table for "Frozen Corpse"
-        ItemData corpseItemData(corpseTypeID, m_ownerID, locationID, flagNone, corpse_name.c_str(), wreckPosition);
+        ItemData corpseItemData(corpseTypeID, m_ownerID, locationID, flagAutoFit, corpse_name.c_str(), wreckPosition);
         InventoryItemRef corpseItemRef = sItemFactory.SpawnItem( corpseItemData );
         if (corpseItemRef.get() == nullptr) {
             sLog.Error("Ship::Killed()", "Creating Corpse Item Failed for %s of type %u", corpse_name.c_str(), corpseTypeID);
@@ -603,7 +603,7 @@ void ShipSE::Killed(Damage &damage) {
         // this resets client ship data
         pPilot->ResetAfterPopped(podPosition);
 
-        ItemData wreckItemData(wreckTypeID, pPilot->GetCharacterID(), locationID, flagNone, wreck_name.c_str(), wreckPosition, itoa(m_allyID));
+        ItemData wreckItemData(wreckTypeID, pPilot->GetCharacterID(), locationID, flagAutoFit, wreck_name.c_str(), wreckPosition, itoa(m_allyID));
         WreckContainerRef wreckItemRef = sItemFactory.SpawnWreckContainer( wreckItemData );
         if (wreckItemRef.get() == nullptr) {
             sLog.Error("Ship::Killed()", "Creating Wreck Item Failed for %s of type %u", wreck_name.c_str(), wreckTypeID);
@@ -616,7 +616,7 @@ void ShipSE::Killed(Damage &damage) {
 
         DropLoot(wreckItemRef, groupID, killerID);
         for (auto &cur: survivedItems)
-            cur->Move(wreckItemRef->itemID(), flagNone); // populate wreck with items that survived
+            cur->Move(wreckItemRef->itemID(), flagAutoFit); // populate wreck with items that survived
 
         DBSystemDynamicEntity wreckEntity = DBSystemDynamicEntity();
             wreckEntity.allianceID = killer->GetAllianceID();

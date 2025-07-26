@@ -402,7 +402,7 @@ void BeltMgr::SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const G
         adata.systemID = m_systemID;
         adata.quantity = quantity;
         adata.position = position;
-    ItemData idata(typeID, ownerSystem, m_systemID, flagNone, "", position);
+    ItemData idata(typeID, ownerSystem, m_systemID, flagAutoFit, "", position);
     InventoryItemRef iRef(nullptr);
     if (IsTempItem(beltID)) {
         iRef = AsteroidItem::SpawnTemp(idata, adata);   // create temp item for anomaly belt

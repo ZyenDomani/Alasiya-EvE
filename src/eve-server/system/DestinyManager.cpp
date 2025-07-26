@@ -3293,7 +3293,7 @@ void DestinyManager::SendSetState() const {
 void DestinyManager::MarkPoint(const GPoint& position, std::string& name, std::string& desc)
 {
     // create jetcan to visualize point in space
-    ItemData idata(23, ownerSystem, mySE->GetLocationID(), flagNone, name.c_str(), position, desc.c_str());
+    ItemData idata(23, ownerSystem, mySE->GetLocationID(), flagAutoFit, name.c_str(), position, desc.c_str());
     CargoContainerRef cRef = CargoContainerRef::StaticCast(InventoryItem::SpawnTemp(idata));
     if (cRef.get() == nullptr) {
         _log(DESTINY__WARNING, "MarkPoint() could not create Item for %s (%s)", name.c_str(), desc.c_str());

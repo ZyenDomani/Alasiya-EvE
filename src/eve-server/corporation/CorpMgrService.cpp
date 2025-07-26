@@ -134,7 +134,7 @@ PyResult CorpMgrService::Handle_GetAssetInventory(PyCallArgs &call) {
         return nullptr;
     }
 
-    EVEItemFlags locFlag = flagNone;
+    EVEItemFlags locFlag = flagAutoFit;
     std::ostringstream flags;
     flags << "(";
     if (args.flag.compare("offices") == 0) {
@@ -177,7 +177,7 @@ PyResult CorpMgrService::Handle_GetAssetInventoryForLocation(PyCallArgs &call) {
         return nullptr;
     }
 
-    EVEItemFlags locFlag = flagNone;
+    EVEItemFlags locFlag = flagAutoFit;
     std::ostringstream flags;
     flags << "(";
     if (args.flag.compare("offices") == 0) {

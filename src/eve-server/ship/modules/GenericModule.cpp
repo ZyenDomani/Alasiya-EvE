@@ -62,11 +62,12 @@ m_launcher(false)
 // this function must NOT throw
 // throwing an error negates further processing
 void GenericModule::Online() {
+    /*
     if (m_shipRef->GetPilot()->IsDocked() and (!m_shipRef->IsUndocking())) {
         m_ModuleState = Module::State::Online;
         SetAttribute(AttrOnline, EvilOne, !m_shipRef->GetPilot()->IsLogin());
         return;
-    }
+    } */
 
     if (m_ModuleState == Module::State::Unfitted) {
         _log(MODULE__ERROR, "GenericModule::Online() called for unfitted module %u(%s).",itemID(), m_modRef->name());
@@ -119,6 +120,7 @@ void GenericModule::Online() {
 
     m_modRef->SetOnline(true, isRig());
     m_ModuleState = Module::State::Online;
+
     _log(MODULE__MESSAGE, "GenericModule::Online() - %u(%s) cpu: %.2f, pg: %.2f, loaded: %s", \
             itemID(), m_modRef->name(), cpuNeed.get_float(), pgNeed.get_float(), \
             (m_ChargeState == Module::State::Loaded)?"true":"false");
@@ -149,13 +151,13 @@ void GenericModule::Online() {
     sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), !m_shipRef->IsUndocking());
 }
 
-void GenericModule::Offline()
-{
+void GenericModule::Offline() {
+    /*
     if (m_shipRef->GetPilot()->IsDocked()) {
         m_ModuleState = Module::State::Offline;
         SetAttribute(AttrOnline, EvilZero, !m_shipRef->IsUndocking());
         return;
-    }
+    } */
 
     //if (m_shipRef->GetPilot()->GetShipSE()->IsDead()) //  SE->IsDead() for all SEs
     if (m_shipRef->IsPopped())                          // only for player ships
@@ -256,8 +258,7 @@ void GenericModule::ProcessEffects(int8 state, bool active/*false*/)
 }
 
 // not used
-void GenericModule::Repair(EvilNumber amount)
-{
+void GenericModule::Repair(EvilNumber amount) {
     if (GetAttribute(AttrDamage) > 0) {
         EvilNumber newAmount = GetAttribute(AttrDamage) - amount;
         if (newAmount < EvilZero)
@@ -267,8 +268,7 @@ void GenericModule::Repair(EvilNumber amount)
     _log(MODULE__DAMAGE, "GenericModule::Repair() - %s repaired %u damage.  new damage %u", m_modRef->name(), amount.get_uint32(), GetAttribute(AttrDamage).get_uint32());
 }
 
-const char* GenericModule::GetModuleStateName(int8 state)
-{
+const char* GenericModule::GetModuleStateName(int8 state) {
     using namespace Module;
     switch(state) {
         case State::Unloaded:       return "Unloaded";
@@ -285,19 +285,17 @@ const char* GenericModule::GetModuleStateName(int8 state)
 }
 
 int8 GenericModule::GetModulePowerLevel() {
-    {
-        if (m_hiPower) {
-            return Module::Bank::High;
-        } else if (m_medPower) {
-            return Module::Bank::Mid;
-        } else if (m_loPower) {
-            return Module::Bank::Low;
-        } else if (m_rigSlot) {
-            return Module::Bank::Rig;
-        } else if (m_subSystem) {
-            return Module::Bank::Subsystem;
-        } else {
-            return Module::Bank::Undefined;
-        }
+    if (m_hiPower) {
+        return Module::Bank::High;
+    } else if (m_medPower) {
+        return Module::Bank::Mid;
+    } else if (m_loPower) {
+        return Module::Bank::Low;
+    } else if (m_rigSlot) {
+        return Module::Bank::Rig;
+    } else if (m_subSystem) {
+        return Module::Bank::Subsystem;
+    } else {
+        return Module::Bank::Undefined;
     }
 }

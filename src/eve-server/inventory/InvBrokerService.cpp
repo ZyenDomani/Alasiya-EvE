@@ -154,7 +154,7 @@ PyResult InvBrokerBound::Handle_GetContainerContents(PyCallArgs &call)
          throw UserError("CantDoThatWithSomeoneElsesStuff");
     }
 
-    return iRef->GetMyInventory()->List(flagNone);
+    return iRef->GetMyInventory()->List(flagAutoFit);
 }
 
 //this is a view into the entire inventory item.  this CAN throw.  find and implement client error msgs here for corp usage
@@ -203,25 +203,25 @@ PyResult InvBrokerBound::Handle_GetInventoryFromId(PyCallArgs &call) {
      *   ...
         inv = self.invCache.GetInventoryFromId(const.containerHangar)
      */
-    EVEItemFlags flag = flagNone;
+    EVEItemFlags flag = flagAutoFit;
     switch (iRef->categoryID()) {
         case EVEDB::invCategories::Owner: {
             switch (iRef->groupID()) {
                 case EVEDB::invGroups::Character: {
-                    flag = flagNone;
+                    flag = flagAutoFit;
                     ownerID = call.client->GetCharacterID();
                 } break;
                 case EVEDB::invGroups::Corporation: {
-                    flag = flagNone;
+                    flag = flagAutoFit;
                     ownerID = call.client->GetCorporationID();
                 } break;
                 case EVEDB::invGroups::Alliance: {
-                    flag = flagNone;
+                    flag = flagAutoFit;
                     ownerID = call.client->GetAllianceID();
                 } break;
                 case EVEDB::invGroups::Faction: {
                     // not sure if this is used...
-                    flag = flagNone;
+                    flag = flagAutoFit;
                     ownerID = call.client->GetWarFactionID();
                 } break;
             }
@@ -237,7 +237,7 @@ PyResult InvBrokerBound::Handle_GetInventoryFromId(PyCallArgs &call) {
         case EVEDB::invCategories::Structure: {
             switch(iRef->groupID()) {
                 case EVEDB::invGroups::Control_Tower: {
-                    flag = flagNone;
+                    flag = flagAutoFit;
                 } break;
                 default: {
                     flag = flagHangar;
@@ -248,7 +248,7 @@ PyResult InvBrokerBound::Handle_GetInventoryFromId(PyCallArgs &call) {
             switch(iRef->groupID()) {
                 case EVEDB::invGroups::Orbital_Construction_Platform: {
                     // not sure what to do in this case...
-                    flag = flagNone;
+                    flag = flagAutoFit;
                 } break;
                 case EVEDB::invGroups::Orbital_Infrastructure: {
                     // this includes orbital command centers, which this may not be right for.
@@ -266,7 +266,7 @@ PyResult InvBrokerBound::Handle_GetInventoryFromId(PyCallArgs &call) {
         } break;
         case EVEDB::invCategories::Trading: {
             _log(INV__WARNING, "GetInventoryFromID called for Trading locationID %u using itemID %u", m_locationID, args.arg1);
-            flag = flagNone;
+            flag = flagAutoFit;
         } break;
     }
 
@@ -310,7 +310,7 @@ PyResult InvBrokerBound::Handle_GetInventory(PyCallArgs &call) {
         return nullptr;
     }
 
-    EVEItemFlags flag = flagNone;
+    EVEItemFlags flag = flagAutoFit;
     switch(args.container) {
         case Inv::Container::Wallet: { /*10001*/
             if (ownerID == 0)
@@ -348,7 +348,7 @@ PyResult InvBrokerBound::Handle_GetInventory(PyCallArgs &call) {
             // not sure how to code it yet...
             if (ownerID == 0)
                 ownerID = call.client->GetCharacterID();
-            flag = flagNone;
+            flag = flagAutoFit;
         } break;
 
         case Inv::Container::Factory: { /*10006*/
@@ -361,7 +361,7 @@ PyResult InvBrokerBound::Handle_GetInventory(PyCallArgs &call) {
         //case Inv::Container::Bank:/*10007*/
         //case Inv::Container::Recycler:/*10008*/
         //case Inv::Container::StationCharacters:/*10010*/
-            //flag = flagNone;
+            //flag = flagAutoFit;
             //break;
         // there is no 10005, 10006, or 10007 defined in client
         default:

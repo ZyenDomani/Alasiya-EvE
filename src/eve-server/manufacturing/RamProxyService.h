@@ -61,11 +61,11 @@ private:
  *        if needInputFlag:
  *            ownerInput, flagInput = quoteData.ownerInputAndflagInput
  *        else:
- *            ownerInput, flagInput = None, const.flagNone
+ *            ownerInput, flagInput = None, const.flagAutoFit
  *        if needOutputFlag:
  *            ownerOutput, flagOutput = quoteData.ownerOutputAndflagOutput
  *        else:
- *            ownerOutput, flagOutput = None, const.flagNone
+ *            ownerOutput, flagOutput = None, const.flagAutoFit
  *        settings.user.ui.Set('rmInputCombo', (ownerInput, flagInput))
  *        settings.user.ui.Set('rmOutputCombo', (ownerOutput, flagOutput))
  *        if util.IsStation(quoteData.containerID):
@@ -128,7 +128,7 @@ private:
  *            if not needInputFlag:
  *                if ownerID in (session.charid, session.corpid):
  *                    invLocation = [quoteData.containerID, invLocationGroupID]
- *                    bomLocationData = [[quoteData.containerID, invLocationGroupID], [[const.flagNone]], []]
+ *                    bomLocationData = [[quoteData.containerID, invLocationGroupID], [[const.flagAutoFit]], []]
  *            if bomLocationData is None:
  *                raise UserError('RamNotYourItemToInstall')
  *        installedItemLocationData = sm.GetService('manufacturing').GetPathToItem(quoteData.blueprint)

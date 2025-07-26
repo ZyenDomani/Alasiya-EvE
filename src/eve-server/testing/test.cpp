@@ -507,7 +507,7 @@ void testing::RunDroneAttribs() {
         data.ownerID = 1;
         data.locationID = locTemp;
         data.quantity = 1;
-        data.flag = flagNone;
+        data.flag = flagAutoFit;
         data.customInfo = "Drone Test";
         data.typeID = row.GetUInt(0);
         InventoryItemRef iRef = sItemFactory.SpawnTempItem(data);

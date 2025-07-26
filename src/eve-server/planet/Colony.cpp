@@ -379,7 +379,7 @@ void Colony::CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latit
         iRef = sItemFactory.GetItemRef(m_colonyID);
         if (iRef->quantity() > 1) {
             // check for stack of CC items, and split as needed
-            ItemData data(typeID, m_client->GetCharacterID(), locTemp, flagNone, iRef->quantity() -1);
+            ItemData data(typeID, m_client->GetCharacterID(), locTemp, flagAutoFit, iRef->quantity() -1);
             InventoryItemRef iRef2 = sItemFactory.SpawnItem(data);
             iRef2->Move(m_client->GetShipID(), flagCargoHold);
             iRef->SetQuantity(1);
@@ -387,7 +387,7 @@ void Colony::CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latit
         m_client->GetShip()->RemoveItem(iRef);
     } else {
         // type, owner, location, flag, qty
-        ItemData data(typeID, m_client->GetCharacterID(), m_pSE->GetID(), flagNone, 1);
+        ItemData data(typeID, m_client->GetCharacterID(), m_pSE->GetID(), flagAutoFit, 1);
         iRef = sItemFactory.SpawnItem(data);
 
         /*  this shit doesnt work....changes arent sent to client.  not sure why
@@ -485,7 +485,7 @@ void Colony::CreateLink(uint32 src, uint32 dest, uint16 level) {
         if (itr != tempPinIDs.end())
             dest = itr->second;
     }
-    ItemData data(2280, m_client->GetCharacterID(), locTemp, flagNone, 1);
+    ItemData data(2280, m_client->GetCharacterID(), locTemp, flagAutoFit, 1);
     InventoryItemRef iRef = sItemFactory.SpawnItem(data);
     iRef->Move(m_pSE->GetID(), flagPlanetSurface, true);
     iRef->SaveItem();
@@ -950,7 +950,7 @@ PyRep* Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items
     ItemData canData(EVEDB::invTypes::PlanetaryLaunchContainer,
                     m_client->GetCharacterID(),  // owner is Character
                     pSysMgr->GetID(),
-                    flagNone,
+                    flagAutoFit,
                     "PI Commodities Container",
                     location);
 
@@ -1001,12 +1001,12 @@ PyRep* Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items
             case 3:     cost += (  900.00 * cur.second);    break;
             case 4:     cost += (75000.00 * cur.second);    break;
         }
-        ItemData iData(cur.first, m_client->GetCharacterID(), locTemp, flagNone, cur.second);
+        ItemData iData(cur.first, m_client->GetCharacterID(), locTemp, flagAutoFit, cur.second);
         InventoryItemRef iRef = sItemFactory.SpawnItem(iData);
         if (iRef.get() == nullptr)
             continue;
         // verify we're not overloading container capy
-        if (contRef->GetMyInventory()->HasAvailableSpace(flagNone, iRef)) {
+        if (contRef->GetMyInventory()->HasAvailableSpace(flagAutoFit, iRef)) {
             iRef->Move(cSE->GetID());
             iRef->SaveItem();
             ++count;
@@ -1154,7 +1154,7 @@ void Colony::PlanetXfer(uint32 spaceportID, std::map< uint32, uint16 > importIte
             case 4:     cost += (50000.00 * cur.second);    break;
         }
         // xfer virtual item to real
-        ItemData iData(cur.first, m_client->GetCharacterID(), locTemp, flagNone, cur.second);
+        ItemData iData(cur.first, m_client->GetCharacterID(), locTemp, flagAutoFit, cur.second);
         InventoryItemRef iRef = sItemFactory.SpawnItem(iData);
         iRef->Move(m_pSE->GetCustomsOffice()->GetID(), flagHangar, true);
         ++fromColony;

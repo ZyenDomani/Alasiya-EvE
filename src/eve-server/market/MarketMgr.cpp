@@ -551,7 +551,7 @@ void MarketMgr::ExecuteSellOrder(Client* buyer, uint32 orderID, Call_PlaceCharOr
             Journal::EntryType::TransactionTax, orderID, Account::KeyType::Cash);
 
     // after money is xferd, create and add item.
-    ItemData idata(args.typeID, ownerStation, locTemp, flagNone, args.quantity);
+    ItemData idata(args.typeID, ownerStation, locTemp, flagAutoFit, args.quantity);
     InventoryItemRef iRef = sItemFactory.SpawnItem(idata);
     if (iRef.get() == nullptr)
         return;

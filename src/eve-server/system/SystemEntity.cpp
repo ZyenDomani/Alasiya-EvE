@@ -220,7 +220,7 @@ void SystemEntity::DropLoot(WreckContainerRef wreckRef, uint32 groupID, uint32 o
         if (quantity < 1)
             quantity = 1;
 
-        ItemData iLoot(itr->typeID, owner, wreckRef->itemID(), flagNone, quantity);
+        ItemData iLoot(itr->typeID, owner, wreckRef->itemID(), flagAutoFit, quantity);
         wreckRef->AddItem(sItemFactory.SpawnItem(iLoot));
         // get item name here...
         _log(LOOT__INFO, "added %u of %u to list for %s(%u)", quantity, itr->typeID, m_self->name(), m_self->itemID());

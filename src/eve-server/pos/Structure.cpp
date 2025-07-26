@@ -1314,7 +1314,7 @@ void StructureSE::Killed(Damage &damage)
 
     std::string wreck_name = m_self->itemName();
     wreck_name += " Wreck";
-    ItemData wreckItemData(wreckTypeID, killerID, GetLocationID(), flagNone, wreck_name.c_str(), wreckPosition, itoa(m_allyID));
+    ItemData wreckItemData(wreckTypeID, killerID, GetLocationID(), flagAutoFit, wreck_name.c_str(), wreckPosition, itoa(m_allyID));
     WreckContainerRef wreckItemRef = sItemFactory.SpawnWreckContainer(wreckItemData);
     if (wreckItemRef.get() == nullptr) {
         sLog.Error("StructureSE::Killed()", "Creating Wreck Item Failed for %s of type %u", wreck_name.c_str(), wreckTypeID);
@@ -1328,7 +1328,7 @@ void StructureSE::Killed(Damage &damage)
     DropLoot(wreckItemRef, m_self->groupID(), killerID);
 
     for (auto &cur : survivedItems)
-        cur->Move(wreckItemRef->itemID(), flagNone); // populate wreck with items that survived
+        cur->Move(wreckItemRef->itemID(), flagAutoFit); // populate wreck with items that survived
 
     DBSystemDynamicEntity wreckEntity = DBSystemDynamicEntity();
         wreckEntity.allianceID = killer->GetAllianceID();

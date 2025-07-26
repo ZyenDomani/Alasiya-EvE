@@ -138,7 +138,7 @@ void CynoModule::CreateCyno()
         return;
 
     // Create Cyno field here
-    ItemData cData(EVEDB::invTypes::CynosuralFieldI, pClient->GetCharacterID(), m_sysMgr->GetID(), flagNone);
+    ItemData cData(EVEDB::invTypes::CynosuralFieldI, pClient->GetCharacterID(), m_sysMgr->GetID(), flagAutoFit);
     InventoryItemRef cRef = sItemFactory.SpawnItem(cData);
 
     _log(MODULE__DEBUG, "Creating Cynosural field");

@@ -237,7 +237,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
     sRamMthd.ActivityCheck(call.client, args, bpRef);
 
     // if output flag not set, put it where it came from
-    if (args.outputFlag == flagNone)
+    if (args.outputFlag == flagAutoFit)
         args.outputFlag = bpRef->flag();
 
     // check permissions
@@ -625,7 +625,7 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
         if (quantity == 0)
             quantity = 1;
 
-        ItemData idata(cur.typeID, data.ownerID, locTemp, flagNone, quantity);
+        ItemData idata(cur.typeID, data.ownerID, locTemp, flagAutoFit, quantity);
         InventoryItemRef iRef = sItemFactory.SpawnItem( idata );
         if (iRef.get() != nullptr)
             iRef->Move(args.containerID, data.outputFlag, true);

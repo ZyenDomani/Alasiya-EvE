@@ -700,7 +700,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
          *        ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, const char *_name = "",
          *                  const GPoint &_position = NULL_ORIGIN, const char *_customInfo = "", bool _contraband = false);
          */
-        ItemData idata(cur.typeID, corpID, m_system->GetID(), flagNone, "", startPos, name.c_str());
+        ItemData idata(cur.typeID, corpID, m_system->GetID(), flagAutoFit, "", startPos, name.c_str());
         for (uint8 x(0); x < cur.quantity;) {
             iRef = sItemFactory.SpawnItem(idata);
             if (iRef.get() == nullptr) {
@@ -780,7 +780,7 @@ void SpawnMgr::ReSpawn(SystemBubble* pBubble, SpawnEntry& spawnEntry)
     /* ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, const char *_name = "",
      *           const GPoint &_position = NULL_ORIGIN, const char *_customInfo = "", bool _contraband = false);
      */
-    ItemData idata(spawnEntry.typeID, spawnEntry.corpID, m_system->GetID(), flagNone, "", startPos, "BeltRat");
+    ItemData idata(spawnEntry.typeID, spawnEntry.corpID, m_system->GetID(), flagAutoFit, "", startPos, "BeltRat");
     InventoryItemRef iRef = sItemFactory.SpawnItem(idata);      // will have to work on this to NOT save npc to db.
     if (iRef.get() == nullptr) {
         _log(SPAWN__ERROR, "Failed to spawn item type %u.", spawnEntry.typeID);

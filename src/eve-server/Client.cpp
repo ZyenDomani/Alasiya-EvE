@@ -688,7 +688,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
             SendErrorMsg("Error loading station. Try relogging or jumping to a new system.");
         }
 
-        m_char->Move(m_locationID, flagNone, true);
+        m_char->Move(m_locationID, flagAutoFit, true);
         m_ship->Move(m_locationID, flagHangar, true);
 
         if (IsFleetID(m_fleet)) {
@@ -742,7 +742,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
             m_ship->Move(m_locationID, flagCapsule, true);
         } else {
             m_pod->Move(m_systemData.systemID, flagCapsule, false);
-            m_ship->Move(m_locationID, flagNone, true);
+            m_ship->Move(m_locationID, flagAutoFit, true);
         }
 
         if (m_char->flag() != flagPilot)
@@ -1250,7 +1250,7 @@ void Client::PickAlternateShip() {
 
 void Client::CreateNewPod() {
     std::string pod_name = m_char->itemName() + "'s Capsule";
-    ItemData podItem(EVEDB::invTypes::Capsule, m_char->itemID(), locTemp, flagNone, pod_name.c_str() );
+    ItemData podItem(EVEDB::invTypes::Capsule, m_char->itemID(), locTemp, flagAutoFit, pod_name.c_str() );
     m_pod = sItemFactory.SpawnShip( podItem );
     // make sure this is singleton
     m_pod->ChangeSingleton(true);
@@ -1292,7 +1292,7 @@ ShipItemRef Client::SpawnNewRookieShip(uint32 stationID) {
 
     //create data for new rookie ship
     std::string name =  m_char->itemName() + "'s Noob Ship";
-    ItemData sData(shipID, m_char->itemID(), locTemp, flagNone, name.c_str());
+    ItemData sData(shipID, m_char->itemID(), locTemp, flagAutoFit, name.c_str());
     //spawn rookie ship
     ShipItemRef sRef = sItemFactory.SpawnShip(sData);
     if (sRef.get() != nullptr) {
@@ -1301,21 +1301,21 @@ ShipItemRef Client::SpawnNewRookieShip(uint32 stationID) {
         sRef->Move(stationID, flagHangar);
     }
     // create and fit noob items in ship
-    ItemData mData(itemCivilianMiner, m_char->itemID(), locTemp, flagNone);
+    ItemData mData(itemCivilianMiner, m_char->itemID(), locTemp, flagAutoFit);
     InventoryItemRef mRef = sItemFactory.SpawnItem(mData);
     if (mRef.get() != nullptr) {
         mRef->ChangeSingleton(true);
         mRef->Move(sRef->itemID(), flagHiSlot0);
         mRef->SetAttribute(AttrOnline, EvilOne, false);
     }
-    ItemData wData(gunID, m_char->itemID(), locTemp, flagNone);
+    ItemData wData(gunID, m_char->itemID(), locTemp, flagAutoFit);
     InventoryItemRef wRef = sItemFactory.SpawnItem(wData);
     if (wRef.get() != nullptr) {
         wRef->ChangeSingleton(true);
         wRef->Move(sRef->itemID(), flagHiSlot1);
         wRef->SetAttribute(AttrOnline, EvilOne, false);
     }
-    ItemData cData(itemTypeTrit, m_char->itemID(), locTemp, flagNone, 100);
+    ItemData cData(itemTypeTrit, m_char->itemID(), locTemp, flagAutoFit, 100);
     InventoryItemRef cRef = sItemFactory.SpawnItem(cData);
     if (cRef.get() != nullptr)
         cRef->Move(sRef->itemID(), flagCargoHold);

@@ -202,7 +202,7 @@ PyResult Command_spawnn(Client* who, CommandDB* db, PyServiceMgr* services, cons
         actualTypeID,
         1, // owner is EVE System
         who->GetLocationID(),
-        flagNone,
+        flagAutoFit,
         actualTypeName.c_str(),
         loc
    );
@@ -333,7 +333,7 @@ PyResult Command_spawn(Client* pClient, CommandDB* db, PyServiceMgr* services, c
             actualTypeID,
             1, // owner is EVE System
             pClient->GetLocationID(),
-            flagNone,
+            flagAutoFit,
             actualTypeName.c_str(),
             loc
        );

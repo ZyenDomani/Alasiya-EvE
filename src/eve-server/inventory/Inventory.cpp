@@ -300,7 +300,7 @@ void Inventory::List(CRowSet* into, EVEItemFlags flag, uint32 ownerID) const {
     } else {
         for (auto &cur : mContents) {
             if (((ownerID == 0) or(cur.second->ownerID() == ownerID))
-            and((flag == flagNone) or(cur.second->flag() == flag))) {
+            and((flag == flagAutoFit) or(cur.second->flag() == flag))) {
                 row = into->NewRow();
                 cur.second->GetItemRow(row);
             }
@@ -625,7 +625,7 @@ float Inventory::GetCapacity(EVEItemFlags flag) const {
         //case flagDelivery:
         case flagImpounded:
         case flagCorpMarket:                    return maxHangarCapy;
-        case flagNone:
+        case flagAutoFit:
         case flagCargoHold:                     return m_self->GetAttribute(AttrCapacity).get_float();
         case flagDroneBay:                      return m_self->GetAttribute(AttrDroneCapacity).get_float();
         case flagShipHangar:                    return m_self->GetAttribute(AttrShipMaintenanceBayCapacity).get_float();
@@ -706,17 +706,19 @@ bool Inventory::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef) const
                     sDataMgr.GetFlagName(flag), flag, sDataMgr.GetFlagName(iRef->flag()), iRef->flag(), capacity);
         }
 
+    //NOTE:  .AddAmount[type]() does not work correctly for these...
+
     // check capy for single unit
     if (capacity < volume) { // smallest volume is 0.0025
         if (IsCargoHoldFlag(flag)) {
             throw UserError("NotEnoughCargoSpace")
-            .AddAmountD("volume", volume)
-            .AddAmountD("available", capacity);
+            .AddFormatValue("volume", new PyFloat(volume))
+            .AddFormatValue("available", new PyFloat(capacity));
         } else if (flag == flagShipHangar) {
             throw UserError("NotEnoughCargoSpaceFor1Unit")
-            .AddTypeID("type", iRef->typeID())
-            .AddAmountD("required", volume)
-            .AddAmountD("free", capacity);
+            .AddFormatValue("type", new PyInt(iRef->typeID()))
+            .AddFormatValue("required", new PyFloat(volume))
+            .AddFormatValue("free", new PyFloat(capacity));
         } else if (IsSpecialHoldFlag(flag)) {
             throw UserError("NotEnoughSpecialBaySpaceOverload")
             .AddFormatValue("item", new PyString(iRef->itemName()))
@@ -724,8 +726,8 @@ bool Inventory::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef) const
             .AddFormatValue("used", new PyFloat(GetStoredVolume(flag)));
         } else if (IsModuleSlot(flag)) {
             throw UserError("NotEnoughChargeSpace")
-            .AddAmountD("volume", volume)
-            .AddAmountD("capacity", capacity);
+            .AddFormatValue("volume", new PyFloat(totalVolume))
+            .AddFormatValue("capacity", new PyFloat(capacity));
         } else if (IsHangarFlag(flag)) {
             throw UserError("NotEnoughSpaceOverload")
             .AddFormatValue("item", new PyString(iRef->itemName()))
@@ -764,13 +766,13 @@ bool Inventory::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef) const
             .AddFormatValue("used", new PyFloat(GetStoredVolume(flag)));
         } else if (IsCargoHoldFlag(flag)) {
             throw UserError("NotEnoughCargoSpace")
-            .AddAmountD("volume", totalVolume)
-            .AddAmountD("available", capacity);
+            .AddFormatValue("volume", new PyFloat(totalVolume))
+            .AddFormatValue("available", new PyFloat(capacity));
         } else {
             throw UserError("NoSpaceForThat")
             .AddFormatValue("itemTypeName", new PyInt(iRef->typeID()))
-            .AddAmountD("itemVolume", totalVolume)
-            .AddAmountD("volumeAvailable", capacity);
+            .AddFormatValue("itemVolume", new PyFloat(totalVolume))
+            .AddFormatValue("volumeAvailable", new PyFloat(capacity));
         }
         return false;
     }

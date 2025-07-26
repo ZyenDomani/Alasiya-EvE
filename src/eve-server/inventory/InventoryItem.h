@@ -94,7 +94,8 @@ public:
     /* common functions for all entities handled here */
     /* public data queries  */
     bool                    contraband() const          { return m_data.contraband; }
-    bool                    isSingleton() const         { return m_data.singleton != 0; }
+    // singleton=true refers to the assembled state of the item;  not stackable and quantity not shown
+    bool                    isSingleton() const         { return m_data.singleton; }
     int32                   quantity() const            { return m_data.quantity; }
     uint32                  itemID() const              { return m_itemID; }
     uint32                  ownerID() const             { return m_data.ownerID; }
@@ -124,13 +125,14 @@ public:
     void                    ChangeOwner(uint32 new_owner, bool notify=false);
     // remove item from old location, add to new location and (optionally) notify client of changes
     // will bcast to corp for item update (incomplete)
-    void                    Move(uint32 new_location=locTemp, EVEItemFlags flag=flagNone, bool notify=false);
+    void                    Move(uint32 new_location=locTemp, EVEItemFlags flag=flagAutoFit, bool notify=false);
     // same as Move() but xfer ownership also
     // will bcast to corp for item update (incomplete)
-    void                    Donate(uint32 new_owner=ownerSystem, uint32 new_location=locTemp, EVEItemFlags new_flag=flagNone, bool notify=true);
+    void                    Donate(uint32 new_owner=ownerSystem, uint32 new_location=locTemp, EVEItemFlags new_flag=flagAutoFit, bool notify=true);
     void                    SendItemChange(uint32 toID, std::map< int32, PyRep* >& changes);
     // this is for stacking recovered probes, mined ore, and salvage in ship's cargo
-    void                    MergeTypesInCargo(ShipItem* pShip, EVEItemFlags flag=flagNone);  // will test for existing types
+    void                    MergeTypesInCargo(ShipItem* pShip, EVEItemFlags flag=flagAutoFit);  // will test for existing types
+    // singleton=true refers to the assembled state of the item;  not stackable and quantity not shown
     bool                    ChangeSingleton(bool singleton, bool notify=false);
     // this also updates volume of item
     bool                    AlterQuantity(int32 qty, bool notify=false);  // make sure to use proper sign
@@ -156,7 +158,7 @@ public:
     virtual bool            Merge(InventoryItemRef to_merge, int32 qty=0, bool notify=true);
     // same as Move() but doesnt remove item from previous location
     // used for moving charges to/from ship without calling Remove()
-    virtual void            Relocate(uint32 locID=0, EVEItemFlags flag=flagNone);
+    virtual void            Relocate(uint32 locID=0, EVEItemFlags flag=flagAutoFit);
 
     // add itemRef to our inventory.
     // does not move item

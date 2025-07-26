@@ -188,7 +188,7 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
     if (args.ownerID == 0)  // should never hit.
         args.ownerID = call.client->GetCharacterID();
 
-    if (args.flag == flagNone)  // should never hit.
+    if (args.flag == flagAutoFit)  // should never hit.
         args.flag = flagHangar;
 
     if (args.ownerID == call.client->GetCorporationID()) {
@@ -224,7 +224,7 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
             if (quantity == 0)
                 continue;
 
-            ItemData idata(itr->typeID, args.ownerID, locTemp, flagNone, quantity);
+            ItemData idata(itr->typeID, args.ownerID, locTemp, flagAutoFit, quantity);
             InventoryItemRef iRef2 = sItemFactory.SpawnItem( idata );
             if (iRef2.get() == nullptr)
                 continue;

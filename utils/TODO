@@ -23,8 +23,6 @@ NOTE:  for calls that use internal methods that send a reply, model from InjectS
 *******************************************************
 **********  errors and other found shit...high priority
 
-**!
-ship cargo (and probably others) not being updated in server while docked.  cargo shows 1752.0m3 but cant load more than 1500 (ship default)
 
 same acct can be logged in multiple times
 

@@ -235,23 +235,23 @@ PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
         return nullptr;
     }
     */
-
+    InventoryItemRef srcItem(nullptr), destItem(nullptr);
     std::vector<PyRep *>::const_iterator itr = args.mergeData->begin(), end = args.mergeData->end();
-    for (; itr != end; itr++) {
+    for (; itr != end; ++itr) {
         // sourceID, destID, qty
         MultiMergeData data;
-        if (!data.Decode( *itr )) {
+        if (!data.Decode(*itr)) {
             codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
             continue;
         }
 
-        InventoryItemRef srcItem = sItemFactory.GetItemRef( data.sourceID );
+        srcItem = sItemFactory.GetItemRef( data.sourceID );
         if (srcItem.get() == nullptr) {
             _log(INV__WARNING, "Failed to load source item %u. Skipping.", data.sourceID);
             continue;
         }
 
-        InventoryItemRef destItem = sItemFactory.GetItemRef( data.destID );
+        destItem = sItemFactory.GetItemRef( data.destID );
         if (destItem.get() == nullptr) {
             _log(INV__WARNING, "Failed to load destination item %u. Skipping.", data.destID);
             continue;
@@ -284,18 +284,13 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
         call.Dump(INV__DUMP);
     }
 
-    if (call.tuple->items.size() != 2) {
-        _log(INV__ERROR, "IB::Handle_Add()  Unexpected number of elements in tuple: %lu (should be 2).", call.tuple->items.size() );
-        return nullptr;
-    }
-
     Call_Add_2 args;    // item and location
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
-    uint16 toFlag = m_flag;
+    uint16 toFlag(m_flag);
     if (call.byname.find("flag") != call.byname.end())
         toFlag = PyRep::IntegerValueU32(call.byname.find("flag")->second);
     if (toFlag == flagLocked) {
@@ -308,8 +303,8 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
 
     InventoryItemRef iRef = sItemFactory.GetItemRef(args.itemID);
 
-    bool moveStack = false;
-    int32 quantity = 0;
+    bool moveStack(false);
+    int32 quantity(0);
     if (call.byname.find("qty") != call.byname.end())
         quantity = PyRep::IntegerValue(call.byname.find("qty")->second);
 
@@ -331,7 +326,7 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
         quantity = iRef->quantity();
     }
 
-    float capacity = 0.0f;
+    float capacity(0.0f);
     if (call.byname.find("capacity") != call.byname.end())
         capacity = PyRep::IntegerValueU32(call.byname.find("capacity")->second);
 
@@ -350,14 +345,10 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
 
 // this call is for moving items to *THIS* inventory
 PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
+    // MultiAdd([list]itemIDs, locationID, flag, fromManyFlags(for charges), qty)
     if (is_log_enabled(INV__DUMP)) {
         _log(INV__DUMP, "IB::Handle_MultiAdd() size= %lu", call.tuple->size());
         call.Dump(INV__DUMP);
-    }
-
-    if (call.tuple->items.size() != 2) {
-        _log(INV__ERROR, "IB::Handle_MultiAdd()  Unexpected number of elements in tuple: %lu (should be 2).", call.tuple->items.size() );
-        return nullptr;
     }
 
     Call_MultiAdd_2 args;
@@ -366,6 +357,17 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
+
+    //bool byname(fromManyFlags):true == unload charges from module(s) referenced...may be multiple in list
+    if (call.byname.find("fromManyFlags") != call.byname.end())
+        if (PyRep::GetBool(call.byname.find("fromManyFlags")->second)) {
+            //we are unloading charges here.  iterate thru modules in list and call UnloadModule on each
+            ShipItem* pShip = call.client->GetShip().get();
+            std::vector<int32>::const_iterator itr = args.itemIDs.begin();
+            for (; itr != args.itemIDs.end(); ++itr)
+                pShip->UnloadModule(*itr);
+            return nullptr;
+        }
 
     uint16 toFlag(m_flag);
     if (call.byname.find("flag") != call.byname.end())
@@ -379,39 +381,34 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
     if (call.byname.find("qty") != call.byname.end())
         quantity = PyRep::IntegerValue(call.byname.find("qty")->second);
 
-    //bool byname(fromManyFlags):true == unload charges from module referenced
+    // moving to hangar...move all items in stack, if applicable...this includes ship corp hangars
+    //  - is this what we want here?
     bool moveStack(false);
-    if (call.byname.find("fromManyFlags") != call.byname.end())
-        if (!call.byname.find("fromManyFlags")->second->IsNone())
-            moveStack = true;
-
-    float capacity(0.0f);
-    if (call.byname.find("capacity") != call.byname.end())
-        capacity = PyRep::IntegerValueU32(call.byname.find("capacity")->second);
-
-    if (capacity > 1)
-        moveStack = true;
-    if (quantity < 1)
+    if (IsHangarFlag(toFlag) or (quantity < 1))
         moveStack = true;
 
-    // moving TO hangar...move all items in stack, if applicable...this includes ship corp hangars - is this what we want here?
-    if (IsHangarFlag(toFlag))
-        moveStack = true;
-
-    if (m_self->IsShipItem() and !moveStack) {
-        std::vector<InventoryItemRef> itemVec;
-        for (auto &cur : args.itemIDs)
-            itemVec.push_back(sItemFactory.GetItemRef(cur));
-        args.itemIDs = CatSortItems(itemVec);
+    if (m_self->IsShipItem()) {
+        if (args.itemIDs.size() > 1) {
+            std::vector<InventoryItemRef> itemVec;
+            for (auto &cur : args.itemIDs)
+                itemVec.push_back(sItemFactory.GetItemRef(cur));
+            args.itemIDs = CatSortItems(itemVec);
+        }
+        if (toFlag == flagAutoFit) {
+            // we are probably dropping modules to autofit here
+            moveStack = false;
+        }
     }
 
-    _log(INV__MESSAGE, "IB::Handle_MultiAdd() - moving %lu items from (%u:%s) to me(%s:%u:%s).", \
-                args.itemIDs.size(), args.containerID, sDataMgr.GetFlagName(m_flag), m_self->name(), m_itemID, sDataMgr.GetFlagName(toFlag));
+    _log(INV__MESSAGE, "IB::Handle_MultiAdd() - moving %lu item%s from (%u:%s) to me(%s:%u:%s).", \
+                args.itemIDs.size(), args.itemIDs.size() > 1?"s":"", args.containerID, \
+                sDataMgr.GetFlagName(m_flag), m_self->name(), m_itemID, sDataMgr.GetFlagName(toFlag));
 
-    return MoveItems(call.client, args.itemIDs, (EVEItemFlags)toFlag, quantity, moveStack, capacity);
+    return MoveItems(call.client, args.itemIDs, (EVEItemFlags)toFlag, quantity, moveStack);
 }
 
-PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, EVEItemFlags toFlag, int32 quantity, bool moveStack, float capacity)
+PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, EVEItemFlags toFlag,
+                                 int32 quantity, bool moveStack/*false*/, float capacity/*0.0*/)
 {   // complete method rewrite -allan 21Dec17
     ShipItem* pShip = pClient->GetShip().get();
     bool donating(false);
@@ -510,13 +507,13 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
     }
 //TODO:  check for wrecks and cans in fleet and call donate to allow salvager to take
 
-    EVEItemFlags fromFlag(flagNone);
+    EVEItemFlags fromFlag(flagAutoFit);
     EVEItemFlags origFlag(toFlag);
     InventoryItemRef iRef(nullptr);
     sItemFactory.SetUsingClient(pClient);
 
     std::vector<int32>::const_iterator itr = items.begin();
-    for (; itr != items.end(); itr++) {
+    for (; itr != items.end(); ++itr) {
         // reset vars for adding multiple items
         toFlag = origFlag;
         quantity = origQty;
@@ -535,17 +532,21 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
 
         fromFlag = iRef->flag();
 
-        if (moveStack)
+        if (moveStack) {
+            // we are moving all items.  does singleton matter here?
             quantity = iRef->quantity();
+        }
 
-        // if client send capy, it is TOTAL space in this container, NOT current space.
-        if (capacity > 0) {
+        if (quantity == 0) {
+            if (!iRef->isSingleton()) {
+                _log(INV__ERROR, "IB::MoveItems() - Quantity == 0 and item !singleton.  Setting quantity = 1.");
+                quantity = 1;
+            }
+
             if (quantity < 1)
                 quantity = iRef->quantity();    // assume all.
-        } else if (quantity < 1) {
-            _log(INV__ERROR, "IB::MoveItems() - Quantity < 1.  Setting quantity = 1.");
-            quantity = 1;
         }
+
 
         // check for items that need specific handling
         if (IsRigSlot(fromFlag)) { //  cant remove rigs like this.  send error.
@@ -555,13 +556,13 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
             if (pShip == nullptr)
                 throw CustomError("Ship not found. The %s wasnt moved.", iRef->name());
 
-            //if (IsSolarSystem(pShip->locationID()))
+            //if (sDataMgr.IsSolarSystem(pShip->locationID()))
             //    throw CustomError("You cannot remove modules in space.");
 
             // verify module isnt active here (before we get too far in processing)
             GenericModule* pMod = pShip->GetModule(fromFlag);
             if (pMod == nullptr)
-                throw CustomError("That module was not found.  Chances are this is a server error, and either docking or reloging will correct it.");
+                throw CustomError("That module was not found.  Chances are this is a server error, and either docking or relogging will correct it.");
             if (pMod->IsActive())
                 throw CustomError("Your %s is currently active.  You must wait for the cycle to complete before it can be removed.", pMod->GetSelf()->name());
 
@@ -583,6 +584,9 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                 }
                 pShip->RemoveItem(iRef);
             }
+            // on the offchance this module was fit with qty>1 (old error), make sure we move the whole stack
+            if (iRef->quantity() > 1)
+                moveStack = true;
         }
 
         if (!moveStack and (quantity < iRef->quantity())) {
@@ -610,8 +614,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
         // move item to new location
         if (ship) {
             // are we adding module to ship using autoFit?
-            if (toFlag == flagNone) {
-               // assert(iRef->categoryID() != EVEDB::invCategories::Charge); // crash here...this should NOT happen.
+            if (toFlag == flagAutoFit) {
                 if (iRef->categoryID() == EVEDB::invCategories::Module) {
                     toFlag = pShip->FindAvailableModuleSlot(iRef);
                     if (toFlag == flagIllegal) {
@@ -759,14 +762,14 @@ PyResult InventoryBound::Handle_List(PyCallArgs &call) {
     } else if (IsPlayerItem(m_itemID)) {
         // this is probably a ship calling for all items
         //  is also used for t3 ships, POS, subLocations, and possibly others that are 'player items'
-        flag = flagNone;
+        flag = flagAutoFit;
         /*
     } else if (IsPlayerCorp(m_itemID)) {
         // this one probably will not be used.
         //  what items in a corp would be listed?  corpItem dont have inventory
     } else if (IsCharacterID(m_itemID)) { // this is checked in Inventory::List()
         // this is asking for skill list...char is a container for skills
-        flag = flagNone;
+        flag = flagAutoFit;
     } else if (IsSolarSystem(m_itemID)) {
         //  not sure how to do this one...will have to check on WHEN system listing would be called
         */
@@ -783,7 +786,7 @@ PyResult InventoryBound::Handle_List(PyCallArgs &call) {
 } else if (IsHangarFlag(flag)) {
     // check for owner or corpID
 
-    flag = flagNone;
+    flag = flagAutoFit;
     if (call.client->GetCorporationID() != m_ownerID)
         ; // calling char is not member of corp.  send error?
 } else if (IsOfficeFlag(flag)) {
@@ -791,7 +794,7 @@ PyResult InventoryBound::Handle_List(PyCallArgs &call) {
     //  this is market deliveries, impounded, etc.
     // check for corpID
 
-    flag = flagNone;
+    flag = flagAutoFit;
     if (call.client->GetCorporationID() != m_ownerID)
         ; // calling char is not member of corp.  send error?
 }
@@ -834,7 +837,7 @@ PyResult InventoryBound::Handle_CreateBookmarkVouchers(PyCallArgs &call) {
         PyList::const_iterator itr = args.bmIDs->begin();
         for (; itr != args.bmIDs->end(); ++itr) {
             //ItemData ( typeID, ownerID, locationID, flag, quantity, customInfo, contraband)
-            ItemData iData(EVEDB::invTypes::Bookmark, call.client->GetCharacterID(), locTemp, flagNone, 1, itoa(PyRep::IntegerValueU32(*itr)));
+            ItemData iData(EVEDB::invTypes::Bookmark, call.client->GetCharacterID(), locTemp, flagAutoFit, 1, itoa(PyRep::IntegerValueU32(*itr)));
             InventoryItemRef iRef = sItemFactory.SpawnItem( iData );
             if (iRef.get() == nullptr) {
                 codelog(ITEM__ERROR, "%s: Failed to spawn bookmark voucher for bmID %u", call.client->GetName(), PyRep::IntegerValueU32(*itr));

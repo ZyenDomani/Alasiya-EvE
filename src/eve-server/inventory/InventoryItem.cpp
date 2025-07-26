@@ -579,7 +579,7 @@ void InventoryItem::Delete() {
 
     // get out of client's sight.
     if (!IsNPCCorp(m_data.ownerID) and (m_data.ownerID > 1)) {
-        Move(locJunkyard, flagNone, true);
+        Move(locJunkyard, flagAutoFit, true);
     } else {
         // remove from current container's inventory
         if (IsValidLocationID(m_data.locationID)) {
@@ -666,7 +666,7 @@ void InventoryItem::Rename(std::string name)
     PySafeDecRef(tuple);
 }
 
-void InventoryItem::Donate(uint32 new_owner/*ownerSystem*/, uint32 new_location/*locTemp*/, EVEItemFlags new_flag/*flagNone*/, bool notify/*true*/)
+void InventoryItem::Donate(uint32 new_owner/*ownerSystem*/, uint32 new_location/*locTemp*/, EVEItemFlags new_flag/*flagAutoFit*/, bool notify/*true*/)
 {
     if (!IsValidOwner(new_owner)) {
         _log(ITEM__ERROR, "II::Donate() - %u is invalid owner", new_owner);
@@ -741,7 +741,7 @@ void InventoryItem::Donate(uint32 new_owner/*ownerSystem*/, uint32 new_location/
     }
 }
 
-void InventoryItem::Move(uint32 new_location/*locTemp*/, EVEItemFlags new_flag/*flagNone*/, bool notify/*false*/) {
+void InventoryItem::Move(uint32 new_location/*locTemp*/, EVEItemFlags new_flag/*flagAutoFit*/, bool notify/*false*/) {
     if ((new_location == m_data.locationID) and (new_flag == m_data.flag) and !notify)
         return; //nothing to do...
 
@@ -835,7 +835,7 @@ InventoryItemRef InventoryItem::Split(int32 qty/*0*/, bool notify/*true*/, bool 
 
     if (!silent)
         iRef->Move(m_data.locationID, m_data.flag, notify);
-    
+
     return iRef;
 }
 
@@ -920,7 +920,7 @@ bool InventoryItem::Merge(InventoryItemRef to_merge, int32 qty/*0*/, bool notify
     return true;
 }
 
-void InventoryItem::MergeTypesInCargo(ShipItem* pShip, EVEItemFlags flag/*flagNone*/)
+void InventoryItem::MergeTypesInCargo(ShipItem* pShip, EVEItemFlags flag/*flagAutoFit*/)
 {
     // get existing type in cargo
     InventoryItemRef iRef = pShip->GetMyInventory()->GetByTypeFlag(m_type.id(), flag);
@@ -1037,6 +1037,8 @@ bool InventoryItem::SetFlag(EVEItemFlags flag, bool notify/*false*/) {
     return true;
 }
 
+// singleton defines how item quantites (and other things) are displayed
+// singleton=true refers to the unpackaged state of items, and does not show quantites
 bool InventoryItem::ChangeSingleton(bool singleton, bool notify/*false*/) {
     if (singleton == m_data.singleton)
         return true;    //nothing to do...
@@ -1045,12 +1047,17 @@ bool InventoryItem::ChangeSingleton(bool singleton, bool notify/*false*/) {
     m_data.singleton = singleton;
 
     //verify quantity is -1 for singletons
-    if (m_data.singleton)
+    if (m_data.singleton) {
         if (m_data.quantity > 1) {
             _log(ITEM__WARNING, "%s(%u) is changing singleton to %s and qty is currently %u", \
                     m_data.name.c_str(), m_itemID, singleton?"On":"Off", m_data.quantity);
+        } else {
             m_data.quantity = -1;
         }
+    } else {
+        // must update volume when singleton=false (packaged state) changes for (mostly) ship items.
+        SetAttribute(AttrVolume, GetPackagedVolume(), notify);
+    }
 
     if (sConfig.world.saveOnUpdate)
         SaveItem();
@@ -1061,8 +1068,6 @@ bool InventoryItem::ChangeSingleton(bool singleton, bool notify/*false*/) {
         SendItemChange(m_data.ownerID, changes); //changes is consumed
     }
 
-    // must update volume when singleton (packaged state) changes for (mostly) ship items.
-    SetAttribute(AttrVolume, GetPackagedVolume(), notify);
     return true;
 }
 

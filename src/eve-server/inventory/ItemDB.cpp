@@ -169,9 +169,9 @@ bool ItemDB::GetItem(uint32 itemID, ItemData &into) {
     into.ownerID = (row.IsNull(2) ? 1 : row.GetUInt(2));
     into.locationID = (row.IsNull(3) ? 0 : row.GetUInt(3));
     into.flag = (EVEItemFlags)row.GetUInt(4);
-    into.contraband = row.GetInt(5) ? true : false;
-    into.singleton = row.GetInt(6) ? true : false;
-    into.quantity = row.GetUInt(7);
+    into.contraband = row.GetBool(5);
+    into.singleton = row.GetBool(6);
+    into.quantity = row.GetInt(7);
 
     into.position.x = row.GetInt64(8);
     into.position.y = row.GetInt64(9);
@@ -188,7 +188,7 @@ uint32 ItemDB::NewItem(const ItemData &data) {
         return 0;  // make error here?
 
     DBerror err;
-    uint32 uid = 0;
+    uint32 uid(0);
 
     std::string nameEsc, customInfoEsc;
     sDatabase.DoEscapeString(nameEsc, data.name);
@@ -196,11 +196,10 @@ uint32 ItemDB::NewItem(const ItemData &data) {
 
     if (!sDatabase.RunQueryLID(err, uid,
         "INSERT INTO entity ("
-        "   itemName, typeID, ownerID, locationID, flag,"
-        "   contraband, singleton, quantity, x, y, z,"
-        "   customInfo) "
-        "VALUES('%s', %u, %u, %u, %u,%u,"
-        "        %u, %u, %f, %f, %f, '%s' )",
+        "   itemName, typeID, ownerID, locationID, flag, contraband,"
+        "   singleton, quantity, x, y, z, customInfo) "
+        "VALUES('%s', %u, %u, %u, %u, %u,"
+        "        %u, %i, %lli, %lli, %lli, '%s' )",
         nameEsc.c_str(), data.typeID, data.ownerID, data.locationID, data.flag, data.contraband?1:0,
         data.singleton?1:0, data.quantity, data.position.x, data.position.y, data.position.z, customInfoEsc.c_str()
     )) {
@@ -242,8 +241,8 @@ bool ItemDB::SaveItem(uint32 itemID, const ItemData &data) {
         "  locationID = %u,"
         "  flag = %u,"
         "  singleton = %u,"
-        "  quantity = %u,"
-        "  x = %f, y = %f, z = %f,"
+        "  quantity = %i,"
+        "  x = %lli, y = %lli, z = %lli,"
         "  customInfo = '%s'"
         " WHERE itemID = %u",
         nameEsc.c_str(),
@@ -327,8 +326,9 @@ void ItemDB::SaveAttributes(bool isChar, std::vector<Inv::AttrData>& data)
         if (first) {
             Inserts << " VALUES ";
             first = false;
-        } else
+        } else {
             Inserts << ", ";
+        }
         Inserts << "(" << cur.itemID << ", " << cur.attrID << ", ";
         if (cur.decimal) {
             Inserts << "NULL, " << cur.valueFloat << ")";

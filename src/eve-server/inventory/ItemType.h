@@ -169,11 +169,11 @@ class ItemData {
 public:
     // default constructor:
     ItemData( const char *_name = "", uint16 _typeID = 0, uint32 _ownerID = ownerSystem, uint32 _locationID = locTemp,
-              EVEItemFlags _flag = flagNone, bool _contraband = false, bool _singleton = false, uint32 _quantity = 0,
+              EVEItemFlags _flag = flagAutoFit, bool _contraband = false, bool _singleton = false, int32 _quantity = 0,
               const GPoint &_position = NULL_ORIGIN, const char *_customInfo = "");
 
     // non-singleton constructor:
-    ItemData( uint16 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, uint32 _quantity,
+    ItemData( uint16 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, int32 _quantity,
               const char *_customInfo = "", bool _contraband = false);
 
     // Singleton constructor:
@@ -187,7 +187,7 @@ public:
     uint16          typeID;
     uint32          ownerID;
     uint32          locationID;
-    uint32          quantity;
+    int32           quantity;
     GPoint          position;
     std::string     name;
     std::string     customInfo;

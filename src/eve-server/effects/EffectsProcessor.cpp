@@ -407,8 +407,8 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                         // ....charge on src item (from module)
                         if (pShip == nullptr)
                             return;
-                        if (cur.second.srcRef->flag() == flagNone) {
-                            _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): SourceItem.flag is flagNone but need actual flag to acquire module.");
+                        if (cur.second.srcRef->flag() == flagAutoFit) {
+                            _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): SourceItem.flag is flagAutoFit but need actual flag to acquire module.");
                             _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): Item Data for %s(%u) - src(%s:%u)  targ(%s:%u) .", \
                                     cur.second.srcRef->name(), cur.second.srcRef->itemID(), GetSourceName(cur.second.fxSrc), cur.second.srcAttr,  \
                                     GetTargLocName(cur.second.targLoc), cur.second.targAttr);
@@ -421,8 +421,8 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                         // ....module containing the src item (from charge)
                         if (pShip == nullptr)
                             return;
-                        if (cur.second.srcRef->flag() == flagNone) {
-                            _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): SourceItem.flag is flagNone but need actual flag to acquire module.");
+                        if (cur.second.srcRef->flag() == flagAutoFit) {
+                            _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): SourceItem.flag is flagAutoFit but need actual flag to acquire module.");
                             _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): Item Data for %s(%u) - src(%s:%u)  targ(%s:%u) .", \
                                     cur.second.srcRef->name(), cur.second.srcRef->itemID(), GetSourceName(cur.second.fxSrc), cur.second.srcAttr,  \
                                     GetTargLocName(cur.second.targLoc), cur.second.targAttr);

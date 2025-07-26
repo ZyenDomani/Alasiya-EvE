@@ -175,6 +175,10 @@ void CargoContainer::RemoveItem(InventoryItemRef iRef)
     if (m_isAnchored)
         return;
 
+    //  error fix...DO NOT delete empty containers in stations (player hangars)
+    if (sDataMgr.IsStation(iRef->locationID()))
+        return;
+
     if (pInventory->IsEmpty()) {
         if (typeID() == EVEDB::invTypes::PlanetaryLaunchContainer) {
             sLog.Warning( "CargoContainer::RemoveItem()", "Launch Container %u is empty and being deleted.", m_itemID );

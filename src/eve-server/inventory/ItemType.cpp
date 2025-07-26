@@ -223,10 +223,10 @@ ItemData::ItemData(
     uint16 _typeID/*0*/,
     uint32 _ownerID/*ownerSystem*/,
     uint32 _locationID/*locTemp*/,
-    EVEItemFlags _flag/*flagNone*/,
+    EVEItemFlags _flag/*flagAutoFit*/,
     bool _contraband/*false*/,
     bool _singleton/*false*/,
-    uint32 _quantity/*0*/,
+    int32 _quantity/*0*/,
     const GPoint &_position/*NULL_ORIGIN*/,
     const char *_customInfo/*""*/)
 : name(_name),
@@ -247,7 +247,7 @@ ItemData::ItemData(
     uint32 _ownerID,
     uint32 _locationID,
     EVEItemFlags _flag,
-    uint32 _quantity,
+    int32 _quantity,
     const char *_customInfo/*""*/,
     bool _contraband/*false*/)
 : name(""),
@@ -279,7 +279,7 @@ locationID(_locationID),
 flag(_flag),
 contraband(_contraband),
 singleton(true),
-quantity(1),
+quantity(-1),
 position(_position),
 customInfo(_customInfo)
 {

@@ -11,7 +11,7 @@
 
 //from invFlags DB table
 enum EVEItemFlags {
-    flagNone                        = 0,
+    flagAutoFit                     = 0,
     flagWallet                      = 1,
     // flagFactory                     = 2,  // not in client
     flagWardrobe                    = 3,  // dunno what this is for  clothes?
@@ -190,7 +190,7 @@ enum EVEItemFlags {
     flagIllegal                     = 999
 
     /*  actual flags defined in client.....
-     flagNone = 0
+     flagAutoFit = 0
      flagBonus = 86
      flagBooster = 88
      flagBriefcase = 6
@@ -230,7 +230,7 @@ enum EVEItemFlags {
      flagLocked = 63
      flagMidSlot0 = 19
      flagMidSlot7 = 26
-     flagNone = 0
+     flagAutoFit = 0
      flagPilot = 57
      flagPlanetSurface = 150
      flagQuafeBay = 154

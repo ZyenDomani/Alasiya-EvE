@@ -64,8 +64,8 @@ public:
     bool ContainsItem(uint32 itemID) const              { return mContents.find(itemID) != mContents.end(); }
     // this checks all contents, not particular holds/hangars/items
     bool ContainsTypeQty(uint16 typeID, uint32 qty=0) const;
-    bool ContainsTypeQtyByFlag(uint16 typeID, EVEItemFlags flag=flagNone, uint32 qty=0) const;
-    bool ContainsTypeByFlag(uint16 typeID, EVEItemFlags flag=flagNone) const;
+    bool ContainsTypeQtyByFlag(uint16 typeID, EVEItemFlags flag=flagAutoFit, uint32 qty=0) const;
+    bool ContainsTypeByFlag(uint16 typeID, EVEItemFlags flag=flagAutoFit) const;
 
     float GetCapacity(EVEItemFlags flag) const;
     float GetStoredVolume(EVEItemFlags flag, bool combined=true) const;
@@ -85,7 +85,7 @@ public:
     uint32 GetItemsByFlagSet(std::set<EVEItemFlags> flags, std::vector<InventoryItemRef> &items) const;
     // for characters, ALL skills are flagSkill. we are not keeping flagSkillInTraining separate here
     InventoryItemRef FindFirstByFlag(EVEItemFlags flag) const;
-    InventoryItemRef GetItemByTypeFlag(uint16 typeID, EVEItemFlags flag=flagNone);
+    InventoryItemRef GetItemByTypeFlag(uint16 typeID, EVEItemFlags flag=flagAutoFit);
 
     void UpdateFlag(EVEItemFlags newFlag, InventoryItemRef iRef) const;
 

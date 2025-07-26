@@ -56,9 +56,6 @@ void ModuleItem::SetOnline(bool online/*false*/, bool isRig/*false*/) {
     _log(MODULE__DEBUG, "ModuleItem::SetOnline() - set module %s(%u) to %s", \
                     name(), m_itemID, (online ? "Online" : "Offline"));
 
-    if (!isRig)   // rigs DO NOT get isOnline attrib set.
-        SetAttribute(AttrOnline, (online?1:0));
-
     Client* pClient = sEntityMgr.FindClientByCharID(ownerID());
     if (pClient == nullptr) {
         _log(MODULE__WARNING, "ModuleItem::SetOnline() - No client object found using m_ownerID (%u) for module %s(%u)", \
@@ -66,7 +63,10 @@ void ModuleItem::SetOnline(bool online/*false*/, bool isRig/*false*/) {
         return;
     }
 
-    if (pClient->IsUndock())
+    if (!isRig)   // rigs DO NOT get isOnline attrib set.
+        SetAttribute(AttrOnline, (online?1:0), !pClient->IsDocked());
+
+    if (pClient->IsDocked() or pClient->IsUndock())
         return;
 
     GodmaEnvironment ge;

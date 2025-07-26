@@ -606,7 +606,7 @@ PyResult ContractProxy::Handle_AcceptContract(PyCallArgs &call) {
                 std::string containerName = sItemFactory.GetSolarSystemRef(startSolarSystemID)->name();
                 containerName = containerName + " -> " + sItemFactory.GetSolarSystemRef(endSolarSystemID)->name() + "(" + std::to_string(volume) + "m3)";
 
-                ItemData itemData(EVEDB::invTypes::PlasticWrap, call.client->GetCharacterID(), locTemp, flagNone);
+                ItemData itemData(EVEDB::invTypes::PlasticWrap, call.client->GetCharacterID(), locTemp, flagAutoFit);
                 itemData.name = containerName;
                 InventoryItemRef plasticWrap = sItemFactory.SpawnItem(itemData);
                 if (plasticWrap.get() != nullptr) {
@@ -620,7 +620,7 @@ PyResult ContractProxy::Handle_AcceptContract(PyCallArgs &call) {
                 for (auto item : items) {
                     InventoryItemRef itm = sItemFactory.GetItemRef(item);
                     if (itm.get() != nullptr) {
-                        itm->Move(plasticWrap->itemID(), flagNone, true);
+                        itm->Move(plasticWrap->itemID(), flagAutoFit, true);
                         itm->ChangeOwner(call.client->GetCharacterID());
                     }
                 }

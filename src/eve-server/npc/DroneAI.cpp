@@ -1407,7 +1407,7 @@ void DroneAIMgr::MineTarget() {
     // if ship is owned by corp, set owner of ore to pilot
     if (IsCorpID(ownerID))
         ownerID = shipSE->GetPilot()->GetCharID();
-    ItemData idata(roidRef->typeID(), ownerID, locTemp, flagNone, oreAmount);
+    ItemData idata(roidRef->typeID(), ownerID, locTemp, flagAutoFit, oreAmount);
     m_ore = sItemFactory.SpawnItem(idata);
     if (m_ore.get() == nullptr) {
         _log(DRONE__WARNING, "Could not create mined ore for %s assigned to %s", \
@@ -2733,7 +2733,7 @@ void DroneAIMgr::SetState(int8 stateID/*-1*/) {
 void DroneAIMgr::MarkPoint(const GPoint& position) {
     std::string name = "drone marker", desc = "";
     // create jetcan to visualize point in space
-    ItemData idata(23, ownerSystem, mySE->GetLocationID(), flagNone, name.c_str(), position, desc.c_str());
+    ItemData idata(23, ownerSystem, mySE->GetLocationID(), flagAutoFit, name.c_str(), position, desc.c_str());
     CargoContainerRef cRef = CargoContainerRef::StaticCast(InventoryItem::SpawnTemp(idata));
     if (cRef.get() == nullptr) {
         _log(DESTINY__WARNING, "MarkPoint() could not create Item for drone marker");

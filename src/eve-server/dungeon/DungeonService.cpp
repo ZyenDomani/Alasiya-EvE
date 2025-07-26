@@ -136,7 +136,7 @@ PyResult DungeonService::Handle_AddObject( PyCallArgs& call )
     objPos.y = newObject.y + pClient->GetSession()->GetCurrentFloat("editor_room_y");
     objPos.z = newObject.z + pClient->GetSession()->GetCurrentFloat("editor_room_z");
 
-    ItemData dData(newObject.typeID, 1/*EVE SYSTEM*/, pClient->GetLocationID(), flagNone, "", objPos);
+    ItemData dData(newObject.typeID, 1/*EVE SYSTEM*/, pClient->GetLocationID(), flagAutoFit, "", objPos);
     InventoryItemRef iRef = InventoryItem::SpawnItem(sItemFactory.GetNextTempID(), dData);
     if (iRef.get() == nullptr) {// Failed to spawn the item
         throw CustomError("Failed to spawn the item");
@@ -201,7 +201,7 @@ PyResult DungeonService::Handle_CopyObject( PyCallArgs& call )
         objPos.y = newObject.y + pClient->GetSession()->GetCurrentFloat("editor_room_y");
         objPos.z = newObject.z + pClient->GetSession()->GetCurrentFloat("editor_room_z");
 
-    ItemData dData(newObject.typeID, 1/*EVE SYSTEM*/, pClient->GetLocationID(), flagNone, "", objPos);
+    ItemData dData(newObject.typeID, 1/*EVE SYSTEM*/, pClient->GetLocationID(), flagAutoFit, "", objPos);
     InventoryItemRef iRef = InventoryItem::SpawnItem(sItemFactory.GetNextTempID(), dData);
     if (iRef.get() == nullptr) {// Failed to spawn the item
         throw CustomError("Failed to spawn the item");
@@ -380,7 +380,7 @@ PyResult DungeonService::Handle_AddTemplateObjects( PyCallArgs& call )
         // Create the object in the database
         DungeonDB::CreateObject(roomID->value(), cur.typeID, groupID, dbPosX, dbPosY, dbPosZ, cur.yaw, cur.pitch, cur.roll, cur.radius);
 
-        ItemData dData(cur.typeID, ownerSystem, pClient->GetLocationID(), flagNone, "", objPos);
+        ItemData dData(cur.typeID, ownerSystem, pClient->GetLocationID(), flagAutoFit, "", objPos);
         InventoryItemRef iRef = InventoryItem::SpawnItem(sItemFactory.GetNextTempID(), dData);
         if (iRef.get() == nullptr) // Failed to spawn the item
             continue;
