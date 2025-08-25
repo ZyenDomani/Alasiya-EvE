@@ -328,7 +328,7 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>&
         }
         if (anomaly) {
             // random for anomaly...use the "special" placements at end of this file....eventually.
-            theta = MakeRandomFloat(0, (EvE::Trig::Pi*2));
+            theta = MakeRandomFloat(0, (EvE::Trig::Pi * 2));
             mposition.x = (radius + roidradius / 5) * cos(theta);
             mposition.z = (radius + roidradius / 5) * sin(theta);
         } else if (type == 0) {

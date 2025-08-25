@@ -102,6 +102,62 @@ DungeonService::~DungeonService() {
     delete m_dispatch;
 }
 
+PyResult DungeonService::Handle_DEGetRoomObjectPaletteData( PyCallArgs& call ) {
+    //  roomObjectGroups = sm.RemoteSvc('dungeon').DEGetRoomObjectPaletteData()
+    return sDunDataMgr.GetPaletteGroups();
+}
+
+PyResult DungeonService::Handle_GetArchetypes( PyCallArgs& call ) {
+    //archetypes = sm.RemoteSvc('dungeon').GetArchetypes()
+    return DungeonDB::GetArchetypes();
+}
+
+PyResult DungeonService::Handle_DEGetFactions(PyCallArgs& call) {
+    //factions = sm.RemoteSvc('dungeon').DEGetFactions()
+    return sDataMgr.GetFactionIDs();
+}
+
+// this should get templates to add to dungeon.  probably not active dungeons
+PyResult DungeonService::Handle_DEGetDungeons( PyCallArgs& call )
+{
+    /* dungeon = sm.RemoteSvc('dungeon').DEGetDungeons(archetypeID=archetypeID, factionID=factionID)
+     * dungeon = sm.RemoteSvc('dungeon').DEGetDungeons(dungeonID=dungeonID)[0]
+     * dungeon.dungeonNameID, dungeon.dungeonID, dungeon.factionID
+     */
+    uint32 dungeonID = PyRep::IntegerValueU32(call.byname["dungeonID"]);
+    uint32 archetypeID = PyRep::IntegerValueU32(call.byname["archetypeID"]);
+    uint32 factionID = PyRep::IntegerValueU32(call.byname["factionID"]);
+
+    //Dungeon Status (1=Release, 2=Testing, 3=Working Copy)
+
+    return DungeonDB::GetDungeons(dungeonID, archetypeID, factionID);
+}
+
+// these next 2 are for dungeon templates...not complete dungeons or rooms
+PyResult DungeonService::Handle_DEGetTemplates( PyCallArgs& call ) {
+    /*        self.templateRows = sm.RemoteSvc('dungeon').DEGetTemplates()
+     *        for row in self.templateRows:
+     *            data = {'label': row.templateName,
+     *             'hint': row.description != row.templateName and row.description or '',
+     *             'id': row.templateID,
+     *             'form': self}
+     */
+    //dungeonNameID   nameID from output.txt
+
+    // this will be dungeon template rooms...maybe?
+    PyObjectEx* ret = DungeonDB::GetTemplates(call.client);
+
+    //if (is_log_enabled(DUNG__RSP_DUMP))
+    //    ret->Dump(DUNG__RSP_DUMP, "   ");
+
+    return ret;
+}
+
+PyResult DungeonService::Handle_DEGetRooms( PyCallArgs& call ) {
+    //rooms = sm.RemoteSvc('dungeon').DEGetRooms(dungeonID=seldungeon.dungeonID)
+    return DungeonDB::GetRooms(PyRep::IntegerValueU32(call.byname["dungeonID"]));
+}
+
 PyResult DungeonService::Handle_AddObject( PyCallArgs& call )
 {
     // (newObjectID, revisionID,) = sm.RemoteSvc('dungeon').AddObject(roomID, typeID, x, y, z, yaw, pitch, roll, radius)
@@ -171,8 +227,8 @@ PyResult DungeonService::Handle_CopyObject( PyCallArgs& call )
         return nullptr;
     }
 
-    int32 objectID     = PyRep::IntegerValue(call.tuple->GetItem(0));
-    int32 roomID       = PyRep::IntegerValue(call.tuple->GetItem(1));
+    int32 objectID   = PyRep::IntegerValue(call.tuple->GetItem(0));
+    int32 roomID     = PyRep::IntegerValue(call.tuple->GetItem(1));
     float offsetX    = PyRep::FloatValue(call.tuple->GetItem(2));
     float offsetY    = PyRep::FloatValue(call.tuple->GetItem(3));
     float offsetZ    = PyRep::FloatValue(call.tuple->GetItem(4));
@@ -220,25 +276,26 @@ PyResult DungeonService::Handle_CopyObject( PyCallArgs& call )
     return nullptr;
 }
 
+// the three EditObject* calls below are used for saving edited objects from dungeonEditor
 PyResult DungeonService::Handle_EditObjectRadius( PyCallArgs& call )
 {
     //sm.RemoteSvc('dungeon').EditObjectRadius(objectID=objectID, radius=radius)
     _log(DUNG__CALL,  "DungeonService::Handle_EditObjectRadius  size: %lu", call.tuple->size());
     call.Dump(DUNG__CALL_DUMP);
 
-    uint32 itemID = PyRep::IntegerValueU32(call.byname["objectID"]);
+    uint32 itemID(PyRep::IntegerValueU32(call.byname["objectID"]));
     if (itemID == 0) {
         call.client->SendErrorMsg("EditObjectRadius send itemID 0.");
         return nullptr;
     }
 
-    SystemEntity* pSE = call.client->SystemMgr()->GetEntityByID(itemID);
+    SystemEntity* pSE(call.client->SystemMgr()->GetEntityByID(itemID));
     if (!pSE->IsDungeonEditSE()) {
         call.client->SendErrorMsg("The selected object is not part of the current dungeon");
         return nullptr;
     }
 
-    double radius = PyRep::FloatValue(call.byname["radius"]);
+    double radius(PyRep::FloatValue(call.byname["radius"]));
 
     //dungeonEntity->DestinyMgr()->SetRadius(radius, true);
 
@@ -396,62 +453,6 @@ PyResult DungeonService::Handle_AddTemplateObjects( PyCallArgs& call )
     return objectIDs;
     */
     return nullptr;
-}
-
-// this should get templates to add to dungeon.  probably not active dungeons
-PyResult DungeonService::Handle_DEGetDungeons( PyCallArgs& call )
-{
-    /* dungeon = sm.RemoteSvc('dungeon').DEGetDungeons(archetypeID=archetypeID, factionID=factionID)
-     * dungeon = sm.RemoteSvc('dungeon').DEGetDungeons(dungeonID=dungeonID)[0]
-     * dungeon.dungeonNameID, dungeon.dungeonID, dungeon.factionID
-     */
-    uint32 dungeonID = PyRep::IntegerValueU32(call.byname["dungeonID"]);
-    uint32 archetypeID = PyRep::IntegerValueU32(call.byname["archetypeID"]);
-    uint32 factionID = PyRep::IntegerValueU32(call.byname["factionID"]);
-
-    //Dungeon Status (1=Release, 2=Testing, 3=Working Copy)
-
-    return DungeonDB::GetDungeons(dungeonID, archetypeID, factionID);
-}
-
-PyResult DungeonService::Handle_DEGetRoomObjectPaletteData( PyCallArgs& call ) {
-    //  roomObjectGroups = sm.RemoteSvc('dungeon').DEGetRoomObjectPaletteData()
-    return sDunDataMgr.GetPaletteGroups();
-}
-
-PyResult DungeonService::Handle_GetArchetypes( PyCallArgs& call ) {
-    //archetypes = sm.RemoteSvc('dungeon').GetArchetypes()
-    return DungeonDB::GetArchetypes();
-}
-
-PyResult DungeonService::Handle_DEGetFactions(PyCallArgs& call) {
-    //factions = sm.RemoteSvc('dungeon').DEGetFactions()
-    return sDataMgr.GetFactionIDs();
-}
-
-// these next 2 are for dungeon templates...not complete dungeons or rooms
-PyResult DungeonService::Handle_DEGetTemplates( PyCallArgs& call ) {
-    /*        self.templateRows = sm.RemoteSvc('dungeon').DEGetTemplates()
-     *        for row in self.templateRows:
-     *            data = {'label': row.templateName,
-     *             'hint': row.description != row.templateName and row.description or '',
-     *             'id': row.templateID,
-     *             'form': self}
-     */
-    //dungeonNameID   nameID from output.txt
-
-    // this will be dungeon template rooms...maybe?
-    PyObjectEx* ret = DungeonDB::GetTemplates(call.client);
-
-    //if (is_log_enabled(DUNG__RSP_DUMP))
-    //    ret->Dump(DUNG__RSP_DUMP, "   ");
-
-    return ret;
-}
-
-PyResult DungeonService::Handle_DEGetRooms( PyCallArgs& call ) {
-    //rooms = sm.RemoteSvc('dungeon').DEGetRooms(dungeonID=seldungeon.dungeonID)
-    return DungeonDB::GetRooms(PyRep::IntegerValueU32(call.byname["dungeonID"]));
 }
 
 

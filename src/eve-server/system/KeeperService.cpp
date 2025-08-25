@@ -92,8 +92,8 @@ KeeperService::KeeperService(PyServiceMgr *mgr)
     _SetCallDispatcher(m_dispatch);
 
     PyCallable_REG_CALL(KeeperService, GetLevelEditor);
-	PyCallable_REG_CALL(KeeperService, ActivateAccelerationGate);
-	PyCallable_REG_CALL(KeeperService, CanWarpToPathPlex);
+    PyCallable_REG_CALL(KeeperService, ActivateAccelerationGate);
+    PyCallable_REG_CALL(KeeperService, CanWarpToPathPlex);
 
     //sm.RemoteSvc('keeper').ClientBSDRevisionChange(action, schemaName, tableName, rowKeys, columnValues, reverting)
 }
@@ -111,13 +111,24 @@ PyBoundObject *KeeperService::CreateBoundObject(Client *pClient, const PyRep *bi
 
 PyResult KeeperService::Handle_GetLevelEditor(PyCallArgs &call)
 {
-    // self.ed = sm.RemoteSvc('keeper').GetLevelEditor()  (this is to bind new editor object)
+    // self.ed = sm.RemoteSvc('keeper').GetLevelEditor()  (this object is for method chaining)
     _log(DUNG__CALL,  "KeeperService::Handle_GetLevelEditor  size: %lu", call.tuple->size());
     call.Dump(DUNG__CALL_DUMP);
 
     KeeperBound *ib = new KeeperBound(m_manager, &m_db);
 
     return m_manager->BindObject(call.client, ib);
+}
+
+PyResult KeeperBound::Handle_GetCurrentlyEditedRoomID(PyCallArgs &call)
+{
+    //return sm.RemoteSvc('keeper').GetLevelEditor().GetCurrentlyEditedRoomID()
+    _log(DUNG__CALL,  "KeeperBound::Handle_GetCurrentlyEditedRoomID  size: %lu", call.tuple->size());
+    call.Dump(DUNG__CALL_DUMP);
+
+    // how do we get roomID being edited?
+
+    return nullptr;
 }
 
 PyResult KeeperService::Handle_CanWarpToPathPlex(PyCallArgs &call) {
@@ -137,42 +148,6 @@ PyResult KeeperService::Handle_CanWarpToPathPlex(PyCallArgs &call) {
 
 	return nullptr;
 }
-
-/**  Hard-coded to random location....just to play with right now.
-		will need to edit later to implement in missions/etc  */
-PyResult KeeperService::Handle_ActivateAccelerationGate(PyCallArgs &call) {
-    _log(DUNG__CALL,  "KeeperService::Handle_ActivateAccelerationGate  size: %lu", call.tuple->size());
-    call.Dump(DUNG__CALL_DUMP);
-
-    SingleIntegerArg arg;
-    if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return nullptr;
-    }
-
-    Client *pClient(call.client);
-
-    SystemEntity* pSE = pClient->SystemMgr()->GetEntityByID(arg.arg);
-    if (pSE != nullptr)
-        if (pSE->DestinyMgr() != nullptr)
-            pSE->DestinyMgr()->SendGFX10(arg.arg, "effects.WarpGateEffect");
-
-    double distance = MakeRandomFloat(5, 25) * ONE_AU_IN_METERS;
-    GPoint currentPosition(pClient->GetShipSE()->GetPosition());
-    GPoint deltaPosition;
-    deltaPosition.x = MakeRandomFloat(-1.0, 1.0) * distance;
-    deltaPosition.y = MakeRandomFloat(-1.0, 1.0) * distance;
-    deltaPosition.z = MakeRandomFloat(-2.0, 2.0) * ONE_AU_IN_METERS;
-    GPoint warpToPoint(currentPosition+deltaPosition);              // Make a warp-in point variable
-    GVector vectorToDestination(currentPosition, warpToPoint);
-    double distanceToDestination = vectorToDestination.length();
-    pClient->GetShipSE()->DestinyMgr()->WarpTo(warpToPoint, distanceToDestination);
-
-    /* return error msg from this call, if applicable, else nodeid and timestamp */
-    return new PyLong(GetFileTimeNow());
-}
-
-
 
 PyResult KeeperBound::Handle_Bind(PyCallArgs &call)
 {
@@ -206,6 +181,10 @@ PyResult KeeperBound::Handle_EditDungeon(PyCallArgs &call)
      * 18:22:35 [DungCallDump]   roomID
      * 18:22:35 [DungCallDump]        Integer: 5515
      */
+
+    uint32 dungeonID(PyRep::IntegerValueU32(call.tuple->GetItem(0)));
+    uint32 roomID(PyRep::IntegerValueU32(call.byname["roomID"]));
+
     return nullptr;
 }
 
@@ -261,16 +240,38 @@ PyResult KeeperBound::Handle_GotoRoom(PyCallArgs &call)
     return nullptr;
 }
 
-PyResult KeeperBound::Handle_GetCurrentlyEditedRoomID(PyCallArgs &call)
-{
-//return sm.RemoteSvc('keeper').GetLevelEditor().GetCurrentlyEditedRoomID()
-    _log(DUNG__CALL,  "KeeperBound::Handle_GetCurrentlyEditedRoomID  size: %lu", call.tuple->size());
+
+
+/**  Hard-coded to random location....just to play with right now.
+ *                will need to edit later to implement in missions/etc  */
+PyResult KeeperService::Handle_ActivateAccelerationGate(PyCallArgs &call) {
+    _log(DUNG__CALL,  "KeeperService::Handle_ActivateAccelerationGate  size: %lu", call.tuple->size());
     call.Dump(DUNG__CALL_DUMP);
 
-    // this is how i return objects for method chaining
-    //we just bind up a new voucher object for item requested and give it back to them.
-    //VoucherBound *vb = new VoucherBound(m_manager, iRef);
-    //return m_manager->BindObject(call.client, vb );
-    return nullptr;
-}
+    SingleIntegerArg arg;
+    if (!arg.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
+        return nullptr;
+    }
 
+    Client *pClient(call.client);
+
+    SystemEntity* pSE = pClient->SystemMgr()->GetEntityByID(arg.arg);
+    if (pSE != nullptr)
+        if (pSE->DestinyMgr() != nullptr)
+            pSE->DestinyMgr()->SendGFX10(arg.arg, "effects.WarpGateEffect");
+
+        double distance = MakeRandomFloat(5, 25) * ONE_AU_IN_METERS;
+    GPoint currentPosition(pClient->GetShipSE()->GetPosition());
+    GPoint deltaPosition;
+    deltaPosition.x = MakeRandomFloat(-1.0, 1.0) * distance;
+    deltaPosition.y = MakeRandomFloat(-1.0, 1.0) * distance;
+    deltaPosition.z = MakeRandomFloat(-2.0, 2.0) * ONE_AU_IN_METERS;
+    GPoint warpToPoint(currentPosition+deltaPosition);              // Make a warp-in point variable
+    GVector vectorToDestination(currentPosition, warpToPoint);
+    double distanceToDestination = vectorToDestination.length();
+    pClient->GetShipSE()->DestinyMgr()->WarpTo(warpToPoint, distanceToDestination);
+
+    /* return error msg from this call, if applicable, else nodeid and timestamp */
+    return new PyLong(GetFileTimeNow());
+}

@@ -35,12 +35,12 @@ PlanetDataMgr::PlanetDataMgr()
 
 int PlanetDataMgr::Initialize()
 {
-    _Populate();
     sLog.Blue("    PlanetDataMgr", "Planet Data Manager Initialized.");
+    Populate();
     return 1;
 }
 
-void PlanetDataMgr::_Populate()
+void PlanetDataMgr::Populate()
 {
     double start = GetTimeMSeconds();
     DBQueryResult* res = new DBQueryResult();
@@ -95,13 +95,13 @@ PIDataMgr::PIDataMgr()
 
 int PIDataMgr::Initialize()
 {
-    _Populate();
     sLog.Blue("        PIDataMgr", "Planet Interaction Data Manager Initialized.");
+    Populate();
     return 1;
 }
 
 // do we need anything from piPinMap?  - maps SchematicID to manuf facility's typeID
-void PIDataMgr::_Populate()
+void PIDataMgr::Populate()
 {
     double start = GetTimeMSeconds();
     DBQueryResult* res = new DBQueryResult();

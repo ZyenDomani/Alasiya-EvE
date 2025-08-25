@@ -49,7 +49,7 @@ public:
     const GPoint        Get3RandPlanets(uint32 systemID);// incomplete
     const GPoint        GetRandPointOnMoon(uint32 systemID);
     const GPoint        GetRandPointOnPlanet(uint32 systemID);
-    const GPoint        GetRandPointInSystem(uint32 systemID, int64 distance);// incomplete
+    const GPoint        GetRandPointInSystem(uint32 systemID, int64 distance=0);
 
 protected:
     void                Populate();

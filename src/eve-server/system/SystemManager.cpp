@@ -88,7 +88,7 @@ m_data(SystemData()),
 m_killData(SystemKillData())
 {
     sDataMgr.GetSystemData(systemID, m_data);   // system data is now an internal memory (cached) object.  db is hit once at system boot.
-    m_secValue -= m_data.securityRating;  // range is 0.1 for 1.0 system to 2.0 for -0.9 system
+    m_secValue -= m_data.security;  // range is 0.1 for 1.0 system to 2.0 for -0.9 system
 
     _log(COMMON__MESSAGE, "Created SystemManager %p for System %s(%u)", this, m_data.name.c_str(), m_data.systemID);
 }
@@ -1216,7 +1216,7 @@ void SystemManager::DoSpawnForBubble(SystemBubble* pBubble, uint8 type/*normal*/
     if (is_log_enabled(SPAWN__MESSAGE))
         _log(SPAWN__MESSAGE, "Spawn called for bubble %u(%u) in %s(%u)[%.4f], region %u.", \
             pBubble->GetID(), sBubbleMgr.GetBeltID(pBubble->GetID()), m_data.name.c_str(), \
-            m_data.systemID, m_data.securityRating, m_data.regionID);
+            m_data.systemID, m_data.security, m_data.regionID);
 
     uint8 error(0);
     switch (type) {

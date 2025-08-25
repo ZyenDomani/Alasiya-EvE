@@ -137,19 +137,22 @@ PyObjectEx* DungeonDB::GetArchetypes() {
 }
 
 PyObjectEx* DungeonDB::GetDungeons(uint32 dungeonID, uint32 archetypeID, uint32 factionID) {
-    std::stringstream str;
+    std::stringstream where, limit;
     // dungeonID and {archetypeID, factionID} are mutually exclusive
     if (dungeonID)
-        str << "WHERE dungeonID = " << std::to_string(dungeonID);
+        where << "WHERE dungeonID = " << std::to_string(dungeonID);
     if ((archetypeID > 0) and (factionID > 0)) {
-        str << "WHERE archetypeID = " << std::to_string(archetypeID);
-        str << " AND factionID = " << std::to_string(factionID);
+        where << "WHERE archetypeID = " << std::to_string(archetypeID);
+        where << " AND factionID = " << std::to_string(factionID);
     }
+
+    // update limit here.   not sure of requirements yet
+    limit << "LIMIT 0,100";
 
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         "SELECT dungeonID, dungeonName, dungeonStatus, dungeonNameID, factionID, archetypeID "
-        "FROM dunDungeons %s LIMIT 0,100", str.str().c_str())) {
+        "FROM dunDungeons %s %s", where.str().c_str(), limit.str().c_str())) {
         _log(DATABASE__ERROR, "Error in GetDungeons query: %s", res.error.c_str());
             return nullptr;
     }
@@ -285,7 +288,7 @@ uint32 DungeonDB::CreateObject(uint32 roomID, uint32 typeID, uint32 groupID, dou
 {
     DBerror err;
 
-    uint32 objectID;
+    uint32 objectID(0);
     if (!sDatabase.RunQueryLID(err, objectID, "INSERT INTO dunRoomObjects (roomID, typeID, groupID, x, y, z, yaw, pitch, roll, radius) VALUES (%u, %u, %u, %f, %f, %f, %f, %f, %f, %f)", roomID, typeID, groupID, x, y, z, yaw, pitch, roll, radius))
         _log(DATABASE__ERROR, "Cannot insert object into room %u", roomID);
 
@@ -332,7 +335,7 @@ uint32 DungeonDB::CreateTemplate(std::string templateName, std::string templateD
     std::string templateDescriptionEscaped;
     sDatabase.DoEscapeString(templateDescriptionEscaped, templateDescription);
 
-    uint32 templateID;
+    uint32 templateID(0);
     if (!sDatabase.RunQueryLID(err, templateID, "INSERT INTO dunTemplates (dunTemplateName, dunTemplateDescription, dunRoomID) VALUES ('%s', '%s', %u)", templateNameEscaped.c_str(), templateDescriptionEscaped.c_str(), roomID))
         _log(DATABASE__ERROR, "Cannot insert template into room %u", roomID);
 

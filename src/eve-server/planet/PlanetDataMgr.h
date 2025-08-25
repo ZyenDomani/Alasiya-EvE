@@ -30,7 +30,7 @@ public:
     const char* GetCommandName(int8 commandID);
 
 protected:
-    void _Populate();
+    void Populate();
 
 private:
     PlanetDB m_db;
@@ -68,7 +68,7 @@ public:
     uint32 GetProgramOutputPrediction(InventoryItemRef iRef, int64 cycleTime, uint32 numCycles = 0);
 
 protected:
-    void _Populate();
+    void Populate();
 
 private:
     PlanetDB m_db;

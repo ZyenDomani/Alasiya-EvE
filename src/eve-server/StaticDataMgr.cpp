@@ -58,8 +58,8 @@ void StaticDataMgr::Close()
 
 int StaticDataMgr::Initialize()
 {
-    Populate();
     sLog.Blue("    StaticDataMgr", "Static Data Manager Initialized.");
+    Populate();
     return 1;
 }
 
@@ -72,7 +72,6 @@ void StaticDataMgr::Clear()
     m_attrTypeData.clear();
     m_minerals.clear();
     m_compounds.clear();
-    m_systemData.clear();
     m_staticData.clear();
     m_salvageMap.clear();
     m_agentSystem.clear();
@@ -248,30 +247,13 @@ void StaticDataMgr::Populate()
     }
     sLog.Cyan("    StaticDataMgr", "%lu Attribute data sets loaded in %.3fms.", m_attrTypeData.size(), (GetTimeMSeconds() - startTime));
 
-    //TODO:  combine these next 2
     startTime = GetTimeMSeconds();
     ManagerDB::GetSystemData(*res);
-    while (res->GetRow(row)) {
-        //SELECT solarSystemID, solarSystemName, constellationID, regionID, securityClass, security FROM mapSolarSystems
-        SystemData sysData        = SystemData();
-        sysData.systemID          = row.GetInt(0);
-        sysData.name              = row.GetText(1);
-        sysData.constellationID   = row.GetInt(2);
-        sysData.regionID          = row.GetInt(3);
-        sysData.securityClass     = (row.IsNull(4) ? "0" : row.GetText(4));
-        sysData.securityRating    = row.GetFloat(5);    // this gives system trueSec
-        sysData.factionID         = (row.IsNull(6) ? 0 : row.GetUInt(6));
-        m_systemData[row.GetInt(0)] = std::move(sysData);
-    }
-    sLog.Cyan("    StaticDataMgr", "%lu Static System data sets loaded in %.3fms.", m_systemData.size(), (GetTimeMSeconds() - startTime));
-
-    startTime = GetTimeMSeconds();
-    ManagerDB::GetAllSystemData(*res);
     while (res->GetRow(row)) {
         // SELECT solarSystemID, constellationID, regionID, solarSystemName, x, y, z,
         // xMin, xMax, yMin, yMax, zMin, zMax, luminosity,
         // border, fringe, corridor, hub, international, regional, constellation,
-        // security, factionID, radius, sunTypeID, securityClass FROM mapSolarSystems
+        // security, factionID, radius, sunTypeID, securityClass, security FROM mapSolarSystems
         SolarSystemData sysData   = SolarSystemData();
         sysData.systemID                = row.GetInt(0);
         sysData.constellationID         = row.GetInt(1);
@@ -1257,60 +1239,6 @@ uint8 StaticDataMgr::GetWHSystemClass(uint32 systemID)
     return 0;
 }
 
-bool StaticDataMgr::GetSystemData(uint32 locationID, SystemData& data)
-{
-    if (IsStation(locationID)) {
-        locationID = GetStationSystem(locationID);
-    }
-    if (!IsSolarSystem(locationID)) {
-        _log(DATA__MESSAGE, "Failed to query info:  locationID %u is neither station nor system.", locationID);
-        return false;
-    }
-
-    std::map<uint32, SystemData>::iterator itr = m_systemData.find(locationID);
-    if (itr != m_systemData.end()) {
-        data = itr->second;
-        return true;
-    }
-
-    _log(DATA__MESSAGE, "Failed to query info for system %u: System not found.", locationID);
-    return false;
-}
-
-const char* StaticDataMgr::GetSystemName(uint32 locationID)
-{
-    if (IsStation(locationID)) {
-        locationID = GetStationSystem(locationID);
-    }
-    if (!IsSolarSystem(locationID)) {
-        _log(DATA__MESSAGE, "Failed to query info:  locationID %u is neither station nor system.", locationID);
-        return "Error";
-    }
-
-    std::map<uint32, SolarSystemData>::iterator itr = m_solSysData.find(locationID);
-    if (itr != m_solSysData.end())
-        return itr->second.name.c_str();
-
-    _log(DATA__MESSAGE, "Failed to query info for system %u: System not found.", locationID);
-    return "Invalid";
-}
-
-bool StaticDataMgr::GetSolarSystemData(uint32 locationID, SolarSystemData& into)
-{
-    if (IsStation(locationID))
-        locationID = GetStationSystem(locationID);
-
-    if (!IsSolarSystem(locationID)) {
-        _log(DATA__MESSAGE, "Failed to query info:  locationID %u is neither station nor system.", locationID);
-        return false;
-    }
-    std::map<uint32, SolarSystemData>::iterator itr = m_solSysData.find(locationID);
-    if (itr == m_solSysData.end())
-        return false;
-    into = itr->second;
-    return true;
-}
-
 bool StaticDataMgr::GetStaticInfo(uint32 itemID, StaticData& data)
 {
     std::map<uint32, StaticData>::iterator itr = m_staticData.find(itemID);
@@ -1375,18 +1303,76 @@ uint32 StaticDataMgr::GetCorpFaction(uint32 corpID)
 
 std::string StaticDataMgr::GetFactionName(uint32 factionID)
 {
-    std::map<uint32, std::string>::iterator itr = m_factionName.find(factionID);
+    std::map<uint32, std::string>::const_iterator itr = m_factionName.find(factionID);
     if (itr != m_factionName.end())
         return itr->second;
 
     return "Undefined";
 }
 
-bool StaticDataMgr::IsSolarSystem(uint32 systemID/*0*/)
+bool StaticDataMgr::GetSystemData(uint32 locationID, SystemData& data)
 {
+    if (IsStation(locationID)) {
+        locationID = GetStationSystem(locationID);
+    }
+    if (!IsSolarSystem(locationID)) {
+        _log(DATA__MESSAGE, "Failed to query info:  locationID %u is neither station nor system.", locationID);
+        return false;
+    }
+
+    std::map<uint32, SolarSystemData>::const_iterator itr = m_solSysData.find(locationID);
+    if (itr != m_solSysData.end()) {
+        data.systemID = itr->second.systemID;
+        data.constellationID = itr->second.constellationID;
+        data.regionID = itr->second.regionID;
+        data.factionID = itr->second.factionID;
+        data.radius = itr->second.radius;
+        data.security = itr->second.security;
+        data.name = itr->second.name;
+        data.securityClass = itr->second.securityClass;
+        return true;
+    }
+
+    _log(DATA__MESSAGE, "Failed to query info for system %u: System not found.", locationID);
+    return false;
+}
+
+bool StaticDataMgr::GetSolarSystemData(uint32 locationID, SolarSystemData& data) {
+    if (IsStation(locationID))
+        locationID = GetStationSystem(locationID);
+
+    if (!IsSolarSystem(locationID)) {
+        _log(DATA__MESSAGE, "Failed to query info:  locationID %u is neither station nor system.", locationID);
+        return false;
+    }
+    std::map<uint32, SolarSystemData>::const_iterator itr = m_solSysData.find(locationID);
+    if (itr == m_solSysData.end())
+        return false;
+    data = itr->second;
+    return true;
+}
+
+const char* StaticDataMgr::GetSystemName(uint32 locationID) {
+    if (IsStation(locationID)) {
+        locationID = GetStationSystem(locationID);
+    }
+    if (!IsSolarSystem(locationID)) {
+        _log(DATA__MESSAGE, "Failed to query info:  locationID %u is neither station nor system.", locationID);
+        return "Error";
+    }
+
+    std::map<uint32, SolarSystemData>::const_iterator itr = m_solSysData.find(locationID);
+    if (itr != m_solSysData.end())
+        return itr->second.name.c_str();
+
+    _log(DATA__MESSAGE, "Failed to query info for system %u: System not found.", locationID);
+    return "Invalid";
+}
+
+bool StaticDataMgr::IsSolarSystem(uint32 systemID/*0*/) {
     // if systemID has entry here, it is valid
-    std::map<uint32, SystemData>::iterator itr = m_systemData.find(systemID);
-    return (itr != m_systemData.end());
+    std::map<uint32, SolarSystemData>::const_iterator itr = m_solSysData.find(systemID);
+    return (itr != m_solSysData.end());
 }
 
 bool StaticDataMgr::IsConSystem(uint32 systemID) {
@@ -1428,7 +1414,7 @@ bool StaticDataMgr::IsRegionSystem(uint32 systemID) {
 bool StaticDataMgr::IsStation(uint32 stationID/*0*/)
 {
     // if stationID has entry here, it is valid
-    std::map<uint32, uint32>::iterator itr = m_stationRegion.find(stationID);
+    std::map<uint32, uint32>::const_iterator itr = m_stationRegion.find(stationID);
     return (itr != m_stationRegion.end());
 }
 

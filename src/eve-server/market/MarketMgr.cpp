@@ -47,12 +47,10 @@ void MarketMgr::Close()
 
 int MarketMgr::Initialize(PyServiceMgr* pManager)
 {
-    m_manager = pManager;
-
-    m_timeStamp = MarketDB::GetUpdateTime();
-
-    Populate();
     sLog.Blue("        MarketMgr", "Market Manager Initialized.");
+    m_manager = pManager;
+    m_timeStamp = MarketDB::GetUpdateTime();
+    Populate();
     return 1;
 }
 

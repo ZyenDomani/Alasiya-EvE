@@ -87,6 +87,7 @@ PyResult NetService::Handle_GetInitVals(PyCallArgs &call) {
 
     PyTuple* result = new PyTuple( 2 );
         result->SetItem( 0, serverinfo );
+        // this is some kind of cache data.  nothing in packets
         result->SetItem( 1, PyStatic.mtDict() );
     return result;
 }

@@ -282,7 +282,7 @@ struct SystemData {
     uint32 regionID=0;
     uint32 factionID=0;
     int64 radius=0;
-    float securityRating=0.0f;
+    float security=0.0f;
     std::string name="none";
     std::string securityClass="none";
 };

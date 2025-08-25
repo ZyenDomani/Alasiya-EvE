@@ -25,8 +25,6 @@
 #include "../eve-common/EVE_Market.h"
 
 
-struct SolarSystemData;
-
 class StaticDataMgr
 : public Singleton< StaticDataMgr >
 {
@@ -207,10 +205,9 @@ private:
     std::map<uint16, PyDict*>                           m_bpMatlData;       // typeID/dict*
     std::map<uint32, uint8>                             m_whRegions;        // regionID/classID
     std::map<uint32, std::vector<uint32>>               m_whClassDestinations; //classID/typeID
-    std::map<uint32, std::vector<uint32>>               m_whClassSystems;   //classID/systemID
+    std::map<uint32, std::vector<uint32>>               m_whClassSystems;   // classID/systemID
     std::map<uint32, uint32>                            m_regions;          // regionID/ownerFactionID
     std::map<uint32, uint32>                            m_ratRegions;       // regionID/ratFactionID
-    std::map<uint32, SystemData>                        m_systemData;       // systemID/data
     std::map<uint32, uint32>                            m_agentCorp;        // agentID/corpID
     std::map<uint32, uint32>                            m_agentSystem;      // agentID/systemID
     std::map<uint32, std::string>                       m_factionName;      // factionID/name

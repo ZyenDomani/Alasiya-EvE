@@ -33,8 +33,8 @@ int DungeonDataMgr::Initialize()
     // for now, we are deleting all saved dungeons on startup.  will fix this later as system matures.
     ManagerDB::ClearDungeons();
 
-    Populate();
     sLog.Blue("   DungeonDataMgr", "Dungeon Data Manager Initialized.");
+    Populate();
     return 1;
 }
 
@@ -220,7 +220,7 @@ void DungeonMgr::Process() {
     if (!m_initalized)
         return;
 
-    // this is used to remove empty/completed/timed-out dungons....eventually
+    // this is used to remove empty/completed/timed-out dungeons....eventually
 }
 
 void DungeonMgr::Load()

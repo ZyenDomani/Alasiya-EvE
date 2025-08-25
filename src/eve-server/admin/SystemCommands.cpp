@@ -109,6 +109,9 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
             snprintf(reply, size, str.str().c_str());
             pClient->SendInfoModalMsg(reply);
             return nullptr;
+        } else if (strcmp(args.arg(1).c_str(), "dungeon") == 0) {
+            // send player (and ship) to random place in current system to work on dungeon editing
+            pt = sMapData.GetRandPointInSystem(pClient->GetSystemID());
         } else {
             // tr <me> to <locationName>?
             // this hits db directly, so test for possible sql injection code

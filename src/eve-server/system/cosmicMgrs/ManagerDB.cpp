@@ -326,17 +326,7 @@ void ManagerDB::GetOreBySSC(DBQueryResult& res)
         codelog(DATABASE__ERROR, "Error in GetRoidDist query: %s", res.error.c_str());
 }
 
-void ManagerDB::GetSystemData(DBQueryResult& res)
-{
-    if (!sDatabase.RunQuery(res,
-        "SELECT mss.solarSystemID, mss.solarSystemName, mss.constellationID, mss.regionID, mss.securityClass, md.security, mss.factionID"
-        " FROM mapSolarSystems AS mss"
-        " LEFT JOIN mapDenormalize AS md ON (md.itemID = mss.solarSystemID)"
-    ))
-        codelog(DATABASE__ERROR, "Error in GetSystemData query: %s", res.error.c_str());
-}
-
-void ManagerDB::GetAllSystemData(DBQueryResult& res) {
+void ManagerDB::GetSystemData(DBQueryResult& res) {
     if (!sDatabase.RunQuery(res,
         "SELECT solarSystemID, constellationID, regionID, solarSystemName, x, y, z, "
         " xMin, xMax, yMin, yMax, zMin, zMax, luminosity, "

@@ -83,7 +83,7 @@ public:
     const char* GetName() const                         { return m_data.name.c_str(); }
     const char* GetSystemSecurityClass()                { return m_data.securityClass.c_str(); }
     // 1.0 to -0.9
-    const float GetSystemSecurityRating()               { return m_data.securityRating; }
+    const float GetSystemSecurityRating()               { return m_data.security; }
 
     PyServiceMgr* GetServiceMgr()                       { return &m_services; }
     Inventory* GetSystemInv()                           { return m_solarSystemRef->GetMyInventory(); }

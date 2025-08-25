@@ -18,8 +18,8 @@
 
 int SovereigntyDataMgr::Initialize()
 {
-    Populate();
     sLog.Blue("       SovDataMgr", "Sovereignty Data Manager Initialized.");
+    Populate();
     return 1;
 }
 

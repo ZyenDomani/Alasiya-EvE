@@ -14,8 +14,8 @@
 
 int StationDataMgr::Initialize()
 {
-    Populate();
     sLog.Blue("   StationDataMgr", "Station Data Manager Initialized.");
+    Populate();
     return 1;
 }
 

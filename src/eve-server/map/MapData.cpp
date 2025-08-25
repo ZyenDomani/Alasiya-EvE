@@ -13,6 +13,7 @@
 #include "agents/Agent.h"
 #include "map/MapData.h"
 #include "map/MapDB.h"
+#include "math/Trig.h"
 #include "station/StationDataMgr.h"
 #include "system/SystemManager.h"
 #include "system/SystemEntity.h"
@@ -34,8 +35,8 @@ void MapData::Close()
 
 int MapData::Initialize()
 {
-    Populate();
     sLog.Blue("          MapData", "Map Data Manager Initialized.");
+    Populate();
     return 1;
 }
 
@@ -71,12 +72,15 @@ void MapData::Populate()
     DBResultRow row;
     while (res->GetRow(row)) {
         //SELECT ctype, fromsol, tosol FROM mapConnections
-        if (row.GetInt(0) == Map::Jumptype::Region) {
-            m_regionJumps.emplace(row.GetInt(1), row.GetInt(2));
-        } else if (row.GetInt(0) == Map::Jumptype::Constellation) {
-            m_constJumps.emplace(row.GetInt(1), row.GetInt(2));
-        } else {
-            m_systemJumps.emplace(row.GetInt(1), row.GetInt(2));
+        switch (row.GetInt(0)) {
+            case Map::Jumptype::Region:
+                m_regionJumps.emplace(row.GetInt(1), row.GetInt(2));
+                break;
+            case Map::Jumptype::Constellation:
+                m_constJumps.emplace(row.GetInt(1), row.GetInt(2));
+                break;
+            default:
+                m_systemJumps.emplace(row.GetInt(1), row.GetInt(2));
         }
     }
 
@@ -88,65 +92,71 @@ void MapData::Populate()
 }
 
 
-
+// todo:  these celestials should be in static data
 void MapData::GetPlanets(uint32 systemID) {
-    uint8 total = 0;
+    uint8 total(0);
     std::vector<DBGPointEntity> planetIDs;
     MapDB::GetPlanets(systemID, planetIDs, total);
 }
 
+// todo:  these celestials should be in static data
 void MapData::GetMoons(uint32 systemID) {
-    uint8 total = 0;
+    uint8 total(0);
     std::vector<DBGPointEntity> moonIDs;
     MapDB::GetMoons(systemID, moonIDs, total);
 }
 
+// todo:  these celestials should be in static data
 const GPoint MapData::GetRandPointOnPlanet(uint32 systemID) {
-    uint8 total = 0;
+    uint8 total(0);
     std::vector<DBGPointEntity> planetIDs;
     MapDB::GetPlanets(systemID, planetIDs, total);
 
     if (planetIDs.empty())
         return NULL_ORIGIN;
 
-    uint16 i = MakeRandomInt(1, total);
+    uint16 i = MakeRandomInt(0, total);
     return (planetIDs[i].position + planetIDs[i].radius + 50000);
 }
 
+// todo:  these celestials should be in static data
 const GPoint MapData::GetRandPointOnMoon(uint32 systemID) {
-    uint8 total = 0;
+    uint8 total(0);
     std::vector<DBGPointEntity> moonIDs;
     MapDB::GetMoons(systemID, moonIDs, total);
 
     if (moonIDs.empty())
         return NULL_ORIGIN;
 
-    uint16 i = MakeRandomInt(1, total);
+    uint16 i = MakeRandomInt(0, total);
     return (moonIDs[i].position + moonIDs[i].radius + 10000);
 }
 
+// todo:  these celestials should be in static data
 uint32 MapData::GetRandPlanet(uint32 systemID) {
-    uint8 total = 0;
+    uint8 total(0);
     std::vector<DBGPointEntity> planetIDs;
     MapDB::GetPlanets(systemID, planetIDs, total);
 
     if (planetIDs.empty())
         return 0;
 
-    uint16 i = MakeRandomInt(1, total);
+    uint16 i = MakeRandomInt(0, total);
     return planetIDs[i].itemID;
 }
 
+// todo:  these celestials should be in static data
 const GPoint MapData::Get2RandPlanets(uint32 systemID) {
-    uint8 total = 0;
+    uint8 total(0);
     std::vector<DBGPointEntity> planetIDs;
     MapDB::GetPlanets(systemID, planetIDs, total);
     /** @todo finish this */
     return NULL_ORIGIN;
 }
 
+// todo:  these celestials should be in static data
 const GPoint MapData::Get3RandPlanets(uint32 systemID) {
-    uint8 total = 0;
+    uint8 total(0);
     std::vector<DBGPointEntity> planetIDs;
     MapDB::GetPlanets(systemID, planetIDs, total);
     /** @todo finish this */
@@ -154,27 +164,51 @@ const GPoint MapData::Get3RandPlanets(uint32 systemID) {
     return NULL_ORIGIN;
 }
 
+// todo:  these celestials should be in static data
 uint32 MapData::GetRandMoon(uint32 systemID) {
-    uint8 total = 0;
+    uint8 total(0);
     std::vector<DBGPointEntity> moonIDs;
     MapDB::GetMoons(systemID, moonIDs, total);
 
     if (moonIDs.empty())
         return 0;
 
-    uint16 i = MakeRandomInt(1, total);
+    uint16 i = MakeRandomInt(0, total);
     return moonIDs[i].itemID;
 }
 
-const GPoint MapData::GetRandPointInSystem(uint32 systemID, int64 distance) {
+const GPoint MapData::GetRandPointInSystem(uint32 systemID, int64 distance/*0*/) {
     // get system max diameter, verify distance is within system.
+    SolarSystemData data = SolarSystemData();
+    sDataMgr.GetSolarSystemData(systemID, data);
 
-    return NULL_ORIGIN;
+    // check given distance is within system boundary
+    if (distance > data.radius)
+        return NULL_ORIGIN;
+
+    // get random distance from origin, unless given
+    if (distance == 0)
+        distance = MakeRandomInt(data.radius / 10, data.radius);
+
+    // get random angle (for x,z)
+    double theta = MakeRandomFloat(0, (EvE::Trig::Pi * 2));
+
+    // set x,z based on random angle and distance from origin
+    GPoint pos(NULL_ORIGIN);
+    pos.x = distance * cos(theta);
+    pos.z = distance * sin(theta);
+
+    // get random elevation (y)
+    pos.y = MakeRandomFloat(-10000, 10000);
+
+    // should we verify proximity to celestial objects?
+
+    return pos;
 }
 
 const GPoint MapData::GetAnomalyPoint(SystemManager* pSys)
 {
-    uint8 total = 0;
+    uint8 total(0);
     std::vector<DBGPointEntity> planetIDs;
     MapDB::GetPlanets(pSys->GetID(), planetIDs, total);
 
@@ -187,7 +221,7 @@ const GPoint MapData::GetAnomalyPoint(SystemManager* pSys)
 
 const GPoint MapData::GetAnomalyPoint(uint32 systemID)
 {
-    uint8 total = 0;
+    uint8 total(0);
     std::vector<DBGPointEntity> planetIDs;
     MapDB::GetPlanets(systemID, planetIDs, total);
     GPoint pos(planetIDs[MakeRandomInt(0, total)].position);
@@ -204,6 +238,13 @@ bool MapData::GetSystemJumps(uint8 step, uint32 sysID, std::multimap<uint8, uint
         jumpMap.emplace(step, it->second);
     return true;
 }
+
+/**  @TODO
+ * this has errors
+ *
+ * (not actual msg)
+ * MapData::GetMissionDestination(run) - no station found within 1 jump of systemID
+ */
 
 void MapData::GetMissionDestination(Agent* pAgent, MissionOffer& offer) {
     uint8 destRange(pAgent->GetLevel());
