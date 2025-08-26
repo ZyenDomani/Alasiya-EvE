@@ -278,6 +278,7 @@ void PyRep::IncRef() const
 {
     if (mDeleted) {
         _log(REFPTR__ERROR, "IncRef() - mDeleted = true.  Count is %i", mRefCount);
+        std::cerr << "FATAL: IncRef() called on deleted object! Type: " << typeid(*this).name() << std::endl;
         //EvE::traceStackLN();        // this is painfully slow
         EvE::traceStack();
         return;
@@ -293,6 +294,7 @@ void PyRep::DecRef() const
     if (mDeleted) {
         sLog.Error("DecRef()", "%s already deleted.", TypeString());
         _log(REFPTR__ERROR, "DecRef() - mDeleted = true.  Count is %i", mRefCount);
+        std::cerr << "FATAL: DecRef() called on deleted object! Type: " << typeid(*this).name() << std::endl;
         //EvE::traceStackLN();        // this is painfully slow
         EvE::traceStack();
         return;
