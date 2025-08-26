@@ -39,7 +39,7 @@
 EVEClientSession::EVEClientSession( EVETCPConnection** n )
 : mNet( *n ),
 mRep(nullptr),
-mPacketHandler( nullptr )
+mPacketHandler(&EVEClientSession::_HandleVersion)
 {
     *n = nullptr;
 }
@@ -52,23 +52,19 @@ EVEClientSession::~EVEClientSession() {
 }
 
 void EVEClientSession::Reset() {
-    mPacketHandler = nullptr;
-
+    mPacketHandler = &EVEClientSession::_HandleVersion;
     // Connection has been lost, there's no point in reset
     if ( GetState() != TCPConnection::STATE_CONNECTED )
         return;
 
     SendVersion();
-
-    mPacketHandler = &EVEClientSession::_HandleVersion;
 }
 
-void EVEClientSession::QueuePacket( PyPacket* packet ) {
+void EVEClientSession::QueuePacket(PyPacket* packet) {
     if (packet == nullptr)
         return;
 
     mRep = packet->Encode();
-
     if (mRep == nullptr) {
         sLog.Error("QueuePacket", "%s: Failed to encode a packet.", GetAddress().c_str());
         return;
