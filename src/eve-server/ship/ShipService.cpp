@@ -979,6 +979,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
 
                         ccRef->Move(pClient->GetLocationID(), flagAutoFit, true);
                         ContainerSE* cSE(new ContainerSE(ccRef, *m_manager, pSysMgr, data));
+                        cSE->Init();    // updated
                         location.MakeRandomPointOnSphere(500.0);
                         cSE->SetPosition(location);
                         ccRef->SaveItem();
@@ -1039,7 +1040,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                 throw CustomError("Unable to spawn jetcan.");
             // create new container
             ContainerSE* cSE(new ContainerSE(jcRef, *m_manager, pSysMgr, data));
-
+            cSE->Init();    // updated
             jcRef->SetMySE(cSE);
             // set anchored to avoid deletion when empty
             jcRef->SetAnchor(true);
