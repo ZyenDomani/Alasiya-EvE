@@ -23,6 +23,9 @@ NOTE:  for calls that use internal methods that send a reply, model from InjectS
 *******************************************************
 **********  errors and other found shit...high priority
 
+setPosition()  needs a lookover
+    - when moving to 'pt', not removed from current bubble, not create new bubble, wanderer removes se
+    multiple se use m_self->SetPosition() which only sets position on item, not se nor inspace 
 
 same acct can be logged in multiple times
 
@@ -59,6 +62,12 @@ check insurance payouts.   rounds full ship value up
     - this will need base prices fixed
 
 dungeon deco items need better placement
+dungeon editor work:
+(OnDESelectionChanged)   not sure how/when/why this would be called
+
+    - client code will have to be modified to remove /jessica calls
+    start with
+        def InitializeSelectionGroups(self, roomID):
 
 char creation - figure certs and set skills accordingly
     - currently, most new chars dont qualify for any certs.

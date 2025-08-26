@@ -648,7 +648,7 @@ void ManagerDB::GetWHSystemClass(DBQueryResult& res)
 void ManagerDB::GetDunEntryData(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res, "SELECT dunEntryID, dunEntryName, xpos, ypos, zpos FROM dunEntryData"))
-        _log(DATABASE__ERROR, "Error in GetDunRoomData query: %s", res.error.c_str());
+        _log(DATABASE__ERROR, "Error in GetDunEntryData query: %s", res.error.c_str());
 }
 
 void ManagerDB::GetDunGroupData(DBQueryResult& res)
@@ -666,6 +666,10 @@ void ManagerDB::GetDunRoomData(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res, "SELECT dunRoomID, dunGroupID, xpos, ypos, zpos FROM dunRoomData"))
         _log(DATABASE__ERROR, "Error in GetDunRoomData query: %s", res.error.c_str());
+}
+void ManagerDB::GetDunRoomData(int roomID, DBQueryResult& res) {
+    if (!sDatabase.RunQuery(res, "SELECT dunGroupID, xpos, ypos, zpos FROM dunRoomData WHERE dunRoomID = %i", roomID))
+        _log(DATABASE__ERROR, "Error in GetDunRoomData(2) query: %s", res.error.c_str());
 }
 
 void ManagerDB::GetDunRoomInfo(DBQueryResult& res)

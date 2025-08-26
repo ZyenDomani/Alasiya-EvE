@@ -100,7 +100,7 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
             str << ".tr [required first arg] [optional second arg] [optional third arg] [optional fourth arg]<br>"; //120
             str << "1st arg = help|me|fleet|player name|shipID|itemID|locationID<br>"; //45
             str << "2nd arg = help|me|fleet|home|last|shipID|itemID|locationID|x coord|moon|planet<br>";  //85
-            str << "3ed arg = me|fleet|home|last|shipID|itemID|locationID|y coords|moon|planet <br>"; //80
+            str << "3rd arg = me|fleet|home|last|shipID|itemID|locationID|y coords|moon|planet <br>"; //80
             str << "4th arg = fleet|home|last|shipID|itemID|locationID|z coords|moon|planet <br>"; //77
             str << "typical use is .tr locationID<br>";  //35
             str << "<br>As there are too many options to explain in this msg, a full usage list can be found on our forums.<br>";  //105
@@ -112,6 +112,7 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
         } else if (strcmp(args.arg(1).c_str(), "dungeon") == 0) {
             // send player (and ship) to random place in current system to work on dungeon editing
             pt = sMapData.GetRandPointInSystem(pClient->GetSystemID());
+            locationID = myLocationID;
         } else {
             // tr <me> to <locationName>?
             // this hits db directly, so test for possible sql injection code

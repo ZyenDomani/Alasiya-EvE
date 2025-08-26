@@ -82,6 +82,7 @@ public:
 
     /* dungeon manager */
     static void GetDunRoomData(DBQueryResult& res);
+    static void GetDunRoomData(int roomID, DBQueryResult& res);
     static void GetDunRoomInfo(DBQueryResult& res);
     static void GetDunEntryData(DBQueryResult& res);
     static void GetDunGroupData(DBQueryResult& res);

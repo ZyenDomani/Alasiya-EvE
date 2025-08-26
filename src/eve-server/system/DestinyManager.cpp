@@ -2554,6 +2554,10 @@ void DestinyManager::DockingAccepted()
 void DestinyManager::SetPosition(const GPoint &pt, bool update /*false*/) {
     _log(DESTINY__TRACE, "Destiny::SetPosition() called by %s(%u)", mySE->GetName(), mySE->GetID());
 
+    // fix for elusive error with SE's being out of assigned bubble...part 1
+    if (m_position.distance(pt) > BUBBLE_RADIUS_METERS)
+        sBubbleMgr.Remove(mySE);
+
     if (pt.isZero()) {
         _log(DESTINY__TRACE, "Destiny::SetPosition() - %s(%u) point is zero", mySE->GetName(), mySE->GetID());
         EvE::traceStack();
@@ -2565,6 +2569,10 @@ void DestinyManager::SetPosition(const GPoint &pt, bool update /*false*/) {
 
     // this sets InventoryItemRef.m_position correctly, which is used for all position references
     mySE->SetPosition(m_position);
+
+    // fix for elusive error with SE's being out of assigned bubble...part 2
+    if (mySE->SysBubble() == nullptr)
+        sBubbleMgr.Add(mySE);
 
     //according to packet sniffs, this is only used for 'Structure' and 'Probe" items.  'update' is for syncing client position data with ours
     if (mySE->IsPOSSE() or mySE->IsProbeSE() or update) {
@@ -3184,23 +3192,30 @@ void DestinyManager::SendWormholeActivity(uint32 wormholeID) const {
  */
 
 void DestinyManager::SendJumpOutEffect(std::string JumpEffect, uint32 shipID) const {
+    SendGFX10(shipID, JumpEffect);
+    /*
     sLog.Error("SendGFX", "SendJumpOutEffect - fix this");
     OnSpecialFX14 effect;
         effect.entityID = mySE->GetID();
         effect.targetID = new PyInt(shipID);
-        effect.guid = "effects.JumpDriveOut";   /* JumpDriveInBO */
+        effect.guid = "effects.JumpDriveOut";   // JumpDriveInBO
         effect.isOffensive = 0;
         effect.start = 1;
         effect.active = 1;
         effect.duration = 5000;
         effect.repeat = 0;
         effect.startTime = GetFileTimeNow();
+        effect.otherTypeID= 0;
+        effect.graphicInfo = 0;
     PyTuple *up(effect.Encode());
     SendSingleDestinyUpdate(&up);
     PyDecRef(up);
+    */
 }
 
 void DestinyManager::SendJumpInEffect(std::string JumpEffect) const {
+    SendGFX10(mySE->GetID(), JumpEffect);
+    /*
     sLog.Error("SendGFX", "SendJumpInEffect - fix this");
     OnSpecialFX14 effect;
         effect.guid = "effects.JumpDriveIn";
@@ -3215,6 +3230,7 @@ void DestinyManager::SendJumpInEffect(std::string JumpEffect) const {
     PyTuple *up(effect.Encode());
     SendSingleDestinyUpdate(&up);
     PyDecRef(up);
+    */
 }
 
 // only used by UpdateShip calls

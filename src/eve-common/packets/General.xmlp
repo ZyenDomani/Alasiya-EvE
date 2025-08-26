@@ -440,4 +440,26 @@
    </tupleInline>
   </elementDef>
 
+  <!--  for dungeon editor system  -->
+
+  <elementDef name="OnDungeonEdit" decode="false" >
+      <tupleInline>
+        <!-- 0 -->
+        <stringInline value="OnDungeonEdit" />
+        <!-- 1 -->
+        <tupleInline>
+            <!-- 0: dungeonID -->
+            <int name="dungeonID" />
+            <!-- 1: roomID -->
+            <int name="roomID" />
+            <!-- 2: roomPos -->
+            <listInline>
+              <real name="room_x" />
+              <real name="room_y" />
+              <real name="room_z" />
+            </listInline>
+        </tupleInline>
+      </tupleInline>
+  </elementDef>
+
 </elements>

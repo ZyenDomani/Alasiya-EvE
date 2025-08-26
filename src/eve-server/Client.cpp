@@ -796,13 +796,7 @@ void Client::SetDestiny(const GPoint& pt, bool update/*false*/) {
             GetName(), GetCharID(),  pShipSE->SystemMgr()->GetID(), m_system->GetID(), update?"true":"false", \
             updateShip?"true":"false", IsJump()?"true":"false", pShipSE->DestinyMgr()->IsCloaked()?"true":"false");
 
-    if (pt.isZero()) {
-        if (pShipSE->GetPosition().isZero()) {
-            pShipSE->DestinyMgr()->SetPosition(sMapData.GetRandPointOnPlanet(m_system->GetID()), update);
-        } else {
-            pShipSE->DestinyMgr()->SetPosition(pShipSE->GetPosition(), update);
-        }
-    }
+    pShipSE->DestinyMgr()->SetPosition(pt, update);
 
     if (updateShip)
         UpdateNewShip();

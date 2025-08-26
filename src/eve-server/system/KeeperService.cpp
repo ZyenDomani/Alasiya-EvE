@@ -43,6 +43,7 @@
 
 #include "PyBoundObject.h"
 #include "PyServiceCD.h"
+#include "system/cosmicMgrs/ManagerDB.h"
 #include "system/KeeperService.h"
 #include "system/SystemManager.h"
 
@@ -67,6 +68,8 @@ public:
         PyCallable_REG_CALL(KeeperBound, Reset);
         PyCallable_REG_CALL(KeeperBound, GotoRoom); //(int room)
         PyCallable_REG_CALL(KeeperBound, GetCurrentlyEditedRoomID);
+        PyCallable_REG_CALL(KeeperBound, ClientBSDRevisionChange);
+
 
     }
     virtual ~KeeperBound() { delete m_dispatch; }
@@ -77,6 +80,7 @@ public:
     PyCallable_DECL_CALL(Reset);
     PyCallable_DECL_CALL(GotoRoom);
     PyCallable_DECL_CALL(GetCurrentlyEditedRoomID);
+    PyCallable_DECL_CALL(ClientBSDRevisionChange);
 
 protected:
     SystemDB *const m_db;
@@ -185,6 +189,27 @@ PyResult KeeperBound::Handle_EditDungeon(PyCallArgs &call)
     uint32 dungeonID(PyRep::IntegerValueU32(call.tuple->GetItem(0)));
     uint32 roomID(PyRep::IntegerValueU32(call.byname["roomID"]));
 
+
+    // def OnDungeonEdit(self, dungeonID, roomID, roomPos):
+    OnDungeonEdit ode;
+    ode.dungeonID = dungeonID;
+    ode.roomID = roomID;
+    ode.room_x = 0;
+    ode.room_y = 0;
+    ode.room_z = 0;
+    DBQueryResult* res = new DBQueryResult();
+    ManagerDB::GetDunRoomData(roomID, *res);
+    DBResultRow row;
+    if (res->GetRow(row)) {
+        //SELECT dunGroupID, xpos, ypos, zpos FROM dunRoomData
+        ode.room_x = row.GetDouble(1);
+        ode.room_y = row.GetDouble(2);
+        ode.room_z = row.GetDouble(3);
+    }
+
+    PyTuple* ev = ode.Encode();
+    call.client->SendNotification("OnDungeonEdit", "charid", &ev);
+
     return nullptr;
 }
 
@@ -240,6 +265,17 @@ PyResult KeeperBound::Handle_GotoRoom(PyCallArgs &call)
     return nullptr;
 }
 
+PyResult KeeperBound::Handle_ClientBSDRevisionChange(PyCallArgs &call)
+{
+    //  remoteDungeonKeepr.ClientBSDRevisionChange(action, schemaName, tableName, rowKeys, columnValues, reverting)
+    // no fkn clue what this is supposed to do here...
+
+    _log(DUNG__CALL,  "KeeperBound::Handle_ClientBSDRevisionChange  size: %lu", call.tuple->size());
+    call.Dump(DUNG__CALL_DUMP);
+    /*
+     */
+    return nullptr;
+}
 
 
 /**  Hard-coded to random location....just to play with right now.

@@ -486,7 +486,8 @@ PyResult DungeonService::Handle_EditObject( PyCallArgs& call )
 
 PyResult DungeonService::Handle_IsObjectLocked( PyCallArgs& call )
 {
-    //return sm.RemoteSvc('dungeon').IsObjectLocked(objectID)
+    //locked, byWho = dungeonHelper.IsObjectLocked(slimItem.dunObjectID)
+    //  userId, userName in byWho
     _log(DUNG__CALL,  "DungeonService::Handle_IsObjectLocked size: %lu", call.tuple->size());
     call.Dump(DUNG__CALL_DUMP);
 
@@ -496,9 +497,18 @@ PyResult DungeonService::Handle_IsObjectLocked( PyCallArgs& call )
         return nullptr;
     }
 
+    bool locked(false);
     PyTuple* result = new PyTuple(2);
-    result->SetItem(0, new PyBool(false));
-    result->SetItem(1, new PyList());
+    result->SetItem(0, new PyBool(locked));
+    PyTuple* byWho = new PyTuple(2);
+    if (locked) {
+        byWho->items[0] = new PyInt(0101010);                  // charID
+        byWho->items[1] = new PyString("CharacterName");       // charName
+    } else {
+        byWho->items[0] = PyStatic.NewZero();
+        byWho->items[1] = PyStatic.NewZero();
+    }
+    result->SetItem(1, byWho);
 
     return result;
 }
