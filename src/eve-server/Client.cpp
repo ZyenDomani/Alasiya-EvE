@@ -1079,14 +1079,14 @@ void Client::Eject()
 
     if (m_pod.get() == nullptr) {
         _log(SHIP__ERROR, "Handle_Eject() - Failed to get podItem for %s.", GetName());
-        if (m_canThrow) {
+        if (m_canThrow)
             throw CustomError("Something bad happened as you prepared to eject.");
          return;
     }
     // this should NEVER happen...
     if (pShipSE->SysBubble() == nullptr) {
         _log(SHIP__ERROR, "Handle_Eject() - Bubble is null for %s.", GetName());
-        if (m_canThrow) {
+        if (m_canThrow)
             throw CustomError("Something bad happened as you prepared to eject.");
         return;
     }
@@ -1319,7 +1319,7 @@ ShipItemRef Client::SpawnNewRookieShip(uint32 stationID) {
 bool Client::IsJetcanAvalible() {
     if (m_jetcanTimer.Enabled())
         return (m_jetcanTimer.Check(false));
-    
+
     return true;
 }
 

@@ -29,3 +29,8 @@ liveupdates --
 template <typename... Args> void test(const char* f, Args... args) {
     printf(f, args...);
 }
+
+
+
+cc1plus: error: -fsanitize=address and -fsanitize=kernel-address are incompatible with -fsanitize=thread
+Error: symbol `.Lubsan_type3' is already defined
