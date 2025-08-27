@@ -256,6 +256,8 @@ ContainerSE::ContainerSE(CargoContainerRef self, PyServiceMgr& services, SystemM
         } else {
             m_deleteTimer.Start(sConfig.rates.WorldDecay * EvE::Timer::Minute);
         }
+    } else {
+        sLog.Error("ContainerSE", "wtf??  cSE in station??  containerID: %u  ownerID: %u", self->itemID(), data.ownerID);
     }
 
     m_self->SetAttribute(AttrCapacity, m_self->type().capacity(), false);

@@ -241,7 +241,7 @@ NPCAIMgr::NPCAIMgr(NPC* mySE)
     /*  test against chance/duration to determine what extra modules this npc has...see possibles below
     AttrEntityEquipmentMin = 456,
     AttrEntityEquipmentMax = 457,
-    AttrEntityReactionFactor = 466,                     //The chance of an entity attacking the same person as its group members.  Scales delay in joining in on fights too.
+    AttrEntityReactionFactor = 466,  //The chance of an entity attacking the same person as its group members.  Scales delay in joining in on fights too.
 
     */
 
@@ -868,8 +868,10 @@ void NPCAIMgr::MissileLaunched(Missile* pMissile)
 float NPCAIMgr::GetTargetTime()
 {
     float targetTime = (m_self->GetAttribute(AttrScanSpeed).get_float());
-    float radius = m_self->GetAttribute(AttrRadius).get_float();
+
+    // if target time not defined, use drone size to set default time to lock
     if (targetTime < 1) {
+        float radius = m_self->GetAttribute(AttrRadius).get_float();
         if (radius < 30) {
             targetTime = 1500;
         } else if (radius < 60) {
@@ -930,4 +932,17 @@ std::string NPCAIMgr::GetStateName(int8 stateID)
      } break;
   }
 
+ */
+
+/*
+             // action, orbit, falloff, engage, chase, max
+             if (InActionDistance(targSE)) {               600
+             } else if (InOrbitDistance(targSE)) {
+             } else if (InFalloffDistance(targSE)) {
+             } else if (InEngageDistance(targSE)) {
+             } else if (InChaseDistance(targSE)) {
+             } else if (InMaxDistance(targSE)) {
+             } else {
+                 // outside max distance
+             }
  */

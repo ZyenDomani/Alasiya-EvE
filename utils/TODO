@@ -23,9 +23,6 @@ NOTE:  for calls that use internal methods that send a reply, model from InjectS
 *******************************************************
 **********  errors and other found shit...high priority
 
-setPosition()  needs a lookover
-    - when moving to 'pt', not removed from current bubble, not create new bubble, wanderer removes se
-    multiple se use m_self->SetPosition() which only sets position on item, not se nor inspace 
 
 same acct can be logged in multiple times
 

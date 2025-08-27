@@ -269,7 +269,6 @@ bool PyRep::GetBool(PyRep* pRep) {
     }
     if (pRep->IsNone())
         return false;
-    
 
     return false;
 }
@@ -277,6 +276,7 @@ bool PyRep::GetBool(PyRep* pRep) {
 void PyRep::IncRef() const
 {
     if (mDeleted) {
+        sLog.Error("IncRef()", "%s already deleted.", TypeString());
         _log(REFPTR__ERROR, "IncRef() - mDeleted = true.  Count is %i", mRefCount);
         std::cerr << "FATAL: IncRef() called on deleted object! Type: " << typeid(*this).name() << std::endl;
         //EvE::traceStackLN();        // this is painfully slow

@@ -176,8 +176,8 @@ private:
     bool                m_damaged;              // damage beyond % as defined in AttrIncapacitationRatio
 
     uint32              m_controlDistance;
-    uint32              m_controllerID;
-    uint32              m_controllerOwnerID;
+    uint32              m_controllerID;         // shipID
+    uint32              m_controllerOwnerID;    // ship's ownerID
 };
 
 #endif /* !__DRONE__H__INCL__ */

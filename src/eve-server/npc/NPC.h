@@ -75,7 +75,6 @@ public:
         //this is called from SystemManager::RemoveNPC() which calls other SE* methods as needed
     void                RemoveNPC()                     { m_self->Delete(); }
     void                SetResists();
-    void                UseHullRepairer();
     void                UseArmorRepairer();
     void                UseShieldRecharge();
     void                Orbit(SystemEntity* pTargetSE);

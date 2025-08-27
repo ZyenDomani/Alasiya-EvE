@@ -1316,6 +1316,39 @@ PyResult Command_resetroids(Client* pClient, CommandDB* db, PyServiceMgr* servic
     return nullptr;
 }
 
+PyResult Command_showpos(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+{
+    if (!pClient->IsInSpace())
+        throw CustomError("You're not in space.  This call needs DestinyMgr.");
+    if (!pClient->GetShipSE()->SysBubble())
+        pClient->EnterSystem(pClient->GetSystemID());
+    if (!pClient->GetShipSE()->DestinyMgr())
+        pClient->SetDestiny(NULL_ORIGIN);
+
+    DestinyManager* dm = pClient->GetShipSE()->DestinyMgr();
+    /*
+     *    InventoryItemRef sRef = pClient->GetShipSE()->GetSelf();
+     *    // test for args:   targ.
+     *    if (args.argCount() == 2) {
+     *        if (strcmp(args.arg(1).c_str(), "targ") == 0) {
+     *            sRef = pClient->GetShipSE()->TargetMgr()->GetFirstTarget()->GetSelf();
+     *            dm = pClient->GetShipSE()->TargetMgr()->GetFirstTarget()->GetShipSE()->DestinyMgr();
+}
+}*/
+
+    char reply[150];
+    snprintf(reply, 150,
+             "Ship %s (%u)<br>"
+             "is located at  %u, %u, %u<br>", //27
+             pClient->GetShipSE()->GetName(), pClient->GetShipID(),
+             dm->GetPosition().x, dm->GetPosition().y, dm->GetPosition().z
+    );
+
+    pClient->SendInfoModalMsg(reply);
+
+    return new PyString(reply);
+}
+
 
 
 /* groove's new command.....

@@ -77,6 +77,8 @@ NPC::~NPC() {
 bool NPC::Load() {
     m_destiny->UpdateShipVariables();
     SetResists();
+
+    //dSE::Load() just returns true for now (no code)
     return DynamicSystemEntity::Load();
 }
 
@@ -86,6 +88,7 @@ void NPC::Process() {
 
     double profileStartTime(GetTimeUSeconds());
 
+    /*  Process AI before moving */
     m_AI->Process();
 
     /*   Base call to Process Movement  */
@@ -137,8 +140,7 @@ void NPC::UseArmorRepairer() {
         m_AI->DisableRepTimers(false, true);
         return;
     }
-    // disable this for now...
-    return;
+
     float armorDamage(0.0f);
     if (m_self->GetAttribute(AttrArmorDamage) > 0) {
         armorDamage -= m_self->GetAttribute(AttrEntityArmorRepairAmount).get_float();
@@ -152,35 +154,6 @@ void NPC::UseArmorRepairer() {
     // TODO: Need to send SpecialFX / amount update
     UpdateDamage();
 }
-
-void NPC::UseHullRepairer() {
-    if (!sConfig.npc.UseRepair) {
-        //m_AI->DisableRepTimers(false, true);
-        return;
-    }
-    /*
-    if (!m_self->HasAttribute(AttrEntityhullRepairAmount)) {
-        m_AI->DisableRepTimers(false, true);
-        return;
-    } */
-    // disable this for now...
-    return;
-
-    float hullDamage(0.0f);
-    if (m_self->GetAttribute(AttrDamage) > 0) {
-        //hullDamage -= m_self->GetAttribute(AttrEntityhullRepairAmount).get_float();  << NSA - create later
-        if (hullDamage < 0.0f)
-            hullDamage = 0.0f;
-        m_self->SetAttribute(AttrDamage, hullDamage);
-    } else {
-        m_AI->DisableRepTimers(false, false);
-    }
-
-    // TODO: Need to send SpecialFX / amount update
-    // gfxBoosterID
-    UpdateDamage();
-}
-
 
 void NPC::SetResists() {
     /* fix for missing resist attribs -allan 18April16  */
@@ -253,7 +226,7 @@ void NPC::EncodeDestiny(Buffer& into)
             warp.targZ = target.z;
             warp.speed = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
             // warp timing.  see Ship::EncodeDestiny() for notes/updates
-            warp.effectStamp = -1; //m_destiny->GetStateStamp();   //timestamp when warp started
+            warp.effectStamp = m_destiny->GetStateStamp();   //timestamp when warp started
             warp.followRange = 0;   //this isnt right
             warp.followID = 0;  //this isnt right
             into.Append( warp );
@@ -316,7 +289,7 @@ void NPC::Killed(Damage &fatal_blow) {
     if ((m_spawnMgr != nullptr) and (m_self.get() != nullptr))
         m_spawnMgr->SpawnKilled(m_bubble, m_self->itemID());
 
-    uint32 killerID = 0;
+    uint32 killerID(0);
     Client* pClient(nullptr);
     SystemEntity *killer(fatal_blow.srcSE);
 

@@ -684,6 +684,11 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
          * npc accel dist < bubble radius.  WarpAccel.BubbleCheck is complete before npc is removed from bubble
          */
         startPos.MakeRandomPointOnSphere(MakeRandomInt(10, 15) * 100000); //1m-1.5m meters from target bubble center
+        SystemBubble* pBubble = sBubbleMgr.GetBubble(pBubble->GetSystem(), startPos);
+        uint32 bubbleID(0);
+        if (pBubble != nullptr)
+            bubbleID = pBubble->GetID();
+        _log(SPAWN__POP, "SpawnMgr::MakeSpawn - NPC starting bubbleID %u", bubbleID);
     }
 
     uint32 corpID = sDataMgr.GetFactionCorp(factionID);

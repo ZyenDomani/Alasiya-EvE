@@ -94,7 +94,7 @@ public:
 
 
 protected:
-    virtual int16 GetClientCount() =0;
+    virtual int16 GetClientCount() = 0;
     /**
      * @brief Obtains version.
      *
@@ -102,7 +102,7 @@ protected:
      */
     //virtual void _GetVersion( VersionExchangeServer& version ) = 0;
     /** @return Current position in connection queue. */
-    virtual uint32 _GetQueuePosition() = 0;
+    virtual int32 _GetQueuePosition() = 0;
 
     /**
      * @brief Verifies version.

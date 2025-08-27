@@ -417,7 +417,7 @@ protected:
     /* EVEClientSession interface                                       */
     /********************************************************************/
     int16 GetClientCount();
-    uint32 _GetQueuePosition()                          { /* hack */ return 1; }
+    int32 _GetQueuePosition()                           { /* hack */ return 1; }
 
     /********************************************************************/
     /* EVEClientLogin statemachine                                      */

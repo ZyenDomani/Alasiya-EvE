@@ -2185,7 +2185,7 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
 
         // if no players in bubble, this isnt needed...
         if (mySE->SysBubble()->HasPlayers()) {
-            std::vector<PyTuple*> updates;
+            std::vector<PyTuple*> up;
             // send warp update
             CmdWarpTo wt;
                 wt.entityID = mySE->GetID();
@@ -2194,8 +2194,8 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance/*0*/, bool a
                 wt.dest_z = m_targetPoint.z;
                 wt.distance = distance;
                 wt.warpSpeed = GetWarpSpeed();      // warp speed x10
-                updates.push_back(wt.Encode());
-            SendDestinyUpdates(updates); //consumed
+                up.push_back(wt.Encode());
+            SendDestinyUpdates(up); //consumed
 
             // send warp gfx
             SendGFX10(mySE->GetID(),"effects.Warping" );
