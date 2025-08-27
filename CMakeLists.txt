@@ -62,10 +62,12 @@ INCLUDE( "DetectScm" )
 # override the setup.
 #
 # Switch to the C++11 standard (required)
-SET( CMAKE_CXX_FLAGS "-std=gnu++11 -mtune=native -march=native -Werror=return-type ${CMAKE_CXX_FLAGS}" )
-# -Wall -Wextra -Weffc++ -Wconversion -Wdouble-promotion
-# -pg -ggdb -pedantic
-# -fsanitize=thread  -fsanitize=address
+SET( CMAKE_CXX_FLAGS "-std=gnu++11 -mtune=native -march=native -Werror=return-type -ggdb ${CMAKE_CXX_FLAGS}" )
+# SET( CMAKE_CXX_FLAGS "-Wall -Wextra -Weffc++ -Wconversion -Wdouble-promotion ${CMAKE_CXX_FLAGS}" )
+# 
+# -pg (for using gprof) -ggdb (gdb-specific additions for debug) -pedantic (warning if code isnt standargs-compliant)
+
+SET( CMAKE_CXX_FLAGS "-fsanitize=address -fsanitize=undefined -fsanitize=thread ${CMAKE_CXX_FLAGS}" )
 
 #
 # Try to determine the exact source version using SCM.
