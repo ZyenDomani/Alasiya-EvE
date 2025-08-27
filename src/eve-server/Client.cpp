@@ -1053,8 +1053,9 @@ void Client::Board(ShipSE* newShipSE)
         if (abandoned) {
             pShipSE->Abandon();
             snprintf(ci, sizeof(ci), "Abandoned: %s(%u)", GetName(), m_char->itemID());
-        } else
+        } else {
             snprintf(ci, sizeof(ci), "Ejected: %s(%u)", GetName(), m_char->itemID());
+        }
 
         m_ship->SetCustomInfo(ci);
         m_ship->SetFlag(flagShipOffline);
@@ -1080,18 +1081,14 @@ void Client::Eject()
         _log(SHIP__ERROR, "Handle_Eject() - Failed to get podItem for %s.", GetName());
         if (m_canThrow) {
             throw CustomError("Something bad happened as you prepared to eject.");
-        } else {
-            return;
-        }
+         return;
     }
     // this should NEVER happen...
     if (pShipSE->SysBubble() == nullptr) {
         _log(SHIP__ERROR, "Handle_Eject() - Bubble is null for %s.", GetName());
         if (m_canThrow) {
             throw CustomError("Something bad happened as you prepared to eject.");
-        } else {
-            return;
-        }
+        return;
     }
 
     //  check for POS/FF in bubble.  check for ship in FF.  if so, then not abandoned.
@@ -1214,6 +1211,7 @@ void Client::ResetAfterPodded() {
 void Client::SetShip(ShipItemRef shipRef) {
     if (shipRef.get() == nullptr) {
         /* error here */
+        return;
     }
 
     shipRef->ChangeOwner(m_char->itemID());
@@ -1319,11 +1317,10 @@ ShipItemRef Client::SpawnNewRookieShip(uint32 stationID) {
 }
 
 bool Client::IsJetcanAvalible() {
-    if (m_jetcanTimer.Enabled()) {
+    if (m_jetcanTimer.Enabled())
         return (m_jetcanTimer.Check(false));
-    } else {
-        return true;
-    }
+    
+    return true;
 }
 
 PyRep *Client::GetAggressors() const {
