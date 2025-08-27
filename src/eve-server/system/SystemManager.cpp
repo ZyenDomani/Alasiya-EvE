@@ -1245,7 +1245,7 @@ void SystemManager::DoSpawnForBubble(SystemBubble* pBubble, uint8 type/*normal*/
     if (error == Bubble::Error::None) {
         m_ratBubbles[pBubble->GetID()] = pBubble;
         if (is_log_enabled(SPAWN__TRACE))
-            _log(SPAWN__TRACE, "SystemManager::DoSpawnForBubble() completed for bubble %u in %s(%u).  %u/%u active spawns.", \
+            _log(SPAWN__TRACE, "SystemManager::DoSpawnForBubble() completed for bubble %u in %s(%u).  %u/%u active belt/gate spawns.", \
                         pBubble->GetID(), m_data.name.c_str(), m_data.systemID, m_activeRatSpawns, m_activeGateSpawns);
     } else if (is_log_enabled(SPAWN__TRACE)) {
         std::string msg = "Error: ";
