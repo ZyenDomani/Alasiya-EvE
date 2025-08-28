@@ -238,7 +238,7 @@ bool PyPacket::Decode(PyRep **in_packet)
 }
 
 PyRep *PyPacket::Encode() {
-    PyTuple *arg_tuple = new PyTuple(7);
+    PyTuple* arg_tuple = new PyTuple(7);
     //command
     arg_tuple->items[0] = new PyInt(type);
     //source
@@ -246,26 +246,15 @@ PyRep *PyPacket::Encode() {
     //dest
     arg_tuple->items[2] = dest.Encode();
     //userid
-    if (userid == 0) {
-        arg_tuple->items[3] = PyStatic.NewZero();
-    } else {
-        arg_tuple->items[3] = new PyInt(userid);
-    }
-
+    arg_tuple->items[3] = (userid == 0 ? PyStatic.NewZero() : new PyInt(userid));
     //payload
     arg_tuple->items[4] = payload;     // dont clone here.  set actual rep in item, and it will be cleaned up by d'tor later
-
-    //named arguments (OID+ or sn)
-    if (named_payload == nullptr) {
-        arg_tuple->items[5] = PyStatic.NewNone();
-    } else {
-        arg_tuple->items[5] = named_payload;    // dont clone here.  set actual rep in item, and it will be cleaned up by d'tor later
-    }
-
+    //named arguments (OID+ or sn) 
+    // dont clone here.  set actual rep in item, and it will be cleaned up by d'tor later
+    arg_tuple->items[5] = (named_payload == nullptr ? PyStatic.NewNone() : named_payload); 
     //TODO: Not sure what this is, On packets so far they always have as PyNone
     arg_tuple->items[6] = PyStatic.NewNone();
-
-    return new PyObject( type_string.c_str(), arg_tuple );
+    return new PyObject(type_string.c_str(), arg_tuple);
 }
 
 PyAddress::PyAddress()
@@ -441,71 +430,37 @@ PyRep *PyAddress::Encode() {
         case Any: {
             t = new PyTuple(3);
             t->items[0] = new PyInt((int)type);
-
-            if (service.empty()) {
-                t->items[1] = PyStatic.NewNone();
-            } else {
-                t->items[1] = new PyString(service.c_str());
-            }
-
-            if (objectID == 0) {
-                t->items[2] = PyStatic.NewNone();
-            } else {
-                t->items[2] = new PyLong(objectID);
-            }
+            t->items[1] = (service.empty() ? PyStatic.NewNone() : new PyString(service.c_str()));
+            t->items[2] = (objectID == 0 ? PyStatic.NewNone() : new PyLong(objectID));
         } break;
         case Node: {
             t = new PyTuple(4);
             t->items[0] = new PyInt((int)type);
             t->items[1] = new PyLong(objectID);
-
-            if (service.empty()) {
-                t->items[2] = PyStatic.NewNone();
-            } else {
-                t->items[2] = new PyString(service.c_str());
-            }
-
-            if (callID == 0) {
-                t->items[3] = PyStatic.NewNone();
-            } else {
-                t->items[3] = new PyLong(callID);
-            }
+            t->items[2] = (service.empty() ? PyStatic.NewNone() : new PyString(service.c_str()));
+            t->items[3] = (callID == 0 ? PyStatic.NewNone() : new PyLong(callID));
         } break;
         case Client: {
             t = new PyTuple(4);
             t->items[0] = new PyInt((int)type);
             t->items[1] = new PyLong(objectID);
-
-            if (callID == 0) {
-                t->items[2] = PyStatic.NewNone();
-            } else {
-                t->items[2] = new PyLong(callID);
-            }
-
-            if (service.empty()) {
-                t->items[3] = PyStatic.NewNone();
-            } else {
-                t->items[3] = new PyString(service.c_str());
-            }
+            t->items[2] = (callID == 0 ? PyStatic.NewNone() : new PyLong(callID));
+            t->items[3] = (service.empty() ? PyStatic.NewNone() : new PyString(service.c_str()));
         } break;
         case Broadcast: {
             t = new PyTuple(4);
             t->items[0] = new PyInt((int)type);
             //broadcastID
-            if (service.empty()) {
-                t->items[1] = PyStatic.NewNone();
-            } else {
-                t->items[1] = new PyString(service.c_str());
-            }
+            t->items[1] = (service.empty() ? PyStatic.NewNone() : new PyString(service.c_str()));
             //narrowcast
-            t->items[2] = new PyList(); // LSC uses tuple here, others None() or empty List()
+            t->items[2] = PyStatic.mtList(); // LSC uses tuple here, others None() or empty List()
             //typeID
             t->items[3] = new PyString(bcast_idtype.c_str());
         } break;
         case Invalid:
         default: {
             //this still needs to be something which will not crash us.
-            t = new_tuple(PyStatic.NewNone());
+            t = new_tuple(PyStatic.mtTuple());
         } break;
     }
 
