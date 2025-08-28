@@ -273,12 +273,11 @@ bool PyRep::GetBool(PyRep* pRep) {
     return false;
 }
 
-void PyRep::IncRef() const
-{
+void PyRep::IncRef() const {
     if (mDeleted) {
         sLog.Error("IncRef()", "%s already deleted.", TypeString());
         _log(REFPTR__ERROR, "IncRef() - mDeleted = true.  Count is %i", mRefCount);
-        std::cerr << "FATAL: IncRef() called on deleted object! Type: " << typeid(*this).name() << std::endl;
+        //std::cerr << "FATAL: IncRef() called on deleted object! Type: " << typeid(*this).name() << std::endl;
         //EvE::traceStackLN();        // this is painfully slow
         EvE::traceStack();
         return;
@@ -289,12 +288,11 @@ void PyRep::IncRef() const
         _log(REFPTR__INC, "IncRef() on %s.  Count is %u", TypeString(), mRefCount);
 }
 
-void PyRep::DecRef() const
-{
+void PyRep::DecRef() const {
     if (mDeleted) {
         sLog.Error("DecRef()", "%s already deleted.", TypeString());
         _log(REFPTR__ERROR, "DecRef() - mDeleted = true.  Count is %i", mRefCount);
-        std::cerr << "FATAL: DecRef() called on deleted object! Type: " << typeid(*this).name() << std::endl;
+        //std::cerr << "FATAL: DecRef() called on deleted object! Type: " << typeid(*this).name() << std::endl;
         //EvE::traceStackLN();        // this is painfully slow
         EvE::traceStack();
         return;
@@ -305,7 +303,8 @@ void PyRep::DecRef() const
     if (is_log_enabled(REFPTR__DEC))
         _log(REFPTR__DEC, "DecRef() on %s.  Count is %u", TypeString(), mRefCount);
 
-    if (mRefCount < 1)
+    // make sure this will only hit once.
+    if (mRefCount == 0)
         if (sConfig.server.DelOnZero)
             sEntityMgr.AddToDeleteLater(this);
 }
