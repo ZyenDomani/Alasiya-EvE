@@ -73,101 +73,218 @@ bool Agent::Load() {
 }
 
 void Agent::MakeOffer(Character* pChar, MissionOffer& offer) {
-    // this will be based on agent type eventually
+    // all missions default to courier
     uint8 misionType = Mission::Type::Courier;
     uint16 connectionSkillType(EvESkill::None);
+	uint8 roll(MakeRandomInt(0, 100));
+	
+	// random determination here is based on uniform distribution
     switch (m_agentData.divisionID) {
             //  Kill   Courier Trade   Mining
         case Corp::Division::Accounting: {
             //    0%   88%     12%      0%
+			if (roll < 13) 
+				misionType = Mission::Type::Trade;
         } break;
         case Corp::Division::Administration: {
             //   47%   47%      6%      0%
+			if (roll < 6) {
+				misionType = Mission::Type::Trade;
+			} else if (roll < 54) {
+				misionType = Mission::Type::Encounter;
+			} else {
+				misionType = Mission::Type::Courier;
+			}
         } break;
         case Corp::Division::Advisory: {
             //   14%   58%     14%     14%
+			if (roll < 15) {
+				misionType = Mission::Type::Encounter;
+			} else if (roll < 72) {
+				misionType = Mission::Type::Courier;
+			} else if (roll > 85) {
+				misionType = Mission::Type::Mining;
+			} else {
+				misionType = Mission::Type::Trade;
+			}
         } break;
         case Corp::Division::Archives: {
             //    0%   92%      8%      0%
+			if (roll > 92)
+				misionType = Mission::Type::Trade;
         } break;
         case Corp::Division::Astrosurveying: {
             //   13%   25%     13%     50%
             connectionSkillType = EvESkill::MiningConnections;
+			if (roll < 13) {
+				misionType = Mission::Type::Encounter;
+			} else if (roll < 39) {
+				misionType = Mission::Type::Courier;
+			} else if (roll > 51) {
+				misionType = Mission::Type::Mining;
+			} else {
+				misionType = Mission::Type::Trade;
+			}
         } break;
         case Corp::Division::Command: {
             //   88%    6%      6%      0%
             connectionSkillType = EvESkill::DEDConnections;
+			if (roll < 89)
+				misionType = Mission::Type::Encounter;
+			if (roll > 93)
+				misionType = Mission::Type::Trade;
         } break;
         case Corp::Division::Distribution: {
             //    5%   85%      5%      5%
             connectionSkillType = EvESkill::DistributionConnections;
+			if (roll < 6) {
+				misionType = Mission::Type::Encounter;
+			} else if (roll < 11) {
+				misionType = Mission::Type::Trade;
+			} else if (roll < 16) {
+				misionType = Mission::Type::Mining;
+			} else {
+				misionType = Mission::Type::Courier;
+			}
         } break;
         case Corp::Division::Financial: {
             //   12%   70%     18%      0%
+			if (roll < 13)
+				misionType = Mission::Type::Encounter;
+			if (roll > 82)
+				misionType = Mission::Type::Trade;
         } break;
         case Corp::Division::Intelligence: {
             //   74%   21%      5%      0%
             connectionSkillType = EvESkill::DEDConnections;
+			if (roll < 75)
+				misionType = Mission::Type::Encounter;
+			if (roll > 94)
+				misionType = Mission::Type::Trade;
         } break;
         case Corp::Division::InternalSecurity: {
             //  98%    2%      0%      0%
             connectionSkillType = EvESkill::SecurityConnections;
+			if (roll < 98) 
+				misionType = Mission::Type::Encounter;
         } break;
         case Corp::Division::Legal: {
             //  67%   27%      6%      0%
             connectionSkillType = EvESkill::DEDConnections;
+			if (roll < 68)
+				misionType = Mission::Type::Encounter;
+			if (roll > 94)
+				misionType = Mission::Type::Trade;
         } break;
         case Corp::Division::Manufacturing: {
             //   0%   48%      4%     48%
             connectionSkillType = EvESkill::MiningConnections;
+			if (roll < 6)
+				misionType = Mission::Type::Trade;
+			if (roll > 52)
+				misionType = Mission::Type::Mining;
         } break;
         case Corp::Division::Marketing: {
             //  17%   77%      6%      0%
             connectionSkillType = EvESkill::DistributionConnections;
+			if (roll < 18)
+				misionType = Mission::Type::Encounter;
+			if (roll > 93)
+				misionType = Mission::Type::Trade;
         } break;
         case Corp::Division::Mining: {
             //   0%   10%      5%     85%
             connectionSkillType = EvESkill::MiningConnections;
+			if (roll < 85)
+				misionType = Mission::Type::Mining;
+			if (roll > 95)
+				misionType = Mission::Type::Trade;
         } break;
         case Corp::Division::Personnel: {
             //  28%   66%      6%      0%
+			if (roll < 29)
+				misionType = Mission::Type::Encounter;
+			if (roll > 93)
+				misionType = Mission::Type::Trade;
         } break;
         case Corp::Division::Production: {
             //   0%   52%     13%     35%
             connectionSkillType = EvESkill::DistributionConnections;
+			if (roll > 65) {
+				misionType = Mission::Type::Mining;
+			} else if (roll > 52) {
+				misionType = Mission::Type::Trade;
+			} else {
+				misionType = Mission::Type::Courier;
+			}
         } break;
         case Corp::Division::PublicRelations: {
             //  28%   66%      6%      0%
+			if (roll < 29)
+				misionType = Mission::Type::Encounter;
+			if (roll > 93)
+				misionType = Mission::Type::Trade;
         } break;
         case Corp::Division::RnD: {
             //   0%   50%     50%      0%
+			if (IsEven(roll)) 
+				misionType = Mission::Type::Trade;
         } break;
         case Corp::Division::Security: {
             //  94%    6%      0%      0%
             connectionSkillType = EvESkill::SecurityConnections;
+			if (roll < 94) 
+				misionType = Mission::Type::Encounter;
         } break;
         case Corp::Division::Storage: {
             //   6%   71%      6%     17%
             connectionSkillType = EvESkill::DistributionConnections;
+			if (roll < 7) {
+				misionType = Mission::Type::Encounter;
+			} else if (roll < 78) {
+				misionType = Mission::Type::Trade;
+			} else if (roll > 82) {
+				misionType = Mission::Type::Mining;
+			} else {
+				misionType = Mission::Type::Courier;
+			}
         } break;
         case Corp::Division::Surveillance: {
             //  84%   11%      5%      0%
             connectionSkillType = EvESkill::SecurityConnections;
+			if (roll < 47)
+				misionType = Mission::Type::Encounter;
+			if (roll > 92)
+				misionType = Mission::Type::Trade;
         } break;
         case Corp::Division::DistributionNew: {
             //   5%   85%      5%      5%
             connectionSkillType = EvESkill::DistributionConnections;
+			if (roll < 7) {
+				misionType = Mission::Type::Encounter;
+			} else if (roll < 78) {
+				misionType = Mission::Type::Trade;
+			} else if (roll > 82) {
+				misionType = Mission::Type::Mining;
+			} else {
+				misionType = Mission::Type::Courier;
+			}
         } break;
         case Corp::Division::MiningNew: {
             //   0%   10%      5%     85%
             connectionSkillType = EvESkill::MiningConnections;
+			if (roll < 11)
+				misionType = Mission::Type::Trade;
+			if (roll > 92)
+				misionType = Mission::Type::Mining;
         } break;
         case Corp::Division::SecurityNew: {
             //  94%    6%      0%      0%
             connectionSkillType = EvESkill::SecurityConnections;
+			if (roll < 95) 
+				misionType = Mission::Type::Encounter;
         } break;
     }
-
     // if char has 15 completed missions of same level with same corp, make offer for important or storyline mission
     if (pChar->RdyForImportantMission(m_agentData.corporationID, m_agentData.level))
         m_important = true;
