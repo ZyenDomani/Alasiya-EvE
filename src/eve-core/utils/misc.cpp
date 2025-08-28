@@ -118,25 +118,25 @@ int64 npowof2( int64 num )
     return num;
 }
 
-int64 MakeRandomInt( int64 low, int64 high )
-{
-    return (int64)MakeRandomFloat( (double)low, (double)high );
+// define random device 
+  std::random_device rd;
+// seed the generator
+  std::mt19937 gen{rd()};
+
+int64 MakeRandomInt(int64 lo, int64 hi) {
+    if (lo == hi)
+        return lo;
+    
+    std::uniform_int_distribution<int64> dist{lo, hi}; // set min and max
+    return dist(gen);
 }
 
-double MakeRandomFloat( double low, double high )
-{
-    if( low == high )
-        return low;
-
-    static bool seeded = false;
-    if( !seeded )
-    {
-        time_t x = ::time( NULL );
-        ::srand( x * ( x % (time_t)( high - low ) ) );
-        seeded = true;
-    }
-
-    return low + ( high - low ) * ::rand() / RAND_MAX;
+double MakeRandomFloat(double lo, double hi) {
+    if (lo == hi)
+        return lo;
+    
+    std::uniform_real_distribution<double> dist{lo, hi}; // set min and max
+    return dist(gen);
 }
 
 /// create PID file
