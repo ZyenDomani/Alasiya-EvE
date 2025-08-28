@@ -67,7 +67,7 @@ SET( CMAKE_CXX_FLAGS "-std=gnu++11 -mtune=native -march=native -Werror=return-ty
 #
 # -pg (for using gprof) -ggdb (gdb-specific additions for debug) -pedantic (warning if code isnt standargs-compliant)
 
-SET( CMAKE_CXX_FLAGS "-fsanitize=address  ${CMAKE_CXX_FLAGS}" )
+#SET( CMAKE_CXX_FLAGS "-fsanitize=address  ${CMAKE_CXX_FLAGS}" )
 # -fsanitize=thread -fsanitize=undefined
 #
 # Try to determine the exact source version using SCM.

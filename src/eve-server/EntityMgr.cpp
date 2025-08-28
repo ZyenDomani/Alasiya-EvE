@@ -225,8 +225,11 @@ void EntityMgr::Process() {
 
         if (!m_deleteLater.empty()) {
             sLog.Error(" EntityMgr::Proc", "deleting %u later objects.", (uint32)m_deleteLater.size());
-            for (auto &cur : m_deleteLater)
+            for (auto &cur : m_deleteLater) {
+                if ((*cur).IsDeleted())
+                    continue;
                 SafeDelete(cur);
+            }
             m_deleteLater.clear();
         }
 

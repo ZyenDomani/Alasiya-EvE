@@ -238,6 +238,7 @@ public:
     void IncRef() const;
     void DecRef() const;
     int16 GetRefCount()                                 { return mRefCount; }
+    bool IsDeleted() const                              { return mDeleted; }
 
 protected:
     const PyType		mType;

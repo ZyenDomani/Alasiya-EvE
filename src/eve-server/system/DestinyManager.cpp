@@ -1715,8 +1715,8 @@ void DestinyManager::WarpAccel(uint16 sec_into_warp) {
     WarpUpdate(currentDistance, sec_into_warp, 1);
 
     if (mySE->SysBubble() != nullptr) {
-        if (currentDistance > BUBBLE_RADIUS_METERS) {
-        //if (!mySE->SysBubble()->InBubble(m_position)) {  // in rare case accel is completed, but se is still in bubble
+        //if (currentDistance > BUBBLE_RADIUS_METERS) { // this will not account for warping from one side of bubble to other
+        if (!mySE->SysBubble()->InBubble(m_position)) {  // check actual bubble center here
             if (is_log_enabled(DESTINY__WARP_TRACE))
                 _log(DESTINY__WARP_TRACE, "Destiny::WarpAccel(): %s(%u) is being removed from bubble %u.",\
                     mySE->GetName(), mySE->GetID(), mySE->SysBubble()->GetID());
@@ -1752,7 +1752,7 @@ void DestinyManager::WarpDecel(uint16 sec_into_warp) {
     WarpUpdate(currentShipSpeed, sec_into_warp, 3);
 
     if (mySE->SysBubble() == nullptr)
-        if (m_targetDistance < BUBBLE_RADIUS_METERS)
+        if (m_targBubble->InBubble(m_position))   // check actual bubble center here
             m_targBubble->Add(mySE);
 
     if (currentShipSpeed <= m_speedToLeaveWarp)
@@ -1777,8 +1777,8 @@ void DestinyManager::WarpUpdate(int64 currentShipSpeed, uint16 sec_into_warp, ui
                         m_warpState->cruise ? "true":"false", mySE->GetName(), mySE->GetID(), sec_into_warp, currentShipSpeed, m_targetDistance);
             } break;
             case 3: {
-                _log(DESTINY__WARP_TRACE, "Destiny::WarpDecel(): %s(%u) - Warp Decelerating(%us/%us): velocity %lli m/s.  %lli m remaining.", \
-                        mySE->GetName(), mySE->GetID(), (uint16)(sec_into_warp - m_decelTime), sec_into_warp, currentShipSpeed, m_targetDistance);
+                _log(DESTINY__WARP_TRACE, "Destiny::WarpDecel(): %s(%u) - Warp Decelerating(%us): velocity %lli m/s.  %lli m remaining.", \
+                        mySE->GetName(), mySE->GetID(), sec_into_warp, currentShipSpeed, m_targetDistance);
             } break;
             default: {
             _log(DESTINY__WARNING, "Destiny::WarpUpdate()  %s(%u): Called with no type.", \
