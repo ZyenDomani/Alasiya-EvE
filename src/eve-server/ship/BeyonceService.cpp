@@ -878,11 +878,11 @@ PyResult BeyonceBound::Handle_CmdAbandonLoot(PyCallArgs &call) {
             continue;
         pSE->Abandon();
         PyTuple* slimData = new PyTuple(2);
-        slimData->SetItem(0, new PyLong(pSE->GetID()));
-        slimData->SetItem(1, new PyObject( "foo.SlimItem", pSE->MakeSlimItem()));
+            slimData->SetItem(0, new PyLong(pSE->GetID()));
+            slimData->SetItem(1, new PyObject( "foo.SlimItem", pSE->MakeSlimItem()));
         PyTuple* itemData = new PyTuple(2);
-        itemData->SetItem(0, new PyString("OnSlimItemChange"));
-        itemData->SetItem(1, slimData);
+            itemData->SetItem(0, new PyString("OnSlimItemChange"));
+            itemData->SetItem(1, slimData);
         pSE->SysBubble()->BubblecastDestinyUpdate(&itemData, "OnSlimItemChange" );
     }
 

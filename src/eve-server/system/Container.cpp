@@ -372,8 +372,25 @@ PyDict *ContainerSE::MakeSlimItem() {
         slim->SetItemString("allianceID",       IsAllianceID(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
         slim->SetItemString("warFactionID",     IsFactionID(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
         slim->SetItemString("fleetID",          IsFleetID(m_fleetID) ? new PyInt(m_fleetID) : PyStatic.NewNone());
-        if (m_contRef->IsAnchored())        // not sure if this is right...testing
-            slim->SetItemString("structureState",       new PyInt(EVEPOS::StructureState::Anchored));
+    if (m_contRef->IsAnchored())        // not sure if this is right...testing
+        slim->SetItemString("structureState",       new PyInt(EVEPOS::StructureState::Anchored));
+
+    if (m_abandoned) {
+        // any "None" here will show abandoned in client
+        PyTuple* loot = new PyTuple(4);
+            loot->SetItem(0,                PyStatic.NewNone());
+            loot->SetItem(1,                PyStatic.NewNone());
+            loot->SetItem(2,                PyStatic.NewNone());
+            loot->SetItem(3,                new PyBool(false)); // what is this??  always false in packets
+        slim->SetItemString("lootRights",   loot );
+    } else if (IsFleetID(m_fleetID)) {
+        PyTuple* loot = new PyTuple(4);
+            loot->SetItem(0,                new PyInt(m_ownerID));
+            loot->SetItem(1,                new PyInt(m_corpID));
+            loot->SetItem(2,                new PyInt(m_fleetID));
+            loot->SetItem(3,                new PyBool(false)); // what is this??  always false in packets
+        slim->SetItemString("lootRights",   loot );
+    }
 
     if (is_log_enabled(DESTINY__DEBUG)) {
         _log( DESTINY__DEBUG, "ContainerSE::MakeSlimItem() - %s(%u)", GetName(), GetID());
@@ -579,29 +596,28 @@ PyDict *WreckSE::MakeSlimItem() {
         slim->SetItemString("itemID",           new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",           new PyInt(m_self->typeID()));
         slim->SetItemString("name",             new PyString(m_self->itemName()));
-        if (m_abandoned) {
-            // any "None" here will show abandoned in client
-            PyTuple* loot = new PyTuple(4);
-                loot->SetItem(0,                PyStatic.NewNone());
-                loot->SetItem(1,                PyStatic.NewNone());
-                loot->SetItem(2,                PyStatic.NewNone());
-                loot->SetItem(3,                new PyBool(false)); // what is this??  always false in packets
-            slim->SetItemString("lootRights",   loot );
-        } else if (IsFleetID(m_fleetID)) {
-            PyTuple* loot = new PyTuple(4);
-                loot->SetItem(0,                new PyInt(m_ownerID));
-                loot->SetItem(1,                IsCorpID(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
-                loot->SetItem(2,                IsFleetID(m_fleetID) ? new PyInt(m_fleetID) : PyStatic.NewNone());
-                loot->SetItem(3,                new PyBool(false)); // what is this??  always false in packets
-            slim->SetItemString("lootRights",   loot );
-        }
+    if (m_abandoned) {
+        // any "None" here will show abandoned in client
+        PyTuple* loot = new PyTuple(4);
+            loot->SetItem(0,                PyStatic.NewNone());
+            loot->SetItem(1,                PyStatic.NewNone());
+            loot->SetItem(2,                PyStatic.NewNone());
+            loot->SetItem(3,                new PyBool(false)); // what is this??  always false in packets
+        slim->SetItemString("lootRights",   loot );
+    } else if (IsFleetID(m_fleetID)) {
+        PyTuple* loot = new PyTuple(4);
+            loot->SetItem(0,                new PyInt(m_ownerID));
+            loot->SetItem(1,                new PyInt(m_corpID));
+            loot->SetItem(2,                new PyInt(m_fleetID));
+            loot->SetItem(3,                new PyBool(false)); // what is this??  always false in packets
+        slim->SetItemString("lootRights",   loot );
+    }
         slim->SetItemString("corpID",           IsCorpID(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
         slim->SetItemString("allianceID",       IsAllianceID(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
         slim->SetItemString("warFactionID",     IsFactionID(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
         slim->SetItemString("isEmpty",          new PyBool(m_contRef->IsEmpty()));
         slim->SetItemString("launcherID",       new PyLong(m_launchedByID));
         slim->SetItemString("securityStatus",   new PyInt(0));  //FIXME TODO
-        // for fleet wrecks, ownerID is set to fleetID
         slim->SetItemString("ownerID",          new PyInt(m_ownerID));
         PyDict* dict = new PyDict;
             dict->SetItemString("WreckTypeID",  new PyInt(m_self->typeID()));

@@ -500,7 +500,7 @@ bool SystemManager::BuildDynamicEntity(const DBSystemDynamicEntity& data, uint32
     }
 
     _log(ITEM__TRACE, "SystemManager::BuildDynamicEntity() - Created dynamic entity %u of type %u for %s(%u)", \
-                data.itemID, data.typeID, m_data.name.c_str(),m_data.systemID );
+                data.itemID, data.typeID, m_data.name.c_str(),m_data.systemID);
 
     // this is only used for wrecks...
     if (launcherID) {

@@ -230,6 +230,8 @@ void Prospector::DropSalvage()
                 data.ownerID = m_targetSE->GetSelf()->ownerID();
             ContainerSE* cSE = new ContainerSE(jetCanRef, m_targetSE->GetServices(), m_sysMgr, data);
             jetCanRef->SetMySE(cSE);
+            if (IsFleetID(m_targetSE->GetFleetID()))
+                cSE->SetFleetID(m_targetSE->GetFleetID());
             m_sysMgr->AddEntity(cSE);
             m_targetSE->DestinyMgr()->SendJettisonPacket();
         }

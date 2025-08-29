@@ -307,14 +307,6 @@ void NPC::Killed(Damage &fatal_blow) {
         killerID = killer->GetID();
     }
 
-    uint32 ownerID(killerID);
-    // test for fleet kills
-    if (pClient != nullptr) {
-        if (pClient->InFleet()) {
-            ownerID = pClient->GetFleetID();
-        }
-    }
-
     uint32 locationID = GetLocationID();
     //  log faction kill in dynamic data   -allan
     MapDB::AddKill(locationID);
@@ -349,6 +341,16 @@ void NPC::Killed(Damage &fatal_blow) {
         // default to generic frigate wreck till i get better checks and/or complete wreck data
         wreckTypeID = 26557;
     }
+
+    uint32 ownerID(killerID);
+    // test for fleet kills
+    /*
+    if (pClient != nullptr) {
+        if (pClient->InFleet()) {
+            ownerID = pClient->GetFleetID();
+        }
+    }
+    */
 
     std::string wreck_name = m_self->itemName();
     wreck_name += " Wreck";
