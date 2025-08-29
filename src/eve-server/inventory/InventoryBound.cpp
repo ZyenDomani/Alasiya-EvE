@@ -400,6 +400,24 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
         }
     }
 
+    // test for looting and change owner here
+    InventoryItemRef iRef = sItemFactory.GetItemRefFromID(args.containerID);
+    if (iRef.get() != nullptr) {
+        if (iRef->groupID() == EVEDB::invGroups::Wreck) {
+            // we are taking loot from a wreck
+            InventoryItemRef lRef(nullptr);
+            std::vector<int32>::iterator itr = args.itemIDs.begin();
+            while (itr != args.itemIDs.end()) {
+                lRef = sItemFactory.GetItemRefFromID(itr);
+                if (lRef.get() != nullptr)
+                    lRef->ChangeOwner();
+                ++itr;
+            }
+            // here, we can check looting rights and even set criminal aggression
+            // for loot rights, we look at abandoned, ownerID, corpID, fleetID
+        }
+    }
+
     _log(INV__MESSAGE, "IB::Handle_MultiAdd() - moving %lu item%s from (%u:%s) to me(%s:%u:%s).", \
                 args.itemIDs.size(), args.itemIDs.size() > 1?"s":"", args.containerID, \
                 sDataMgr.GetFlagName(m_flag), m_self->name(), m_itemID, sDataMgr.GetFlagName(toFlag));
@@ -751,7 +769,7 @@ PyResult InventoryBound::Handle_List(PyCallArgs &call) {
 
     _log(INV__MESSAGE, "IB::List() called by %s with ownerID %u for %s(%u:%s%s) - origFlag: %s", \
             call.client->GetName(), ownerID, m_self->name(), m_itemID, sDataMgr.GetFlagName(flag), \
-            (m_passive ? ":passive" : ""), sDataMgr.GetFlagName(oldFlag));
+            (m_passive ? ":passive" : ":active"), sDataMgr.GetFlagName(oldFlag));
 
     // check for owner type of this inventory for reference checks
     if (IsOfficeID(m_itemID)) {

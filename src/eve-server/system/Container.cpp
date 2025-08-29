@@ -579,12 +579,20 @@ PyDict *WreckSE::MakeSlimItem() {
         slim->SetItemString("itemID",           new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",           new PyInt(m_self->typeID()));
         slim->SetItemString("name",             new PyString(m_self->itemName()));
-        if (m_abandoned or IsFleetID(m_fleetID)) { // this is ONLY for abandoned wrecks or wrecks from fleet ops
+        if (m_abandoned) {
+            // any "None" here will show abandoned in client
             PyTuple* loot = new PyTuple(4);
-                loot->SetItem(0,                new PyInt(m_ownerID));
+                loot->SetItem(0,                PyStatic.NewNone();
+                loot->SetItem(1,                PyStatic.NewNone());
+                loot->SetItem(2,                PyStatic.NewNone());
+                loot->SetItem(3,                new PyBool(false)); // what is this??  always false in packets
+            slim->SetItemString("lootRights",   loot );
+        } else if (IsFleetID(m_fleetID)) {
+            PyTuple* loot = new PyTuple(4);
+                loot->SetItem(0,                new PyInt(m_ownerID);
                 loot->SetItem(1,                IsCorpID(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
                 loot->SetItem(2,                IsFleetID(m_fleetID) ? new PyInt(m_fleetID) : PyStatic.NewNone());
-                loot->SetItem(3,                new PyBool(false)); // what is this??
+                loot->SetItem(3,                new PyBool(false)); // what is this??  always false in packets
             slim->SetItemString("lootRights",   loot );
         }
         slim->SetItemString("corpID",           IsCorpID(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
@@ -593,6 +601,7 @@ PyDict *WreckSE::MakeSlimItem() {
         slim->SetItemString("isEmpty",          new PyBool(m_contRef->IsEmpty()));
         slim->SetItemString("launcherID",       new PyLong(m_launchedByID));
         slim->SetItemString("securityStatus",   new PyInt(0));  //FIXME TODO
+        // for fleet wrecks, ownerID is set to fleetID
         slim->SetItemString("ownerID",          new PyInt(m_ownerID));
         PyDict* dict = new PyDict;
             dict->SetItemString("WreckTypeID",  new PyInt(m_self->typeID()));

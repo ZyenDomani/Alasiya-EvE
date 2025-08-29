@@ -429,10 +429,10 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
         throw CustomError("You can't do this while docked");
 
     if (pClient->IsJump())
-        throw UserError("CantTargetWhileJumping");
+        throw UserError("CantTargetWhileJumpingBody");
 
     if (pClient->GetShipID() == args.arg)
-        throw UserError("DeniedTargetSelf");
+        throw UserError("DeniedTargetSelfBody");
 
     /** @todo pClient->IsUncloak() incomplete */
     if (pClient->IsUncloak())
@@ -441,25 +441,25 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
     // caller ship tests
     ShipSE* mySE = pClient->GetShipSE();
     if (mySE->TargetMgr() == nullptr)
-        throw UserError("DeniedTargetingAttemptFailed")
+        throw UserError("DeniedTargetingAttemptFailedBody")
                 .AddFormatValue("target", new PyInt(args.arg));
     /** @todo SE->IsFrozen() incomplete */
     if (mySE->IsFrozen())
-        throw UserError("DeniedTargetSelfFrozen")
+        throw UserError("DeniedTargetSelfFrozenBody")
                 .AddFormatValue("targetName", new PyString(mySE->GetName()));
     /** @todo SE->IsInvul() incomplete */
     if (mySE->IsInvul())
-        throw UserError("DeniedInvulnerable");
+        throw UserError("DeniedInvulnerableBody");
 
     if (mySE->SysBubble() == nullptr) {
         _log(DESTINY__ERROR, "Client %s does not have a bubble.", pClient->GetName());
-        throw UserError("DeniedTargetingAttemptFailed")
+        throw UserError("DeniedTargetingAttemptFailedBody")
                 .AddFormatValue("target", new PyInt(args.arg));
     }
     if (mySE->SysBubble()->HasTower()) {
         TowerSE* ptSE = mySE->SysBubble()->GetTowerSE();
         if (ptSE->HasForceField() and (mySE->GetPosition().distance(ptSE->GetPosition()) < ptSE->GetSOI()))
-            throw UserError("DeniedTargetingInsideField")
+            throw UserError("DeniedTargetingInsideFieldBody")
                     .AddFormatValue("target", new PyInt(args.arg));
     }
 
@@ -467,7 +467,7 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
     DestinyManager* pMyDestiny = mySE->DestinyMgr();
     if (pMyDestiny == nullptr) {
         _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
-        throw UserError("DeniedTargetingAttemptFailed")
+        throw UserError("DeniedTargetingAttemptFailedBody")
                 .AddFormatValue("target", new PyInt(args.arg));
     }
     if (pMyDestiny->IsCloaked())
@@ -478,7 +478,7 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
     SystemManager* pSysMgr = pClient->SystemMgr();
     if (pSysMgr == nullptr) {
         _log(PLAYER__WARNING, "Unable to find system manager for '%s'", pClient->GetName());
-        throw UserError("DeniedTargetingAttemptFailed")
+        throw UserError("DeniedTargetingAttemptFailedBody")
                 .AddFormatValue("target", new PyInt(args.arg));
     }
 
@@ -486,21 +486,21 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
     SystemEntity* tSE = pSysMgr->GetSE(args.arg);
     if (tSE == nullptr) {
         _log(INV__WARNING, "Unable to find entity %u in system %u from '%s'", args.arg, pSysMgr->GetID(), pClient->GetName());
-        throw UserError("DeniedTargetingAttemptFailed")
+        throw UserError("DeniedTargetingAttemptFailedBody")
                 .AddFormatValue("target", new PyInt(args.arg));
     }
     if ((tSE->IsStaticEntity())
     or (tSE->IsLogin())/** @todo SE->IsLogin() incomplete */
     or (tSE->GetSelf()->HasAttribute(AttrUntargetable)))
-        throw UserError("DeniedTargetEvadesSensors")
+        throw UserError("DeniedTargetEvadesSensorsBody")
                 .AddFormatValue("targetName", new PyString(tSE->GetName()));
     /** @todo SE->IsInvul() incomplete */
     if (tSE->IsInvul())
-        throw CustomError("Cannot Engage %s as they are invulnerable.", tSE->GetName());
-        //throw UserError("DeniedTargetInvulnerable");
+        throw UserError("DeniedTargetInvulnerableBody");
+        //throw CustomError("Cannot Engage %s as they are invulnerable.", tSE->GetName());
     /** @todo SE->IsFrozen() incomplete */
     if (tSE->IsFrozen())
-        throw UserError("DeniedTargetOtherFrozen")
+        throw UserError("DeniedTargetOtherFrozenBody")
                 .AddFormatValue("targetName", new PyString(tSE->GetName()));
 
     if (tSE->HasPilot()) {
@@ -509,21 +509,21 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
             throw CustomError("Cannot Engage %s as they are invulnerable.", tSE->GetName());
         //throw UserError("DeniedTargetInvulnerable");
         if ( tSE->GetPilot()->IsSessionChange())
-            throw UserError("DeniedTargetEvadesSensors")
+            throw UserError("DeniedTargetEvadesSensorsBody")
                     .AddFormatValue("targetName", new PyString(tSE->GetName()));
     }
 
     if (pMyDestiny->IsWarping()) {
         _log(TARGET__WARNING, "Handle_AddTarget - TargMgr.StartTargeting() failed - warping.");
-        throw UserError("DeniedTargetSelfWarping")
+        throw UserError("DeniedTargetSelfWarpingBody")
                 .AddFormatValue("targetName", new PyString(tSE->GetName()));
     }
     if (tSE->DestinyMgr() != nullptr) {
         if (tSE->DestinyMgr()->IsCloaked())
-            throw UserError("DeniedTargetingTargetCloaked");
+            throw UserError("DeniedTargetingTargetCloakedBody");
         if (tSE->DestinyMgr()->IsWarping()) {
             _log(TARGET__WARNING, "Handle_AddTarget - TargMgr.StartTargeting() failed - target warping.");
-            throw UserError("DeniedTargetOtherWarping")
+            throw UserError("DeniedTargetOtherWarpingBody")
                     .AddFormatValue("targetName", new PyString(tSE->GetName()));
         }
     }
@@ -531,26 +531,26 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
     // target bubble tests
     if (tSE->SysBubble() == nullptr) {
         _log(DESTINY__ERROR, "Target %s does not have a bubble.", tSE->GetName());
-        throw UserError("DeniedTargetingAttemptFailed")
+        throw UserError("DeniedTargetingAttemptFailedBody")
                 .AddFormatValue("target", new PyInt(args.arg));
     }
     if (tSE->SysBubble()->HasTower()) {
         TowerSE* ptSE = tSE->SysBubble()->GetTowerSE();
         if (ptSE->HasForceField() and (tSE->GetPosition().distance(ptSE->GetPosition()) < ptSE->GetSOI()))
-                throw UserError("DeniedTargetForceField")
+            throw UserError("DeniedTargetForceFieldBody")
                         .AddFormatValue("target", new PyInt(args.arg))
                         .AddDistance("range", ptSE->GetSOI())
                         .AddFormatValue("item", new PyInt(ptSE->GetID()));
     }
     if (tSE->IsPOSSE())
         if (tSE->GetPOSSE()->IsReinforced())
-            throw UserError("DeniedTargetReinforcedStructure")
+            throw UserError("DeniedTargetReinforcedStructureBody")
                     .AddFormatValue("target", new PyInt(args.arg));
 
 
     if (!mySE->TargetMgr()->StartTargeting( tSE, pClient->GetShip())) {
         _log(TARGET__WARNING, "AddTarget() - TargMgr.StartTargeting() failed.");
-        throw UserError("DeniedTargetingAttemptFailed")
+        throw UserError("DeniedTargetingAttemptFailedBody")
                 .AddFormatValue("target", new PyInt(args.arg));
     }
 

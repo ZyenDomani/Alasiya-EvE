@@ -276,3 +276,33 @@ protected:
 #endif /* !__CONTAINER__H__INCL__ */
 
 
+/*
+ * def IsForbiddenContainer(slimItem):
+ *    if slimItem.groupID not in (const.groupWreck, const.groupCargoContainer, const.groupSecureCargoContainer):
+ *        return False
+ *    if not slimItem.ownerID:
+ *        return False
+ *    if slimItem.ownerID == eve.session.charid:
+ *        return False
+ *    if slimItem.corpID and slimItem.corpID == eve.session.corpid:
+ *        return False
+ *    if slimItem.allianceID and slimItem.allianceID == eve.session.allianceid:
+ *        return False
+ *    if sm.GetService('corp').GetMember(slimItem.ownerID):
+ *        return False
+ *    if sm.GetService('fleet').IsMember(slimItem.ownerID):
+ *        return False
+ *    bp = sm.StartService('michelle').GetBallpark()
+ *    if bp is None:
+ *        return False
+ *    if bp.HaveLootRight(slimItem.itemID):
+ *        return False
+ *    return True
+ */
+
+/*
+OVERVIEW_NORMAL_COLOR = (1.0, 1.0, 1.0)                 // white
+OVERVIEW_HOSTILE_COLOR = (1.0, 0.1, 0.1)                // red
+OVERVIEW_FORBIDDEN_CONTAINER_COLOR = (1.0, 1.0, 0.0)    // yellow
+OVERVIEW_ABANDONED_CONTAINER_COLOR = (0.2, 0.5, 1.0)    // blue
+*/

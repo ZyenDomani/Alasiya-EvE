@@ -29,6 +29,8 @@
 #include "PyServiceCD.h"
 #include "character/AggressionMgrService.h"
 
+#include "../EntityMgr.h"
+
 PyCallable_Make_InnerDispatcher(AggressionMgrService)
 
 class AggressionMgrBound
@@ -81,8 +83,32 @@ PyResult AggressionMgrBound::Handle_CheckLootRightExceptions(PyCallArgs &call)
         return nullptr;
     }
 
-    // return true to allow looting
-    return PyStatic.NewTrue();
+    /* loot rights...
+     * container owned by corp is checked in client
+     *
+     * not sure what this is... if bp.HaveLootRight(containerID)
+     */
+
+    InventoryItemRef iRef = sItemFactory.GetItemRefFromID(arg.arg);
+    Client* pClient = sEntityMgr.FindClientByCharID(iRef->ownerID());
+    if (pClient != nullptr) {
+        if (pClient->InFleet()) {
+            if (call.client->GetFleetID() == pClient->GetFleetID()) {
+                // return true to allow looting
+                return PyStatic.NewTrue();
+            }
+        } else {
+
+        }
+    } else {
+        // owner is not online...do weird shit to see if looting is allowed
+
+        // return false to deny looting
+        return PyStatic.NewFalse();
+    }
+
+    // return false to deny looting
+    return PyStatic.NewFalse();
 }
 
 AggressionMgrService::AggressionMgrService(PyServiceMgr *mgr)

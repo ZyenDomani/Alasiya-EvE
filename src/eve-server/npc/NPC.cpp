@@ -307,6 +307,14 @@ void NPC::Killed(Damage &fatal_blow) {
         killerID = killer->GetID();
     }
 
+    uint32 ownerID(killerID);
+    // test for fleet kills
+    if (pClient != nullptr) {
+        if (pClient->InFleet()) {
+            ownerID = pClient->GetFleetID();
+        }
+    }
+
     uint32 locationID = GetLocationID();
     //  log faction kill in dynamic data   -allan
     MapDB::AddKill(locationID);
@@ -344,7 +352,8 @@ void NPC::Killed(Damage &fatal_blow) {
 
     std::string wreck_name = m_self->itemName();
     wreck_name += " Wreck";
-    ItemData wreckItemData(wreckTypeID, killerID, locationID, flagAutoFit, wreck_name.c_str(), wreckPosition, itoa(m_allyID));
+    if ()
+        ItemData wreckItemData(wreckTypeID, ownerID, locationID, flagAutoFit, wreck_name.c_str(), wreckPosition, itoa(m_allyID));
     WreckContainerRef wreckItemRef = sItemFactory.SpawnWreckContainer( wreckItemData );
     if (wreckItemRef.get() == nullptr) {
         sLog.Error("NPC::Killed()", "Creating Wreck Item Failed for %s of type %u", wreck_name.c_str(), wreckTypeID);
@@ -356,7 +365,7 @@ void NPC::Killed(Damage &fatal_blow) {
                 GetName(), GetID(), x(), y(), z(), wreckItemRef->name(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
 
     if ((MakeRandomFloat() < sConfig.npc.LootDropChance) or (m_allyID == factionRogueDrones))
-        DropLoot(wreckItemRef, m_self->groupID(), killerID);
+        DropLoot(wreckItemRef, m_self->groupID(), ownerID);
 
     DBSystemDynamicEntity wreckData = DBSystemDynamicEntity();
         wreckData.allianceID = (killer->GetAllianceID() == 0 ? m_allyID : killer->GetAllianceID());
@@ -366,7 +375,7 @@ void NPC::Killed(Damage &fatal_blow) {
         wreckData.groupID = EVEDB::invGroups::Wreck;
         wreckData.itemID = wreckItemRef->itemID();
         wreckData.itemName = std::move(wreck_name);
-        wreckData.ownerID = killerID;
+        wreckData.ownerID = ownerID;
         wreckData.typeID = wreckTypeID;
         wreckData.position = wreckPosition;
 

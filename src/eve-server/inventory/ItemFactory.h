@@ -90,9 +90,9 @@ public:
     AsteroidItemRef         GetAsteroidRef(uint32 asteroidID);
     StructureItemRef        GetStructureRef(uint32 structureID);
     StationOfficeRef        GetOfficeRef(uint32 officeID);
-    InventoryItemRef        GetItemRef(uint32 itemID);
-    InventoryItemRef        GetItemContainerRef(uint32 itemID, bool load=true);
-    InventoryItemRef        GetItemRefFromID(uint32 itemID, bool load=true);
+    InventoryItemRef        GetItemRef(uint32 itemID);  //loads item then returns ref
+    InventoryItemRef        GetItemContainerRef(uint32 itemID, bool load=true); // containerID this itemID is located in
+    InventoryItemRef        GetItemRefFromID(uint32 itemID, bool load=true);  // looks for item in map first, can load if not found
     CargoContainerRef       GetCargoRef(uint32 containerID);
     WreckContainerRef       GetWreckContainer(uint32 containerID);
     CelestialObjectRef      GetCelestialRef(uint32 celestialID);
