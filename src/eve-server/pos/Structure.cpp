@@ -1247,7 +1247,7 @@ void StructureSE::Killed(Damage &damage)
             if (IsEven(MakeRandomInt(0, 100))) {
                 // item survived.  check qty for drop
                 if (x > 1) {
-                    d = MakeRandomInt(0, x);
+                    d = MakeRandomInt(0, x - 1);
                     x -= d;
                 }
                 // move item to vector for insertion into wreck later on

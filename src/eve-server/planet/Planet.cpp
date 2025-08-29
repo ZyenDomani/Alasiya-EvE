@@ -99,11 +99,11 @@ bool PlanetSE::LoadExtras() {
             m_data.buffer_5 += hexList[MakeRandomInt(0,15)];   // random fill buffer to capacity, 1k8 bytes.
     /* } else {
         for (uint16 i=0; i<1000; i++) {
-            m_data.buffer_1 += asciiList[MakeRandomInt(0,57)];   // random fill buffer to capacity, 1k8 bytes.
-            m_data.buffer_2 += alphaList[MakeRandomInt(0,26)];   // random fill buffer to capacity, 1k8 bytes.
-            m_data.buffer_3 += numList[MakeRandomInt(0,10)];   // random fill buffer to capacity, 1k8 bytes.
-            m_data.buffer_4 += numList[MakeRandomInt(0,10)];   // random fill buffer to capacity, 1k8 bytes.
-            m_data.buffer_5 += numList[MakeRandomInt(0,10)];   // random fill buffer to capacity, 1k8 bytes.
+            m_data.buffer_1 += asciiList[MakeRandomInt(0,56)];   // random fill buffer to capacity, 1k8 bytes.
+            m_data.buffer_2 += alphaList[MakeRandomInt(0,25)];   // random fill buffer to capacity, 1k8 bytes.
+            m_data.buffer_3 += numList[MakeRandomInt(0,9)];   // random fill buffer to capacity, 1k8 bytes.
+            m_data.buffer_4 += numList[MakeRandomInt(0,9)];   // random fill buffer to capacity, 1k8 bytes.
+            m_data.buffer_5 += numList[MakeRandomInt(0,9)];   // random fill buffer to capacity, 1k8 bytes.
         }
     } */
 /*

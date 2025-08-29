@@ -101,8 +101,9 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
             } else if (expression.expressionValue != "") {
                 ;
                 //  21:55:03 [FxWarning] FxProc::ParseExpression(): opGROUP using expressionValue None called by None
-                _log(EFFECTS__WARNING, "FxProc::ParseExpression(): opGROUP using expressionValue %s called by %s",\
-                        expression.expressionValue.c_str(), expression.expressionName.c_str());
+                _log(EFFECTS__WARNING, "FxProc::ParseExpression(): opGROUP using expressionValue %s called by %s (%s) from %s",\
+                        expression.expressionValue.c_str(), expression.expressionName.c_str(),
+                        expression.description.c_str(), data.srcRef->name());
             } else {
                 _log(EFFECTS__ERROR, "FxProc::ParseExpression(): opGROUP called with no expressionGroupID or expressionValue defined");
             }

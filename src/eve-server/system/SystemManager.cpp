@@ -929,7 +929,7 @@ void SystemManager::RemoveSpawnBubble(SystemBubble* pBubble) {
 }
 
 uint32 SystemManager::GetRandBeltID() {
-    return m_beltVector.at(MakeRandomInt(0, m_beltCount));
+    return m_beltVector.at(MakeRandomInt(0, m_beltCount - 1));
 }
 
 void SystemManager::MakeSetState(const SystemBubble* pBubble,  SetState& into) const {

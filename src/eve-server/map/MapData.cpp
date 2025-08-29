@@ -173,7 +173,7 @@ uint32 MapData::GetRandMoon(uint32 systemID) {
     if (moonIDs.empty())
         return 0;
 
-    uint16 i = MakeRandomInt(0, total);
+    uint16 i = MakeRandomInt(0, total - 1);
     return moonIDs[i].itemID;
 }
 
