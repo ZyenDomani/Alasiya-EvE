@@ -68,24 +68,8 @@ int64 filesize( FILE* fd );
  */
 int64 npowof2( int64 num );
 
-/**
- * @brief Generates random integer from interval [low; high].
- *
- * @param[in] low  Low boundary of interval.
- * @param[in] high High boundary of interval.
- *
- * @return The generated integer.
- */
-int64 MakeRandomInt( int64 low = 0, int64 high = RAND_MAX );
-/**
- * @brief Generates random real from interval [low; high].
- *
- * @param[in] low  Low boundary of interval.
- * @param[in] high High boundary of interval.
- *
- * @return The generated real.
- */
-double MakeRandomFloat( double low = 0, double high = 1 );
+int64 MakeRandomInt( int64 lo = 0, int64 hi = 99 );     // default to percentage
+double MakeRandomFloat( double lo = 0, double hi = 1 ); // default to percentage
 
 inline bool IsEven(int64 number)                        { return ((number %2) == 0); }
 inline bool IsNaN(double x)                             { return x!= x; }

@@ -495,7 +495,7 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
         else if (secRating < 0.7)   { level = MakeRandomInt(1, 2); }
         else                        { level = 1; }
     } else if (sClass <= Spawn::Class::Hell) {
-        level = MakeRandomInt(0, spawnEntry.size());  // random belt/gate spawn type.
+        level = MakeRandomInt(0, spawnEntry.size() - 1);  // random belt/gate spawn type.
     } else {
         // do we need anything else here?
     }

@@ -320,7 +320,7 @@ GenericModule* ModuleManager::GetRandModule()
     if (modVec.empty())
         return nullptr;
 
-    return modVec[MakeRandomInt(0, modVec.size())];
+    return modVec[MakeRandomInt(0, modVec.size() - 1)];
 }
 
 bool ModuleManager::InstallRig(ModuleItemRef mRef, EVEItemFlags flag) {
@@ -542,7 +542,7 @@ bool ModuleManager::AddModule(ModuleItemRef mRef, EVEItemFlags flag) {
 
     // verify module's singleton flag is set
     mRef->ChangeSingleton(true, pShipItem->HasPilot()?pShipItem->GetPilot()->IsInSpace():false);
-    
+
     return true;
     /*
     if (is_log_enabled(MODULE__DEBUG)) { // debug msg?

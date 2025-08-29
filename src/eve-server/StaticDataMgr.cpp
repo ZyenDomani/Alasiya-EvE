@@ -908,7 +908,7 @@ uint16 StaticDataMgr::GetRandRatType(uint8 sClass, uint16 groupID) {
             }
     }
     if (!typeVec.empty())
-        return typeVec.at(MakeRandomInt(0, typeVec.size()));
+        return typeVec.at(MakeRandomInt(0, typeVec.size() - 1));
 
     _log(DATA__WARNING, "Failed to get random rat for sClass %u and groupID %u", sClass, groupID);
     return 0;
@@ -1003,13 +1003,13 @@ void StaticDataMgr::GetLoot(uint32 groupID, std::vector<LootList>& lootList) {
              */
 
             auto range2 = m_LootGroupTypeMap.equal_range(it->second.lootGroupID);
-            for (auto it2 = range2.first; it2 != range2.second;it2++)
+            for (auto it2 = range2.first; it2 != range2.second; ++it2)
                 if (it2->second.metaLevel == metaLevel)
                     lootGrpVec.push_back(it2->second);
 
             if (!lootGrpVec.empty()) {
                 LootList loot_list;
-                uint16 i = MakeRandomInt(0, lootGrpVec.size());
+                uint16 i = MakeRandomInt(0, lootGrpVec.size() - 1);
                 loot_list.typeID        = lootGrpVec[i].typeID;
                 loot_list.minDrop       = lootGrpVec[i].minQuantity;
                 loot_list.maxDrop       = lootGrpVec[i].maxQuantity;

@@ -677,7 +677,7 @@ void Scan::GetSignalData(SignalData& data, std::vector<ProbeSE*>& probeVec)
     */
 
     /** @todo make sure this 'reported' position is within probe boundary */
-    //point.MakeRandomPointOnSphereLayer(data.deviation /2, data.deviation);
+    //point.MakeRandomPointOnSphereLayer(data.deviation / 2, data.deviation);
     data.sig.position = point;
 
     _log(SCAN__TRACE, "Scan::GetSignalData() - certainty for signal %s(%s) is %.5f (sigStrength:%.5f) \n Deviation: %.0fm (%.3f AU)", \

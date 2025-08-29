@@ -1,0 +1,109 @@
+
+        db column types
+            theirs                              ours
+   [PyString "price"]   [PyInt 6]           Integer: 4
+   [PyString "volRemaining"]   [PyInt 5]   Integer: 19
+   [PyString "typeID"]   [PyInt 3]          Integer: 18
+   [PyString "range"]   [PyInt 2]           Integer: 19
+   [PyString "orderID"]   [PyInt 20]        Integer: 19
+   [PyString "volEntered"]   [PyInt 3]       Integer: 19
+   [PyString "minVolume"]   [PyInt 3]       Integer: 19
+   [PyString "bid"]   [PyInt 11]             Integer: 11
+   [PyString "issueDate"]   [PyInt 64]       Integer: 21
+   [PyString "duration"]   [PyInt 2]         Integer: 18
+   [PyString "stationID"]   [PyInt 3]        Integer: 19
+   [PyString "regionID"]   [PyInt 3]        Integer: 19
+   [PyString "solarSystemID"]   [PyInt 3]   Integer: 3
+   [PyString "jumps"]   [PyInt 3]           Integer: 2
+
+)
+19:57:49 [Service] marketProxy::GetOldPriceHistory()
+19:57:49 [MktDBTrace] MarketMgr::GetOldPriceHistory() - Fetched 0 orders for type 2403 in region 10000001 from mktHistory
+19:57:49 [MktDBTrace]     Object:
+19:57:49 [MktDBTrace]       Type:     String: 'objectCaching.CachedMethodCallResult'
+19:57:49 [MktDBTrace]       Args:  Tuple: 3 elements
+19:57:49 [MktDBTrace]       Args:   [ 0]  Dictionary: 1 entries
+19:57:49 [MktDBTrace]       Args:   [ 0]   [ 0]   Key:     String: 'versionCheck'
+19:57:49 [MktDBTrace]       Args:   [ 0]   [ 0] Value:     String: 'run'
+19:57:49 [MktDBTrace]       Args:   [ 1] Object:
+19:57:49 [MktDBTrace]       Args:   [ 1]   Type:     String: 'util.CachedObject'
+19:57:49 [MktDBTrace]       Args:   [ 1]   Args:  Tuple: 4 elements
+19:57:49 [MktDBTrace]       Args:   [ 1]   Args:   [ 0]  Tuple: 3 elements
+19:57:49 [MktDBTrace]       Args:   [ 1]   Args:   [ 0]   [ 0]     String: 'Method Call'
+19:57:49 [MktDBTrace]       Args:   [ 1]   Args:   [ 0]   [ 1]     String: 'server'
+19:57:49 [MktDBTrace]       Args:   [ 1]   Args:   [ 0]   [ 2]  Tuple: 2 elements
+19:57:49 [MktDBTrace]       Args:   [ 1]   Args:   [ 0]   [ 2]   [ 0]     String: 'marketProxy'
+19:57:49 [MktDBTrace]       Args:   [ 1]   Args:   [ 0]   [ 2]   [ 1]     String: 'GetOldHistory_10000001_2403'
+19:57:49 [MktDBTrace]       Args:   [ 1]   Args:   [ 1]    Integer: 333444
+19:57:49 [MktDBTrace]       Args:   [ 1]   Args:   [ 2]  Tuple: 2 elements
+19:57:49 [MktDBTrace]       Args:   [ 1]   Args:   [ 2]   [ 0]       Long: 133217638699772720
+19:57:49 [MktDBTrace]       Args:   [ 1]   Args:   [ 2]   [ 1]    Integer: 466897693
+19:57:49 [MktDBTrace]       Args:   [ 1]   Args:   [ 3]    Boolean: false
+19:57:49 [MktDBTrace]       Args:   [ 2]       None
+19:57:49 [Service] objectCaching::GetCachableObject()
+19:57:50 [Service] marketProxy::GetNewPriceHistory()
+19:57:50 [MktDBTrace] MarketMgr::GetNewPriceHistory() - Fetched 0 buy orders for type 2403 in region 10000001 from mktTransactions
+19:57:50 [MktDBTrace]     Object:
+19:57:50 [MktDBTrace]       Type:     String: 'objectCaching.CachedMethodCallResult'
+19:57:50 [MktDBTrace]       Args:  Tuple: 3 elements
+19:57:50 [MktDBTrace]       Args:   [ 0]  Dictionary: 1 entries
+19:57:50 [MktDBTrace]       Args:   [ 0]   [ 0]   Key:     String: 'versionCheck'
+19:57:50 [MktDBTrace]       Args:   [ 0]   [ 0] Value:     String: 'run'
+19:57:50 [MktDBTrace]       Args:   [ 1] Object:
+19:57:50 [MktDBTrace]       Args:   [ 1]   Type:     String: 'util.CachedObject'
+19:57:50 [MktDBTrace]       Args:   [ 1]   Args:  Tuple: 4 elements
+19:57:50 [MktDBTrace]       Args:   [ 1]   Args:   [ 0]  Tuple: 3 elements
+19:57:50 [MktDBTrace]       Args:   [ 1]   Args:   [ 0]   [ 0]     String: 'Method Call'
+19:57:50 [MktDBTrace]       Args:   [ 1]   Args:   [ 0]   [ 1]     String: 'server'
+19:57:50 [MktDBTrace]       Args:   [ 1]   Args:   [ 0]   [ 2]  Tuple: 2 elements
+19:57:50 [MktDBTrace]       Args:   [ 1]   Args:   [ 0]   [ 2]   [ 0]     String: 'marketProxy'
+19:57:50 [MktDBTrace]       Args:   [ 1]   Args:   [ 0]   [ 2]   [ 1]     String: 'GetNewHistory_10000001_2403'
+19:57:50 [MktDBTrace]       Args:   [ 1]   Args:   [ 1]    Integer: 333444
+19:57:50 [MktDBTrace]       Args:   [ 1]   Args:   [ 2]  Tuple: 2 elements
+19:57:50 [MktDBTrace]       Args:   [ 1]   Args:   [ 2]   [ 0]       Long: 133217638700119824
+19:57:50 [MktDBTrace]       Args:   [ 1]   Args:   [ 2]   [ 1]    Integer: 466897693
+19:57:50 [MktDBTrace]       Args:   [ 1]   Args:   [ 3]    Boolean: false
+19:57:50 [MktDBTrace]       Args:   [ 2]       None
+19:57:50 [Service] objectCaching::GetCachableObject()
+19:57:51 [Service] marketProxy::PlaceCharOrder()
+19:57:51 [MktDump] Mkt::PlaceCharOrder()
+19:57:51 [MktDump]     Call_PlaceCharOrder
+19:57:51 [MktDump]     stationID=60014137
+19:57:51 [MktDump]     typeID=2403
+19:57:51 [MktDump]     price=7809570.000000
+19:57:51 [MktDump]     quantity=1
+19:57:51 [MktDump]     bid=1
+19:57:51 [MktDump]     orderRange=-1
+19:57:51 [MktDump]     itemID=0
+19:57:51 [MktDump]     minVolume=1
+19:57:51 [MktDump]     duration=0
+19:57:51 [MktDump]     useCorp=0
+19:57:51 [MktDump]     located:
+19:57:51 [MktDump]               None
+19:57:51 [MktTrace] PlaceCharOrder - Found sell order #10909 in Ibaria III - Thukker Mix Warehouse for Allan. (type 2403, price 7809570.00, qty 1, range -1)
+19:57:51 [AcctTrace] TranserFunds() - from: 90000000, to: 1000160, entry: 2, refID: 10909, amount: 7809570.00, fKey: 1000, tKey: 1000
+19:57:51 [Data Error] Name not found for corp 1000160
+19:57:51 [AcctTrace] TranserFunds() - toID: Undefined - WIP(1000160) is neither player nor player corp.  Not sending update.
+19:57:51 [MktDebug] ExecuteSellOrder - Buyer is Player: Price: 7809570.00, Tax: 780956992.00
+19:57:51 [AcctTrace] TranserFunds() - from: 90000000, to: 1000132, entry: 54, refID: 10909, amount: 7809570.00, fKey: 1000, tKey: 1000
+19:57:51 [Data Error] Name not found for corp 1000132
+19:57:51 [AcctTrace] TranserFunds() - toID: Undefined - WIP(1000132) is neither player nor player corp.  Not sending update.
+19:57:51 [MktTrace] ExecuteSellOrder - Partially satisfied order #10909, altering quantity to 549.
+
+
+20:23:22 [MktDump] Mkt::PlaceCharOrder()
+20:23:22 [MktDump]     Call_PlaceCharOrder
+20:23:22 [MktDump]     stationID=60014137
+20:23:22 [MktDump]     typeID=20315
+20:23:22 [MktDump]     price=1622620.000000
+20:23:22 [MktDump]     quantity=1
+20:23:22 [MktDump]     bid=1
+20:23:22 [MktDump]     orderRange=-1
+20:23:22 [MktDump]     itemID=0
+20:23:22 [MktDump]     minVolume=1
+20:23:22 [MktDump]     duration=0
+20:23:22 [MktDump]     useCorp=0
+20:23:22 [MktDump]     located:
+20:23:22 [MktDump]               None
+20:23:22 [DB Query] DBcore Query - SELECT orderID FROM mktOrders WHERE bid=0  AND typeID=20315  AND stationID=60014137  AND volRemaining >= 1  AND price < 1622621 ORDER BY price ASC LIMIT 1;
+20:23:22 [MktTrace] PlaceCharOrder - Failed to satisfy buy order for 1 of type 20315 at 1622620.00 ISK.
