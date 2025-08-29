@@ -408,9 +408,9 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
             InventoryItemRef lRef(nullptr);
             std::vector<int32>::iterator itr = args.itemIDs.begin();
             while (itr != args.itemIDs.end()) {
-                lRef = sItemFactory.GetItemRefFromID(itr);
+                lRef = sItemFactory.GetItemRefFromID(*itr);
                 if (lRef.get() != nullptr)
-                    lRef->ChangeOwner();
+                    lRef->ChangeOwner(m_ownerID);       // change to this item's owner...how would this work for corp ships?
                 ++itr;
             }
             // here, we can check looting rights and even set criminal aggression

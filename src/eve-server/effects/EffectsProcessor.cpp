@@ -99,7 +99,8 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
             if (expression.expressionGroupID) {
                 data.grpID = expression.expressionGroupID;
             } else if (expression.expressionValue != "") {
-                ;   // will have to figure out how to do this one. (hasnt been called yet)
+                ;
+                //  21:55:03 [FxWarning] FxProc::ParseExpression(): opGROUP using expressionValue None called by None
                 _log(EFFECTS__WARNING, "FxProc::ParseExpression(): opGROUP using expressionValue %s called by %s",\
                         expression.expressionValue.c_str(), expression.expressionName.c_str());
             } else {
@@ -278,8 +279,6 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
              * 17:17:07 [FxUndefined] FxProc::ParseExpression() - Operand id:H key:TOOLTARGETSKILLS - should be added as CheckToolTargetSkills
              *
              * 17:24:21 [FxUndefined] FxProc::ParseExpression() - Operand id:E key:SURVEYSCAN - should be added as SurveyScan()
-             *
-             * 21:55:03 [FxWarning] FxProc::ParseExpression(): opGROUP using expressionValue None called by None
              *
              */
         } break;

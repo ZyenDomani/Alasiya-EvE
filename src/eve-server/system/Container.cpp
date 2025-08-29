@@ -582,14 +582,14 @@ PyDict *WreckSE::MakeSlimItem() {
         if (m_abandoned) {
             // any "None" here will show abandoned in client
             PyTuple* loot = new PyTuple(4);
-                loot->SetItem(0,                PyStatic.NewNone();
+                loot->SetItem(0,                PyStatic.NewNone());
                 loot->SetItem(1,                PyStatic.NewNone());
                 loot->SetItem(2,                PyStatic.NewNone());
                 loot->SetItem(3,                new PyBool(false)); // what is this??  always false in packets
             slim->SetItemString("lootRights",   loot );
         } else if (IsFleetID(m_fleetID)) {
             PyTuple* loot = new PyTuple(4);
-                loot->SetItem(0,                new PyInt(m_ownerID);
+                loot->SetItem(0,                new PyInt(m_ownerID));
                 loot->SetItem(1,                IsCorpID(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
                 loot->SetItem(2,                IsFleetID(m_fleetID) ? new PyInt(m_fleetID) : PyStatic.NewNone());
                 loot->SetItem(3,                new PyBool(false)); // what is this??  always false in packets

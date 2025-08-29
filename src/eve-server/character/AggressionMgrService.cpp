@@ -98,7 +98,8 @@ PyResult AggressionMgrBound::Handle_CheckLootRightExceptions(PyCallArgs &call)
                 return PyStatic.NewTrue();
             }
         } else {
-
+            // return false to deny looting
+            return PyStatic.NewFalse();
         }
     } else {
         // owner is not online...do weird shit to see if looting is allowed
