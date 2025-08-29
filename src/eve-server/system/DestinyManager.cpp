@@ -469,12 +469,30 @@ void DestinyManager::Stop() {
 
     m_targBubble = nullptr;
 
-    SafeDelete(m_warpState);
-
     if (m_ballMode == Destiny::Ball::Mode::WARP) {
-        // sending stop packet while in warp does funny things...dont send it.
-        m_ballMode = Destiny::Ball::Mode::STOP;
-    } else if (m_ballMode != Destiny::Ball::Mode::STOP) {
+        /*  ballmode is set in Destiny::WarpTo();  warpstate is created in Destiny::InitWarp()
+         * ship may not actually be in warp yet if align/speed isnt right
+         * in this case, player wants to cancel warp before it begins
+         * for this, we need to send a stop packet after stop vars are set.
+         *  however,   sending stop packet while in warp does funny things...dont send it.
+         */
+        if (m_warpState != nullptr) {
+            // ship is in warp: could be decel.  dont send packet here
+            SafeDelete(m_warpState);
+            m_ballMode = Destiny::Ball::Mode::STOP;
+            return;
+        }
+        
+        // if warp not started, reset warp vars and fall thru to allow stop
+        if (mySE->GetSelf()->HasAttribute(AttrWarpCapacitorNeed)) {
+            m_warpCapacitorNeed = mySE->GetSelf()->GetAttribute(AttrWarpCapacitorNeed).get_double();
+        } else {
+            m_warpCapacitorNeed = 0.000000138;   // lowest value in db
+        }
+        // warp gfx cleared by stop packet
+    }
+
+    if (m_ballMode != Destiny::Ball::Mode::STOP) {
         m_ballMode = Destiny::Ball::Mode::STOP;
         CmdStop du;
             du.entityID = mySE->GetID();

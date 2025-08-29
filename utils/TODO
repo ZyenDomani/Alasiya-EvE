@@ -22,6 +22,7 @@ NOTE:  for calls that use internal methods that send a reply, model from InjectS
 *******************************************************
 **********  errors and other found shit...high priority
 
+subsequent chars not added to existing char's local chat (but new chars have existing chars in chat)
 
 same acct can be logged in multiple times
 

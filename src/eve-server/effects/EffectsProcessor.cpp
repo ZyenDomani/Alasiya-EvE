@@ -280,9 +280,20 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
              * 17:24:21 [FxUndefined] FxProc::ParseExpression() - Operand id:E key:SURVEYSCAN - should be added as SurveyScan()
              *
              * 21:55:03 [FxWarning] FxProc::ParseExpression(): opGROUP using expressionValue None called by None
-             * 
+             *
              */
         } break;
+    }
+
+    // catch for charge not having proper flag set (for some Unknown reason...)
+    if (data.srcRef->type().categoryID() == EVEDB::invCategories::Charge) {
+        if (data.srcRef->flag() == flagAutoFit) {
+            if (pMod != nullptr) {
+                _log(EFFECTS__WARNING, "FxProc::ParseExpression(): Item %s(%u) is set to flagAutoFit.  correcting to %s.", \
+                        data.srcRef->name(), data.srcRef->itemID(), sDataMgr.GetFlagName(pMod->flag()));
+                data.srcRef->SetFlag(pMod->flag());
+            }
+        }
     }
 
     if (sConfig.debug.UseProfiling)
@@ -412,7 +423,8 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                             _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): Item Data for %s(%u) - src(%s:%u)  targ(%s:%u) .", \
                                     cur.second.srcRef->name(), cur.second.srcRef->itemID(), GetSourceName(cur.second.fxSrc), cur.second.srcAttr,  \
                                     GetTargLocName(cur.second.targLoc), cur.second.targAttr);
-                            EvE::traceStack();
+                            if (sConfig.server.StackTrace)
+                                EvE::traceStack();
                             continue;
                         }
                         itemRefVec.push_back(pShip->GetModuleManager()->GetLoadedChargeOnModule(cur.second.srcRef->flag()));
@@ -426,7 +438,8 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                             _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): Item Data for %s(%u) - src(%s:%u)  targ(%s:%u) .", \
                                     cur.second.srcRef->name(), cur.second.srcRef->itemID(), GetSourceName(cur.second.fxSrc), cur.second.srcAttr,  \
                                     GetTargLocName(cur.second.targLoc), cur.second.targAttr);
-                            EvE::traceStack();
+                            if (sConfig.server.StackTrace)
+                                EvE::traceStack();
                             continue;
                         }
                         itemRefVec.push_back(pShip->GetModuleManager()->GetModule(cur.second.srcRef->flag())->GetSelf());
