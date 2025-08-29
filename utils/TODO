@@ -1,7 +1,7 @@
 
 *******************************************************
 ****  Allan's EvEmu TODO LIST
-****     2 March 2025
+****     29 August 2025
 
     note:  this whole file needs to be reorganized (wip)
 
@@ -9,13 +9,12 @@
 *******************************************************
 **********  misc items to update to my code
 
-check evemu_crucible for additions
 Altahirs contract code
 james sov code
 lp implemented (unknown quality)
 other updates?
 
-NOTE:  for calls that use internal methods that send a reply, model from InjectSkillIntoBrain
+NOTE:  for calls that use internal methods that send a reply, model from InjectSkillIntoBrain() or DoSpawnForBubble()
   which calls char::InjectSkillIntoBrain and returns a code for different errors used to customize reply to client
 
 
@@ -31,23 +30,16 @@ to avoid db hits for every dock/undock, implement postExpression processing
 
 work on buglist, integrate this list in there where i can (in order)
     - modules/fitting  ...  see 'module system coding' below for list of current problems
-    - drones  ... mostly done.  check advanced and delegate later
-      * add salvage drone later.  data in cruc/drones
-    - standings  ... multiple notes in code for implementing and improvements
+    - drones  ... mostly done.  see notes below for more info
     - corp  ...  multiple systems incomplete
     - mail/notifications  ... needs rewrite.  there is still multiple mail db tables.  pick one.
     - lsc  ... probably needs complete rewrite.  see below
-    - missions  - still have a long way to go here.  courier should be >95% before moving to next group
+    - missions  - still have a long way to go here.  courier is >95% and ready to move to next group
     - calendar - mostly working.  only goes back 12 months in client
     - contracts  ... davinci coded this working system on official.  quick lookover shows multiple db hits that will need optimizing
     - cosmic systems  ... POC working.  will need more work.  James did a lot of WH work on official.  current status u/k
     - lp  ...  hmmm...
     - ?
-
-lsc system better, but incomplete and needs revisiting    -priority level: med-hi
-    - may need xmlp code instead of muddled python decoding
-    - whole system needs update or possible rewrite
-    - "join channel" window->corp has "None" as corp name
 
 loading probes in station does not update count in hangar
 
@@ -57,14 +49,6 @@ also check containers for contents and remove/deny before repack
 
 check insurance payouts.   rounds full ship value up
     - this will need base prices fixed
-
-dungeon deco items need better placement
-dungeon editor work:
-(OnDESelectionChanged)   not sure how/when/why this would be called
-
-    - client code will have to be modified to remove /jessica calls
-    start with
-        def InitializeSelectionGroups(self, roomID):
 
 char creation - figure certs and set skills accordingly
     - currently, most new chars dont qualify for any certs.
@@ -116,6 +100,11 @@ update sendGFX to distinguish between weapon and ewar for using AttrGfxTurretID 
 *** check m_entityChaseRange and m_entityAttackRange.  same value for drones (need to adjust logic)
 NPC hauler spawn has no loot defined.
 
+
+lsc system better, but incomplete and needs revisiting    -priority level: med-lo
+    - may need xmlp code instead of muddled python decoding
+    - whole system needs update or possible rewrite
+    - "join channel" window->corp has "None" as corp name
 
 after using "Loot All" on yellow wreck, items dont show up in cargo.  (diff ownerID)
   inv::load should use locationID (and does) but not sure about ownerID bit...review
@@ -333,7 +322,7 @@ DATA RACE!!
 19:07:07 [SetStateDump]           [16]   Args:   [10]   Key:     String: 'allianceID'
 
 
-RefObjects -
+RefObjects -  UPDATE...removed RefPtr from Py* classes.  the notes below need review
     - current RefObject/RefPtr objects are leaking memory.  getting better, but still horrible.
     - look into removing the Ref* objects and replacing with std::unique_ptr or std::shared_ptr  (see core/utils/singleton.h)
     -  this may be more work than it's worth, but current Ref* objects arent being tracked properly
@@ -467,6 +456,9 @@ finish DestinyManager::SendCloakFx()
 
 rename AttributeMap to AttributeMgr
   actual maps can remain
+
+client/script/ui/shared/neocom/locationInfoSvc.py
+    this file has data for some items we dont have info/data/code for yet
 
 ** called when asteroids are clicked on in belt...dunno why
     19:50:46 [Service] config::GetMultiLocationsEx()
@@ -655,6 +647,13 @@ pi working.  currently rewriting process code  -priority level: lo
 dungeons - complete current wip code   -priority level: med-hi
 dungeon mgr - factionID of "region sov" needs to be written to determine region sov holder (set to rogue drones at this time)   -priority level: low-med
     - figure out how to determine LCO in dungeon and spawn rats/waves near objects instead of middle of bubble
+dungeon deco items need better placement
+dungeon editor work:  (may not put much time in this system...)
+(OnDESelectionChanged)   not sure how/when/why this would be called
+
+    - client code will have to be modified to remove /jessica calls
+    start with
+        def InitializeSelectionGroups(self, roomID):
 
 petition system missing most calls
     - this system hasnt been started
@@ -682,9 +681,10 @@ contractProxy::GetMyExpiredContractList()
         numCorpRequiresAttention = 0
 AttributeError: 'NoneType' object has no attribute 'contracts'
 
-missions/agents - agents working. courier missions working. currently ~50 missions, all levels.
-Agent.cpp:626  move 'msg' out of switch (unreachable)
-next up is security missions.  will need dungeon work for these.   -priority level: hi
+missions/agents - major agent/mission rewrite 7mar25
+all courier missions coded and working
+mining missions started.  need dungeon work for these
+need security/encounter missions.  need dungeon work for these.   -priority level: hi
 
 anomaly system - working. may need revisit after other systems mature.   -priority level: med
     - sig data needs work and common add/create method for scanning
@@ -694,7 +694,7 @@ anomaly system - working. may need revisit after other systems mature.   -priori
 
 added notes on scanner groupNames in anomalyMgr.cpp and more data in EVE_Scanner.h
     - field descriptions found in packets/Scan.xmlp
-check anomaly spawn distance for in small systems.  current 4au seems far when system is <8au
+check anomaly spawn distance in small systems.  current 4au seems far when system is <8au
 
 ship/cargo scanning
     - not sure about this system yet
