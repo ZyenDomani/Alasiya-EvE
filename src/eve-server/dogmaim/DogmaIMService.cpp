@@ -166,24 +166,70 @@ PyBoundObject* DogmaIMService::CreateBoundObject(Client *pClient, const PyRep* b
 }
 
 PyResult DogmaIMBound::Handle_CharGetInfo(PyCallArgs& call) {
+    // char should never be null here
     return call.client->GetChar()->GetCharInfo();
 }
 
 PyResult DogmaIMBound::Handle_ClearTargets(PyCallArgs& call) {
-    call.client->GetShipSE()->TargetMgr()->ClearTargets();
-    //call.client->GetShipSE()->TargetMgr()->OnTarget(nullptr, TargMgr::Mode::Clear, TargMgr::Msg::ClientReq);
+    // calling client tests
+    Client* pClient(call.client);
+    if (pClient->IsDocked())
+        throw CustomError("You can't do this while docked");
+
+    // caller ship tests
+    ShipSE* mySE = pClient->GetShipSE();
+    if (mySE->TargetMgr() == nullptr)
+        throw CustomError("There was an error getting your ship's target manager.  Try docking or relogging.");
+
+    if (mySE->SysBubble() == nullptr) {
+        _log(DESTINY__ERROR, "Client %s does not have a bubble.", pClient->GetName());
+        throw CustomError("Your ship isn't registered in the system properly.  Try docking or relogging.");
+    }
+
+    mySE->TargetMgr()->ClearTargets();
+    //mySE->TargetMgr()->OnTarget(nullptr, TargMgr::Mode::Clear, TargMgr::Msg::ClientReq);
     return nullptr;
 }
 
 PyResult DogmaIMBound::Handle_GetTargets(PyCallArgs& call) {
-    return call.client->GetShipSE()->TargetMgr()->GetTargets();
+    // calling client tests
+    Client* pClient(call.client);
+    if (pClient->IsDocked())
+        throw CustomError("You can't do this while docked");
+
+    // caller ship tests
+    ShipSE* mySE = pClient->GetShipSE();
+    if (mySE->TargetMgr() == nullptr)
+        throw CustomError("There was an error getting your ship's target manager.  Try docking or relogging.");
+
+    if (mySE->SysBubble() == nullptr) {
+        _log(DESTINY__ERROR, "Client %s does not have a bubble.", pClient->GetName());
+        throw CustomError("Your ship isn't registered in the system properly.  Try docking or relogging.");
+    }
+
+    return mySE->TargetMgr()->GetTargets();
 }
 
 PyResult DogmaIMBound::Handle_GetTargeters(PyCallArgs& call) {
-    return call.client->GetShipSE()->TargetMgr()->GetTargeters();
+    // calling client tests
+    Client* pClient(call.client);
+    if (pClient->IsDocked())
+        throw CustomError("You can't do this while docked");
+
+    // caller ship tests
+    ShipSE* mySE = pClient->GetShipSE();
+    if (mySE->TargetMgr() == nullptr)
+        throw CustomError("There was an error getting your ship's target manager.  Try docking or relogging.");
+
+    if (mySE->SysBubble() == nullptr) {
+        _log(DESTINY__ERROR, "Client %s does not have a bubble.", pClient->GetName());
+        throw CustomError("Your ship isn't registered in the system properly.  Try docking or relogging.");
+    }
+    return mySE->TargetMgr()->GetTargeters();
 }
 
 PyResult DogmaIMBound::Handle_GetCharacterBaseAttributes(PyCallArgs& call) {
+    // char should never be null here
     return call.client->GetChar()->GetCharacterBaseAttributes();
 }
 
@@ -223,14 +269,14 @@ PyResult DogmaIMBound::Handle_SetModuleOnline(PyCallArgs& call) {
         }
     }
 
-	Call_TwoIntegerArgs args; //locationID, moduleID
+    Call_TwoIntegerArgs args; //locationID, moduleID
 
-	if (!args.Decode(&call.tuple)) {
+    if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
-	pClient->GetShip()->Online(args.arg2);
+    pClient->GetShip()->Online(args.arg2);
 
     // returns nodeID and timestamp
     PyTuple* tuple = new PyTuple(2);
@@ -255,13 +301,13 @@ PyResult DogmaIMBound::Handle_TakeModuleOffline(PyCallArgs& call) {
         }
     }
 
-	Call_TwoIntegerArgs args; //locationID, moduleID
-	if (!args.Decode(&call.tuple)) {
+    Call_TwoIntegerArgs args; //locationID, moduleID
+    if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
-	pClient->GetShip()->Offline(args.arg2);
+    pClient->GetShip()->Offline(args.arg2);
 
     // returns nodeID and timestamp
     PyTuple* tuple = new PyTuple(2);
@@ -394,7 +440,7 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
 
     // caller ship tests
     ShipSE* mySE = pClient->GetShipSE();
-    if ( mySE->TargetMgr() == nullptr)
+    if (mySE->TargetMgr() == nullptr)
         throw UserError("DeniedTargetingAttemptFailed")
                 .AddFormatValue("target", new PyInt(args.arg));
     /** @todo SE->IsFrozen() incomplete */
@@ -537,7 +583,7 @@ PyResult DogmaIMBound::Handle_RemoveTarget(PyCallArgs& call) {
     if (sConfig.debug.IsTestServer)
         if (is_log_enabled(TARGET__MESSAGE)) {
             GVector vectorToTarget(pClient->GetShipSE()->GetPosition(), pTSE->GetPosition());
-            _log(TARGET__MESSAGE, "Handle_RemoveTarget() - Removed %s(%u) - Range to Target: %.2f meters.", \
+            _log(TARGET__MESSAGE, "Handle_RemoveTarget() - Removing %s(%u) - Range to Target: %.2f meters.", \
                         pTSE->GetName(),pTSE->GetID(), vectorToTarget.length() );
         }
 
@@ -916,7 +962,9 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
             // not sure what calls are for containers yet
             pSE->GetContSE()->Activate(args.arg2);
         } else {
-            ; // make error here
+            sLog.Error("DogmaIMBound::Handle_Activate(anchor)", "%s(%u) is neither POS nor Container.", \
+                    pSE->GetSelf()->name(), args.arg1);
+            return PyStatic.NewZero();
         }
     } else if (call.tuple->size() == 4) {
         // activate ship module
@@ -928,7 +976,7 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
 
         pClient->GetShip()->Activate(args.itemID, args.effectName, args.target, args.repeat);
     }
-    // are there any other cases to test for here?
+    // are there any other cases to test for here?  probably so but havent found them yet.
 
     // returns 1 on success (throw error otherwise)
     return PyStatic.NewOne();
@@ -978,7 +1026,9 @@ PyResult DogmaIMBound::Handle_Deactivate(PyCallArgs& call)
         } else if (pSE->IsContainerSE()) {
             pSE->GetContSE()->Deactivate(args.arg2);
         } else {
-            ; // make error here
+            sLog.Error("DogmaIMBound::Handle_Activate(unanchor)", "%s(%u) is neither POS nor Container.", \
+            pSE->GetSelf()->name(), args.arg1);
+            return PyStatic.NewZero();
         }
     } else if (call.tuple->items.at(1)->IsWString()) {
         //if effect is wide string, then call is for module, including calls to online/offline (rclick module in HUD)
