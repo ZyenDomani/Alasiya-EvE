@@ -83,10 +83,11 @@ void BubbleManager::Process() {
         }
 
         if (!m_wanderers.empty()) {
+            SystemEntity* pSE(nullptr);
             // these are never null
             std::vector<SystemEntity*>::iterator itr = m_wanderers.begin();
             while (itr != m_wanderers.end()) {
-                SystemEntity* pSE = *itr;
+                pSE = *itr;
                 // do we really want to check this?  yes.  have found errors where position isNaN
                 if (pSE->GetPosition().isNaN() or pSE->GetPosition().isInf() or pSE->GetPosition().isZero()) {
                     // position error.  this will screw things up.  if haspilot, send error.
@@ -118,7 +119,7 @@ void BubbleManager::Process() {
         sProfiler.AddTime(Profile::bubbles, GetTimeUSeconds() - m_profileStartTime);
 }
 
-void BubbleManager::CheckBubble(SystemEntity *pSE) {
+void BubbleManager::CheckBubble(SystemEntity* pSE) {
     SystemBubble *pBubble = pSE->SysBubble();
     if (pBubble != nullptr) {
         if (pBubble->InBubble(pSE->GetPosition())) {
@@ -164,33 +165,35 @@ void BubbleManager::Add(SystemEntity* pSE, bool isPostWarp /*false*/) {
     GPoint center(pSE->GetPosition());
     if (isPostWarp) {
         // Calculate new bubble's center based on entity's velocity and current position
-        NewBubbleCenter( pSE->GetVelocity(), center );
+        NewBubbleCenter(pSE->GetVelocity(), center);
     }
 
     SystemBubble* pBubble(GetBubble(pSE->SystemMgr(), center));
-    if (pBubble != nullptr) {
-        if (pSE->SysBubble() != nullptr) {
-            if (pBubble->GetSystemID() != pSE->SystemMgr()->GetID()) {
-                // this is an error.  bad bubble
-                _log(BUBBLE__ERROR, "BubbleManager::Add(): bubble SysID %u != pSE SysID %u", pBubble->GetSystemID(), pSE->SystemMgr()->GetID() );
-                pSE->SysBubble()->Remove(pSE);
-            } else if (pSE->SysBubble() != pBubble) {
-                _log(BUBBLE__TRACE, "BubbleManager::Add(): bubbleID %u != pSE bubbleID %u", pBubble->GetID(), pSE->SysBubble()->GetID() );
-                pSE->SysBubble()->Remove(pSE);
-            } else if (pSE->SysBubble()->InBubble(pSE->GetPosition()))  {
-                _log(BUBBLE__TRACE, "BubbleManager::Add(): Entity %s(%u) still in Bubble %u", pSE->GetName(), pSE->GetID(), pBubble->GetID() );
-                return;
-            }
-        }
-        _log(BUBBLE__TRACE, "BubbleManager::Add(): Entity %s(%u) being added to Bubble %u", pSE->GetName(), pSE->GetID(), pBubble->GetID() );
-        pBubble->Add(pSE);
-    } else {
+    if (pBubble == nullptr) {
         _log(BUBBLE__ERROR, "BubbleManager::Add(): GetBubble() returned nullptr for %s:%u, at (%.2f, %.2f, %.2f).", \
                     pSE->SystemMgr()->GetName(), pSE->SystemMgr()->GetID(), center.x, center.y, center.z );
+        return;
     }
+
+    if (pSE->SysBubble() != nullptr) {
+        if (pBubble->GetSystemID() != pSE->SystemMgr()->GetID()) {
+            // this is an error.  bad bubble
+            _log(BUBBLE__ERROR, "BubbleManager::Add(): bubble SysID %u != pSE SysID %u", pBubble->GetSystemID(), pSE->SystemMgr()->GetID() );
+            pSE->SysBubble()->Remove(pSE);
+        } else if (pSE->SysBubble() != pBubble) {
+            _log(BUBBLE__TRACE, "BubbleManager::Add(): bubbleID %u != pSE bubbleID %u", pBubble->GetID(), pSE->SysBubble()->GetID() );
+            pSE->SysBubble()->Remove(pSE);
+        } else if (pSE->SysBubble()->InBubble(pSE->GetPosition()))  {
+            _log(BUBBLE__TRACE, "BubbleManager::Add(): Entity %s(%u) still in Bubble %u", pSE->GetName(), pSE->GetID(), pBubble->GetID() );
+            return;
+        }
+    }
+
+    _log(BUBBLE__TRACE, "BubbleManager::Add(): Entity %s(%u) being added to Bubble %u", pSE->GetName(), pSE->GetID(), pBubble->GetID() );
+    pBubble->Add(pSE);
 }
 
-void BubbleManager::NewBubbleCenter(GVector shipVelocity, GPoint &newCenter) {
+void BubbleManager::NewBubbleCenter(GVector shipVelocity, GPoint& newCenter) {
     shipVelocity.normalize();
     newCenter += (shipVelocity * (BUBBLE_RADIUS_METERS * 0.5f));
 }
@@ -209,11 +212,11 @@ void BubbleManager::Remove(SystemEntity* pSE) {
  *
  * NOTE:  these are only used here...
  */
-SystemBubble* BubbleManager::FindBubble(SystemEntity *pSE) const {
+SystemBubble* BubbleManager::FindBubble(SystemEntity* pSE) const {
     return FindBubble(pSE->SystemMgr()->GetID(), pSE->GetPosition());
 }
 
-SystemBubble* BubbleManager::FindBubble(uint32 systemID, const GPoint &position) const {
+SystemBubble* BubbleManager::FindBubble(uint32 systemID, const GPoint& position) const {
     // Finds a range containing all elements whose key is k.
     // pair<iterator, iterator> equal_range(const key_type& k)
     _log(BUBBLE__DEBUG, "BubbleManager::FindBubble() - Searching point %.1f, %.1f, %.1f in system %u.", \
@@ -240,7 +243,7 @@ SystemBubble* BubbleManager::GetBubble(SystemManager* sysMgr, const GPoint& posi
 SystemBubble* BubbleManager::MakeBubble(SystemManager* sysMgr, GPoint position) {
     // determine if new center (pos) is within 2x radius of another bubble center. (overlap)
     auto range = m_sysBubbleMap.equal_range(sysMgr->GetID());
-    for ( auto itr = range.first; itr != range.second; ++itr )
+    for (auto itr = range.first; itr != range.second; ++itr) {
         if (itr->second->IsOverlap(position)) {
             GVector dir(itr->second->GetCenter(), position);
             dir.normalize();
@@ -249,6 +252,7 @@ SystemBubble* BubbleManager::MakeBubble(SystemManager* sysMgr, GPoint position) 
             position = itr->second->GetCenter() + (dir * (BUBBLE_RADIUS_METERS * 2));
             break;
         }
+    }
 
     SystemBubble* pBubble = new SystemBubble(sysMgr, position, BUBBLE_RADIUS_METERS);
     if (pBubble != nullptr) {

@@ -224,7 +224,7 @@ void EntityMgr::Process() {
         m_profileTime = GetTimeUSeconds();
 
         if (!m_deleteLater.empty()) {
-            sLog.Error(" EntityMgr::Proc", "deleting %u later objects.", (uint32)m_deleteLater.size());
+            sLog.Warning(" EntityMgr::Proc", "deleting %u later objects.", (uint32)m_deleteLater.size());
             for (auto &cur : m_deleteLater) {
                 if ((*cur).IsDeleted())
                     continue;

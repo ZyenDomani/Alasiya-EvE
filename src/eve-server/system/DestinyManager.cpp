@@ -1777,8 +1777,8 @@ void DestinyManager::WarpUpdate(int64 currentShipSpeed, uint16 sec_into_warp, ui
                         m_warpState->cruise ? "true":"false", mySE->GetName(), mySE->GetID(), sec_into_warp, currentShipSpeed, m_targetDistance);
             } break;
             case 3: {
-                _log(DESTINY__WARP_TRACE, "Destiny::WarpDecel(): %s(%u) - Warp Decelerating(%us): velocity %lli m/s.  %lli m remaining.", \
-                        mySE->GetName(), mySE->GetID(), sec_into_warp, currentShipSpeed, m_targetDistance);
+                _log(DESTINY__WARP_TRACE, "Destiny::WarpDecel(): %s(%u) - Warp Decelerating(%us): velocity %.2f,%.2f,%.2f, speed %lli m/s.  %lli m remaining.", \
+                        mySE->GetName(), mySE->GetID(), sec_into_warp, m_velocity.x, m_velocity.y, m_velocity.z, currentShipSpeed, m_targetDistance);
             } break;
             default: {
             _log(DESTINY__WARNING, "Destiny::WarpUpdate()  %s(%u): Called with no type.", \
@@ -2555,8 +2555,9 @@ void DestinyManager::SetPosition(const GPoint &pt, bool update /*false*/) {
     _log(DESTINY__TRACE, "Destiny::SetPosition() called by %s(%u)", mySE->GetName(), mySE->GetID());
 
     // fix for elusive error with SE's being out of assigned bubble...part 1
-    if (m_position.distance(pt) > BUBBLE_RADIUS_METERS)
-        sBubbleMgr.Remove(mySE);
+    if (mySE->SysBubble() != nullptr)
+        if (!mySE->SysBubble()->InBubble(pt))
+            sBubbleMgr.Remove(mySE);
 
     if (pt.isZero()) {
         _log(DESTINY__TRACE, "Destiny::SetPosition() - %s(%u) point is zero", mySE->GetName(), mySE->GetID());

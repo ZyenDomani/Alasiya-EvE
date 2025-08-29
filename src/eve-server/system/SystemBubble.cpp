@@ -399,8 +399,9 @@ void SystemBubble::GetAllEntities(std::map< uint32, SystemEntity* >& into) const
     if (m_dynamicEntities.empty())
         return;
 
-    for (auto &cur : m_dynamicEntities)
-        into.emplace(cur.first, cur.second);
+    into = m_dynamicEntities;
+    //for (auto &cur : m_dynamicEntities)
+    //    into.emplace(cur.first, cur.second);
 }
 
 
@@ -440,7 +441,7 @@ SystemEntity* SystemBubble::GetRandomEntity() {
 }
 
 uint32 SystemBubble::CountNPCs() {
-    uint32 count = 0;
+    uint32 count(0);
     for (auto &cur : m_dynamicEntities)
         if (cur.second->IsNPCSE())
             ++count;

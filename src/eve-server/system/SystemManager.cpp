@@ -439,14 +439,14 @@ bool SystemManager::LoadSystemStatics() {
 }
 
 bool SystemManager::LoadSystemDynamics() {
-    std::vector<DBSystemDynamicEntity> entities;
-    if (!SystemDB::LoadSystemDynamicEntities(m_data.systemID, entities)) {
+    std::vector<DBSystemDynamicEntity> entityData;
+    if (!SystemDB::LoadSystemDynamicEntities(m_data.systemID, entityData)) {
         sLog.Error( "SystemManager::LoadSystemDynamics()", "Unable to load dynamic entities during boot of %s(%u).", m_data.name.c_str(), m_data.systemID);
         return false;
     }
 
     SystemEntity* pSE(nullptr);
-    for (auto &cur : entities) {
+    for (auto &cur : entityData) {
         pSE = DynamicEntityFactory::BuildEntity(*this, cur);
         if (pSE == nullptr) {
             sLog.Error( "SystemManager::LoadSystemDynamics()", "Failed to create entity for item %u (grp: %u, type %u)",
@@ -460,20 +460,20 @@ bool SystemManager::LoadSystemDynamics() {
             //pSE->SetPosition(sMapData.GetRandPointOnMoon(m_data.systemID));
         AddEntity(pSE);
     }
-    _log(SERVER__INIT, "SystemManager::LoadSystemDynamics - %lu Dynamic System entities loaded for %s(%u)", entities.size(), m_data.name.c_str(),m_data.systemID);
+    _log(SERVER__INIT, "SystemManager::LoadSystemDynamics - %lu Dynamic System entities loaded for %s(%u)", entityData.size(), m_data.name.c_str(),m_data.systemID);
 
     return true;
 }
 
 bool SystemManager::LoadPlayerDynamics() {
-    std::vector<DBSystemDynamicEntity> entities;
-    if (!SystemDB::LoadPlayerDynamicEntities(m_data.systemID, entities)) {
+    std::vector<DBSystemDynamicEntity> entityData;
+    if (!SystemDB::LoadPlayerDynamicEntities(m_data.systemID, entityData)) {
         sLog.Error( "SystemManager::LoadPlayerDynamics()", "Unable to load player dynamic entities in %s(%u).", m_data.name.c_str(), m_data.systemID);
         return false;
     }
 
     SystemEntity* pSE(nullptr);
-    for (auto &cur : entities) {
+    for (auto &cur : entityData) {
         pSE = DynamicEntityFactory::BuildEntity(*this, cur);
         if (pSE == nullptr) {
             sLog.Error( "SystemManager::LoadPlayerDynamics()", "Failed to create entity for item %u (grp: %u, type %u)", cur.itemID, cur.groupID, cur.typeID);
@@ -487,408 +487,35 @@ bool SystemManager::LoadPlayerDynamics() {
         AddEntity(pSE);
     }
     _log(SERVER__INIT, "SystemManager::LoadPlayerDynamics() - %lu Dynamic Player entities loaded for %s(%u)", \
-                entities.size(), m_data.name.c_str(),m_data.systemID);
+                entityData.size(), m_data.name.c_str(),m_data.systemID);
 
     return true;
 }
 
-bool SystemManager::BuildDynamicEntity(const DBSystemDynamicEntity& entity, uint32 launcherID/*0*/) {
-    SystemEntity* pSE = DynamicEntityFactory::BuildEntity(*this, entity);
+bool SystemManager::BuildDynamicEntity(const DBSystemDynamicEntity& data, uint32 launcherID/*0*/) {
+    SystemEntity* pSE = DynamicEntityFactory::BuildEntity(*this, data);
     if (pSE == nullptr) {
-        sLog.Error( "SystemManager::BuildDynamicEntity()", "Failed to create entity for item %u (grp: %u, type %u)", entity.itemID, entity.groupID, entity.typeID);
+        sLog.Error( "SystemManager::BuildDynamicEntity()", "Failed to create entity for item %u (grp: %u, type %u)", data.itemID, data.groupID, data.typeID);
         return false;
     }
 
     _log(ITEM__TRACE, "SystemManager::BuildDynamicEntity() - Created dynamic entity %u of type %u for %s(%u)", \
-                entity.itemID, entity.typeID, m_data.name.c_str(),m_data.systemID );
-    AddEntity(pSE);
+                data.itemID, data.typeID, m_data.name.c_str(),m_data.systemID );
 
     // this is only used for wrecks...
     if (launcherID) {
         WreckSE* pWE = pSE->GetWreckSE();
         pWE->SetLaunchedByID(launcherID);
-        if (IsCharacterID(entity.ownerID)) {
-            Client* pClient = sEntityMgr.FindClientByCharID(entity.ownerID);
+        if (IsCharacterID(data.ownerID)) {
+            Client* pClient = sEntityMgr.FindClientByCharID(data.ownerID);
             if (pClient->InFleet())
                 pWE->SetFleetID(pClient->GetFleetID());
         }
     }
+
+    AddEntity(pSE);
+
     return true;
-}
-
-SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBSystemDynamicEntity& entity)
-{
-    FactionData data = FactionData();
-        data.allianceID = entity.allianceID;
-        data.corporationID = entity.corporationID;
-        data.factionID = entity.factionID;
-        data.ownerID = entity.ownerID;
-
-    switch (entity.categoryID) {
-        case EVEDB::invCategories::Asteroid: {
-            InventoryItemRef asteroid = sItemFactory.GetItemRef( entity.itemID );
-            if (asteroid.get() == nullptr) {
-                /** @todo make error msg here */
-                return nullptr;
-            }
-            AsteroidSE* aSE = new AsteroidSE(asteroid, *(sysMgr.GetServiceMgr()), &sysMgr);
-            _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making AsteroidSE for %s (%u)", entity.itemName.c_str(), entity.itemID);
-            return aSE;
-        } break;
-        case EVEDB::invCategories::Ship: {
-            ShipItemRef ship = sItemFactory.GetShipRef( entity.itemID );
-            if (ship.get() == nullptr)
-                return nullptr;
-            /** @todo make error msg here */
-            ShipSE* sSE = new ShipSE(ship, *(sysMgr.GetServiceMgr()), &sysMgr, data);
-            _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making ShipSE for %s (%u)", entity.itemName.c_str(), entity.itemID);
-            if (data.ownerID == 1) {
-                // initialize abandoned ship here.
-                ship->Init();
-                sSE->DestinyMgr()->UpdateShipVariables();
-            }
-            return sSE;
-        } break;
-        case EVEDB::invCategories::Deployable: {
-            InventoryItemRef deployable = sItemFactory.GetItemRef( entity.itemID );
-            if (deployable.get() == nullptr)
-                return nullptr;
-            /** @todo make error msg here */
-            deployable->SetAttribute(AttrRadius, deployable->type().radius());     // Can you set this somehow from the type class ?
-            DeployableSE* dSE = new DeployableSE(deployable, *(sysMgr.GetServiceMgr()), &sysMgr, data);
-            _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making DeployableSE for %s (%u)", entity.itemName.c_str(), entity.itemID);
-            return dSE;
-        } break;
-        //  these should go into m_staticEntities
-        case EVEDB::invCategories::StructureUpgrade: // SOV upgrade structures   these may need their own class one day.
-        case EVEDB::invCategories::Structure: {         // POS items
-            StructureItemRef structure = sItemFactory.GetStructureRef( entity.itemID );
-            if (structure.get() == nullptr)
-                return nullptr;
-            /** @todo make error msg here */
-            StructureSE* pSSE(nullptr);
-            switch(entity.groupID) {
-                case EVEDB::invGroups::Control_Tower: {
-                    TowerSE* tSE = new TowerSE(structure, *(sysMgr.GetServiceMgr()), &sysMgr, data);
-                    _log(POS__TRACE, "DynamicEntityFactory::BuildEntity() making TowerSE for %s (%u)", entity.itemName.c_str(), entity.itemID);
-                    pSSE = tSE;
-                } break;
-                case EVEDB::invGroups::Mobile_Missile_Sentry:
-                case EVEDB::invGroups::Mobile_Projectile_Sentry:
-                case EVEDB::invGroups::Mobile_Laser_Sentry:
-                case EVEDB::invGroups::Mobile_Hybrid_Sentry: {
-                    WeaponSE* wSE = new WeaponSE(structure, *(sysMgr.GetServiceMgr()), &sysMgr, data);
-                    _log(POS__TRACE, "DynamicEntityFactory::BuildEntity() making WeaponSE for %s (%u)", entity.itemName.c_str(), entity.itemID);
-                    pSSE =  wSE;
-                } break;
-                case EVEDB::invGroups::Electronic_Warfare_Battery:
-                case EVEDB::invGroups::Sensor_Dampening_Battery:
-                case EVEDB::invGroups::Stasis_Webification_Battery:
-                case EVEDB::invGroups::Warp_Scrambling_Battery:
-                case EVEDB::invGroups::Energy_Neutralizing_Battery:
-                case EVEDB::invGroups::Target_Painting_Battery: {
-                    BatterySE* bSE = new BatterySE(structure, *(sysMgr.GetServiceMgr()), &sysMgr, data);
-                    _log(POS__TRACE, "DynamicEntityFactory::BuildEntity() making BatterySE for %s (%u)", entity.itemName.c_str(), entity.itemID);
-                    pSSE = bSE;
-                } break;
-                case EVEDB::invGroups::Refining_Array:
-                case EVEDB::invGroups::Ship_Maintenance_Array:
-                case EVEDB::invGroups::Assembly_Array:
-                case EVEDB::invGroups::Shield_Hardening_Array:
-                case EVEDB::invGroups::Force_Field_Array:
-                case EVEDB::invGroups::Corporate_Hangar_Array:
-                case EVEDB::invGroups::Stealth_Emitter_Array:
-                case EVEDB::invGroups::Scanner_Array:
-                case EVEDB::invGroups::Logistics_Array:
-                case EVEDB::invGroups::Cynosural_Generator_Array:
-                case EVEDB::invGroups::Structure_Repair_Array: {
-                    ArraySE* aSE = new ArraySE(structure, *(sysMgr.GetServiceMgr()), &sysMgr, data);
-                    _log(POS__TRACE, "DynamicEntityFactory::BuildEntity() making ArraySE for %s (%u)", entity.itemName.c_str(), entity.itemID);
-                    pSSE = aSE;
-                } break;
-                case EVEDB::invGroups::Silo:
-                case EVEDB::invGroups::Moon_Mining:
-                case EVEDB::invGroups::Mobile_Reactor: {
-                    ReactorSE* rSE = new ReactorSE(structure, *(sysMgr.GetServiceMgr()), &sysMgr, data);
-                    _log(POS__TRACE, "DynamicEntityFactory::BuildEntity() making ReactorSE for %s (%u)", entity.itemName.c_str(), entity.itemID);
-                    pSSE = rSE;
-                } break;
-                default: {
-                    StructureSE* sSE = new StructureSE(structure, *(sysMgr.GetServiceMgr()), &sysMgr, data);
-                    _log(POS__TRACE, "DynamicEntityFactory::BuildEntity() making StructureSE for %s (%u)", entity.itemName.c_str(), entity.itemID);
-                    pSSE = sSE;
-                } break;
-            }
-            pSSE->Init();
-            return pSSE;
-        } break;
-        case EVEDB::invCategories::SovereigntyStructure: {// SOV structures
-            //Create item ref
-            StructureItemRef structure = sItemFactory.GetStructureRef( entity.itemID );
-            if (structure.get() == nullptr)
-                return nullptr;
-            StructureSE* sSSE(nullptr);
-            //Test for different types of sov structures
-            switch(entity.groupID) {
-                case EVEDB::invGroups::Territorial_Claim_Units: {
-                    TCUSE* sSE = new TCUSE(structure, *(sysMgr.GetServiceMgr()), &sysMgr, data);
-                    _log(POS__TRACE, "DynamicEntityFactory::BuildEntity() making TCUSE for %s (%u)", entity.itemName.c_str(), entity.itemID);
-                    sSSE = sSE;
-                } break;
-                case EVEDB::invGroups::Sovereignty_Blockade_Units: {
-                    SBUSE* sSE = new SBUSE(structure, *(sysMgr.GetServiceMgr()), &sysMgr, data);
-                    _log(POS__TRACE, "DynamicEntityFactory::BuildEntity() making SBUSE for %s (%u)", entity.itemName.c_str(), entity.itemID);
-                    sSSE = sSE;
-                } break;
-                case EVEDB::invGroups::Infrastructure_Hubs: {
-                    IHubSE* sSE = new IHubSE(structure, *(sysMgr.GetServiceMgr()), &sysMgr, data);
-                    _log(POS__TRACE, "DynamicEntityFactory::BuildEntity() making IHubSE for %s (%u)", entity.itemName.c_str(), entity.itemID);
-                    sSSE = sSE;
-                } break;
-                default: { //Should never be called, therefore print an error log
-                    StructureSE* sSE = new StructureSE(structure, *(sysMgr.GetServiceMgr()), &sysMgr, data);
-                    _log(POS__ERROR, "DynamicEntityFactory::BuildEntity() Default sovereignty StructureSE created for %s (%u)", entity.itemName.c_str(), entity.itemID);
-                    sSSE = sSE;
-                } break;
-            }
-            sSSE->Init();
-            return sSSE;
-        } break;
-        case EVEDB::invCategories::Orbitals: {           // planet orbitals   these should go into m_staticEntities
-            StructureItemRef structure = sItemFactory.GetStructureRef( entity.itemID );
-            if (structure.get() == nullptr)
-                return nullptr;
-                /** @todo make error msg here */
-            CustomsSE* pCoSE(nullptr);
-            switch(entity.groupID) {
-                case EVEDB::invGroups::Test_Orbitals:
-                case EVEDB::invGroups::Orbital_Construction_Platform:
-                case EVEDB::invGroups::Orbital_Infrastructure: {
-                    pCoSE = new CustomsSE(structure, *(sysMgr.GetServiceMgr()), &sysMgr, data);
-                    //structure->GetMyInventory()->LoadContents();  this is called during structureItem creation
-                    if ((entity.planetID) and (entity.groupID != EVEDB::invGroups::Test_Orbitals)) {
-                        pCoSE->SetPlanet(entity.planetID);
-                        SystemEntity* pPE = sysMgr.GetSE(entity.planetID);
-                        if ((pPE != nullptr) and pPE->IsPlanetSE())
-                            pPE->GetPlanetSE()->SetCustomsOffice(pCoSE);
-                    }
-                    pCoSE->Init();
-                    _log(POS__TRACE, "DynamicEntityFactory::BuildEntity() making CustomsSE for %s (%u)", entity.itemName.c_str(), entity.itemID);
-                } break;
-            }
-            return pCoSE;
-        } break;
-        case EVEDB::invCategories::Celestial: {
-            // TODO: (just use CelestialEntity class for these until their own classes are written)
-            // * WarpGateEntity  <-- Warp_Gate
-            // * WormholeEntity  <-- Wormhole
-            switch (entity.groupID) {
-                case EVEDB::invGroups::Wreck: {
-                    WreckContainerRef wreck = sItemFactory.GetWreckContainer( entity.itemID );
-                    if (wreck.get() == nullptr)
-                        return nullptr;
-                    /** @todo make error msg here */
-                    WreckSE* wSE = new WreckSE(wreck, *(sysMgr.GetServiceMgr()), &sysMgr, data);
-                    wreck->GetMyInventory()->LoadContents();
-                    wreck->SetMySE(wSE);
-                    _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making WreckSE for %s (%u)", entity.itemName.c_str(), entity.itemID);
-                    return wSE;
-                } break;
-                case EVEDB::invGroups::Audit_Log_Secure_Container:
-                case EVEDB::invGroups::Secure_Cargo_Container:
-                case EVEDB::invGroups::Cargo_Container:
-                case EVEDB::invGroups::Freight_Container:
-                case EVEDB::invGroups::Shipping_Crates: {
-                    CargoContainerRef contRef = sItemFactory.GetCargoRef( entity.itemID );
-                    if (contRef.get() == nullptr)
-                        return nullptr;
-                    /** @todo make error msg here */
-                    ContainerSE* cSE = new ContainerSE(contRef, *(sysMgr.GetServiceMgr()), &sysMgr, data);
-                    contRef->GetMyInventory()->LoadContents();
-                    contRef->SetMySE(cSE);
-                    _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making ContainerSE for %s (%u)", entity.itemName.c_str(), entity.itemID);
-                    return cSE;
-                } break;
-            /** @todo (Allan)  need to separate these by class to create proper SE (started) */
-                case EVEDB::invGroups::Biomass:
-                case EVEDB::invGroups::Ring:/*wtf*/
-                case EVEDB::invGroups::Secondary_Sun:
-                case EVEDB::invGroups::Large_Collidable_Object:
-                case EVEDB::invGroups::Large_Collidable_Structure:
-                case EVEDB::invGroups::Large_Collidable_Ship:  // this will not hit here.  category 11, entity
-                case EVEDB::invGroups::Cloud:
-                case EVEDB::invGroups::Landmark:
-                case EVEDB::invGroups::Comet:
-                case EVEDB::invGroups::Destructable_Station_Services:
-                /* test these to see if they are POS types */
-                case EVEDB::invGroups::Construction_Platform:
-                case EVEDB::invGroups::Station_Improvement_Platform:
-                case EVEDB::invGroups::Global_Warp_Disruptor:
-                case EVEDB::invGroups::Station_Upgrade_Platform:
-                case EVEDB::invGroups::Force_Field:  // <<<  this one is POS type but it IS a plain CSE
-                /* these will get their own class eventually */
-                case EVEDB::invGroups::Effect_Beacon:
-                case EVEDB::invGroups::Beacon:
-                case EVEDB::invGroups::Covert_Beacon:
-                case EVEDB::invGroups::Harvestable_Cloud:
-                case EVEDB::invGroups::Planetary_Cloud: {
-                    CelestialObjectRef celestial = sItemFactory.GetCelestialRef( entity.itemID );
-                    if (celestial.get() == nullptr)
-                        return nullptr;
-                    /** @todo make error msg here */
-                    CelestialSE* cSE = new CelestialSE(celestial, *(sysMgr.GetServiceMgr()), &sysMgr);
-                    _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making CelestialSE for %s (%u)", entity.itemName.c_str(), entity.itemID);
-                    return cSE;
-                } break;
-                case EVEDB::invGroups::Wormhole: {
-                    CelestialObjectRef celestial = sItemFactory.GetCelestialRef( entity.itemID );
-                    if (celestial.get() == nullptr)
-                        return nullptr;
-                    /** @todo make error msg here */
-                    WormholeSE* wSE = new WormholeSE(celestial, *(sysMgr.GetServiceMgr()), &sysMgr);
-                    _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making WormholeSE for %s (%u)", entity.itemName.c_str(), entity.itemID);
-                    return wSE;
-                } break;
-                case EVEDB::invGroups::Cosmic_Anomaly:
-                case EVEDB::invGroups::Cosmic_Signature: {
-                    CelestialObjectRef celestial = sItemFactory.GetCelestialRef( entity.itemID );
-                    if (celestial.get() == nullptr)
-                        return nullptr;
-                    /** @todo make error msg here */
-                    AnomalySE* aSE = new AnomalySE(celestial, *(sysMgr.GetServiceMgr()), &sysMgr);
-                    _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making AnomalySE for %s (%u)", entity.itemName.c_str(), entity.itemID);
-                    return aSE;
-                } break;
-                case EVEDB::invGroups::Warp_Gate: { //accel gate
-                    // does this need own item, or celestial, or generic or other?
-                    InventoryItemRef iRef = sItemFactory.GetItemRef( entity.itemID );
-                    //CelestialObjectRef celestial = sItemFactory.GetCelestialObject( entity.itemID );
-                    if (iRef.get() == nullptr)
-                        return nullptr;
-                    /** @todo make error msg here */
-                    ItemSystemEntity* iSE = new ItemSystemEntity(iRef, *(sysMgr.GetServiceMgr()), &sysMgr);
-                    _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making ISE for %s (%u)", entity.itemName.c_str(), entity.itemID);
-                    return iSE;
-                } break;
-            } break;
-        } break;
-        case EVEDB::invCategories::Entity: {            // Entities
-            if (entity.groupID == EVEDB::invGroups::Spawn_Container ) {     // these are destructible objects found in dungeons
-                // For category=Entity, group=Spawn Container, create a CargoContainer object:
-                /** @todo  this needs its own class....there are 477 types, spawning everything..rats, modules, items, etc. */
-                CargoContainerRef contRef = sItemFactory.GetCargoRef( entity.itemID );
-                if (contRef.get() == nullptr)
-                    return nullptr;
-                /** @todo make error msg here */
-                ContainerSE* cSE = new ContainerSE(contRef, *(sysMgr.GetServiceMgr()), &sysMgr, data);
-                contRef->GetMyInventory()->LoadContents();
-                contRef->SetMySE(cSE);
-                _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making ContainerSE for %s (%u)", entity.itemName.c_str(), entity.itemID);
-                return cSE;
-            } else if ((entity.groupID == EVEDB::invGroups::Sentry_Gun) or (entity.groupID == EVEDB::invGroups::Protective_Sentry_Gun)
-                or (entity.groupID == EVEDB::invGroups::Destructible_Sentry_Gun) or (entity.groupID == EVEDB::invGroups::Mobile_Sentry_Gun))
-            {
-                InventoryItemRef sentryRef = sItemFactory.GetItemRef( entity.itemID );
-                if (sentryRef.get() == nullptr)
-                    return nullptr;
-                /** @todo make error msg here */
-                Sentry* SentrySE = new Sentry(sentryRef, *(sysMgr.GetServiceMgr()), &sysMgr, data);
-                _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making SentrySE for %s (%u)", entity.itemName.c_str(), entity.itemID);
-                return SentrySE;
-            }
-            // Check for NPC ships/drones here (category 11):   NOT player drones (different category [18])
-            else if ((entity.groupID == EVEDB::invGroups::Police_Drone) or (entity.groupID == EVEDB::invGroups::Pirate_Drone) or (entity.groupID == EVEDB::invGroups::LCO_Drone)
-                or (entity.groupID == EVEDB::invGroups::Tutorial_Drone) or (entity.groupID == EVEDB::invGroups::Rogue_Drone) or (entity.groupID == EVEDB::invGroups::Faction_Drone)
-                or (entity.groupID == EVEDB::invGroups::Convoy) or (entity.groupID == EVEDB::invGroups::Convoy_Drone) or (entity.groupID == EVEDB::invGroups::Concord_Drone)
-                or (entity.groupID == EVEDB::invGroups::Mission_Drone) or (entity.groupID == EVEDB::invGroups::Deadspace_Overseer) or (entity.groupID == EVEDB::invGroups::Customs_Official)
-                or (entity.groupID == EVEDB::invGroups::Deadspace_Overseer_s_Structure) or (entity.groupID == EVEDB::invGroups::Deadspace_Overseer_s_Sentry)
-                or (entity.groupID == EVEDB::invGroups::Deadspace_Overseer_s_Belongings) or (entity.groupID == EVEDB::invGroups::Storyline_Frigate)
-                or (entity.groupID == EVEDB::invGroups::Storyline_Cruiser) or (entity.groupID == EVEDB::invGroups::Storyline_Battleship) or (entity.groupID == EVEDB::invGroups::Storyline_Mission_Frigate)
-                or (entity.groupID == EVEDB::invGroups::Storyline_Mission_Cruiser) or (entity.groupID == EVEDB::invGroups::Storyline_Mission_Battleship)
-                or ((entity.groupID >= EVEDB::invGroups::Asteroid_Angel_Cartel_Frigate) and (entity.groupID <= EVEDB::invGroups::Asteroid_Serpentis_BattleCruiser))
-                or ((entity.groupID >= EVEDB::invGroups::Deadspace_Angel_Cartel_BattleCruiser) and (entity.groupID <= EVEDB::invGroups::Deadspace_Angel_Cartel_Frigate))
-                or ((entity.groupID >= EVEDB::invGroups::Deadspace_Blood_Raiders_BattleCruiser) and (entity.groupID <= EVEDB::invGroups::Deadspace_Blood_Raiders_Frigate))
-                or ((entity.groupID >= EVEDB::invGroups::Deadspace_Guristas_BattleCruiser) and (entity.groupID <= EVEDB::invGroups::Deadspace_Guristas_Frigate))
-                or ((entity.groupID >= EVEDB::invGroups::Deadspace_Sanshas_Nation_BattleCruiser) and (entity.groupID <= EVEDB::invGroups::Deadspace_Sanshas_Nation_Frigate))
-                or ((entity.groupID >= EVEDB::invGroups::Deadspace_Serpentis_BattleCruiser) and (entity.groupID <= EVEDB::invGroups::Deadspace_Serpentis_Frigate))
-                or ((entity.groupID >= EVEDB::invGroups::Mission_Amarr_Empire_Frigate) and (entity.groupID <= EVEDB::invGroups::Mission_Minmatar_Republic_Battleship))
-                or (entity.groupID == EVEDB::invGroups::Destructible_Agents_In_Space)
-                or ((entity.groupID >= EVEDB::invGroups::Asteroid_Rogue_Drone_Battlecruiser) and (entity.groupID <= EVEDB::invGroups::Asteroid_Rogue_Drone_Swarm))
-                or (entity.groupID == EVEDB::invGroups::Large_Collidable_Ship) //  this is wreck?  abandoned ship?
-                or ((entity.groupID >= EVEDB::invGroups::Asteroid_Angel_Cartel_Commander_Frigate) and (entity.groupID <= EVEDB::invGroups::Asteroid_Serpentis_Commander_Frigate))
-                or ((entity.groupID >= EVEDB::invGroups::Mission_Generic_Battleships) and (entity.groupID <= EVEDB::invGroups::Mission_Generic_Destroyers))
-                or ((entity.groupID >= EVEDB::invGroups::Asteroid_Rogue_Drone_Commander_Battlecruiser) and (entity.groupID <= EVEDB::invGroups::Asteroid_Serpentis_Commander_Battleship))
-                or (entity.groupID == EVEDB::invGroups::Mission_Fighter_Drone)
-                or ((entity.groupID >= EVEDB::invGroups::Mission_Amarr_Empire_Carrier) and (entity.groupID <= EVEDB::invGroups::Mission_Minmatar_Republic_Carrier))
-                or (entity.groupID == EVEDB::invGroups::Mission_Faction_Transports) or (entity.groupID == EVEDB::invGroups::Mission_Faction_Industrials)
-                or (entity.groupID == EVEDB::invGroups::Deadspace_Sleeper_Sleepless_Sentinel) or (entity.groupID == EVEDB::invGroups::Deadspace_Sleeper_Awakened_Sentinel)
-                or (entity.groupID == EVEDB::invGroups::Deadspace_Sleeper_Emergent_Sentinel)
-                or ((entity.groupID >= EVEDB::invGroups::Deadspace_Sleeper_Sleepless_Defender) and (entity.groupID <= EVEDB::invGroups::Deadspace_Sleeper_Emergent_Patroller))
-                or (entity.groupID == EVEDB::invGroups::Mission_Faction_Cruiser) or (entity.groupID == EVEDB::invGroups::Mission_Faction_Frigate)
-                or (entity.groupID == EVEDB::invGroups::Incursion_Sanshas_Nation_Industrial) or (entity.groupID == EVEDB::invGroups::Incursion_Sanshas_Nation_Capital)
-                or (entity.groupID == EVEDB::invGroups::Incursion_Sanshas_Nation_Frigate) or (entity.groupID == EVEDB::invGroups::Incursion_Sanshas_Nation_Cruiser)
-                or (entity.groupID == EVEDB::invGroups::Incursion_Sanshas_Nation_Battleship))
-            {
-                InventoryItemRef npcRef = sItemFactory.GetItemRef( entity.itemID );
-                if (npcRef.get() == nullptr)
-                    return nullptr;
-                /** @todo make error msg here */
-                NPC* npcSE = new NPC(npcRef, *(sysMgr.GetServiceMgr()), &sysMgr, data);
-                npcSE->Load();
-                sEntityMgr.AddNPC();
-                _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making NPCSE for %s (%u)", entity.itemName.c_str(), entity.itemID);
-                return npcSE;
-            }
-            // may have to create unique class for Billboard (EVEDB::invGroups::Billboard)
-            else {
-                InventoryItemRef iRef = sItemFactory.GetItemRef( entity.itemID );
-                if (iRef.get() == nullptr)
-                    return nullptr;
-                /** @todo make error msg here */
-                ItemSystemEntity* cSE = new ItemSystemEntity(iRef, *(sysMgr.GetServiceMgr()), &sysMgr);
-                _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making ISE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
-                return cSE;
-            }
-        } break;
-        case EVEDB::invCategories::Drone: {             // Player Drones
-            InventoryItemRef drone = sItemFactory.GetItemRef( entity.itemID );
-            if (drone.get() == nullptr)
-                return nullptr;
-            /** @todo make error msg here */
-            DroneSE* dSE = new DroneSE(drone, *(sysMgr.GetServiceMgr()), &sysMgr, data);
-            dSE->Init();
-            _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making DroneSE for %s (%u)", entity.itemName.c_str(), entity.itemID);
-            return dSE;
-        } break;
-        case EVEDB::invCategories::Charge: {
-            switch (entity.groupID) {
-                case EVEDB::invGroups::Scanner_Probe: {
-                    ProbeItemRef pRef = sItemFactory.GetProbeRef(entity.itemID);
-                    if (pRef.get() == nullptr)
-                        return nullptr;
-                        /** @todo make error msg here */
-                    // make sure these are owned by eve system
-                    pRef->ChangeOwner(1);
-                    //these probes are abandoned and offline.  give them 5h lifetime
-                    ProbeSE* pSE = new ProbeSE(pRef, *(sysMgr.GetServiceMgr()), &sysMgr);
-                    _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making ProbeSE for %s (%u)", entity.itemName.c_str(), entity.itemID);
-                    return pSE;
-                } break;
-                case EVEDB::invGroups::Survey_Probe: {
-                    sLog.Warning("BuildEntity", "Called for Survey_Probe");
-                } break;
-                case EVEDB::invGroups::Warp_Disruption_Probe: {
-                    sLog.Warning("BuildEntity", "Called for Warp_Disruption_Probe");
-                } break;
-            }
-        } break;
-    }
-    sLog.Warning("BuildEntity", "Unhandled dynamic entity category %u for item %u of type %u", entity.categoryID, entity.itemID, entity.typeID);
-
-    if (sConfig.server.StackTrace)
-        EvE::traceStack();
-
-    return nullptr;
 }
 
 void SystemManager::AddClient(Client* pClient, bool count/*false*/, bool jump/*false*/) {

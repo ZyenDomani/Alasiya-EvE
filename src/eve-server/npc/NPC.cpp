@@ -226,7 +226,7 @@ void NPC::EncodeDestiny(Buffer& into)
             warp.targZ = target.z;
             warp.speed = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
             // warp timing.  see Ship::EncodeDestiny() for notes/updates
-            warp.effectStamp = m_destiny->GetStateStamp();   //timestamp when warp started
+            warp.effectStamp = -1; //m_destiny->GetStateStamp();   //timestamp when warp started
             warp.followRange = 0;   //this isnt right
             warp.followID = 0;  //this isnt right
             into.Append( warp );
@@ -330,12 +330,12 @@ void NPC::Killed(Damage &fatal_blow) {
         }
     }
 
-    GPoint wreckPosition = m_destiny->GetPosition();
+    GPoint wreckPosition(m_self->position());
     if (wreckPosition.isNaN()) {
         sLog.Error("NPC::Killed()", "Wreck Position is NaN");
         return;
     }
-    uint32 wreckTypeID = sDataMgr.GetWreckID(m_self->typeID());
+    uint32 wreckTypeID(sDataMgr.GetWreckID(m_self->typeID()));
     if (!IsWreckTypeID(wreckTypeID)) {
         sLog.Error("NPC::Killed()", "Could not get wreckType for %s of type %u", m_self->name(), m_self->typeID());
         // default to generic frigate wreck till i get better checks and/or complete wreck data
@@ -358,19 +358,19 @@ void NPC::Killed(Damage &fatal_blow) {
     if ((MakeRandomFloat() < sConfig.npc.LootDropChance) or (m_allyID == factionRogueDrones))
         DropLoot(wreckItemRef, m_self->groupID(), killerID);
 
-    DBSystemDynamicEntity wreckEntity = DBSystemDynamicEntity();
-        wreckEntity.allianceID = (killer->GetAllianceID() == 0 ? m_allyID : killer->GetAllianceID());
-        wreckEntity.categoryID = EVEDB::invCategories::Celestial;
-        wreckEntity.corporationID = killer->GetCorporationID();
-        wreckEntity.factionID = (killer->GetWarFactionID() == 0 ? m_warID : killer->GetWarFactionID());
-        wreckEntity.groupID = EVEDB::invGroups::Wreck;
-        wreckEntity.itemID = wreckItemRef->itemID();
-        wreckEntity.itemName = std::move(wreck_name);
-        wreckEntity.ownerID = killerID;
-        wreckEntity.typeID = wreckTypeID;
-        wreckEntity.position = wreckPosition;
+    DBSystemDynamicEntity wreckData = DBSystemDynamicEntity();
+        wreckData.allianceID = (killer->GetAllianceID() == 0 ? m_allyID : killer->GetAllianceID());
+        wreckData.categoryID = EVEDB::invCategories::Celestial;
+        wreckData.corporationID = killer->GetCorporationID();
+        wreckData.factionID = (killer->GetWarFactionID() == 0 ? m_warID : killer->GetWarFactionID());
+        wreckData.groupID = EVEDB::invGroups::Wreck;
+        wreckData.itemID = wreckItemRef->itemID();
+        wreckData.itemName = std::move(wreck_name);
+        wreckData.ownerID = killerID;
+        wreckData.typeID = wreckTypeID;
+        wreckData.position = wreckPosition;
 
-    if (!m_system->BuildDynamicEntity(wreckEntity, m_self->itemID())) {
+    if (!m_system->BuildDynamicEntity(wreckData, m_self->itemID())) {
         sLog.Error("NPC::Killed()", "Spawning Wreck Failed for typeID %u", wreckTypeID);
         wreckItemRef->Delete();
         return;

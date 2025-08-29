@@ -572,7 +572,6 @@ void Client::WarpOut() {
     char ci[45];
     snprintf(ci, sizeof(ci), "Logout: %s(%u)", GetName(), m_char->itemID());
     m_ship->SetCustomInfo(ci);
-    pShipSE->SetPosition(m_ship->position());
     DestroyShipSE();
     return;
     /*
@@ -749,10 +748,11 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         if (pShipSE != nullptr)
             pShipSE->ResetShipSystemMgr(m_system);
 
+        /*  until proven otherwise, this is redundant
         if (!m_login) {
             m_ship->SetPosition(pt);  // pt comes from ship position...this is redundant for login
             SetDestiny(pt);
-        }
+        } */
 
         /* comment this block for later use...
          * m_systemData.radius is not populated yet, and this does weird things with ships
@@ -794,7 +794,7 @@ void Client::SetDestiny(const GPoint& pt, bool update/*false*/) {
             GetName(), GetCharID(),  pShipSE->SystemMgr()->GetID(), m_system->GetID(), update?"true":"false", \
             updateShip?"true":"false", IsJump()?"true":"false", pShipSE->DestinyMgr()->IsCloaked()?"true":"false");
 
-    pShipSE->DestinyMgr()->SetPosition(pt, update);
+    //pShipSE->DestinyMgr()->SetPosition(pt, update);
 
     if (updateShip)
         UpdateNewShip();

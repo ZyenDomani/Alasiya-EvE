@@ -2385,14 +2385,14 @@ float ShipSE::CalculateRechargeRate(float Capacity, float Current, float Recharg
     // tau = "Shield Recharge Time" / 5.0
 
     // prevent divide by zero.
-    RechargeTimeMS = (RechargeTimeMS < 1 ? 1 : RechargeTimeMS);
-    Current = (Current < 1 ? 1 : Current);
-    float Cmax = (Capacity < 1 ? 1 : Capacity);
+    RechargeTimeMS = (RechargeTimeMS < 1.0f ? 1.0f : RechargeTimeMS);
+    Current = (Current < 1.0f ? 1.0f : Current);
+    float Cmax = (Capacity < 1.0f ? 1.0f : Capacity);
 
     // tau = "cap recharge time" / 5.0
-    float tau = (RechargeTimeMS / 5000.0);
+    float tau = (RechargeTimeMS / 5000.0f);
     // (2*Cmax) / tau
-    float Cmax2_tau = ((Cmax * 2) / tau);
+    float Cmax2_tau = ((Cmax * 2.0f) / tau);
     float C = Current;
     // C / Cmax
     float C_Cmax = (C / Cmax);
@@ -2423,7 +2423,7 @@ void ShipSE::Process() {
             float newCharge = Charge + ((m_processTimerTick / 1000) * CalculateRechargeRate(Capacity, Charge, m_self->GetAttribute(AttrShieldRechargeRate).get_float()));
             if (newCharge > Capacity) {
                 newCharge = Capacity;
-            } else if ((Capacity - newCharge) < 0.3) {
+            } else if ((Capacity - newCharge) < 0.5) {
                 newCharge = Capacity;
             }
             m_self->SetAttribute(AttrShieldCharge, newCharge);

@@ -201,7 +201,7 @@ uint32 ItemDB::NewItem(const ItemData &data) {
         "VALUES('%s', %u, %u, %u, %u, %u,"
         "        %u, %i, %lli, %lli, %lli, '%s' )",
         nameEsc.c_str(), data.typeID, data.ownerID, data.locationID, data.flag, data.contraband?1:0,
-        data.singleton?1:0, data.quantity, data.position.x, data.position.y, data.position.z, customInfoEsc.c_str()
+                               data.singleton?1:0, data.singleton?1:data.quantity, llrint(data.position.x), llrint(data.position.y), llrint(data.position.z), customInfoEsc.c_str()
     )) {
         codelog(DATABASE__ERROR, "Failed to insert new entity: %s", err.c_str());
         return 0;
@@ -251,7 +251,7 @@ bool ItemDB::SaveItem(uint32 itemID, const ItemData &data) {
         (uint16)data.flag,
         (data.singleton?1:0),
         data.quantity,
-        data.position.x, data.position.y, data.position.z,
+        llrint(data.position.x), llrint(data.position.y), llrint(data.position.z),
         customInfoEsc.c_str(),
         itemID))
     {
@@ -286,13 +286,12 @@ void ItemDB::SaveItems(std::vector<Inv::SaveData>& data)
         }
         Inserts << "(" << cur.itemID << ", " << cur.typeID << ", " << cur.ownerID << ", " << cur.locationID << ", ";
         Inserts << cur.flag << ", " << cur.contraband << ", " << (cur.singleton ? 1 : 0) << ", ";
-        Inserts << cur.quantity << ", " << std::to_string(cur.position.x) << ", " << std::to_string(cur.position.y);
-        Inserts << ", " << std::to_string(cur.position.z) << ", '" << cur.customInfo << "')";
+        Inserts << std::to_string(cur.quantity) << ", " << std::to_string(llrint(cur.position.x)) << ", " << std::to_string(llrint(cur.position.y));
+        Inserts << ", " << std::to_string(llrint(cur.position.z)) << ", '" << cur.customInfo << "')";
     }
 
     if (save) {
         Inserts << "ON DUPLICATE KEY UPDATE ";
-        Inserts << "quantity=VALUES(quantity), ";
         Inserts << "ownerID=VALUES(ownerID), ";
         Inserts << "locationID=VALUES(locationID), ";
         Inserts << "flag=VALUES(flag), ";

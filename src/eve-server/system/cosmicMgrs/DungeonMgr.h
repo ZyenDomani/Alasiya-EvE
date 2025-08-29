@@ -38,7 +38,7 @@ class DungeonDataMgr
 {
 public:
     DungeonDataMgr();
-    ~DungeonDataMgr() { /* nothing do to yet */ }
+    ~DungeonDataMgr()                                   { /* nothing do to yet */ }
 
     // Initializes the Table:
     int Initialize();
