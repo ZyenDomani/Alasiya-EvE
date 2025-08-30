@@ -46,6 +46,8 @@ m_agentID(id),
 m_agentData(AgentData())
 {
     _log(AGENT__TRACE, "Agent created for AgentID %u", id);
+    if (sConfig.server.StackTrace)
+        EvE::traceStack();
 }
 
 bool Agent::Load() {
@@ -62,7 +64,7 @@ bool Agent::Load() {
 
     if ((m_agentData.factionID == factionSistersOfEVE)
     or  (m_agentData.corporationID == corpSoE))
-        sLog.Warning("Agent::Ctor", "Agent Created for SoE");
+        sLog.Warning("Agent::Load()", "Agent Created for SoE");
 
     _log(AGENT__TRACE, "%s(%u) - Data Loaded for level %u %s %s Agent at %s in %s.", \
             m_agentData.name.c_str(), m_agentID, m_agentData.level, sDataMgr.GetAgentTypeName(m_agentData.typeID), \
@@ -77,13 +79,13 @@ void Agent::MakeOffer(Character* pChar, MissionOffer& offer) {
     uint8 misionType = Mission::Type::Courier;
     uint16 connectionSkillType(EvESkill::None);
 	uint8 roll(MakeRandomInt(0, 100));
-	
+
 	// random determination here is based on uniform distribution
     switch (m_agentData.divisionID) {
             //  Kill   Courier Trade   Mining
         case Corp::Division::Accounting: {
             //    0%   88%     12%      0%
-			if (roll < 13) 
+			if (roll < 13)
 				misionType = Mission::Type::Trade;
         } break;
         case Corp::Division::Administration: {
@@ -165,7 +167,7 @@ void Agent::MakeOffer(Character* pChar, MissionOffer& offer) {
         case Corp::Division::InternalSecurity: {
             //  98%    2%      0%      0%
             connectionSkillType = EvESkill::SecurityConnections;
-			if (roll < 98) 
+			if (roll < 98)
 				misionType = Mission::Type::Encounter;
         } break;
         case Corp::Division::Legal: {
@@ -227,13 +229,13 @@ void Agent::MakeOffer(Character* pChar, MissionOffer& offer) {
         } break;
         case Corp::Division::RnD: {
             //   0%   50%     50%      0%
-			if (IsEven(roll)) 
+			if (IsEven(roll))
 				misionType = Mission::Type::Trade;
         } break;
         case Corp::Division::Security: {
             //  94%    6%      0%      0%
             connectionSkillType = EvESkill::SecurityConnections;
-			if (roll < 94) 
+			if (roll < 94)
 				misionType = Mission::Type::Encounter;
         } break;
         case Corp::Division::Storage: {
@@ -281,7 +283,7 @@ void Agent::MakeOffer(Character* pChar, MissionOffer& offer) {
         case Corp::Division::SecurityNew: {
             //  94%    6%      0%      0%
             connectionSkillType = EvESkill::SecurityConnections;
-			if (roll < 95) 
+			if (roll < 95)
 				misionType = Mission::Type::Encounter;
         } break;
     }

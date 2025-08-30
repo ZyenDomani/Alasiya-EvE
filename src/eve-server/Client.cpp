@@ -407,6 +407,7 @@ void Client::ProcessClient() {
 
     if (pShipSE == nullptr) {
         sLog.Error("ProcessClient()","%s: InSpace with no shipSE.  LocationID %u", m_char->name(), m_locationID);
+        SendErrorMsg("Your ship isn't registered in the system properly.  Try docking or relogging.");
         return;
     }
 
@@ -748,11 +749,10 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         if (pShipSE != nullptr)
             pShipSE->ResetShipSystemMgr(m_system);
 
-        /*  until proven otherwise, this is redundant
         if (!m_login) {
-            m_ship->SetPosition(pt);  // pt comes from ship position...this is redundant for login
+            m_ship->SetPosition(pt);
             SetDestiny(pt);
-        } */
+        }
 
         /* comment this block for later use...
          * m_systemData.radius is not populated yet, and this does weird things with ships
@@ -782,7 +782,7 @@ void Client::SetDestiny(const GPoint& pt, bool update/*false*/) {
     m_bubbleWait = false;        // allow client processing of subsequent destiny msgs
     m_setStateSent = false;
 
-    bool updateShip = false;
+    bool updateShip(false);
     if (pShipSE == nullptr) {
         updateShip = true;
         CreateShipSE();
@@ -794,7 +794,8 @@ void Client::SetDestiny(const GPoint& pt, bool update/*false*/) {
             GetName(), GetCharID(),  pShipSE->SystemMgr()->GetID(), m_system->GetID(), update?"true":"false", \
             updateShip?"true":"false", IsJump()?"true":"false", pShipSE->DestinyMgr()->IsCloaked()?"true":"false");
 
-    //pShipSE->DestinyMgr()->SetPosition(pt, update);
+    if (update)
+        pShipSE->DestinyMgr()->SetPosition(pt, update);
 
     if (updateShip)
         UpdateNewShip();
