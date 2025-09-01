@@ -526,7 +526,7 @@ void CustomsSE::Killed(Damage &fatal_blow) {
     if (pClient != nullptr) {
         //award kill bounty.
         //AwardBounty( pClient );
-        if (m_system->GetSystemSecurityRating() > 0)
+        if (m_system->GetSecurityRating() > 0)
             AwardSecurityStatus(m_self, pClient->GetChar().get());  // this awards secStatusChange for npcs in empire space
     }
 

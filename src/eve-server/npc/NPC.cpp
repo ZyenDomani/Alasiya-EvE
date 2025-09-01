@@ -289,15 +289,21 @@ void NPC::Killed(Damage &fatal_blow) {
     if ((m_spawnMgr != nullptr) and (m_self.get() != nullptr))
         m_spawnMgr->SpawnKilled(m_bubble, m_self->itemID());
 
+    //  log faction kill in dynamic data
+    uint32 locationID(GetLocationID());
+    MapDB::AddKill(locationID);
+    MapDB::AddFactionKill(locationID);
+
+    // set killer info
     uint32 killerID(0);
     Client* pClient(nullptr);
-    SystemEntity *killer(fatal_blow.srcSE);
+    SystemEntity* killer(fatal_blow.srcSE);
 
     if (killer->HasPilot()) {
         pClient = killer->GetPilot();
         killerID = pClient->GetCharacterID();
     } else if (killer->IsDroneSE()) {
-        pClient = sEntityMgr.FindClientByCharID( killer->GetSelf()->ownerID() );
+        pClient = sEntityMgr.FindClientByCharID(killer->GetSelf()->ownerID());
         if (pClient == nullptr) {
             sLog.Error("NPC::Killed()", "killer == IsDrone and pPlayer == nullptr");
         } else {
@@ -307,23 +313,21 @@ void NPC::Killed(Damage &fatal_blow) {
         killerID = killer->GetID();
     }
 
-    uint32 locationID = GetLocationID();
-    //  log faction kill in dynamic data   -allan
-    MapDB::AddKill(locationID);
-    MapDB::AddFactionKill(locationID);
-
     if (pClient != nullptr) {
         //award kill bounty.
         AwardBounty( pClient );
-        if (m_system->GetSystemSecurityRating() > 0) {
+        if (m_system->GetSecurityRating() > 0) {
             if (pClient->InFleet()) {
                 // also distribute to fleet members in local space
                 std::vector<Client*> mVec;
                 sFltSvc.GetMemeberVec(pClient->GetFleetID(), mVec);
-                for (auto &cur : mVec)
-                    if (cur->IsInSpace())
-                        if (cur->GetShipSE()->SysBubble()->GetID() == pClient->GetShipSE()->SysBubble()->GetID())
+                for (auto &cur : mVec) {
+                    if (cur->IsInSpace()) {
+                        if (cur->GetShipSE()->SysBubble()->GetID() == pClient->GetShipSE()->SysBubble()->GetID()) {
                             AwardSecurityStatus(m_self, cur->GetChar().get());
+                        }
+                    }
+                }
             } else {
                 AwardSecurityStatus(m_self, pClient->GetChar().get());  // this awards secStatusChange for npcs in empire space
             }
@@ -342,19 +346,9 @@ void NPC::Killed(Damage &fatal_blow) {
         wreckTypeID = 26557;
     }
 
-    uint32 ownerID(killerID);
-    // test for fleet kills
-    /*
-    if (pClient != nullptr) {
-        if (pClient->InFleet()) {
-            ownerID = pClient->GetFleetID();
-        }
-    }
-    */
-
     std::string wreck_name = m_self->itemName();
     wreck_name += " Wreck";
-    ItemData wreckItemData(wreckTypeID, ownerID, locationID, flagAutoFit, wreck_name.c_str(), wreckPosition, itoa(m_allyID));
+    ItemData wreckItemData(wreckTypeID, killerID, locationID, flagAutoFit, wreck_name.c_str(), wreckPosition, itoa(m_allyID));
     WreckContainerRef wreckItemRef = sItemFactory.SpawnWreckContainer( wreckItemData );
     if (wreckItemRef.get() == nullptr) {
         sLog.Error("NPC::Killed()", "Creating Wreck Item Failed for %s of type %u", wreck_name.c_str(), wreckTypeID);
@@ -366,7 +360,7 @@ void NPC::Killed(Damage &fatal_blow) {
                 GetName(), GetID(), x(), y(), z(), wreckItemRef->name(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
 
     if ((MakeRandomFloat() < sConfig.npc.LootDropChance) or (m_allyID == factionRogueDrones))
-        DropLoot(wreckItemRef, m_self->groupID(), ownerID);
+        DropLoot(wreckItemRef, m_self->groupID(), killerID);
 
     DBSystemDynamicEntity wreckData = DBSystemDynamicEntity();
         wreckData.allianceID = (killer->GetAllianceID() == 0 ? m_allyID : killer->GetAllianceID());
@@ -376,7 +370,7 @@ void NPC::Killed(Damage &fatal_blow) {
         wreckData.groupID = EVEDB::invGroups::Wreck;
         wreckData.itemID = wreckItemRef->itemID();
         wreckData.itemName = std::move(wreck_name);
-        wreckData.ownerID = ownerID;
+        wreckData.ownerID = killerID;
         wreckData.typeID = wreckTypeID;
         wreckData.position = wreckPosition;
 

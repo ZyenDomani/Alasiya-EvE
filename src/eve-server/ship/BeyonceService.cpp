@@ -164,10 +164,6 @@ PyResult BeyonceService::Handle_GetFormations(PyCallArgs &call) {
 }
 
 PyResult BeyonceBound::Handle_CmdStop(PyCallArgs &call) {
-    _log(AUTOPILOT__MESSAGE, "%s called Stop. AP: %s, Invul: %s, Jump: %s", call.client->GetName(), \
-    (call.client->IsAutoPilot() ? "true" : "false"), (call.client->IsInvul()?"true":"false"), \
-        (call.client->IsJump()?"true":"false"));
-
     DestinyManager* pDestiny(call.client->GetShipSE()->DestinyMgr());
     if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
@@ -180,6 +176,10 @@ PyResult BeyonceBound::Handle_CmdStop(PyCallArgs &call) {
     }
     if (!pDestiny->IsMoving())
         return PyStatic.NewNone();
+
+    _log(AUTOPILOT__MESSAGE, "%s called Stop. AP: %s, Invul: %s, Jump: %s", call.client->GetName(), \
+            (call.client->IsAutoPilot() ? "true" : "false"), (call.client->IsInvul()?"true":"false"), \
+            (call.client->IsJump()?"true":"false"));
 
     call.client->SetUndock(false);
     pDestiny->SetAutoPilot(false);

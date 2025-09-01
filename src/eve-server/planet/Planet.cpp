@@ -78,7 +78,7 @@ bool PlanetSE::LoadExtras() {
     /*  quality: (min=1.0, max=154.275)  */
     // these are relative indicators of material quantity.  makes no difference to ecu or extraction amount
     // as system matures, we will begin adjusting these (from extractor data) and saving per planet
-    float sysSec = (1.1 - m_system->GetSystemSecurityRating());    // 0.1 - 2.0
+    float sysSec = (1.1 - m_system->GetSecurityRating());    // 0.1 - 2.0
     int min = round(sysSec *10);
     m_data.dist_1 = MakeRandomInt(min, 75) * sysSec + MakeRandomFloat(0, 4);
     m_data.dist_2 = MakeRandomInt(min, 75) * sysSec + MakeRandomFloat(0, 4);
@@ -289,7 +289,7 @@ void PlanetSE::CreateCustomsOffice()
         data.corporationID = corpInterbus;
     uint16 typeID = EVEDB::invTypes::InterbusCustomsOffice;
 
-    if (m_system->GetSystemSecurityRating() > 0.49) {
+    if (m_system->GetSecurityRating() > 0.49) {
         typeID = EVEDB::invTypes::PlanetaryCustomsOffice;
         data.ownerID = corpCONCORD;
         data.factionID = factionCONCORD; //sDataMgr.GetRegionFaction(m_system->GetRegionID());

@@ -162,7 +162,7 @@ void CargoContainer::RemoveItem(InventoryItemRef iRef)
      *  security status loss = relative_penalty * (agressor_sec_status + 10)
      *
     double modifier = (1 + ((GetChar()->GetSecurityRating() - client->GetSecurityRating()) /90));
-    double penalty = 6.0f * m_system->GetSystemSecurityRating() * modifier;
+    double penalty = 6.0f * m_system->GetSecurityRating() * modifier;
     double loss = penalty * (client->GetSecurityRating() + 10);
     client->GetChar()->secStatusChange( loss );
     */

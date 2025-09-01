@@ -200,16 +200,20 @@ void SystemEntity::MakeSlimItemChange() {
     m_bubble->BubblecastDestinyUpdate(&updates, "SlimItem Update" );
 }
 
-void SystemEntity::DropLoot(WreckContainerRef wreckRef, uint32 groupID, uint32 owner) {
-    /*   allan 27Nov14    */
+void SystemEntity::DropLoot(WreckContainerRef wreckRef, uint32 groupID, uint32 ownerID) {
+    /*   allan 27Nov14   UD: 31aug25 */
+    if (m_system == nullptr)
+        return;
     std::vector<LootList> lootList;
-    sDataMgr.GetLoot(groupID, lootList);
+    sDataMgr.GetLoot(m_system->GetSecValue(), groupID, lootList);
     if (lootList.empty()) {
         _log(LOOT__INFO, "lootList empty for %s(%u)", m_self->name(), m_self->itemID());
         return;
     }
 
+    uint8 secModX10(m_system->GetSecValue() * 10);   //[1, 20]
     uint32 quantity(0);
+    InventoryItemRef iRef(nullptr);
     std::vector<LootList>::iterator itr = lootList.begin();
     while (itr != lootList.end()) {
         if (itr->minDrop == itr->maxDrop) {
@@ -217,13 +221,15 @@ void SystemEntity::DropLoot(WreckContainerRef wreckRef, uint32 groupID, uint32 o
         } else {
             quantity = (uint32)(MakeRandomInt(itr->minDrop, itr->maxDrop));
         }
-        if (quantity < 1)
-            quantity = 1;
 
-        ItemData iLoot(itr->typeID, owner, wreckRef->itemID(), flagAutoFit, quantity);
-        wreckRef->AddItem(sItemFactory.SpawnItem(iLoot));
-        // get item name here...
-        _log(LOOT__INFO, "added %u of %u to list for %s(%u)", quantity, itr->typeID, m_self->name(), m_self->itemID());
+        if (quantity > 1)
+            quantity *= secModX10;
+
+        ItemData iLoot(itr->typeID, ownerID, wreckRef->itemID(), flagAutoFit, quantity);
+        iRef = sItemFactory.SpawnItem(iLoot);
+        wreckRef->AddItem(iRef);
+
+        _log(LOOT__INFO, "added %u  %s to list for %s(%u)", quantity, iRef->name(), m_self->name(), m_self->itemID());
         ++itr;
     }
 }

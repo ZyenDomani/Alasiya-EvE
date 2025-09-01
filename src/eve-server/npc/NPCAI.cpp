@@ -332,7 +332,7 @@ void NPCAIMgr::Process() {
                         continue;
                     if (cur->InPod()) {
                         if (sConfig.npc.TargetPod) {
-                            if (myNPC->SystemMgr()->GetSystemSecurityRating() > sConfig.npc.TargetPodSec)
+                            if (myNPC->SystemMgr()->GetSecurityRating() > sConfig.npc.TargetPodSec)
                                 continue;
                         } else {
                             continue;

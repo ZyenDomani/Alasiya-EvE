@@ -63,7 +63,7 @@ protected:
     bool FindSpawnForBubble(uint16 bubbleID);
     bool PrepSpawn(SystemBubble* pBubble, uint8 sClass = Spawn::Class::None, uint8 level = 0);
     void MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, uint8 level, bool anomaly=false);
-    void ReSpawn(SystemBubble* pBubble, SpawnEntry& spawnEntry);
+    void ReSpawn(SystemBubble* pBubble, Spawn::Entry& spawnEntry);
     void RemoveSpawn(uint16 bubbleID, uint32 itemID);
 
     uint8 GetSpawnGroup(uint8 sClass);
@@ -87,13 +87,14 @@ private:
     uint16 m_groupTimerSetTime;     //ms - this is for hard-coding the respawn timer time.
 
     uint32 m_spawnID;       //in case i need to track a specific spawn group.
-
+    
+    std::map<uint32, uint8> m_liveCount;         // bubbleID/rats alive
     std::vector<NPC*> m_ratSpawns;                      //vector of NPC* to spawn
-    std::vector<SpawnGroup> m_toSpawn;
+    std::vector<Spawn::toSpawn> m_toSpawn;
     std::map<uint8, uint16> m_factionGroups;            //shipClass/groupID
     std::vector<RatSpawnClass>  m_ratSpawnClass;               // spawn class for ?
     std::vector<RatFactionGroups> m_factionGroupVec;            // ?  not used
-    std::multimap<uint16, SpawnEntry> m_spawns;         //bubbleID/npc data  - each spawned npc has separate entry here
+    std::multimap<uint16, Spawn::Entry> m_spawns;         //bubbleID/npc data  - each spawned npc has separate entry here
     //std::vector<uint32, SystemSpawnGroup>  m_spawnGroups;
 };
 

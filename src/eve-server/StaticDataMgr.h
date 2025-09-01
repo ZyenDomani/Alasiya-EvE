@@ -82,7 +82,7 @@ public:
     bool                GetNPCClasses(uint8 sClass, std::vector<RatSpawnClass>& classMap);
     uint16              GetRandRatType(uint8 sClass, uint16 groupID);
     uint32              GetWreckID(uint32 typeID);  // returns wreck typeID based on given shipTypeID (incomplete, most ships done.)
-    void                GetLoot(uint32 groupID, std::vector<LootList>& lootList);
+    void                GetLoot(float secValue, uint32 groupID, std::vector<LootList>& lootList);
 
     bool                IsPublished(uint16 typeID);
     bool                IsRefinable(uint16 typeID);
@@ -257,7 +257,7 @@ private:
 
     /* loot data */
     std::multimap<uint32, LootGroup>                    m_LootGroupMap;     // typeID/data
-    std::multimap<uint32, LootGroupType>                m_LootGroupTypeMap; // typeID/data
+    std::multimap<uint32, LootType>                     m_LootTypeMap;      // typeID/data
 
     /* for pricing methods */
     std::map<uint16, std::string>                       m_salvage;          // typeID/name

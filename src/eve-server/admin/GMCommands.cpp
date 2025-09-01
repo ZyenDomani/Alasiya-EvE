@@ -252,20 +252,20 @@ PyResult Command_spawn(Client* pClient, CommandDB* db, PyServiceMgr* services, c
     if (!pClient->IsInSpace())
         throw CustomError("You must be in space to spawn things.");
 
-    if (args.argCount() < 2) {
+    if (args.argCount() < 2)
         throw CustomError(usage.c_str());
-    }
 
     if (!args.isNumber(1))
-        throw CustomError("Argument 1 should be an item type ID");
+        throw CustomError("Argument 1 should be an item typeID");
 
     int typeID = atoi(args.arg(1).c_str());
 
+    if (typeID > 32767)
+        throw CustomError("invalid typeID");
+
     // Search for item type using typeID:
     if (!(db->ItemSearch(typeID, actualTypeID, actualTypeName, actualGroupID, actualCategoryID, actualRadius)))
-    {
         return new PyString("Unknown typeID or typeName returned no matches.");
-    }
 
     if (args.argCount() > 2)
     {
@@ -288,17 +288,17 @@ PyResult Command_spawn(Client* pClient, CommandDB* db, PyServiceMgr* services, c
         {
             if (!(args.isNumber(4)))
                 throw CustomError("Argument 5 should be the Y distance from your ship in meters you want the item spawned");
-        }
-        else
+        } else {
             throw CustomError("TOO FEW PARAMETERS: %s", usage.c_str());
+        }
 
         if (args.argCount() > 5)
         {
             if (!(args.isNumber(5)))
                 throw CustomError("Argument 6 should be the Z distance from your ship in meters you want the item spawned");
-        }
-        else
+        } else {
             throw CustomError("TOO FEW PARAMETERS: %s", usage.c_str());
+        }
 
         offsetLocation.x = atoll(args.arg(3).c_str());
         offsetLocation.y = atoll(args.arg(4).c_str());

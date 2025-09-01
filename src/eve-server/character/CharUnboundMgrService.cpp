@@ -256,7 +256,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         sItemFactory.UnsetUsingClient();
         return PyStatic.NewZero();
     }
-    
+
     charRef->SetClient(pClient);      // set client in char
 
     // add call to JoinCorp here, and remove corp shit from charDB
@@ -291,7 +291,6 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
 
     //load skills
     std::map<uint32, uint8> startingSkills;
-    startingSkills.clear();
 	//  Base Skills
     if (!CharacterDB::GetBaseSkills(startingSkills)) {
         _log(CLIENT__ERROR, "Failed to load char Base skills. Bloodline %u, Ancestry %u.",
@@ -329,7 +328,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         skill->SetAttribute(AttrSkillPoints, skillPoints, false);
         skill->SaveItem();
         cdata.skillPoints += skillPoints;
-        charRef->SaveSkillHistory(EvESkill::Event::CharCreation, // 'CharCreation' shows as "Unknown" in PD>Skill>History
+        charRef->SaveSkillHistory(EvESkill::Event::CharCreation,
                                   GetFileTimeNow(),
                                     charRef->itemID(),
                                     cur.first,

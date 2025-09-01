@@ -175,39 +175,6 @@ struct CosmicSignature {
     std::string sigName="none";        // site name if scanGroupID is sig or anom and certainty > 0.75
 };
 
-/* POD structure for spawn groups */
-struct SystemSpawnGroup { //reference to this bubble's data for spawn groups.  may need later.
-    //SystemBubble* pSysBubble;   //cant use reference or pointer here...
-    uint32 bubbleID=0;
-    uint32 systemID=0;
-    uint32 regionID=0;
-    double secRating=0;
-};
-
-/* POD structure for spawn groups */
-struct SpawnGroup {
-    uint8 quantity=0; //quantity to spawn for this typeID
-    uint16 typeID=0;  //typeID to spawn
-};
-
-/* POD structure for spawn entries */
-struct SpawnEntry {     // this is a single entry for a particular spawn.  it is probably one of many
-    bool enabled=false;   // is respawn enabled for this entry?  also provides conditional test for SpawnMgr::IsChaining() method
-    uint8 spawnClass=0;   // spawn class.  0 = none, 1-7 = easy to insane based on sysSec, 8 = hauler, 9 = commander, 10 = officer  - 20+ are anomalies
-    uint8 spawnGroup=0;   // spawn group.   1 = roaming, 2 = static, 3 = anomaly, 4 = combat, 5 = deadspace, 6 = mission, 7 = incursion, 8 = sleeper, 9 = escalation
-    uint8 total=0;        // total number of this group spawned
-    uint8 number=0;       // this rat's number in group (to match up with above total)
-    uint8 level=0;        // spawn data subtype/wave
-    uint8 classID=0;      // spawn data class id (in case we have to look it up again)
-    uint16 typeID=0;      // rat type id
-    uint16 groupID=0;     // rat group id (may look into changing typeID within group later on respawn (for chaining))
-    uint16 spawnID=0;     // spawn id (if needed to match up with other spawns of this group (multiple spawn types in this group))
-    uint16 stamp=0;       // entry stamp time to respawn (process conditional to allow for common timer and multiple respawn times)
-    uint32 itemID=0;      // rat entity id
-    uint32 corpID=0;      // rat corp id
-    uint32 factionID=0;   // rat faction id
-};
-
 /* POD structure for spawn faction groups */
 struct RatFactionGroups {  // notes for me while creating/writing/testing
     uint8 shipClass=0;      // shipClass as defined in Spawn::Class
@@ -244,12 +211,13 @@ struct LootGroup {
 };
 
 /* POD structure for loot types */
-struct LootGroupType {
+struct LootType {
     uint8 metaLevel=0;
     uint16 lootGroupID=0;
     uint16 typeID=0;
     uint32 minQuantity=0;
     uint32 maxQuantity=0;
+    float dropChance=0.0f;
 };
 
 /* POD structure for possible loot drops */

@@ -87,7 +87,7 @@ m_minutes(0),
 m_data(SystemData()),
 m_killData(SystemKillData())
 {
-    sDataMgr.GetSystemData(systemID, m_data);   // system data is now an internal memory (cached) object.  db is hit once at system boot.
+    sDataMgr.GetSystemData(systemID, m_data);   // system data is now an internal memory (cached) object.
     m_secValue -= m_data.security;  // range is 0.1 for 1.0 system to 2.0 for -0.9 system
 
     _log(COMMON__MESSAGE, "Created SystemManager %p for System %s(%u)", this, m_data.name.c_str(), m_data.systemID);
@@ -859,7 +859,9 @@ void SystemManager::DoSpawnForBubble(SystemBubble* pBubble, uint8 type/*normal*/
             }
         } break;
         case Bubble::Type::Gate: {
-            error = m_spawnMgr->DoSpawnForBubble(pBubble);
+            if (m_activeGateSpawns < m_gateCount) {
+                error = m_spawnMgr->DoSpawnForBubble(pBubble);
+            }
         } break;
         case Bubble::Type::Anomaly:
         case Bubble::Type::Mission:
@@ -917,12 +919,13 @@ void SystemManager::GetSpawnBubbles(SpawnBubbleMap &bubbleMap) {
 
 void SystemManager::RemoveSpawnBubble(SystemBubble* pBubble) {
     if (pBubble->IsBelt()) {
-        m_ratBubbles.erase(pBubble->GetID());
         --m_activeRatSpawns;
     } else if (pBubble->IsGate()) {
-        m_ratBubbles.erase(pBubble->GetID());
         --m_activeGateSpawns;
     }
+
+    m_ratBubbles.erase(pBubble->GetID());
+
     if (is_log_enabled(SPAWN__MESSAGE))
         _log(SPAWN__MESSAGE, "SystemManager::RemoveSpawnBubble() - called for bubble %u in %s(%u).  %u belt and %u gate spawns remain.", \
                 pBubble->GetID(), m_data.name.c_str(), m_data.systemID, m_activeRatSpawns, m_activeGateSpawns);

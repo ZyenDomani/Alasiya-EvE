@@ -89,7 +89,7 @@ void SystemBubble::Process() {
      */
 
     // rats in secure empire space?  nope.  its secure
-    if (m_system->GetSystemSecurityRating() > 0.9f)
+    if (m_system->GetSecurityRating() > 0.9f)
         return;
     if (!m_spawnTimer.Enabled())
         return;
@@ -182,7 +182,7 @@ void SystemBubble::Add(SystemEntity* pSE) {
             case Bubble::Type::Gate: {
                 if (sConfig.npc.StaticSpawns)
                     if (!m_spawnTimer.Enabled())
-                        SetSpawnTimer(true);
+                        SetSpawnTimer();
             } break;
             case Bubble::Type::Ice:
             case Bubble::Type::Belt: {
@@ -190,7 +190,7 @@ void SystemBubble::Add(SystemEntity* pSE) {
             m_system->GetBeltMgr()->CheckSpawn(m_bubbleID);
             if (sConfig.npc.RoamingSpawns)
                 if (!m_spawnTimer.Enabled())
-                    SetSpawnTimer(true);
+                    SetSpawnTimer();
             } break;
             case Bubble::Type::Anomaly:
             case Bubble::Type::Mission:
@@ -295,12 +295,12 @@ void SystemBubble::ResetBubbleRatSpawn() {
         case Bubble::Type::Belt: {
             if (sConfig.npc.RoamingSpawns)
                 if (!m_spawnTimer.Enabled())
-                    SetSpawnTimer(true);
+                    SetSpawnTimer();
         } break;
         case Bubble::Type::Gate: {
             if (sConfig.npc.StaticSpawns)
                 if (!m_spawnTimer.Enabled())
-                    SetSpawnTimer(false);
+                    SetSpawnTimer();
         } break;
         case Bubble::Type::Anomaly:
         case Bubble::Type::Mission:
@@ -312,8 +312,8 @@ void SystemBubble::ResetBubbleRatSpawn() {
     }
 }
 
-void SystemBubble::SetSpawnTimer(bool isBelt/*false*/) {
-    if (m_system->GetSystemSecurityRating() > 0.9)
+void SystemBubble::SetSpawnTimer() {
+    if (m_system->GetSecurityRating() > 0.9)
         return;
 
     if (sConfig.debug.SpawnTest) {

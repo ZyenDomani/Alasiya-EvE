@@ -97,7 +97,7 @@ bool PlanetMgr::UpgradeCommandCenter(UUNCommand& nc)
     std::string reason = "DESC:  Command Center upgrade on ";
     reason += m_planet->GetName();
     uint32 ownerID = corpCONCORD;
-    if (m_planet->SystemMgr()->GetSystemSecurityRating() < 0.5)
+    if (m_planet->SystemMgr()->GetSecurityRating() < 0.5)
         ownerID = corpInterbus;
     AccountService::TransferFunds(
                     m_client->GetCharacterID(),
@@ -124,7 +124,7 @@ bool PlanetMgr::CreatePin(UUNCommand& nc)
             std::string reason = "DESC:  Command Center construction on ";
             reason += m_planet->GetName();
             uint32 ownerID = corpCONCORD;
-            if (m_planet->SystemMgr()->GetSystemSecurityRating() < 0.5)
+            if (m_planet->SystemMgr()->GetSecurityRating() < 0.5)
                 ownerID = corpInterbus;
             AccountService::TransferFunds(
                         m_client->GetCharacterID(),
@@ -233,7 +233,7 @@ bool PlanetMgr::CreatePin(UUNCommand& nc)
     reason += " Construction on ";
     reason += m_planet->GetName();
     uint32 ownerID = corpCONCORD;
-    if (m_planet->SystemMgr()->GetSystemSecurityRating() < 0.5)
+    if (m_planet->SystemMgr()->GetSecurityRating() < 0.5)
         ownerID = corpInterbus;
     AccountService::TransferFunds(
                 m_client->GetCharacterID(),

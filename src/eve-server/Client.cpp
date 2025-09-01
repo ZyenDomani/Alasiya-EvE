@@ -464,8 +464,8 @@ void Client::ProcessClient() {
                 } break;
                 case Player::State::Undock: {
                     _log(CLIENT__TIMER, "ProcessClient()::CheckState():  case: Undock");
-                    pShipSE->DestinyMgr()->Undock(m_movePoint);
                     SetBallPark();
+                    pShipSE->DestinyMgr()->Undock(m_movePoint);
                     m_clientState = Player::State::Idle;
                 } break;
                 case Player::State::Killed: {

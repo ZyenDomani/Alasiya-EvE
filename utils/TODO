@@ -1,7 +1,7 @@
 
 *******************************************************
 ****  Allan's EvEmu TODO LIST
-****     29 August 2025
+****     31 August 2025
 
     note:  this whole file needs to be reorganized (wip)
 
@@ -25,9 +25,6 @@ NOTE:  for calls that use internal methods that send a reply, model from InjectS
 subsequent chars not added to existing char's local chat (but new chars have existing chars in chat)
 
 same acct can be logged in multiple times
-
-to avoid db hits for every dock/undock, implement postExpression processing
-  -- yeah, easier to delete/reload
 
 work on buglist, integrate this list in there where i can (in order)
     - modules/fitting  ...  see 'module system coding' below for list of current problems
@@ -55,6 +52,7 @@ char creation - figure certs and set skills accordingly
     - currently, most new chars dont qualify for any certs.
     - they should at least have a starter profession cert
     - this will take more thought and time
+    write method to pull skill data and print.  will use this as base then modify as needed.
 
 
 *******************************************************
@@ -99,19 +97,12 @@ update sendGFX to distinguish between weapon and ewar for using AttrGfxTurretID 
     In particular, elite rats (see NPC Naming Convention) have a higher probability of attacking your drones.
     At the extreme end, Sleeper NPC are very fond of attacking drones.
 *** check m_entityChaseRange and m_entityAttackRange.  same value for drones (need to adjust logic)
-NPC hauler spawn has no loot defined.
-
 
 lsc system better, but incomplete and needs revisiting    -priority level: med-lo
     - may need xmlp code instead of muddled python decoding
     - whole system needs update or possible rewrite
     - "join channel" window->corp has "None" as corp name
 
-after using "Loot All" on yellow wreck, items dont show up in cargo.  (diff ownerID)
-  inv::load should use locationID (and does) but not sure about ownerID bit...review
-  NOTE:  all items show after relog
-
-character remap needs a bit more work.  attributes and bonuses save/load correctly.  client code needs update
 
 entire Inv codebase is slow.  loading chars (and their inventory) is biggest bottleneck in server (>400ms avg)
   updated as much as i know how right now
@@ -123,7 +114,7 @@ ImageServer::GetImage - fclose(fp)
 temp object going out of scope - return (uptime.str().c_str());
 
 go thru entire codebase and determine where variable precision is needed and adjust accordingly (float/double - int/uint/8/16/32/64)
-    radius() doesnt need to be double
+    radius() doesnt need to be double  (43 matches in 26 files)
 
 go thru all header #include to determine if it is actually needed in header as opposed to #include in .cpp
 while you're at it, verify member initialization is correct.  i know destiny isnt (and it's member list is huge)
@@ -212,17 +203,6 @@ can you repack t3 ships??
 when t3 ship killed, pilot will lose sp in a required skill for each of the 5 subsystems.
     not sure how this is determined, or how many sp lost.
 
-jumpCloneSvc needs work to allow capital ships `show info` tab to work in space.  hacked to avoid client error
-NOTE:  aknor has packets
-    - this class is barely above skeleton code, and hardly researched.
-    - jump clones arent even close to implementation, so its nbd at this point
-    - client distinguishes between clones by "podClone" and "jumpClone"
-        we should do the same once work begins on jump clones
-
-item contraband.....this needs implementing
-    - will be used in system security
-    - could this be a dataset in static data mgr for market items to avoid loading?
-
 market code
     - determine and code methods for using arum as credit type?
     - still needs more review for update/rewrite/improvements
@@ -288,6 +268,19 @@ is DataClasses.h used?  will it be?
   - its refd in pos code, but not used yet
 
 
+npc loot data needs rework
+  - currently writing hauler loot
+  - use this as template for other loot data
+loot is determined as follows:
+make list of possible lootItemGroups from lootGroup based on ship groupID
+roll random on each lootItemGroups from chances in lootGroup list for inclusion
+roll random for metaLevel modified by system secStatus
+make list of potential items from lootItemGroup and metaLevel
+roll random for each item in above list and add to lootVec
+add successful items to lootVec
+-- npc loot chance in lootGroup and lootItemGroup is wonky
+get one random item from lootVec and add to final lootList
+
 
 *******************************************************
 *******************************************************
@@ -334,7 +327,6 @@ RefObjects -  UPDATE...removed RefPtr from Py* classes.  the notes below need re
 Py* objects that have long int as key need 'delete' called on key when destroyed (mem leak)
   - this could be error in valgrind.  most strings have some form of new(long) due to string length arg
 
-
 90% of valgrind "Definitely Lost" errors are from "x = new Py*()" calls.
     - most of these are Encode() calls that dont delete(x) on item destruction
     - review valgrind logs to verify Decode() isnt leaking (multiple "new" w/o delete, but could be delete elsewhere)
@@ -344,10 +336,6 @@ review all classes to add rule of 5 or =delete as required
     - PyRep Classes - add move semantics - done but still testing  so far no hits on move or copy assign
     - InventoryItem done?  (copy, move c'tor assert'd.  assign =delete'd   -- no hits on any yet)
     - others?
-
-added specific ref tracking to PyRep code, and removed inherited RefObject.
-  - easier to debug, but still convoluted system and not completely understood
-  - config var to delete on zero works, but references arent inc/dec properly yet (currently segfaults on char load into station with market open)
 
 *******************************************************
 *******************************************************
@@ -361,8 +349,6 @@ code in question (coverity) is packets/bookmarks.cpp:590 - object = new PyObject
 this calls copy c'tor, creates new temp, assigns object = temp, temp goes out of scope, d'tor doesnt release, temp leaks
    -- i guess i dont completely understand c'tor operation yet.   would this move if available?
    -- figure a way to create/test move semantics for packet shit.
-
-check ALL client tests of "IsNone" and verify data type is set correctly (pyrep instead of pyint)
 
 
 remove "Notify*" from notify names....implement better naming convention (see above)
@@ -385,6 +371,12 @@ look into removing xmlp encode() for things we can build in code
 *******************************************************
 *******************************************************
 *****************   module system coding
+
+01:34:56 [Bound] DogmaIMBound::Activate()
+01:34:57 [FxWarning] FxProc::ParseExpression(): opGROUP using expressionValue None called by None (Autogenerated group, None) from 200mm Light 'Scout' Autocannon I
+
+02:08:32 E AM::SendGFX(): m_effectID < 1 for typeID:2046 (Damage Control I).
+
 
 module/charge fx out of order in map.
 
@@ -461,9 +453,6 @@ rename AttributeMap to AttributeMgr
 client/script/ui/shared/neocom/locationInfoSvc.py
     this file has data for some items we dont have info/data/code for yet
 
-** called when asteroids are clicked on in belt...dunno why
-    19:50:46 [Service] config::GetMultiLocationsEx()
-    19:50:46 W GetMultiLocationsEx: Asteroid Items (450000577) requested.
 
 asteroid/belt grow
   - idea is roids' gravity will accumulate more ore in areas unmolested by ships...after 6h or so
@@ -478,6 +467,10 @@ all the *Timers in client are actually SetTime +1s
 add formatting and colors to custom error msgs
   - seem like client msg window has limited support for html
   - also seems like i knew this already, as there are msgs using it (fleetdata)
+
+item contraband.....this needs implementing
+    - will be used in system security
+    - could this be a dataset in static data mgr for market items to avoid loading?
 
 InvBrokerService needs love
 mapservice  needs love
@@ -514,10 +507,6 @@ still need to host agent photos...
 
 check james' alliance code for proper functionality...not sure about some of those variables
 
-check into cosmic manager enabling checks/code....kinda dont make sense (may have done this already)
-*** this below is wrong.  look into it.  UD: why is this wrong?
-20:21:01 [CMgr Msg] AnomalyMgr Initialized for Ibaria(30000053) with 2 Max Signals for security class 0.37.  Test Server is enabled
-
 base price estimator code 95% complete.
 few prices wrong and not in crucible mkt data dump
 static category names are a bit off (semantics)
@@ -551,11 +540,15 @@ go thru all updated effect data and look for 'improved' ship data to update ours
     - updated barges from current live patch (hot tanks)
 current fx data in db incomplete at best.  missing multiple items/defs
 seems like fx system isnt as complete as i thought, and there are more interconnected workings than i have coded/working
-namely, inertiaMod and agility shit (which is driving me nuts atm)
+namely, inertiaMod and agility shit (which is driving me nuts atm)  (not enough info here....dunno what i was talking about)
 effects processing incomplete....this may be much more complete than i implied here, mostly because i forgot how it worked when looking over it.
     - must have skills skillLvl working somehow to implement proper agility processing...maybe not.
     NOTE:  fxProc is working very well with all available data
-something else about changing fx calc data to fx code....i dont remember what i was thinking now...
+
+15:30:42 [Attr Error] AttributeMap::SetAttribute() - Something sent NaN or Inf for Attr 351 on 'Abandon' Tracking Disruptor I(140023209). Returning without modifying.
+15:30:42 [Attr Error] AttributeMap::SetAttribute() - Something sent NaN or Inf for Attr 309 on Kapteyn Sensor Array Inhibitor I(140023207). Returning without modifying.
+
+
 
 check data sent by client for bound objects to see what we can use.
     verify members for bound objects.  we may need to add few more to avoid redirects (cant find data on effectiveness of static member vs multi-redirect call)
@@ -719,6 +712,13 @@ PI Launch status need *some way* to tick for launch reentry
 store/board ship in cap ship hangar not coded
 
 ship selfdestruct not coded
+
+jumpCloneSvc needs work to allow capital ships `show info` tab to work in space.  hacked to avoid client error
+NOTE:  aknor has packets
+    - this class is barely above skeleton code, and hardly researched.
+    - jump clones arent even close to implementation, so its nbd at this point
+    - client distinguishes between clones by "podClone" and "jumpClone"
+        we should do the same once work begins on jump clones
 
 authentication and session still need work, but i dont fully understand them
 look into OnSessionMutated to see if we can implement it properly

@@ -256,7 +256,7 @@ public:
 
 
     /* public generic functions handled in base class. */
-    void                        DropLoot(WreckContainerRef wreckRef, uint32 groupID, uint32 owner);
+    void                        DropLoot(WreckContainerRef wreckRef, uint32 groupID, uint32 ownerID);
     void                        AwardSecurityStatus(InventoryItemRef iRef, Character* pChar);
     bool                        ApplyDamage(Damage &d); /* This method is defined in Damage.cpp */
     double                      DistanceTo2(const SystemEntity* other);

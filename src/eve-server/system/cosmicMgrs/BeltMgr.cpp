@@ -268,7 +268,7 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>&
 
     bool ice(pSE->GetTypeID() == 17774);
 
-    float secRating = m_system->GetSystemSecurityRating();
+    float secRating = m_system->GetSecurityRating();
     float secValue = m_system->GetSecValue();
     std::unordered_multimap<float, uint16> roidDist;
     if (ice) {
@@ -277,7 +277,7 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>&
     } else if (anomaly) {
         roidDist = roidTypes;
     } else {
-        sDataMgr.GetRoidDist(m_system->GetSystemSecurityClass(), roidDist);
+        sDataMgr.GetRoidDist(m_system->GetSecurityClass(), roidDist);
     }
 
     int8 pcs = 5;

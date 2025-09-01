@@ -126,17 +126,17 @@ bool AnomalyMgr::Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr)
 
     // set internal check data
     // range is 0.1 for 1.0 system to 2.0 for -0.9 system
-    float security = m_system->GetSecValue();
+    float secRating(m_system->GetSecurityRating());
     if (sConfig.debug.IsTestServer) {
         m_procTimer.Start(10 * EvE::Timer::Second);  // 10s
     } else {
-             if (security == 2.0)  { m_maxSigs = 25; }
-        else if (security > 1.501) { m_maxSigs = 20; }
-        else if (security > 1.001) { m_maxSigs = 15; }
-        else if (security > 0.751) { m_maxSigs = 12; }
-        else if (security > 0.451) { m_maxSigs = 8; }
-        else if (security > 0.251) { m_maxSigs = 5; }
-        else                       { m_maxSigs = 3; }
+             if (secRating > 1.7f)   { m_maxSigs = 25; }
+        else if (secRating > 1.5f)   { m_maxSigs = 20; }
+        else if (secRating > 1.0f)   { m_maxSigs = 15; }
+        else if (secRating > 0.75f)  { m_maxSigs = 12; }
+        else if (secRating > 0.45f)  { m_maxSigs = 8; }
+        else if (secRating > 0.25f)  { m_maxSigs = 5; }
+        else                         { m_maxSigs = 3; }
 
         m_procTimer.Start(2 * EvE::Timer::Minute);  // 2m
     }
@@ -144,8 +144,8 @@ bool AnomalyMgr::Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr)
     /* load current data?, start timers, process current data, and create new items, if needed */
     /** @todo all anomalies are currently temp items.  if/when we start saving them, create new table and itemIDs*/
 
-    _log(COSMIC_MGR__MESSAGE, "AnomalyMgr Initialized for %s(%u) with %u Max Signals for security class %0.2f.  Test Server is %s", \
-                m_system->GetName(), m_system->GetID(), m_maxSigs, security, sConfig.debug.IsTestServer?"enabled":"disabled");
+    _log(COSMIC_MGR__MESSAGE, "AnomalyMgr Initialized for %s(%u) with %u Max Signals for security rating %0.2f.  Test Server is %s", \
+                m_system->GetName(), m_system->GetID(), m_maxSigs, secRating, sConfig.debug.IsTestServer?"enabled":"disabled");
 
     return (m_initalized = true);
 }

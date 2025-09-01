@@ -410,7 +410,7 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
             while (itr != args.itemIDs.end()) {
                 lRef = sItemFactory.GetItemRefFromID(*itr);
                 if (lRef.get() != nullptr)
-                    lRef->ChangeOwner(m_ownerID);       // change to this item's owner...how would this work for corp ships?
+                    lRef->ChangeOwner(m_ownerID, true);       // change to this item's owner...how would this work for corp ships?
                 ++itr;
             }
             // here, we can check looting rights and even set criminal aggression

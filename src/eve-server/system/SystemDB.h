@@ -51,7 +51,7 @@ public:
     static bool GetWrecksToTypes(DBQueryResult& res);
 
     static void GetLootGroups(DBQueryResult& res);
-    static void GetLootGroupTypes(DBQueryResult& res);
+    static void GetLootTypes(DBQueryResult& res);
 
     static bool GetCelestialObjectData(uint32 celestialID, CelestialObjectData &into);
 

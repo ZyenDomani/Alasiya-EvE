@@ -87,11 +87,10 @@ void DestinyManager::Process() {
         case Ball::Mode::STOP: {
             if (IsMoving()) {
                 MoveObject();
-            } else if (m_stop) {
                 return;
-            } else {
-                Stop();
             }
+
+            Stop();
         } break;
         case Ball::Mode::GOTO: {
             MoveObject();
@@ -425,6 +424,10 @@ void DestinyManager::Pause() {
 
 //Global Actions:
 void DestinyManager::Stop() {
+    if (mySE->HasPilot())
+        if (mySE->GetSelf()->GetShipItem()->IsUndocking())
+            return;
+    
     if (m_stop)
         return;
 
@@ -482,7 +485,7 @@ void DestinyManager::Stop() {
             m_ballMode = Destiny::Ball::Mode::STOP;
             return;
         }
-        
+
         // if warp not started, reset warp vars and fall thru to allow stop
         if (mySE->GetSelf()->HasAttribute(AttrWarpCapacitorNeed)) {
             m_warpCapacitorNeed = mySE->GetSelf()->GetAttribute(AttrWarpCapacitorNeed).get_double();
@@ -2476,6 +2479,7 @@ void DestinyManager::Undock(GPoint dir) {
 void DestinyManager::SetUndockSpeed() {
     //start ship movement @ max velocity for undocking.  also used by missiles to simulate launching @ full speed
     // this simulates being forcefully "ejected" from station
+    m_stop = false;
     m_accel = true;
     m_changeDelay = true;   // skip next tic before making change
     m_shipAccelTime = 0.5f;

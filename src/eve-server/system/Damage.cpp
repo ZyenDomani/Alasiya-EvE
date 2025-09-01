@@ -456,7 +456,7 @@ void ShipSE::Killed(Damage &damage) {
         return;    //  make error here
 
     if (pClient != nullptr)
-        if (m_system->GetSystemSecurityRating() > 0) {
+        if (m_system->GetSecurityRating() > 0) {
             /* http://www.eveinfo.net/wiki/ind~4067.htm
              *  relative_sec_status_penalty = base_penalty * system_truesec * (1 + (victim_sec_status - agressor_sec_status) / 90)
              *  The actual drop in security status seen by the attacker is a function of their current security status and the relative penalty:
@@ -464,7 +464,7 @@ void ShipSE::Killed(Damage &damage) {
              */
             /** @todo (allan) check for faction/corp status modifiers here. */
             double modifier = (1 + ((pPilot->GetSecurityRating() - pClient->GetSecurityRating()) / 90));
-            double penalty = 6.0f * m_system->GetSystemSecurityRating() * modifier;
+            double penalty = 6.0f * m_system->GetSecurityRating() * modifier;
             double loss = penalty * ( pClient->GetSecurityRating() + 10);
             loss *= sConfig.rates.secRate;
             pClient->GetChar()->secStatusChange( loss );

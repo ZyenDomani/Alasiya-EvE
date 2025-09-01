@@ -157,14 +157,16 @@ void Prospector::CheckSuccess()
     _log(MODULE__DEBUG, "Prospector::CheckSuccess - chance: %i, roll: %u, success: %s", chance, roll, (m_success ? "true" : "false"));
 }
 
-void Prospector::DropSalvage()
-{
+void Prospector::DropSalvage() {
     if (m_targetSE == nullptr)
         return;
 
     std::vector<uint32> list;
-    list.clear();
     sDataMgr.GetSalvage(atoi(m_targetSE->GetSelf()->customInfo().c_str()), list);
+
+    bool drone(false);
+    if (atoi(m_targetSE->GetSelf()->customInfo().c_str()) == factionRogueDrones)
+        drone = true;
 
     if (!list.empty()) {
         uint8 drop(0);
@@ -182,8 +184,13 @@ void Prospector::DropSalvage()
         uint32 quantity = 0, minDrop = drop, maxDrop = (drop * sConfig.rates.DropSalvage);
         for (auto &cur : list) {
             // each drop has 50/50 chance.  may need to change this later.   base on char's salvage skill?
-            if (IsEven(MakeRandomInt(0,10)))
+            if (drone) {
+                // if drone, then chance is less than half
+                if (MakeRandomInt() < 70)
+                    continue;
+            } else if (IsEven(MakeRandomInt())) {
                 continue;
+            }
             quantity = (MakeRandomInt(minDrop, maxDrop));
             ItemData iLoot(cur, pChar->itemID(), locTemp, flagAutoFit, quantity);
             iRef = sItemFactory.SpawnItem(iLoot);

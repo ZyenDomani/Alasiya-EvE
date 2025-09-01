@@ -378,7 +378,7 @@ void Agent::MakeOffer(Character* pChar, MissionOffer& offer) {
     // bonus based on destination system trusec
     if (pSysMgr != nullptr) {
         isk *= (1.0f + pSysMgr->GetSecValue());   // 1.1 to 3.0
-        lp -= pSysMgr->GetSystemSecurityRating(); // 0.6288 to 2.5288
+        lp -= pSysMgr->GetSecurityRating(); // 0.6288 to 2.5288
     }
 
     //5% payout bonus per skill level

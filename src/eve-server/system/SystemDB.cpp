@@ -339,9 +339,9 @@ void SystemDB::GetLootGroups(DBQueryResult& res) {
     }
 }
 
-void SystemDB::GetLootGroupTypes(DBQueryResult& res) {
-    if (!sDatabase.RunQuery(res, "SELECT itemGroupID, itemID, itemMetaLevel, minAmount, maxAmount FROM lootItemGroup")) {
-        codelog(DATABASE__ERROR, "Error in GetLootGroupTypes query: %s", res.error.c_str());
+void SystemDB::GetLootTypes(DBQueryResult& res) {
+    if (!sDatabase.RunQuery(res, "SELECT itemGroupID, itemID, itemMetaLevel, itemDropChance, minAmount, maxAmount FROM lootItemGroup")) {
+        codelog(DATABASE__ERROR, "Error in GetLootTypes query: %s", res.error.c_str());
         return;
     }
 }

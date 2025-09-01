@@ -83,7 +83,7 @@ void StaticDataMgr::Clear()
     m_stationRegion.clear();
     m_stationSystem.clear();
     m_oreBySecClass.clear();
-    m_LootGroupTypeMap.clear();
+    m_LootTypeMap.clear();
     m_WrecksToTypesMap.clear();
 
     SafeDelete(m_agents);
@@ -221,7 +221,7 @@ void StaticDataMgr::Populate()
             data.basePrice              = row.GetDouble(10);
             //data.published              = (sConfig.server.AllowNonPublished ? true : row.GetBool(11));
             data.published              = row.GetBool(11);
-            data.marketGroupID          = (row.IsNull(11) ? 0 : row.GetUInt(12));
+            data.marketGroupID          = (row.IsNull(12) ? 0 : row.GetUInt(12));
             data.chanceOfDuplicating    = row.GetFloat(13);
             data.metaLvl                = (row.IsNull(14) ? 0 : row.GetUInt(14));
             // these will take a bit of work, but will eliminate multiple db hits on inventory/menu loading ingame
@@ -633,24 +633,25 @@ void StaticDataMgr::Populate()
         //SELECT npcGroupID, itemGroupID, groupDropChance FROM lootGroup
         LootGroup lootGroup             = LootGroup();
         lootGroup.lootGroupID           = row.GetInt(1);
-        lootGroup.dropChance            = row.GetDouble(2);
+        lootGroup.dropChance            = row.GetFloat(2);
         m_LootGroupMap.emplace(row.GetInt(0), lootGroup);
     }
 
     startTime = GetTimeMSeconds();
-    SystemDB::GetLootGroupTypes(*res);
+    SystemDB::GetLootTypes(*res);
     while (res->GetRow(row)) {
-        //SELECT itemGroupID, itemID, itemMetaLevel, minAmount, maxAmount FROM lootItemGroup
-        LootGroupType GroupType         = LootGroupType();
-        GroupType.lootGroupID           = row.GetInt(0);
-        GroupType.typeID                =  row.GetInt(1);
-        GroupType.metaLevel             = row.GetInt(2);
-        GroupType.minQuantity           = row.GetInt(3);
-        GroupType.maxQuantity           = row.GetInt(4);
-        m_LootGroupTypeMap.emplace(row.GetInt(0), GroupType);
+        //SELECT itemGroupID, itemID, itemMetaLevel, itemDropChance, minAmount, maxAmount FROM lootItemGroup
+        LootType lootType         = LootType();
+        lootType.lootGroupID           = row.GetInt(0);
+        lootType.typeID                = row.GetInt(1);
+        lootType.metaLevel             = row.GetInt(2);
+        lootType.dropChance            = row.GetFloat(3);
+        lootType.minQuantity           = row.GetInt(4);
+        lootType.maxQuantity           = row.GetInt(5);
+        m_LootTypeMap.emplace(row.GetInt(0), lootType);
     }
-    sLog.Cyan("    StaticDataMgr", "%lu loot groups and %lu loot group types loaded in %.3fms.",
-              m_LootGroupMap.size(), m_LootGroupTypeMap.size(), (GetTimeMSeconds() - startTime));
+    sLog.Cyan("    StaticDataMgr", "%lu loot groups and %lu loot types loaded in %.3fms.",
+              m_LootGroupMap.size(), m_LootTypeMap.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
     uint32 locationID(0);
@@ -968,32 +969,45 @@ uint32 StaticDataMgr::GetWreckID(uint32 typeID) {
     return 0;
 }
 
-void StaticDataMgr::GetLoot(uint32 groupID, std::vector<LootList>& lootList) {
+void StaticDataMgr::GetLoot(float secValue, uint32 groupID, std::vector<LootList>& lootList) {
+    // called by SE::DropLoot()
     double profileStartTime(GetTimeUSeconds());
 
     float randChance(0.0f);
     uint8 metaLevel(0);
-    std::vector<LootGroupType> lootGrpVec;
+    uint8 secModX10(secValue * 10);   //[1, 20]
+    int8 secMod(secValue / 10); //[0.01, 0.2]
+    // modified chances for metaLevel checks - lower security = higher chance
+    //  meta level 0                      0.50 - 0.70
+    float one(0.5f + secMod);           //0.51 - 0.70
+    float two(0.3f + secMod);           //0.31 - 0.50
+    float three(0.1f + secMod);         //0.11 - 0.30
+    float four(0.0f + secMod);          //0.01 - 0.20
+
+    std::vector<LootType> lootGrpVec;
 
     // Finds a range containing all elements whose key is k.
     // pair<iterator, iterator> equal_range(const key_type& k)
     auto range = m_LootGroupMap.equal_range(groupID);
     for (auto it = range.first; it != range.second; ++it) {
-        _log(LOOT__INFO, "checking lootGroup %u with chance of %.2f", it->second.lootGroupID, it->second.dropChance);
+        _log(LOOT__INFO, "checking GroupID %u with %.2f% chance", it->second.lootGroupID, it->second.dropChance);
         // make lootMap of lootGroupID's
-        if (MakeRandomFloat(0, 1) < it->second.dropChance) {
-            randChance = MakeRandomFloat(0, 1);
-            metaLevel = 0;
-            if (randChance < 0.1) {
+        if (MakeRandomFloat() < it->second.dropChance) {
+            randChance = MakeRandomFloat();  // chance in 1.0 - chance in -0.9
+            if (randChance < four) {            //01 - 20
                 metaLevel = 4;
-            } else if (randChance < 0.25) {
+            } else if (randChance < three) {    //10 - 10
                 metaLevel = 3;
-            } else if (randChance < 0.4) {
+            } else if (randChance < two) {      //20 - 20
                 metaLevel = 2;
-            } else if (randChance < 0.6) {
+            } else if (randChance < one) {      //20 - 20
                 metaLevel = 1;
+            } else {
+                metaLevel = 0;                  //49 - 30
             }
+
             /*need to figure out how to get faction loot for faction wrecks
+             * test groupID for factions?
              *    elif meta_level == 7:
              *        drop_chance = 0.15   # Faction stuff = 15%
              *    elif meta_level == 8:
@@ -1002,19 +1016,51 @@ void StaticDataMgr::GetLoot(uint32 groupID, std::vector<LootList>& lootList) {
              *        drop_chance = 0.15   # Faction SB's and Missile launchers
              */
 
-            auto range2 = m_LootGroupTypeMap.equal_range(it->second.lootGroupID);
-            for (auto it2 = range2.first; it2 != range2.second; ++it2)
-                if (it2->second.metaLevel == metaLevel)
-                    lootGrpVec.push_back(it2->second);
+            auto range2 = m_LootTypeMap.equal_range(it->second.lootGroupID);
+            for (auto it2 = range2.first; it2 != range2.second; ++it2) {
+                _log(LOOT__INFO, "checking lootType %u, metaLevel %u,  with chance of %.2f", \
+                            it2->second.typeID, metaLevel, it2->second.dropChance + secModX10);
+                if (it2->second.metaLevel == metaLevel) {
+                    if (MakeRandomFloat() < (it2->second.dropChance + secModX10)) {
+                        lootGrpVec.push_back(it2->second);
+                    }
+                }
+            }
 
             if (!lootGrpVec.empty()) {
-                LootList loot_list;
-                uint16 i = MakeRandomInt(0, lootGrpVec.size() - 1);
-                loot_list.typeID        = lootGrpVec[i].typeID;
-                loot_list.minDrop       = lootGrpVec[i].minQuantity;
-                loot_list.maxDrop       = lootGrpVec[i].maxQuantity;
-                lootList.push_back(loot_list);
-                _log(LOOT__INFO, "adding %u to lootList", lootGrpVec[i].typeID);
+                for (auto &cur : lootGrpVec) {
+                    LootList loot_list = LootList();
+                    loot_list.typeID        = cur.typeID;
+                    loot_list.minDrop       = cur.minQuantity;
+                    loot_list.maxDrop       = cur.maxQuantity;
+                    lootList.push_back(loot_list);
+                }
+                /*
+                if ((groupID == EVEDB::invGroups::Asteroid_Angel_Cartel_Hauler)
+                or (groupID == EVEDB::invGroups::Asteroid_Blood_Raiders_Hauler)
+                or (groupID == EVEDB::invGroups::Asteroid_Guristas_Hauler)
+                or (groupID == EVEDB::invGroups::Asteroid_Sansha_s_Nation_Hauler)
+                or (groupID == EVEDB::invGroups::Asteroid_Serpentis_Hauler)
+                or (groupID == EVEDB::invGroups::Asteroid_Rogue_Drone_Hauler)) {
+                    // get all items from list for hauler spawns
+                    for (auto &cur : lootGrpVec) {
+                        LootList loot_list = LootList();
+                        loot_list.typeID        = cur.typeID;
+                        loot_list.minDrop       = cur.minQuantity;
+                        loot_list.maxDrop       = cur.maxQuantity;
+                        lootList.push_back(loot_list);
+                    }
+                } else {
+                    // get one random item from list of possibles for normal spawns
+                    LootList loot_list = LootList();
+                    uint16 i = MakeRandomInt(0, lootGrpVec.size() - 1);
+                    loot_list.typeID        = lootGrpVec[i].typeID;
+                    loot_list.minDrop       = lootGrpVec[i].minQuantity;
+                    loot_list.maxDrop       = lootGrpVec[i].maxQuantity;
+                    lootList.push_back(loot_list);
+                    _log(LOOT__INFO, "added %u to basic lootList of %lu possible", lootGrpVec[i].typeID, lootGrpVec.size());
+                }
+                */
                 lootGrpVec.clear();
             }
         }

@@ -101,7 +101,7 @@ public:
     void SetMission()                                   { m_type = Bubble::Type::Mission; }
     void SetIncursion()                                 { m_type = Bubble::Type::Incursion; }
     void SetSpawned(bool set=true)                      { m_spawned = set; }
-    void SetSpawnTimer(bool isBelt=false);
+    void SetSpawnTimer();
 
     /* various count queries */
     uint32 CountNPCs();

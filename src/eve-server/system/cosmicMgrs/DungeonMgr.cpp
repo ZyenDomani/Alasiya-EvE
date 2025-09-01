@@ -407,7 +407,7 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
 
 bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
 {
-    float secRating = m_system->GetSystemSecurityRating();
+    float secRating = m_system->GetSecurityRating();
     int8 sec = 1; // > 0.6
     if (secRating < -0.2) {
         sec = 3;

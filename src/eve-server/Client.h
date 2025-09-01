@@ -245,7 +245,6 @@ public:
     uint32 GetSessionChangeTime()                       { return m_sessionTimer.GetRemainingTime() / 1000; }
 
     void SetInvul(bool invul=false);
-    //void SetDocking(bool dock=false)                    { m_ship->SetDocking(); }
     void SetUndock(bool undock=false)                   { m_ship->SetUndocking(undock);}
     void SetBeyonce(bool beyonce=false)                 { m_beyonce = beyonce; }
     void SetUncloak(bool uncloak=false)                 { m_uncloak = uncloak; }
