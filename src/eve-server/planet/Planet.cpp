@@ -151,6 +151,12 @@ PyRep* PlanetSE::GetResourceData(Call_ResourceDataDict& dict)
      * this resource data *MAY* change over the course of the running server, but not decided how/when/why yet.
      */
 
+  /*  NOTE:
+   *  this data is groups of 32b values.  it forms an odd sine-wave pattern (found and graphed by ai) 
+   *  will need to figure out how to plan, create, group and save data for this
+   *    will have to test multiple sets to see what happens with different patterns
+   */
+ 
     // actual hex from live for "data"
     //E80E364382F13EBFEC13F03FEB42483F1263B2BF8C94004075360EC19842ACBEC0B7FABF0C5DA73EF4F6E03FC0B21C3EE0D71F3E5206233E8FC6E43E5245E6BFAD29A63F112C81 \
     BF6038393EFE19C1BF8FA975C2808D093FE0BB5EBF6C9A533FA1DB4FBF04DDAF3D3CE450C0435DB7BCBDDB80BF2EAD783FE028A8C04A733FBF76012BBFEA17FCBFF4F4113E6C7EC9 \
