@@ -98,7 +98,7 @@ class WeaponSE;
  * ObjectSystemEntity which represents structure object in space
  */
 class StructureSE
-: public DynamicSystemEntity
+: public ObjectSystemEntity
 {
 public:
     StructureSE(StructureItemRef structure, PyServiceMgr& services, SystemManager* system, const FactionData& data);
