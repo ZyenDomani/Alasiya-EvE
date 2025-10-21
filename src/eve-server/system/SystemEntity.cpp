@@ -472,6 +472,15 @@ PyDict *FieldSE::MakeSlimItem()
     return SystemEntity::MakeSlimItem();
 }
 
+CynoSE::CynoSE(InventoryItemRef self, PyServiceMgr &services, SystemManager *system, const FactionData& data)
+: FieldSystemEntity(self, services, system)
+{
+    m_warID = data.factionID;
+    m_allyID = data.allianceID;
+    m_corpID = data.corporationID;
+    m_ownerID = data.ownerID;
+}
+
 DungeonEditSE::DungeonEditSE(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, Dungeon::RoomObject data)
 : FieldSystemEntity(self, services, system),
 m_data(data)
