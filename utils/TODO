@@ -209,6 +209,7 @@ blueprints - look over data and verify...so far seems mostly accurate.
 
 contact list - no notification when contacts login.  no initial contact status when logging in.  -priority level: lo
 
+see also https://wiki.eveuniversity.org/POS_Structures
 pos - started. drop, anchor, unanchor, online, offline working but no in-class checks. all tower mgnt tabs work and save. rest is wip.   -priority level: low
     - pos items in hangars still return true from IsPOSSE(), and throw weird errors because of this....needs more thought to properly implement (system is still young)
     - towers (and maybe others) must use orbitalState in slimItem.  this is EVEPOS::EntityState sent to client.  also uses OnSlimItemUpdated.  search client for this
