@@ -923,6 +923,8 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                 if (sRef.get() == nullptr)
                     throw CustomError("Unable to spawn Structure item of type %u.", sRef->typeID());
 
+		//  m_system->GetClosestMoonSE(GetPosition())->GetMoonSE();
+		//  m_system->GetClosestGateSE(GetPosition())->GetGateSE();
                 sRef->Move(pClient->GetLocationID(), flagAutoFit, true);
                 StructureSE* sSE(new StructureSE(sRef, *m_manager, pSysMgr, data));
                 location.MakeRandomPointOnSphere(1500.0 + sRef->type().radius());
@@ -939,6 +941,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                 if (sRef.get() == nullptr)
                     throw CustomError("Unable to spawn Structure item of type %u.", sRef->typeID());
 
+		// m_system->GetClosestPlanetSE(GetPosition())->GetPlanetSE();
                 sRef->Move(pClient->GetLocationID(), flagAutoFit, true);
                 CustomsSE* sSE(new CustomsSE(sRef, *m_manager, pSysMgr, data));
                 location.MakeRandomPointOnSphere(1500.0 + sRef->type().radius());
