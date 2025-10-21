@@ -23,7 +23,7 @@ find launchForCorp...see how 'closest planet' is determiend for tower (m_system-
 towerSE - m_hasShield is redundant...can use (m_shieldSE (!/=)= nullptr)
 test planet determination and check distance when launching customs office
   - complete code for proper init when launched
-
+when PI started on planet, check for customs office and create interbus customs office if planet doesnt have one
 
 *******************************************************
 *******************************************************
