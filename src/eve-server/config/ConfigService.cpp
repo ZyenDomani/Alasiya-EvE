@@ -24,7 +24,7 @@
     Updates:    Allan
 */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "PyServiceCD.h"
 #include "config/ConfigService.h"
@@ -134,6 +134,7 @@ PyResult ConfigService::Handle_GetMultiCorpTickerNamesEx(PyCallArgs &call) {
     return m_db.GetMultiCorpTickerNamesEx(arg.ints);
 }
 
+//NOTE:  cannot find call to this in crucible
 PyResult ConfigService::Handle_GetMultiGraphicsEx(PyCallArgs &call) {
     Call_SingleIntList arg;
     if (!arg.Decode(&call.tuple)) {

@@ -25,7 +25,7 @@
 */
 
 #include <boost/algorithm/string.hpp>
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "EntityMgr.h"
 #include "PyServiceCD.h"

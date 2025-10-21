@@ -275,13 +275,12 @@ typedef enum {
     factionORE           = 500014,
     factionThukker       = 500015,
     factionSistersOfEVE  = 500016,
-    factionSociety       = 500017,
+    factionSociety       = 500017,      // SoCT
     factionMordusLegion  = 500018,
     factionSanshas       = 500019,      // Caldari + Amarr
     factionSerpentis     = 500020,      // Minmatar + Gallente (depends on skill order)
-    factionUnknown       = 500021,
-    factionRogueDrones   = 500022,
-    factionSleepers      = 500023
+    factionUnknown       = 500021,      // this is rogue drone faction  (took me long enough...20Sep25)
+    factionSleeper       = 500022
 } FactionDef;
 
 // npc corps list

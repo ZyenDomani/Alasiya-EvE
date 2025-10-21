@@ -8,7 +8,7 @@
  */
 
 
-#include "eve-server.h"
+#include "../eve-server.h"
 #include "system/Asteroid.h"
 
 #include "EVEServerConfig.h"

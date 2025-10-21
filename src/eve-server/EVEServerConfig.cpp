@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    12.6
+    Version:    12.7
 */
 
 
@@ -173,6 +173,9 @@ EVEServerConfig::EVEServerConfig()
     npc.UseOrbit = false;
     npc.UseRegen = false;
     npc.UseRepair = false;
+    npc.OfficerChance = 0.05f;
+    npc.CommanderChance = 0.1f;
+    npc.HaulerChance = 0.15f;
 
     // drone
     drone.Enabled = true;
@@ -630,6 +633,9 @@ bool EVEServerConfig::ProcessNPC(const TiXmlElement* ele) {
     AddValueParser("UseOrbit",                 npc.UseOrbit);
     AddValueParser("UseRegen",                 npc.UseRegen);
     AddValueParser("UseRepair",                npc.UseRepair);
+    AddValueParser("OfficerChance",            npc.OfficerChance);
+    AddValueParser("CommanderChance",          npc.CommanderChance);
+    AddValueParser("HaulerChance",             npc.HaulerChance);
 
     const bool result = ParseElementChildren(ele);
 
@@ -651,6 +657,9 @@ bool EVEServerConfig::ProcessNPC(const TiXmlElement* ele) {
     RemoveParser("UseOrbit");
     RemoveParser("UseRegen");
     RemoveParser("UseRepair");
+    RemoveParser("OfficerChance");
+    RemoveParser("CommanderChance");
+    RemoveParser("HaulerChance");
 
     return result;
 }

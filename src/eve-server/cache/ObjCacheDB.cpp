@@ -24,7 +24,7 @@
 */
 /** @todo this needs to be updated a bit... */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "cache/ObjCacheDB.h"
 

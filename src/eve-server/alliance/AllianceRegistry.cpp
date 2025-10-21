@@ -25,7 +25,7 @@
 //work in progress
 /** @note  this is a bound object!  */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "PyServiceCD.h"
 #include "alliance/AllianceRegistry.h"

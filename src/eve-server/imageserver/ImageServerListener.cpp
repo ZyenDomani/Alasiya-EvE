@@ -23,7 +23,7 @@
     Author:        caytchen
 */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "EVEServerConfig.h"
 #include "imageserver/ImageServerListener.h"

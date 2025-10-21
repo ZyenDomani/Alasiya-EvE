@@ -83,9 +83,8 @@ int32 GetElapsedHours(int64 time)  // -allan
     return (int32)hours;
 }
 
-double GetFileTimeNow()  // -allan
-{
-    // convert system time to filetime.
+int64 GetFileTimeNow() { // -allan
+    // convert (double)system time to (int64)filetime.
     double time = GetTimeMSeconds();
     time /= 1000;   // to second
     time += SECS_BETWEEN_EPOCHS;    // offset

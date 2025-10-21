@@ -24,7 +24,7 @@
     Updates:        Allan
 */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "Client.h"
 #include "ConsoleCommands.h"
@@ -744,7 +744,7 @@ uint32 Character::GetTotalSP() {
     return m_charData.skillPoints;
 }
 
-void Character::SaveSkillHistory(uint16 eventID, double logDate, uint32 characterID, uint16 skillTypeID, uint8 skillLevel, uint32 absolutePoints)
+void Character::SaveSkillHistory(uint16 eventID, int64 logDate, uint32 characterID, uint16 skillTypeID, uint8 skillLevel, uint32 absolutePoints)
 {
     if (absolutePoints < 1)
         return;

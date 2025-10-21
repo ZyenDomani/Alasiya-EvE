@@ -23,7 +23,7 @@
     Updates:    James
 */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "Client.h"
 #include "EVEServerConfig.h"
@@ -932,7 +932,7 @@ void SystemManager::RemoveSpawnBubble(SystemBubble* pBubble) {
 }
 
 uint32 SystemManager::GetRandBeltID() {
-    return m_beltVector.at(MakeRandomInt(0, m_beltCount - 1));
+    return m_beltVector.at(MakeRandomUInt(0, m_beltCount - 1));
 }
 
 void SystemManager::MakeSetState(const SystemBubble* pBubble,  SetState& into) const {
@@ -1373,7 +1373,7 @@ void SystemManager::UpdateContainerFleetID(uint32 ownerID, uint32 fleetID) {
             if (cur.second->GetOwnerID() == ownerID) {
                 cur.second->SetFleetID(fleetID);
                 //TODO:  this doesnt work right
-                //cur.second->MakeSlimItemChange();
+                cur.second->MakeSlimItemChange();
             }
         }
     }

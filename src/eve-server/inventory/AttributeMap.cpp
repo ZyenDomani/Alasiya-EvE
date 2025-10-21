@@ -25,7 +25,7 @@
     Rewrite:    Allan       - 6Feb17
 */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "Client.h"
 #include "EntityMgr.h"
@@ -218,9 +218,10 @@ bool AttributeMap::Save() {
 
 void AttributeMap::SetAttribute(uint16 attrID, EvilNumber& num, bool notify/*true*/) {
     if (num.isNaN() or num.isInf()) {
-        _log(ATTRIBUTE__ERROR, "AttributeMap::SetAttribute() - Something sent NaN or Inf for Attr %u on %s(%u). Returning without modifying.",\
-                attrID, mItem.name(), mItem.itemID());
-        EvE::traceStack();
+        _log(ATTRIBUTE__ERROR, "AttributeMap::SetAttribute() - Something sent NaN or Inf for Attr %u on %s(i:%u/t:%u). Returning without modifying.",\
+                attrID, mItem.name(), mItem.itemID(), mItem.typeID());
+        if (sConfig.server.StackTrace)
+            EvE::traceStack();
         //ResetAttribute(attrID, notify);
         return;
     }

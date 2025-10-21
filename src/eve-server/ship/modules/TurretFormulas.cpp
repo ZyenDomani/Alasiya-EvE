@@ -68,7 +68,7 @@ float TurretFormulas::GetToHit(ShipItemRef shipRef, TurretModule* pMod, SystemEn
         modifier = (targSig / sigRes);
     }
     float c = pow((a * b), 2);
-    float d = EvE::max(distance - range);
+    float d = EvE::max(distance - range, 1);
     float e = pow((d / falloff), 2);
     float x = pow(0.5, c);
     float y = pow(0.5, e);
@@ -90,7 +90,7 @@ float TurretFormulas::GetToHit(ShipItemRef shipRef, TurretModule* pMod, SystemEn
 float TurretFormulas::GetNPCToHit(NPC* pNPC, SystemEntity* pTarget) {
     if (pTarget == nullptr)
         return 0;
-    uint16 sigRes = pNPC->GetAI()->GetSigRes();
+    uint16 sigRes = pNPC->GetSelf()->GetAttribute(AttrOptimalSigRadius).get_uint32();
     uint16 range = pNPC->GetAI()->GetOptimalRange();
     uint32 falloff = pNPC->GetAI()->GetFalloff();
     float distance = pNPC->DestinyMgr()->GetPosition().distance(pTarget->DestinyMgr()->GetPosition());
@@ -104,15 +104,15 @@ float TurretFormulas::GetNPCToHit(NPC* pNPC, SystemEntity* pTarget) {
     _log(DAMAGE__TRACE_NPC, "NPC::GetToHit - transversalV:%.3f, angularVel:%.3f tracking:%.3f, targetSig:%.1f, sigRes:%u", \
                 transversalV, angularVel, trackSpeed, targSig, sigRes);
 
-    float a = (angularVel / trackSpeed);
-    float b = (sigRes / targSig);
-    float modifier = 0.0f;
+    float a(angularVel / trackSpeed);
+    float b(sigRes / targSig);
+    float modifier(0.0f);
     if ((a < 1) and (b > 1)) {
         b = 1;
         modifier = (targSig / sigRes);
     }
     float c = pow((a * b), 2);
-    float d = EvE::max(distance - range);
+    float d = EvE::max(distance - range, 1);
     float e = pow((d / falloff), 2);
     float x = pow(0.5, c);
     float y = pow(0.5, e);
@@ -142,7 +142,7 @@ float TurretFormulas::GetDroneToHit(DroneSE* pDrone, SystemEntity* pTarget) {
     float a(transversalV / (distance * dRef->GetAttribute(AttrTrackingSpeed).get_float()));
     float b(dRef->GetAttribute(AttrOptimalSigRadius).get_float() / pTarget->GetSelf()->GetAttribute(AttrSignatureRadius).get_float());
     float c(pow((a * b), 2));
-    float d(EvE::max(distance - dRef->GetAttribute(AttrEntityAttackRange).get_float()));
+    float d(EvE::max(distance - dRef->GetAttribute(AttrEntityAttackRange).get_float(), 1));
     float e(pow((d / falloff), 2));
     float ChanceToHit(pow(0.5, c + e));
     float rNum(MakeRandomFloat(0.0, 1.0));
@@ -169,7 +169,7 @@ float TurretFormulas::GetSentryToHit(Sentry* pSentry, SystemEntity* pTarget) {
         modifier = (targSig / sigRes);
     }
     float c = pow((a * b), 2);
-    float d = EvE::max(distance - pSentry->GetSelf()->GetAttribute(AttrEntityAttackRange).get_float());
+    float d = EvE::max(distance - pSentry->GetSelf()->GetAttribute(AttrEntityAttackRange).get_float(), 1);
     float e = pow((d / falloff), 2);
     float ChanceToHit = pow(0.5, c + e);
     float rNum = MakeRandomFloat(0.0, 1.0);

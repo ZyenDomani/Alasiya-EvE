@@ -461,6 +461,8 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
 
     // add module to bubble's active module map
     m_bubble->AddActiveModule(this);
+    // send gfx
+    SendGFX();
 
     if (m_linkMaster) {
         std::vector<GenericModule*> modules;
@@ -528,7 +530,8 @@ void ActiveModule::Deactivate(std::string effect/*""*/) {
     SetModuleState(Module::State::Deactivating);
 
     // remove module from bubble's active module map
-    m_bubble->RemoveActiveModule(this);
+    if (m_bubble != nullptr)
+        m_bubble->RemoveActiveModule(this);
 
     if ((m_effectID == EvE::GFXID::miningLaser) or (m_effectID == EvE::GFXID::miningClouds)) {
         DeactivateCycle(true);
@@ -714,10 +717,10 @@ uint32 ActiveModule::DoCycle() {
     return cycleTime.get_uint32();
 }
 
-void ActiveModule::AbortCycle()
-{
-    _log(MODULE__TRACE, "%s(%u) calling AbortCycle() - state: %s, m_stop:%s", \
-            m_modRef->name(), m_modRef->itemID(), GetModuleStateName(m_ModuleState), m_Stop?"true":"false");
+void ActiveModule::AbortCycle() {
+    // remove module from bubble's active module map, if it's there
+    if (m_bubble != nullptr)
+        m_bubble->RemoveActiveModule(this);
 
     if (m_ModuleState < Module::State::Deactivating)
         return;
@@ -725,6 +728,10 @@ void ActiveModule::AbortCycle()
     // if stop is already set, let module finish cycle.
     if (m_Stop)
         return;
+
+    _log(MODULE__TRACE, "%s(%u) calling AbortCycle() - state: %s, m_stop:%s", \
+            m_modRef->name(), m_modRef->itemID(), GetModuleStateName(m_ModuleState), m_Stop?"true":"false");
+
     // Immediately stop active cycle for things such as insufficient cap, remove module, init warp, target destroyed, target left bubble, or miner deactivated by player:
     SetModuleState(Module::State::Deactivating);
     DeactivateCycle(true);
@@ -1243,7 +1250,7 @@ bool ActiveModule::CanActivate() {
 void ActiveModule::SendGFX(bool abortCycle/*false*/, Client* pClient/*nullptr*/) {
     if (m_effectID < 1) {
         // not necessarily an error.  just make note
-        sLog.Error("AM::SendGFX()", "m_effectID < 1 for typeID:%u (%s).", m_modRef->typeID(), m_modRef->name());
+        sLog.Warning("AM::SendGFX()", "m_effectID < 1 for typeID:%u (%s).", m_modRef->typeID(), m_modRef->name());
         //EvE::traceStack();
         return;
     }
@@ -1282,18 +1289,7 @@ void ActiveModule::SendGFX(bool abortCycle/*false*/, Client* pClient/*nullptr*/)
             useStartTime = false;
     }
 
-    //TODO:  check for ship gfx data and set accordingly
-    uint32 gfxID(0);
-    /*  there are ~6500 listed for these, but dont see where they are used in packets
-    if (m_self->HasAttribute(AttrGfxTurretID))// graphicID for turret for drone type ships
-        gfxID = m_self->GetAttribute(AttrGfxTurretID).get_uint32();
-    if (m_pDrone->GetSelf()->HasAttribute(AttrGfxBoosterID))// graphicID for turret for drone type ships
-        gfxID = m_pDrone->GetSelf()->GetAttribute(AttrGfxBoosterID).get_uint32();
-     */
-
-    std::string guidStr = sFxDataMgr.GetEffectGuid(gfxID);
-    if (guidStr.empty())
-        guidStr = sFxDataMgr.GetEffectGuid(m_effectID);
+    std::string guidStr = sFxDataMgr.GetEffectGuid(m_effectID);
 
     uint16 chgTypeID(((m_chargeRef.get() != nullptr) ? m_chargeRef->typeID() : 0));
 
@@ -1309,7 +1305,7 @@ void ActiveModule::SendGFX(bool abortCycle/*false*/, Client* pClient/*nullptr*/)
                 /*  still working on these...
                  * !start - remove effect
                  * start and !active - start ONE-SHOT event of (duration) - SuperWeapon only
-                 * repeat > 0 - start REPEAT event
+                 * repeat > 0 - start REPEAT event of <duration>
                  * !repeat - start TOGGLE event (turn off with !start)
                  */
                 start,          // start
@@ -1317,7 +1313,7 @@ void ActiveModule::SendGFX(bool abortCycle/*false*/, Client* pClient/*nullptr*/)
                 cycleTime,      // duration in ms
                 m_repeat,       // repeat
                 (useStartTime ? m_startTime : 0),
-                gfxID,
+                m_modRef->GetAttribute(AttrGfxTurretID).get_uint32(),
                 pClient);
 }
 
@@ -1500,7 +1496,6 @@ void ActiveModule::LaunchMissile()
         return;
     if (m_chargeRef.get() == nullptr) {
         // something fucked up....
-        m_chargeRef->Delete();
         AbortCycle();
         return;
     }
@@ -1587,4 +1582,10 @@ void ActiveModule::LaunchProbe()
 void ActiveModule::LaunchSnowBall()
 {
     // not used yet
+}
+
+void ActiveModule::RemoveFromBubbleMap() {
+    // remove module from bubble's active module map, if it's there
+    if (m_bubble != nullptr)
+        m_bubble->RemoveActiveModule(this);
 }

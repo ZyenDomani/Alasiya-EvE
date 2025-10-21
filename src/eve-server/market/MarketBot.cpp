@@ -7,7 +7,7 @@
   * @date:   10 August 2016
   */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 #include "EVEServerConfig.h"
 #include "market/MarketBot.h"
 #include "market/MarketMgr.h"

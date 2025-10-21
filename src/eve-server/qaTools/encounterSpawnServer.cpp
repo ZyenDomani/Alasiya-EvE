@@ -21,7 +21,7 @@
   * QATOOLS__RSPDUMP
   */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "PyServiceCD.h"
 

@@ -67,32 +67,34 @@ void MissionDataMgr::Process() {
         Client* pClient(nullptr);
         std::multimap<uint32, MissionOffer>::iterator itr = m_offers.begin();
         while (itr != m_offers.end()) {
-            if (itr->second.expiryTime < GetFileTimeNow()) {
-                pAgent = sEntityMgr.GetAgent(itr->second.agentID);
-                pClient = sEntityMgr.FindClientByCharID(itr->first);
-                // notify client if they are online.  eventually we'll send mail also
-                if (itr->second.stateID == Mission::State::Accepted) {
-                    pAgent->SendMissionUpdate(pClient, "failed");
-                    itr->second.stateID = Mission::State::Failed;
-                    if (itr->second.courierTypeID) {
-                        // remove item from player's possession
-                        if (pClient != nullptr) {
-                            pClient->RemoveMissionItem(itr->second.courierTypeID, itr->second.courierAmount);
-                        } else {
-                            MissionDB::RemoveMissionItem(itr->first, itr->second.courierTypeID, itr->second.courierAmount);
+            if (itr->second.stateID < Mission::State::Failed) {
+                if (itr->second.expiryTime < GetFileTimeNow()) {
+                    pAgent = sEntityMgr.GetAgent(itr->second.agentID);
+                    pClient = sEntityMgr.FindClientByCharID(itr->first);
+                    // notify client if they are online.  eventually we'll send mail also
+                    if (itr->second.stateID == Mission::State::Accepted) {
+                        pAgent->SendMissionUpdate(pClient, "failed");
+                        itr->second.stateID = Mission::State::Failed;
+                        if (itr->second.courierTypeID) {
+                            // remove item from player's possession
+                            if (pClient != nullptr) {
+                                pClient->RemoveMissionItem(itr->second.courierTypeID, itr->second.courierAmount);
+                            } else {
+                                MissionDB::RemoveMissionItem(itr->first, itr->second.courierTypeID, itr->second.courierAmount);
+                            }
                         }
+                    } else if (itr->second.stateID == Mission::State::Offered) {
+                        pAgent->SendMissionUpdate(pClient, "offer_expired");
+                        itr->second.stateID = Mission::State::Expired;
                     }
-                } else if (itr->second.stateID == Mission::State::Offered) {
-                    pAgent->SendMissionUpdate(pClient, "offer_expired");
-                    itr->second.stateID = Mission::State::Expired;
+                    std::multimap<uint32, MissionOffer>::iterator itr2 = m_aoffers.find(itr->second.agentID);
+                    if (itr2 != m_aoffers.end())
+                        m_aoffers.erase(itr2);
+                    m_xoffers.emplace(itr->first, itr->second);
+                    pAgent->RemoveOffer(itr->first);
+                    MissionDB::UpdateMissionOffer(itr->second);
+                    itr = m_offers.erase(itr);
                 }
-                std::multimap<uint32, MissionOffer>::iterator itr2 = m_aoffers.find(itr->second.agentID);
-                if (itr2 != m_aoffers.end())
-                    m_aoffers.erase(itr2);
-                m_xoffers.emplace(itr->first, itr->second);
-                pAgent->RemoveOffer(itr->first);
-                MissionDB::UpdateMissionOffer(itr->second);
-                itr = m_offers.erase(itr);
             } else {
                 ++itr;
             }
@@ -418,7 +420,7 @@ void MissionDataMgr::CreateMissionOffer(uint8 typeID, uint8 level, uint8 raceID,
             }
 
             // pick random mission from group
-            cData = cVec[MakeRandomInt(0, (cVec.size() - 1))];
+            cData = cVec[MakeRandomUInt(0, (cVec.size() - 1))];
             data.name               = cData.name;
             data.typeID             = cData.typeID;
             data.bonusTime          = cData.bonusTime;
@@ -445,7 +447,7 @@ void MissionDataMgr::CreateMissionOffer(uint8 typeID, uint8 level, uint8 raceID,
             }
 
             // pick random mission from group
-            cData = cVec[MakeRandomInt(0, (cVec.size() - 1))];
+            cData = cVec[MakeRandomUInt(0, (cVec.size() - 1))];
             data.name               = cData.name;
             data.typeID             = cData.typeID;
             data.bonusTime          = cData.bonusTime;

@@ -24,7 +24,7 @@ Author: Bloody.Rabbit
 Rewrite:    Allan
 */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "character/Character.h"
 #include "character/Skill.h"

@@ -27,7 +27,7 @@
 /** @todo update this code to use throws for client msgs also */
 /** @todo  many unfinished calls in this file.... */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "EntityMgr.h"
 #include "PyServiceCD.h"

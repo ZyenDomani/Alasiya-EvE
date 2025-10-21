@@ -23,7 +23,7 @@
     Author:        Allan
 */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "EntityMgr.h"
 #include "PyBoundObject.h"

@@ -40,7 +40,7 @@
  * COLONY__DB_WARNING
  */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "PyServiceMgr.h"
 #include "Client.h"
@@ -429,7 +429,7 @@ void Colony::CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latit
         case Extractor_Control_Units: { // 1063
             pin.isECU = true;
             pin.lastRunTime = 0;
-            pin.qtyPerCycle = (uint16)iRef->GetAttribute(AttrPinExtractionQuantity).get_int();
+            pin.qtyPerCycle = iRef->GetAttribute(AttrPinExtractionQuantity).get_uint32();
         } break;
         case Spaceports:{   // 1030
             pin.isStorage = true;

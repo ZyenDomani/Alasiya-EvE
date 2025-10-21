@@ -24,7 +24,7 @@
     Updates:        Allan
 */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "EVEServerConfig.h"
 #include "character/Character.h"
@@ -47,7 +47,7 @@ uint32 CharacterDB::NewCharacter(const CharacterData& data, const CorpData& corp
         "   stationID, solarSystemID, constellationID, regionID, freeRespecs)"
         " VALUES"
         "  (%u,'%s', %u, %u, '%s', %f, %f,"
-        "   %f, %u, %u, %f, '%s',"
+        "   %lli, %u, %u, %lli, '%s',"
         "   %u, %u, %u, %u, %u, %u, %u,"
         "   %u, %u, %u, %u, 2)",
         data.accountID, nameEsc.c_str(), data.typeID, data.locationID, descriptionEsc.c_str(), data.balance, data.aurBalance,
@@ -171,7 +171,7 @@ void CharacterDB::DeleteCharacter(uint32 characterID) {
 bool CharacterDB::ReportRespec(uint32 characterId)
 {
     DBerror error;
-    if (!sDatabase.RunQuery(error, "UPDATE chrCharacters SET lastRespecDateTime = %f, nextRespecDateTime = %lli WHERE characterId = %u",
+    if (!sDatabase.RunQuery(error, "UPDATE chrCharacters SET lastRespecDateTime = %lli, nextRespecDateTime = %lli WHERE characterId = %u",
         GetFileTimeNow(), (GetFileTimeNow() + EvE::Time::Month * 3), characterId))
         return false;
     return true;
@@ -377,12 +377,13 @@ void CharacterDB::AddEmployment(uint32 charID, uint32 corpID, uint32 oldCorpID/*
     if (!sDatabase.RunQuery(err,
         "INSERT INTO chrEmployment"
         "  (characterID, corporationID, startDate, deleted)"
-        " VALUES (%u, %u, %f, 0)", charID, corpID, GetFileTimeNow()))
+        " VALUES (%u, %u, %lli, 0)", charID, corpID, GetFileTimeNow()))
     {
         codelog(DATABASE__ERROR, "Error in employment insert query: %s", err.c_str());
     }
 
-    if (!sDatabase.RunQuery(err, "UPDATE chrCharacters SET startDateTime = %f, corporationID = %u WHERE characterID = %u", GetFileTimeNow(), corpID, charID))
+    if (!sDatabase.RunQuery(err, "UPDATE chrCharacters SET startDateTime = %lli, corporationID = %u WHERE characterID = %u",
+                    GetFileTimeNow(), corpID, charID))
         codelog(DATABASE__ERROR, "Error in character insert query: %s", err.c_str());
 
     // Decrease previous corp's member count
@@ -1531,11 +1532,11 @@ bool CharacterDB::SavePausedSkillQueue(uint32 characterID, SkillQueue &data) {
     return true;
 }
 
-void CharacterDB::SaveSkillHistory(uint16 eventID, double logDate, uint32 characterID, uint32 skillTypeID, uint8 skillLevel, uint32 absolutePoints) {
+void CharacterDB::SaveSkillHistory(uint16 eventID, int64 logDate, uint32 characterID, uint32 skillTypeID, uint8 skillLevel, uint32 absolutePoints) {
     DBerror err;
     if ( !sDatabase.RunQuery( err,
         "INSERT INTO chrSkillHistory (eventTypeID, logDate, characterID, skillTypeID, skillLevel, absolutePoints)"
-        " VALUES (%u, %f, %u, %u, %u, %u)", eventID, logDate, characterID, skillTypeID, skillLevel, absolutePoints ))
+        " VALUES (%u, %lli, %u, %u, %u, %u)", eventID, logDate, characterID, skillTypeID, skillLevel, absolutePoints ))
             _log(DATABASE__ERROR, "Failed to set chrSkillHistory for character %u: %s", characterID, err.c_str());
 }
 
@@ -1557,19 +1558,22 @@ PyRep* CharacterDB::GetSkillHistory(uint32 characterID) {
 
 void CharacterDB::UpdateSkillQueueEndTime(int64 endtime, uint32 charID) {
     DBerror err;
-    sDatabase.RunQuery( err, "UPDATE chrCharacters SET skillQueueEndTime = %lli WHERE characterID = %u ", endtime, charID );
+    sDatabase.RunQuery( err, "UPDATE chrCharacters SET skillQueueEndTime = %lli WHERE characterID = %u ",
+                        endtime, charID );
 }
 
 void CharacterDB::SetLogInTime(uint32 charID)
 {
     DBerror err;
-    sDatabase.RunQuery(err, "UPDATE chrCharacters SET logonDateTime = %f WHERE characterID = %u", GetFileTimeNow(), charID );
+    sDatabase.RunQuery(err, "UPDATE chrCharacters SET logonDateTime = %lli WHERE characterID = %u",
+                       GetFileTimeNow(), charID );
 }
 
 void CharacterDB::SetLogOffTime(uint32 charID)
 {
     DBerror err;
-    sDatabase.RunQuery(err, "UPDATE chrCharacters SET logoffDateTime = %f WHERE characterID = %u", GetFileTimeNow(), charID );
+    sDatabase.RunQuery(err, "UPDATE chrCharacters SET logoffDateTime = %lli WHERE characterID = %u",
+                       GetFileTimeNow(), charID );
 }
 
 void CharacterDB::AddOwnerCache(uint32 ownerID, std::string ownerName, uint32 typeID) {
@@ -1733,10 +1737,11 @@ void CharacterDB::VisitSystem(uint32 solarSystemID, uint32 charID) {
     DBerror err;
     sDatabase.RunQuery(err,
             "INSERT INTO chrVisitedSystems (characterID, solarSystemID, visits, lastDateTime)"
-            "VALUES (%u, %u, 1, %f)"
+            "VALUES (%u, %u, 1, %lli)"
             " ON DUPLICATE KEY UPDATE"
             " visits = visits +1,"
-            " lastDateTime = %f", charID, solarSystemID, GetFileTimeNow(), GetFileTimeNow());
+            " lastDateTime = %lli",
+            charID, solarSystemID, GetFileTimeNow(), GetFileTimeNow());
 }
 
 PyRep* CharacterDB::List(uint32 ownerID)

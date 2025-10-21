@@ -26,8 +26,6 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include "eve-server.h"
-
 #include "EntityMgr.h"
 #include "EVEServerConfig.h"
 #include "ServiceDB.h"

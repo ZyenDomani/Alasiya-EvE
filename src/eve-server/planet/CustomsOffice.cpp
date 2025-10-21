@@ -473,10 +473,10 @@ void CustomsSE::Killed(Damage &fatal_blow) {
             }
             blob << "<i t=" << cur.second->typeID() << " f=" << cur.second->flag() << " s=" << s ;
             // all items have 50% chance of drop, even from popped ship
-            if (IsEven(MakeRandomInt(0, 100))) {
+            if (IsEven(MakeRandomUInt())) {
                 // item survived.  check qty for drop
                 if (x > 1) {
-                    d = MakeRandomInt(0, x);
+                    d = MakeRandomUInt(0, x - 1);
                     x -= d;
                 }
                 // move item to vector for insertion into wreck later on

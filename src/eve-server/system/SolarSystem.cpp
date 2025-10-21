@@ -23,7 +23,7 @@
     Author:        Bloody.Rabbit
 */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "system/SolarSystem.h"
 

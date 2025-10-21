@@ -30,7 +30,7 @@
  * not sure if im gonna do that here or not yet.
  */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "Client.h"
 #include "PyServiceCD.h"

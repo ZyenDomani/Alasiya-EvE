@@ -175,7 +175,7 @@ void StaticDataMgr::Populate()
     while (res->GetRow(row)) {
         //SELECT categoryID, categoryName, description, published FROM invCategories
         Inv::CatData data       = Inv::CatData();
-            data.id             = row.GetUInt(0);
+            data.id             = row.GetUInt8(0);
             data.name           = row.GetText(1);
             data.description    = row.GetText(2);
             data.published      = (sConfig.server.AllowNonPublished ? true : row.GetBool(3));
@@ -190,7 +190,7 @@ void StaticDataMgr::Populate()
         //  anchored, anchorable, fittableNonSingleton, published FROM invGroups
         Inv::GrpData data               = Inv::GrpData();
             data.id                     = row.GetUInt(0);
-            data.catID                  = row.GetUInt(1);
+            data.catID                  = row.GetUInt8(1);
             data.name                   = row.GetText(2);
             data.description            = row.GetText(3);
             data.useBasePrice           = row.GetBool(4);
@@ -217,7 +217,7 @@ void StaticDataMgr::Populate()
             data.volume                 = row.GetFloat(6);
             data.capacity               = row.GetFloat(7);
             data.portionSize            = row.GetUInt(8);
-            data.race                   = row.GetUInt(9);
+            data.race                   = row.GetUInt8(9);
             data.basePrice              = row.GetDouble(10);
             //data.published              = (sConfig.server.AllowNonPublished ? true : row.GetBool(11));
             data.published              = row.GetBool(11);
@@ -238,12 +238,12 @@ void StaticDataMgr::Populate()
     while (res->GetRow(row)) {
         //SELECT attributeID, attributeName, attributeCategory, displayName, categoryID FROM dgmAttributeTypes
         Inv::AttrTypeData typeData      = Inv::AttrTypeData();
-        typeData.attributeID            = row.GetInt(0);
+        typeData.attributeID            = row.GetUInt(0);
         typeData.attributeName          = (row.IsNull(1) ? "*none*" : row.GetText(1));
-        typeData.attributeCategory      = (row.IsNull(2) ? 0        : row.GetInt(2));
+        typeData.attributeCategory      = (row.IsNull(2) ? 0        : row.GetUInt(2));
         typeData.displayName            = (row.IsNull(3) ? "*none*" : row.GetText(3));
-        typeData.categoryID             = (row.IsNull(4) ? 0        : row.GetInt(4));
-        m_attrTypeData[row.GetInt(0)] = std::move(typeData);
+        typeData.categoryID             = (row.IsNull(4) ? 0        : row.GetUInt(4));
+        m_attrTypeData[row.GetUInt(0)] = std::move(typeData);
     }
     sLog.Cyan("    StaticDataMgr", "%lu Attribute data sets loaded in %.3fms.", m_attrTypeData.size(), (GetTimeMSeconds() - startTime));
 
@@ -255,14 +255,14 @@ void StaticDataMgr::Populate()
         // border, fringe, corridor, hub, international, regional, constellation,
         // security, factionID, radius, sunTypeID, securityClass, security FROM mapSolarSystems
         SolarSystemData sysData   = SolarSystemData();
-        sysData.systemID                = row.GetInt(0);
-        sysData.constellationID         = row.GetInt(1);
-        sysData.regionID                = row.GetInt(2);
+        sysData.systemID                = row.GetUInt(0);
+        sysData.constellationID         = row.GetUInt(1);
+        sysData.regionID                = row.GetUInt(2);
         sysData.name                    = row.GetText(3);
         sysData.position                = GPoint(row.GetDouble(4), row.GetDouble(5), row.GetDouble(6));
         sysData.minPosition             = GPoint(row.GetDouble(7), row.GetDouble(8), row.GetDouble(9));
         sysData.maxPosition             = GPoint(row.GetDouble(10), row.GetDouble(11), row.GetDouble(12));
-        sysData.luminosity              = row.GetDouble(13);
+        sysData.luminosity              = row.GetFloat(13);
         sysData.border                  = row.GetBool(14);
         sysData.fringe                  = row.GetBool(15);
         sysData.corridor                = row.GetBool(16);
@@ -272,14 +272,14 @@ void StaticDataMgr::Populate()
         sysData.constellation           = row.GetBool(20);
         sysData.security                = row.GetFloat(21);    // this gives system trueSec
         sysData.factionID               = (row.IsNull(22) ? 0 : row.GetUInt(22));
-        sysData.radius                  = row.GetDouble(23);
+        sysData.radius                  = row.GetFloat(23);
         sysData.sunTypeID               = row.GetUInt(24);
         sysData.securityClass           = (row.IsNull(25) ? "0" : row.GetText(25));
-        m_solSysData[row.GetInt(0)]     = std::move(sysData);
-        m_systemConst[row.GetInt(0)]    = row.GetInt(1);
-        m_systemRegion[row.GetInt(0)]   = row.GetInt(2);
-        m_constSystems.emplace(row.GetInt(1), row.GetInt(0));
-        m_regionSystems.emplace(row.GetInt(2), row.GetInt(0));
+        m_solSysData[row.GetUInt(0)]     = std::move(sysData);
+        m_systemConst[row.GetUInt(0)]    = row.GetUInt(1);
+        m_systemRegion[row.GetUInt(0)]   = row.GetUInt(2);
+        m_constSystems.emplace(row.GetUInt(1), row.GetUInt(0));
+        m_regionSystems.emplace(row.GetUInt(2), row.GetUInt(0));
     }
     sLog.Cyan("    StaticDataMgr", "%li Static SolarSystem data sets loaded in %.3fms.", m_solSysData.size(), (GetTimeMSeconds() - startTime));
 
@@ -287,7 +287,7 @@ void StaticDataMgr::Populate()
     ManagerDB::GetWHSystemClass(*res);
     while (res->GetRow(row)) {
         //SELECT locationID, wormholeClassID FROM mapLocationWormholeClasses
-        m_whRegions[row.GetInt(0)] = row.GetInt(1);
+        m_whRegions[row.GetUInt(0)] = row.GetUInt(1);
     }
     sLog.Cyan("    StaticDataMgr", "%lu WH System Classes loaded in %.3fms.", m_whRegions.size(), (GetTimeMSeconds() - startTime));
 
@@ -328,15 +328,15 @@ void StaticDataMgr::Populate()
     while (res->GetRow(row)) {
         //SELECT itemID, regionID, constellationID, solarSystemID, typeID, radius, x, y, z FROM mapDenormalize
         StaticData data         = StaticData();
-        data.itemID             = row.GetInt(0);
-        data.regionID           = row.GetInt(1);
-        data.constellationID    = row.GetInt(2);
-        data.systemID           = row.GetInt(3);
-        data.typeID             = row.GetInt(4);
+        data.itemID             = row.GetUInt(0);
+        data.regionID           = row.GetUInt(1);
+        data.constellationID    = row.GetUInt(2);
+        data.systemID           = row.GetUInt(3);
+        data.typeID             = row.GetUInt(4);
         data.radius             = row.GetFloat(5);
         data.position           = GPoint(row.GetDouble(6),row.GetDouble(7),row.GetDouble(8));
         //m_staticData[row.GetInt(0)] = std::move(data);
-        m_staticData.emplace(std::pair<uint32, StaticData>(row.GetInt(0), data));
+        m_staticData.emplace(row.GetUInt(0), data);
     }
     sLog.Cyan("    StaticDataMgr", "%lu Static Entity data sets loaded in %.3fms.", m_staticData.size(), (GetTimeMSeconds() - startTime));
 
@@ -344,22 +344,22 @@ void StaticDataMgr::Populate()
     MapDB::GetStationCount(*res);
     while (res->GetRow(row)) {
         //SELECT map.solarSystemID, count(sta.stationID) FROM staStations sta
-        m_stationCount[row.GetInt(0)] = row.GetInt(1);
+        m_stationCount[row.GetUInt(0)] = row.GetUInt(1);
     }
     StationDB::GetStationRegion(*res);
     while (res->GetRow(row)) {
         //SELECT stationID, regionID FROM staStations
-        m_stationRegion[row.GetInt(0)] = row.GetInt(1);
+        m_stationRegion[row.GetUInt(0)] = row.GetUInt(1);
     }
     StationDB::GetStationConstellation(*res);
     while (res->GetRow(row)) {
         //SELECT stationID, constellationID FROM staStations
-        m_stationConst[row.GetInt(0)] = row.GetInt(1);
+        m_stationConst[row.GetUInt(0)] = row.GetUInt(1);
     }
     StationDB::GetStationSystem(*res);
     while (res->GetRow(row)) {
         //SELECT stationID, solarSystemID FROM staStations
-        m_stationSystem[row.GetInt(0)] = row.GetInt(1);
+        m_stationSystem[row.GetUInt(0)] = row.GetUInt(1);
     }
 
     std::map<uint32, std::vector<uint32>>::iterator itr = m_stationList.begin();
@@ -370,7 +370,7 @@ void StaticDataMgr::Populate()
         } else {
             std::vector<uint32> sVec;
             sVec.push_back(cur.first);
-            m_stationList.emplace(std::pair<uint32, std::vector<uint32>>(cur.second, sVec));
+            m_stationList.emplace(cur.second, sVec);
         }
     }
     sLog.Cyan("    StaticDataMgr", "%lu Static Station data sets loaded in %.3fms.", (m_stationConst.size() + m_stationRegion.size() + m_stationSystem.size() + m_stationList.size()), (GetTimeMSeconds() - startTime));
@@ -380,14 +380,14 @@ void StaticDataMgr::Populate()
     while (res->GetRow(row)) {
         //SELECT typeID, attributeID, valueInt, valueFloat FROM dgmTypeAttributes
         Inv::DmgTypeAttribute typeAttr = Inv::DmgTypeAttribute();
-        typeAttr.attributeID = row.GetInt(1);
+        typeAttr.attributeID = row.GetUInt(1);
         if (row.IsNull(2)) {
             typeAttr.value = row.GetDouble(3);
         } else {
-            typeAttr.value = row.GetInt(2); // highest value seen is 2,000,000,000 (struct HP)
+            typeAttr.value = row.GetInt64(2); // highest value seen is 2,000,000,000 (struct HP)
         }
 
-        m_typeAttrMap.emplace(row.GetInt(0), typeAttr);
+        m_typeAttrMap.emplace(row.GetUInt(0), typeAttr);
     }
 
     CharacterDB::GetAttributesFromAncestry(*res);
@@ -420,7 +420,7 @@ void StaticDataMgr::Populate()
     ManagerDB::GetSkillList(*res);
     while (res->GetRow(row)) {
         //SELECT typeID, typeName FROM invTypes [where type=skill]
-        m_skills[row.GetInt(0)] = row.GetText(1);
+        m_skills[row.GetUInt(0)] = row.GetText(1);
     }
     sLog.Cyan("    StaticDataMgr", "%lu Skills loaded in %.3fms.", m_skills.size(), (GetTimeMSeconds() - startTime));
 
@@ -429,43 +429,43 @@ void StaticDataMgr::Populate()
     FactoryDB::GetComponents(*res);     //766
     while (res->GetRow(row)) {
         //SELECT typeID, typeName FROM invTypes [where type=composite or component]
-        m_components[row.GetInt(0)] = row.GetText(1);
+        m_components[row.GetUInt(0)] = row.GetText(1);
         ++piCount;
     }
     FactoryDB::GetMinerals(*res);       //8
     while (res->GetRow(row)) {
         //SELECT typeID, typeName FROM invTypes [where type=mineral]
-        m_minerals[row.GetInt(0)] = row.GetText(1);
+        m_minerals[row.GetUInt(0)] = row.GetText(1);
         ++piCount;
     }
     FactoryDB::GetCompounds(*res);      //181
     while (res->GetRow(row)) {
         //SELECT typeID, typeName FROM invTypes [where type=compound]
-        m_compounds[row.GetInt(0)] = row.GetText(1);
+        m_compounds[row.GetUInt(0)] = row.GetText(1);
         ++piCount;
     }
     FactoryDB::GetSalvage(*res);        //53
     while (res->GetRow(row)) {
         //SELECT typeID, typeName FROM invTypes [where type=salvage]
-        m_salvage[row.GetInt(0)] = row.GetText(1);
+        m_salvage[row.GetUInt(0)] = row.GetText(1);
         ++piCount;
     }
     FactoryDB::GetResources(*res);      //15
     while (res->GetRow(row)) {
         //SELECT typeID, typeName FROM invTypes [where type=pi resource]
-        m_resources[row.GetInt(0)] = row.GetText(1);
+        m_resources[row.GetUInt(0)] = row.GetText(1);
         ++piCount;
     }
     FactoryDB::GetCommodities(*res);    //66
     while (res->GetRow(row)) {
         //SELECT typeID, typeName FROM invTypes [where type=pi commodity]
-        m_commodities[row.GetInt(0)] = row.GetText(1);
+        m_commodities[row.GetUInt(0)] = row.GetText(1);
         ++piCount;
     }
     FactoryDB::GetMiscCommodities(*res);    //456
     while (res->GetRow(row)) {
         //SELECT typeID, typeName FROM invTypes [where type=misc commodity]
-        m_miscCommodities[row.GetInt(0)] = row.GetText(1);
+        m_miscCommodities[row.GetUInt(0)] = row.GetText(1);
         ++piCount;
     }
     sLog.Cyan("    StaticDataMgr", "%u PI datasets loaded in %.3fms.", piCount, (GetTimeMSeconds() - startTime));
@@ -475,20 +475,20 @@ void StaticDataMgr::Populate()
     while (res->GetRow(row)) {
         //SELECT typeID, materialTypeID, quantity FROM invTypeMaterials
         EvERam::RamMaterials ramMatls = EvERam::RamMaterials();
-        ramMatls.quantity       = row.GetInt(2);
-        ramMatls.materialTypeID = row.GetInt(1);
-        m_ramMatl.emplace(row.GetInt(0), ramMatls);
+        ramMatls.quantity       = row.GetUInt(2);
+        ramMatls.materialTypeID = row.GetUInt(1);
+        m_ramMatl.emplace(row.GetUInt(0), ramMatls);
     }
     FactoryDB::GetRAMRequirements(*res);
     while (res->GetRow(row)) {
         //SELECT typeID, activityID, requiredTypeID, quantity, damagePerJob, extra FROM ramTypeRequirements
         EvERam::RamRequirements ramReq = EvERam::RamRequirements();
-        ramReq.activityID       = row.GetInt(1);
-        ramReq.requiredTypeID   = row.GetInt(2);
-        ramReq.quantity         = row.GetInt(3);
+        ramReq.activityID       = row.GetUInt(1);
+        ramReq.requiredTypeID   = row.GetUInt(2);
+        ramReq.quantity         = row.GetUInt(3);
         ramReq.damagePerJob     = row.GetFloat(4);
         ramReq.extra            = row.GetBool(5);
-        m_ramReq.emplace(row.GetInt(0), ramReq);
+        m_ramReq.emplace(row.GetUInt(0), ramReq);
     }
     sLog.Cyan("    StaticDataMgr", "%lu R.A.M. defs loaded in %.3fms.", (m_ramMatl.size() + m_ramReq.size()), (GetTimeMSeconds() - startTime));
 
@@ -498,22 +498,22 @@ void StaticDataMgr::Populate()
         //SELECT blueprintTypeID, parentBlueprintTypeID, productTypeID, productionTime, techLevel, researchProductivityTime, researchMaterialTime, researchCopyTime,
         //  researchTechTime, productivityModifier, materialModifier, wasteFactor, maxProductionLimit, chanceOfRE, catID FROM invBlueprintTypes
             EvERam::bpTypeData bpTypeData = EvERam::bpTypeData();
-            bpTypeData.parentBlueprintTypeID    = row.GetInt(1);
-            bpTypeData.productTypeID            = row.GetInt(2);
-            bpTypeData.productionTime           = row.GetInt(3);
-            bpTypeData.techLevel                = row.GetInt(4);
-            bpTypeData.researchProductivityTime = row.GetInt(5);
-            bpTypeData.researchMaterialTime     = row.GetInt(6);
-            bpTypeData.researchCopyTime         = row.GetInt(7);
-            bpTypeData.researchTechTime         = row.GetInt(8);
-            bpTypeData.productivityModifier     = row.GetInt(9);
-            bpTypeData.materialModifier         = row.GetInt(10);
-            bpTypeData.wasteFactor              = row.GetInt(11);
-            bpTypeData.maxProductionLimit       = row.GetInt(12);
+            bpTypeData.parentBlueprintTypeID    = row.GetUInt(1);
+            bpTypeData.productTypeID            = row.GetUInt(2);
+            bpTypeData.productionTime           = row.GetUInt(3);
+            bpTypeData.techLevel                = row.GetUInt(4);
+            bpTypeData.researchProductivityTime = row.GetUInt(5);
+            bpTypeData.researchMaterialTime     = row.GetUInt(6);
+            bpTypeData.researchCopyTime         = row.GetUInt(7);
+            bpTypeData.researchTechTime         = row.GetUInt(8);
+            bpTypeData.productivityModifier     = row.GetUInt(9);
+            bpTypeData.materialModifier         = row.GetUInt(10);
+            bpTypeData.wasteFactor              = row.GetUInt(11);
+            bpTypeData.maxProductionLimit       = row.GetUInt(12);
             bpTypeData.chanceOfRE               = row.GetFloat(13);
-            bpTypeData.catID                    = (row.IsNull(14) ? 0 : row.GetInt(14));
-        m_bpProductData[row.GetInt(2)] = bpTypeData;
-        m_bpTypeData[row.GetInt(0)] = std::move(bpTypeData);
+            bpTypeData.catID                    = (row.IsNull(14) ? 0 : row.GetUInt(14));
+        m_bpProductData[row.GetUInt(2)] = bpTypeData;
+        m_bpTypeData[row.GetUInt(0)] = std::move(bpTypeData);
     }
 
     _log(MANUF__DUMP, "m_bpTypeData.size() = %u", m_bpTypeData.size());
@@ -526,7 +526,7 @@ void StaticDataMgr::Populate()
     ManagerDB::GetMoonResouces(*res);
     while (res->GetRow(row)) {
         //SELECT typeID,volume FROM invTypes [where group=moongoo]
-        m_moonGoo[row.GetInt(0)] = (uint8)(row.GetFloat(1) * 10);
+        m_moonGoo[row.GetUInt(0)] = (uint8)(row.GetFloat(1) * 10);
     }
     sLog.Cyan("    StaticDataMgr", "%lu Moon Resources loaded in %.3fms.", m_moonGoo.size(), (GetTimeMSeconds() - startTime));
 
@@ -535,7 +535,7 @@ void StaticDataMgr::Populate()
     while (res->GetRow(row)) {
         //SELECT systemSec, roidID, percent FROM roidDistribution
         OreTypeChance oreChance         = OreTypeChance();
-            oreChance.typeID            = row.GetInt(1);
+            oreChance.typeID            = row.GetUInt(1);
             oreChance.chance            = row.GetFloat(2);
         m_oreBySecClass.emplace(row.GetText(0), oreChance);
     }
@@ -545,26 +545,26 @@ void StaticDataMgr::Populate()
     //SELECT factionID, itemID FROM facSalvage
     ManagerDB::GetSalvageGroups(*res);
     while (res->GetRow(row))
-        m_salvageMap.emplace(row.GetInt(0), row.GetInt(1));
+        m_salvageMap.emplace(row.GetUInt(0), row.GetUInt(1));
     sLog.Cyan("    StaticDataMgr", "%lu salvage definitions loaded in %.3fms.", m_salvageMap.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
     ManagerDB::GetRegionFaction(*res);
     while (res->GetRow(row)) {
         //SELECT regionID, factionID FROM mapRegions
-        m_regions.emplace(row.GetInt(0), row.GetInt(1));
+        m_regions.emplace(row.GetUInt(0), row.GetUInt(1));
     }
 
     ManagerDB::GetRegionRatFaction(*res);
     while (res->GetRow(row)) {
         //SELECT regionID, ratFactionID FROM mapRegions WHERE ratFactionID != 0
-        m_ratRegions.emplace(row.GetInt(0), row.GetInt(1));
+        m_ratRegions.emplace(row.GetUInt(0), row.GetUInt(1));
     }
 
     ManagerDB::GetFactionNames(*res);
     while (res->GetRow(row)) {
         //SELECT factionID, factionName FROM facFactions
-        m_factionName.emplace(row.GetInt(0), row.GetText(1));
+        m_factionName.emplace(row.GetUInt(0), row.GetText(1));
     }
 
     sLog.Cyan("    StaticDataMgr", "%lu Region Faction Data Sets loaded in %.3fms.", (m_regions.size() + m_ratRegions.size()), (GetTimeMSeconds() - startTime));
@@ -577,44 +577,44 @@ void StaticDataMgr::Populate()
     while (res->GetRow(row)) {
         //SELECT shipClass, groupID, factionID FROM npcClassGroup
         RatFactionGroups factionGroup = RatFactionGroups();
-        factionGroup.shipClass  = row.GetInt(0);
-        factionGroup.groupID    = (uint16)row.GetInt(1);
-        m_npcGroups.emplace(row.GetInt(2), factionGroup);
+        factionGroup.shipClass  = row.GetUInt8(0);
+        factionGroup.groupID    = row.GetUInt(1);
+        m_npcGroups.emplace(row.GetUInt(2), factionGroup);
 
         rt_typeIDs rtt;
-        ManagerDB::GetGroupTypeIDs((uint8)row.GetInt(0), (uint16)row.GetInt(1), row.GetInt(2), *res2);
+        ManagerDB::GetGroupTypeIDs(row.GetUInt8(0), row.GetUInt(1), row.GetUInt(2), *res2);
         while (res2->GetRow(row2)) {
             //SELECT typeID FROM invTypes WHERE groupID = %u (plus specific checks) ORDER BY typeID
-            rtt.push_back((uint16)row2.GetInt(0));
+            rtt.push_back(row2.GetUInt(0));
             ++typeCount;
         }
         rt_groups rtg;
-        rtg.emplace((uint16)row.GetInt(1), rtt);
-        m_npcTypes.emplace((uint8)row.GetInt(0), rtg);
+            rtg.emplace(row.GetUInt(1), rtt);
+        m_npcTypes.emplace(row.GetUInt8(0), rtg);
     }
 
     ManagerDB::GetSpawnClasses(*res);
     while (res->GetRow(row)) {
         //SELECT type, sub, f, af, d, c, ac, bc, bs, h, o, cf, cd, cc, cbc, cbs, className FROM npcSpawnClass
         RatSpawnClass spawnClass        = RatSpawnClass();
-        spawnClass.type                 = row.GetInt(0);
-        spawnClass.sub                  = row.GetInt(1);
-        spawnClass.f                    = row.GetInt(2);
-        spawnClass.af                   = row.GetInt(3);
-        spawnClass.d                    = row.GetInt(4);
-        spawnClass.c                    = row.GetInt(5);
-        spawnClass.ac                   = row.GetInt(6);
-        spawnClass.bc                   = row.GetInt(7);
-        spawnClass.bs                   = row.GetInt(8);
-        spawnClass.h                    = row.GetInt(9);
-        spawnClass.o                    = row.GetInt(10);
-        spawnClass.cf                   = row.GetInt(11);
-        spawnClass.cd                   = row.GetInt(12);
-        spawnClass.cc                   = row.GetInt(13);
-        spawnClass.cbc                  = row.GetInt(14);
-        spawnClass.cbs                  = row.GetInt(15);
+        spawnClass.type                 = row.GetUInt8(0);
+        spawnClass.sub                  = row.GetUInt8(1);
+        spawnClass.f                    = row.GetUInt8(2);
+        spawnClass.af                   = row.GetUInt8(3);
+        spawnClass.d                    = row.GetUInt8(4);
+        spawnClass.c                    = row.GetUInt8(5);
+        spawnClass.ac                   = row.GetUInt8(6);
+        spawnClass.bc                   = row.GetUInt8(7);
+        spawnClass.bs                   = row.GetUInt8(8);
+        spawnClass.h                    = row.GetUInt8(9);
+        spawnClass.o                    = row.GetUInt8(10);
+        spawnClass.cf                   = row.GetUInt8(11);
+        spawnClass.cd                   = row.GetUInt8(12);
+        spawnClass.cc                   = row.GetUInt8(13);
+        spawnClass.cbc                  = row.GetUInt8(14);
+        spawnClass.cbs                  = row.GetUInt8(15);
         spawnClass.desc                 = row.GetText(16);
-        m_npcClasses.emplace((uint8)row.GetInt(0), spawnClass);
+        m_npcClasses.emplace(row.GetUInt8(0), spawnClass);
     }
     sLog.Cyan("    StaticDataMgr", "%lu Rat Groups, %lu Rat Classes, and %u Rat Types for %lu regions loaded in %.3fms.",\
               m_npcGroups.size(), m_npcClasses.size(), typeCount, m_ratRegions.size(), (GetTimeMSeconds() - startTime));
@@ -623,7 +623,7 @@ void StaticDataMgr::Populate()
     SystemDB::GetWrecksToTypes(*res);
     while (res->GetRow(row)) {
         //SELECT typeID, wreckTypeID FROM invTypesToWrecks
-        m_WrecksToTypesMap[row.GetInt(0)] = row.GetInt(1);
+        m_WrecksToTypesMap[row.GetUInt(0)] = row.GetUInt(1);
     }
     sLog.Cyan("    StaticDataMgr", "%lu wreck objects loaded in %.3fms.", m_WrecksToTypesMap.size(), (GetTimeMSeconds() - startTime));
 
@@ -632,9 +632,9 @@ void StaticDataMgr::Populate()
     while (res->GetRow(row)) {
         //SELECT npcGroupID, itemGroupID, groupDropChance FROM lootGroup
         LootGroup lootGroup             = LootGroup();
-        lootGroup.lootGroupID           = row.GetInt(1);
+        lootGroup.lootGroupID           = row.GetUInt(1);
         lootGroup.dropChance            = row.GetFloat(2);
-        m_LootGroupMap.emplace(row.GetInt(0), lootGroup);
+        m_LootGroupMap.emplace(row.GetUInt(0), lootGroup);
     }
 
     startTime = GetTimeMSeconds();
@@ -642,13 +642,13 @@ void StaticDataMgr::Populate()
     while (res->GetRow(row)) {
         //SELECT itemGroupID, itemID, itemMetaLevel, itemDropChance, minAmount, maxAmount FROM lootItemGroup
         LootType lootType         = LootType();
-        lootType.lootGroupID           = row.GetInt(0);
-        lootType.typeID                = row.GetInt(1);
-        lootType.metaLevel             = row.GetInt(2);
+        lootType.lootGroupID           = row.GetUInt(0);
+        lootType.typeID                = row.GetUInt(1);
+        lootType.metaLevel             = row.GetUInt(2);
         lootType.dropChance            = row.GetFloat(3);
-        lootType.minQuantity           = row.GetInt(4);
-        lootType.maxQuantity           = row.GetInt(5);
-        m_LootTypeMap.emplace(row.GetInt(0), lootType);
+        lootType.minQuantity           = row.GetUInt(4);
+        lootType.maxQuantity           = row.GetUInt(5);
+        m_LootTypeMap.emplace(row.GetUInt(0), lootType);
     }
     sLog.Cyan("    StaticDataMgr", "%lu loot groups and %lu loot types loaded in %.3fms.",
               m_LootGroupMap.size(), m_LootTypeMap.size(), (GetTimeMSeconds() - startTime));
@@ -658,7 +658,7 @@ void StaticDataMgr::Populate()
     ManagerDB::GetAgentData(*res);
     while (res->GetRow(row)) {
         //SELECT agentID, corporationID, locationID FROM agtAgents
-        locationID = row.GetInt(2);
+        locationID = row.GetUInt(2);
         if (IsStationID(locationID)) {
             locationID = GetStationSystem(locationID);
         }
@@ -666,8 +666,8 @@ void StaticDataMgr::Populate()
             _log(DATA__MESSAGE, "Failed to query info:  locationID %u is neither station nor system.", locationID);
             continue;
         }
-        m_agentCorp[row.GetInt(0)] = row.GetInt(1);
-        m_agentSystem[row.GetInt(0)] = locationID;
+        m_agentCorp[row.GetUInt(0)] = row.GetUInt(1);
+        m_agentSystem[row.GetUInt(0)] = locationID;
     }
     sLog.Cyan("    StaticDataMgr", "%lu Agent Data Sets loaded in %.3fms.", m_agentCorp.size() + m_agentSystem.size(), (GetTimeMSeconds() - startTime));
 
@@ -909,7 +909,7 @@ uint16 StaticDataMgr::GetRandRatType(uint8 sClass, uint16 groupID) {
             }
     }
     if (!typeVec.empty())
-        return typeVec.at(MakeRandomInt(0, typeVec.size() - 1));
+        return typeVec.at(MakeRandomUInt(0, typeVec.size() - 1));
 
     _log(DATA__WARNING, "Failed to get random rat for sClass %u and groupID %u", sClass, groupID);
     return 0;
@@ -934,7 +934,7 @@ bool StaticDataMgr::GetNPCGroups(uint32 factionID, std::map< uint8, uint16 >& gr
     return !groupMap.empty();
 }
 
-//TODO:  this is getting all levels for the class...we only need one level
+//TODO:  this is getting all levels for the class...we only need one level, but level isnt calculated yet
 bool StaticDataMgr::GetNPCClasses(uint8 sClass, std::vector< RatSpawnClass >& classMap) {
     auto classRange = m_npcClasses.equal_range(sClass);
     for (auto it = classRange.first; it != classRange.second; ++it) {
@@ -990,7 +990,7 @@ void StaticDataMgr::GetLoot(float secValue, uint32 groupID, std::vector<LootList
     // pair<iterator, iterator> equal_range(const key_type& k)
     auto range = m_LootGroupMap.equal_range(groupID);
     for (auto it = range.first; it != range.second; ++it) {
-        _log(LOOT__INFO, "checking GroupID %u with %.2f% chance", it->second.lootGroupID, it->second.dropChance);
+        _log(LOOT__INFO, "checking GroupID %u with %.2f chance", it->second.lootGroupID, it->second.dropChance);
         // make lootMap of lootGroupID's
         if (MakeRandomFloat() < it->second.dropChance) {
             randChance = MakeRandomFloat();  // chance in 1.0 - chance in -0.9
@@ -1018,52 +1018,51 @@ void StaticDataMgr::GetLoot(float secValue, uint32 groupID, std::vector<LootList
 
             auto range2 = m_LootTypeMap.equal_range(it->second.lootGroupID);
             for (auto it2 = range2.first; it2 != range2.second; ++it2) {
-                _log(LOOT__INFO, "checking lootType %u, metaLevel %u,  with chance of %.2f", \
-                            it2->second.typeID, metaLevel, it2->second.dropChance + secModX10);
                 if (it2->second.metaLevel == metaLevel) {
-                    if (MakeRandomFloat() < (it2->second.dropChance + secModX10)) {
+                    _log(LOOT__INFO, "checking lootType %u, metaLevel %u,  with chance of %.2f", \
+                            it2->second.typeID, metaLevel, it2->second.dropChance + secMod);
+                    if (MakeRandomFloat() < (it2->second.dropChance + secMod)) {
                         lootGrpVec.push_back(it2->second);
                     }
                 }
             }
-
-            if (!lootGrpVec.empty()) {
-                for (auto &cur : lootGrpVec) {
-                    LootList loot_list = LootList();
-                    loot_list.typeID        = cur.typeID;
-                    loot_list.minDrop       = cur.minQuantity;
-                    loot_list.maxDrop       = cur.maxQuantity;
-                    lootList.push_back(loot_list);
-                }
-                /*
-                if ((groupID == EVEDB::invGroups::Asteroid_Angel_Cartel_Hauler)
-                or (groupID == EVEDB::invGroups::Asteroid_Blood_Raiders_Hauler)
-                or (groupID == EVEDB::invGroups::Asteroid_Guristas_Hauler)
-                or (groupID == EVEDB::invGroups::Asteroid_Sansha_s_Nation_Hauler)
-                or (groupID == EVEDB::invGroups::Asteroid_Serpentis_Hauler)
-                or (groupID == EVEDB::invGroups::Asteroid_Rogue_Drone_Hauler)) {
-                    // get all items from list for hauler spawns
-                    for (auto &cur : lootGrpVec) {
-                        LootList loot_list = LootList();
-                        loot_list.typeID        = cur.typeID;
-                        loot_list.minDrop       = cur.minQuantity;
-                        loot_list.maxDrop       = cur.maxQuantity;
-                        lootList.push_back(loot_list);
-                    }
-                } else {
-                    // get one random item from list of possibles for normal spawns
-                    LootList loot_list = LootList();
-                    uint16 i = MakeRandomInt(0, lootGrpVec.size() - 1);
-                    loot_list.typeID        = lootGrpVec[i].typeID;
-                    loot_list.minDrop       = lootGrpVec[i].minQuantity;
-                    loot_list.maxDrop       = lootGrpVec[i].maxQuantity;
-                    lootList.push_back(loot_list);
-                    _log(LOOT__INFO, "added %u to basic lootList of %lu possible", lootGrpVec[i].typeID, lootGrpVec.size());
-                }
-                */
-                lootGrpVec.clear();
-            }
         }
+    }
+
+    if (!lootGrpVec.empty()) {
+        for (auto &cur : lootGrpVec) {
+            LootList loot_list = LootList();
+            loot_list.typeID        = cur.typeID;
+            loot_list.minDrop       = cur.minQuantity;
+            loot_list.maxDrop       = cur.maxQuantity;
+            lootList.push_back(loot_list);
+        }
+        /*
+        if ((groupID == EVEDB::invGroups::Asteroid_Angel_Cartel_Hauler)
+        or (groupID == EVEDB::invGroups::Asteroid_Blood_Raiders_Hauler)
+        or (groupID == EVEDB::invGroups::Asteroid_Guristas_Hauler)
+        or (groupID == EVEDB::invGroups::Asteroid_Sansha_s_Nation_Hauler)
+        or (groupID == EVEDB::invGroups::Asteroid_Serpentis_Hauler)
+        or (groupID == EVEDB::invGroups::Asteroid_Rogue_Drone_Hauler)) {
+            // get all items from list for hauler spawns
+            for (auto &cur : lootGrpVec) {
+                LootList loot_list = LootList();
+                loot_list.typeID        = cur.typeID;
+                loot_list.minDrop       = cur.minQuantity;
+                loot_list.maxDrop       = cur.maxQuantity;
+                lootList.push_back(loot_list);
+            }
+        } else {
+            // get one random item from list of possibles for normal spawns
+            LootList loot_list = LootList();
+            uint16 i = MakeRandomUInt(0, lootGrpVec.size() - 1);
+            loot_list.typeID        = lootGrpVec[i].typeID;
+            loot_list.minDrop       = lootGrpVec[i].minQuantity;
+            loot_list.maxDrop       = lootGrpVec[i].maxQuantity;
+            lootList.push_back(loot_list);
+            _log(LOOT__INFO, "added %u to basic lootList of %lu possible", lootGrpVec[i].typeID, lootGrpVec.size());
+        }
+        */
     }
 
     if (sConfig.debug.UseProfiling)
@@ -1716,6 +1715,19 @@ std::string StaticDataMgr::GetOwnerName(int32 ownerID) {
     return "Unknown - WIP";
 }
 
+
+const char* StaticDataMgr::GetDmgRptName(uint8 type) {
+    switch (type) {
+        case 0:  { return "None"; }
+        case 1:  { return "Half Shield"; }
+        case 2:  { return "Zero Shield"; }
+        case 3:  { return "Half Armor"; }
+        case 4:  { return "Zero Armor"; }
+        case 5:  { return "Half Hull"; }
+        default: { return "Undefined"; }
+    }
+}
+
 uint8 StaticDataMgr::GetRegionQuarter(uint32 regionID) {
     uint32 factionID = 0;
     std::map<uint32, uint32>::iterator itr = m_regions.find(regionID);
@@ -1748,6 +1760,7 @@ uint8 StaticDataMgr::GetRegionQuarter(uint32 regionID) {
         case factionSistersOfEVE:   //Servant Sisters of EVE
         case factionSociety:        //The Society of Conscious Thought
         case factionMordusLegion:   //Mordu's Legion Command
+        case factionUnknown:        //Rogue Drones
             return 5;
     }
     // default to 'none'
@@ -1761,7 +1774,7 @@ uint32 StaticDataMgr::GetFactionCorp(uint32 factionID) {
         case factionBloodRaider:    return corpBloodRaider;
         case factionGuristas:       return corpGuristas;
         case factionSerpentis:      return corpSerpentis;
-        case factionRogueDrones:    return corpRogueDrones;
+        case factionUnknown:        return corpRogueDrones;
 
         case factionCONCORD:        return corpCONCORD;
         case factionInterBus:       return corpInterbus;
@@ -1782,7 +1795,7 @@ uint32 StaticDataMgr::GetFactionCorp(uint32 factionID) {
         case factionNoFaction:
         default:                    return 0;
 
-        //case factionSleepers:    return corpRogueDrones;
+        //case factionSleeper:    return corpRogueDrones;
         //case factionMinmatar:        return corp;
         //case factionSyndicate:    return corps;
     }
@@ -1798,7 +1811,7 @@ const char* StaticDataMgr::GetRaceName(uint8 raceID) {
         case Char::Race::Gallente:      return "Gallente";
         case Char::Race::Jove:          return "Jove";
         case Char::Race::Pirate:        return "Pirate";
-        case Char::Race::Sleepers:      return "Sleeper";
+        case Char::Race::Sleeper:       return "Sleeper";
         case Char::Race::ORE:           return "ORE";
     }
     // default to none
@@ -1813,7 +1826,7 @@ uint32 StaticDataMgr::GetRaceFaction(uint8 raceID) {
         case Char::Race::Gallente:      return factionGallente;
         case Char::Race::Jove:          return factionJove;
         case Char::Race::Pirate:        return factionNoFaction;
-        case Char::Race::Sleepers:      return factionSleepers;
+        case Char::Race::Sleeper:       return factionSleeper;
         case Char::Race::ORE:           return factionORE;
     }
     // default to none
@@ -1828,7 +1841,7 @@ uint8 StaticDataMgr::GetFactionRace(uint32 factionID) {
         case factionGallente:       return Char::Race::Gallente;
         case factionJove:           return Char::Race::Jove;
         case factionNoFaction:      return Char::Race::Pirate;
-        case factionSleepers:       return Char::Race::Sleepers;
+        case factionSleeper:       return Char::Race::Sleeper;
         case factionORE:            return Char::Race::ORE;
         case factionAmmatar:        return Char::Race::Ammatar;
     }
@@ -2037,6 +2050,259 @@ const char* StaticDataMgr::GetAgentTypeName(uint8 typeID) {
     return "Undefined";
 }
 
+uint16 StaticDataMgr::GetHaulerTypeID(uint32 faction, uint8 level) {
+    switch (faction) {
+        case factionAngel: {
+            // this may be best option to spawn correct hauler...certainly the easiest to code
+            // there are 12 types for each faction
+            switch (level) {
+                case 0: {       //Ferrier    1H 4F 1D
+                   return 13687; //   Ferrier 80m3
+                } break;
+                case 1: {       //Gatherer    1H 4F 2D 2C
+                    return  13688; //   Gatherer        110m3
+                } break;
+                case 2: {       //Harvester   1H 4F 3D 3C
+                    return 13689; //  Harvester       120m3
+                } break;
+                case 3: {       //Loader     2H 4F 2D 2C 1BC
+                    return 13686; //  Loader
+                } break;
+                case 4: {       // Courier     2H 4F 2D 3C 2BC
+                    return 13685; //  Courier
+                } break;
+                case 5: {       //Trucker    2H 4F 3D 3C 3BC
+                    return 13684; //  Trucker
+                } break;
+                case 6: {       //Bulker      3H 4F 4D 4C 4BC
+                    return 13682; //  Bulker
+                } break;
+                case 7: {       //Transporter 3H 4F 2AF 3C 3BC
+                    return 13683; //  Transporter
+                } break;
+                case 8: {       //Hauler      3H 4F 2AF 3C 3Bc
+                    return 13681; //  Hauler
+                } break;
+                case 9: {       //Trailer           4H 6F 2AF 3C 2AC 1BC
+                    return 13680; //  Trailer
+                } break;
+                case 10: {       //Convoy      4H 6F 2AF 3C 2AC 2BC 2BS
+                    return 13679; //   Convoy
+                } break;
+                case 11: {       // Carrier          4H 6F 3AF 3C 3AC 3BC 3BS
+                    return 13678; //   Carrier
+                } break;
+            }
+        }
+
+        case factionBloodRaider: {
+            switch (level) {
+                case 0: {       //Ferrier    1H 4F 1D
+                    return 13699; //   Ferrier 135m3
+                } break;
+                case 1: {       //Gatherer    1H 4F 2D 2C
+                    return 13700; //   Gatherer       235m3
+                } break;
+                case 2: {       //Harvester   1H 4F 3D 3C
+                    return 13701; //  Harvester
+                } break;
+                case 3: {       //Loader     2H 4F 2D 2C 1BC
+                    return 13698; //  Loader
+                } break;
+                case 4: {       // Courier     2H 4F 2D 3C 2BC
+                    return 13697; //  Courier
+                } break;
+                case 5: {       //Trucker    2H 4F 3D 3C 3BC
+                    return 13696; //  Trucker
+                } break;
+                case 6: {       //Bulker      3H 4F 4D 4C 4BC
+                    return 13694; //  Bulker
+                } break;
+                case 7: {       //Transporter 3H 4F 2AF 3C 3BC
+                    return 13695; //  Transporter
+                } break;
+                case 8: {       //Hauler      3H 4F 2AF 3C 3Bc
+                    return 13693; //  Hauler
+                } break;
+                case 9: {       //Trailer           4H 6F 2AF 3C 2AC 1BC
+                    return 13692; //  Trailer
+                } break;
+                case 10: {       //Convoy      4H 6F 2AF 3C 2AC 2BC 2BS
+                    return 13691; //  Convoy
+                } break;
+                case 11: {       // Carrier          4H 6F 3AF 3C 3AC 3BC 3BS
+                    return 13690; //   Carrier
+                } break;
+            }
+        }
+
+        case factionGuristas: {
+            switch (level) {
+                case 0: {       //Ferrier    1H 4F 1D
+                    return 13723; //  Ferrier        125m3
+                } break;
+                case 1: {       //Gatherer    1H 4F 2D 2C
+                    return 13724; //  Gatherer        130m3
+                } break;
+                case 2: {       //Harvester   1H 4F 3D 3C
+                    return 13725; //  Harvester        250m3
+                } break;
+                case 3: {       //Loader     2H 4F 2D 2C 1BC
+                    return 13722; //  Loader
+                } break;
+                case 4: {       // Courier     2H 4F 2D 3C 2BC
+                    return 13721; //  Courier
+                } break;
+                case 5: {       //Trucker    2H 4F 3D 3C 3BC
+                    return 13720; //  Trucker
+                } break;
+                case 6: {       //Bulker      3H 4F 4D 4C 4BC
+                    return 13718; //  Bulker
+                } break;
+                case 7: {       //Transporter 3H 4F 2AF 3C 3BC
+                    return 13719; //  Transporter
+                } break;
+                case 8: {       //Hauler      3H 4F 2AF 3C 3Bc
+                    return 13717; //  Hauler
+                } break;
+                case 9: {       //Trailer           4H 6F 2AF 3C 2AC 1BC
+                    return 13716; //  Trailer
+                } break;
+                case 10: {       //Convoy      4H 6F 2AF 3C 2AC 2BC 2BS
+                    return 13715; //  Convoy
+                } break;
+                case 11: {       // Carrier          4H 6F 3AF 3C 3AC 3BC 3BS
+                    return 13714; //  Carrier
+                } break;
+            }
+        }
+
+        case factionSanshas: {
+            switch (level) {
+                case 0: {       //Ferrier    1H 4F 1D
+                    return 13735; //  Ferrier        200m3
+                } break;
+                case 1: {       //Gatherer    1H 4F 2D 2C
+                    return 13736; //  Gatherer
+                } break;
+                case 2: {       //Harvester   1H 4F 3D 3C
+                    return 13737; //  Harvester        235m3
+                } break;
+                case 3: {       //Loader     2H 4F 2D 2C 1BC
+                    return 13734; //  Loader
+                } break;
+                case 4: {       // Courier     2H 4F 2D 3C 2BC
+                    return 13733; //  Courier
+                } break;
+                case 5: {       //Trucker    2H 4F 3D 3C 3BC
+                    return 13732; //  Trucker
+                } break;
+                case 6: {       //Bulker      3H 4F 4D 4C 4BC
+                    return 13730; //  Bulker
+                } break;
+                case 7: {       //Transporter 3H 4F 2AF 3C 3BC
+                    return 13731; //  Transporter
+                } break;
+                case 8: {       //Hauler      3H 4F 2AF 3C 3Bc
+                    return 13729; //  Hauler
+                } break;
+                case 9: {       //Trailer           4H 6F 2AF 3C 2AC 1BC
+                    return 13728; //  Trailer
+                } break;
+                case 10: {       //Convoy      4H 6F 2AF 3C 2AC 2BC 2BS
+                    return 13727; //  Convoy
+                } break;
+                case 11: {       // Carrier          4H 6F 3AF 3C 3AC 3BC 3BS
+                    return 13726; //  Carrier
+                } break;
+            }
+        }
+
+        case factionSerpentis: {
+            switch (level) {
+                case 0: {       //Ferrier    1H 4F 1D
+                    return 13712; //   Ferrier        140m3
+                } break;
+                case 1: {       //Gatherer    1H 4F 2D 2C
+                    return 13711; //   Gatherer   235m3
+                } break;
+                case 2: {       //Harvester   1H 4F 3D 3C
+                    return 13713; //  Harvester      60m3
+                } break;
+                case 3: {       //Loader     2H 4F 2D 2C 1BC
+                    return 13710; //  Loader
+                } break;
+                case 4: {       // Courier     2H 4F 2D 3C 2BC
+                    return 13709; //  Courier
+                } break;
+                case 5: {       //Trucker    2H 4F 3D 3C 3BC
+                    return 13708; //  Trucker
+                } break;
+                case 6: {       //Bulker      3H 4F 4D 4C 4BC
+                    return 13706; //  Bulker           480m3
+                } break;
+                case 7: {       //Transporter 3H 4F 2AF 3C 3BC
+                    return 13707; //  Transporter
+                } break;
+                case 8: {       //Hauler      3H 4F 2AF 3C 3Bc
+                    return 13705; //  Hauler
+                } break;
+                case 9: {       //Trailer           4H 6F 2AF 3C 2AC 1BC
+                    return 13704; //  Trailer
+                } break;
+                case 10: {       //Convoy      4H 6F 2AF 3C 2AC 2BC 2BS
+                    return 13703; //   Convoy
+                } break;
+                case 11: {       // Carrier          4H 6F 3AF 3C 3AC 3BC 3BS
+                    return 13702; //   Carrier
+                } break;
+            }
+        }
+
+        case factionUnknown: {
+            switch (level) {
+                case 0: {       //Ferrier    1H 4F 1D
+                    return 32910; //   Ferrier        80m3
+                } break;
+                case 1: {       //Gatherer    1H 4F 2D 2C
+                    return 32911; //   Gatherer
+                } break;
+                case 2: {       //Harvester   1H 4F 3D 3C
+                    return 32912; //  Harvester
+                } break;
+                case 3: {       //Loader     2H 4F 2D 2C 1BC
+                    return 32909; //  Loader             120m3
+                } break;
+                case 4: {       // Courier     2H 4F 2D 3C 2BC
+                    return 32908; //  Courier
+                } break;
+                case 5: {       //Trucker    2H 4F 3D 3C 3BC
+                    return 32907; //  Trucker
+                } break;
+                case 6: {       //Bulker      3H 4F 4D 4C 4BC
+                    return 32905; //  Bulker
+                } break;
+                case 7: {       //Transporter 3H 4F 2AF 3C 3BC
+                    return 32906; //  Transporter
+                } break;
+                case 8: {       //Hauler      3H 4F 2AF 3C 3Bc
+                    return 32904; //  Hauler
+                } break;
+                case 9: {       //Trailer           4H 6F 2AF 3C 2AC 1BC
+                    return 32903; //  Trailer
+                } break;
+                case 10: {       //Convoy      4H 6F 2AF 3C 2AC 2BC 2BS
+                    return 32902; //  Convoy
+                } break;
+                case 11: {       // Carrier          4H 6F 3AF 3C 3AC 3BC 3BS
+                    return 32901; //   Carrier
+                } break;
+            }
+        }
+    }
+    return 22025;  // Degenerate Harvester - failsafe
+}
+
 uint32 StaticDataMgr::GetWreckFaction(uint32 typeID) {
     // these will need to be separated and updated after detailed salvage table is completed
     switch(typeID) {
@@ -2200,7 +2466,7 @@ uint32 StaticDataMgr::GetWreckFaction(uint32 typeID) {
         case 30494:  //   Sleeper Large Basic Wreck
         case 30495:  //   Sleeper Large Intermediate Wreck
         case 30496: { //    Sleeper Large Advanced Wreck
-            return factionSleepers;
+            return factionSleeper;
         } break;
 
         case 26561:  //   Angel Small Wreck
@@ -2263,7 +2529,7 @@ uint32 StaticDataMgr::GetWreckFaction(uint32 typeID) {
         case 28221:  //   Rogue Large Commander Wreck
         case 28222:  //   Rogue Medium Commander Wreck
         case 28223: { //   Rogue Small Commander Wreck
-            return factionRogueDrones;
+            return factionUnknown;
         } break;
 
         // generic wrecks
@@ -2277,12 +2543,12 @@ uint32 StaticDataMgr::GetWreckFaction(uint32 typeID) {
         case 27202:  //   Convoy Wreck
         case 27286:  //   Pirate Drone Wreck
         case 26560: { //   Pirate Wreck
-            return factionUnknown;
+            return factionNoFaction;
         } break;
     }
 
     // safe default
-    return factionUnknown;
+    return factionNoFaction;
 
     /*
      *    28255 :  //   Mission Faction Freighter Wreck

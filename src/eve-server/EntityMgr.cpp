@@ -392,8 +392,8 @@ std::string EntityMgr::GetAnomalyID()
     // these should be totally unique.  design a way to enforce this
     std::string str1 = "", str2 = "";
     for (uint8 i = 0; i < 3; ++i) {
-        str1 += alphaList[MakeRandomInt(0,24)];    //rand() % sizeof(alphaList) - 1
-        str2 += std::to_string(MakeRandomInt(0,9));
+        str1 += alphaList[MakeRandomUInt(0,24)];    //rand() % sizeof(alphaList) - 1
+        str2 += std::to_string(MakeRandomUInt(0,9));
     }
 
     std::string res = std::move(str1);

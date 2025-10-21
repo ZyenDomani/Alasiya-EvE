@@ -24,7 +24,7 @@
     Rewrite:    Allan
 */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "config/ConfigDB.h"
 
@@ -277,7 +277,7 @@ PyRep *ConfigDB::GetMultiCorpTickerNamesEx(const std::vector<int32> &entityIDs)
     return DBResultToRowList(res);
 }
 
-
+//NOTE:  current db table does not have these columns
 PyRep *ConfigDB::GetMultiGraphicsEx(const std::vector<int32> &entityIDs) {
     std::string ids;
     ListToINString(entityIDs, ids);

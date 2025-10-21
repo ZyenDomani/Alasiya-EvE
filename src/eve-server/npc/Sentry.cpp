@@ -6,7 +6,7 @@
   * @date:      23 April 2017
   */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "Client.h"
 #include "EntityMgr.h"

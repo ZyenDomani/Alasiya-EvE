@@ -150,7 +150,7 @@ void Prospector::CheckSuccess()
     int8 chance = m_accessChance;
     chance += GetAttribute(AttrAccessDifficultyBonus).get_int();
 
-    uint8 roll = MakeRandomInt(0,100);
+    uint8 roll = MakeRandomUInt();
     if (roll < chance)
         m_success = true;
 
@@ -165,33 +165,33 @@ void Prospector::DropSalvage() {
     sDataMgr.GetSalvage(atoi(m_targetSE->GetSelf()->customInfo().c_str()), list);
 
     bool drone(false);
-    if (atoi(m_targetSE->GetSelf()->customInfo().c_str()) == factionRogueDrones)
+    if (atoi(m_targetSE->GetSelf()->customInfo().c_str()) == factionUnknown)
         drone = true;
 
     if (!list.empty()) {
         uint8 drop(0);
         switch (m_accessChance) {       // drop qty * rate in config
-            case  30: drop = 1; break;  //  1 to 3
-            case  20: drop = 2; break;  //  2 to 6
-            case  10: drop = 3; break;  //  3 to 9
-            case   0: drop = 4; break;  //  4 to 12
-            case -10: drop = 5; break;  //  5 to 15
-            case -20: drop = 6; break;  //  6 to 18
+            case  30: drop = 1; break;  //  1 to 4
+            case  20: drop = 2; break;  //  2 to 8
+            case  10: drop = 3; break;  //  3 to 12
+            case   0: drop = 4; break;  //  4 to 16
+            case -10: drop = 5; break;  //  5 to 20
+            case -20: drop = 6; break;  //  6 to 32
         }
 
         InventoryItemRef iRef(nullptr);
         Inventory* sInv(m_shipRef->GetMyInventory());
-        uint32 quantity = 0, minDrop = drop, maxDrop = (drop * sConfig.rates.DropSalvage);
+        uint32 quantity(0), minDrop = drop, maxDrop = (drop * sConfig.rates.DropSalvage);
         for (auto &cur : list) {
             // each drop has 50/50 chance.  may need to change this later.   base on char's salvage skill?
             if (drone) {
                 // if drone, then chance is less than half
-                if (MakeRandomInt() < 70)
+                if (MakeRandomUInt() < 70)
                     continue;
-            } else if (IsEven(MakeRandomInt())) {
+            } else if (IsEven(MakeRandomUInt())) {
                 continue;
             }
-            quantity = (MakeRandomInt(minDrop, maxDrop));
+            quantity = (MakeRandomUInt(minDrop, maxDrop));
             ItemData iLoot(cur, pChar->itemID(), locTemp, flagAutoFit, quantity);
             iRef = sItemFactory.SpawnItem(iLoot);
             if (iRef.get() == nullptr) // we'll get over it...continue
@@ -224,7 +224,8 @@ void Prospector::DropSalvage() {
                         locTemp,
                         flagAutoFit,
                         "Jettisoned Loot Container",
-                        m_targetSE->GetPosition());
+                        m_targetSE->GetPosition(),
+                        "Wreck");  // set customInfo to 'wreck' for subsequent fleet/loot inventory checks
 
         CargoContainerRef jetCanRef = sItemFactory.SpawnCargoContainer(p_idata);
         if (jetCanRef.get() != nullptr) {

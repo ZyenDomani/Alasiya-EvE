@@ -29,6 +29,7 @@
 #include "math/Trig.h"
 #include "planet/Colony.h"
 #include "planet/Planet.h"
+#include "planet/PlanetDB.h"
 #include "planet/PlanetMgr.h"
 #include "planet/CustomsOffice.h"
 #include "packets/Planet.h"
@@ -45,9 +46,9 @@ Planet::Planet()
 
 PlanetSE::PlanetSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
 : StaticSystemEntity(self, services, system),
-pCO(nullptr)
+pCO(nullptr),
+m_data(PlanetResourceData())
 {
-    m_data = PlanetResourceData();
 }
 
 PlanetSE::~PlanetSE()
@@ -59,70 +60,65 @@ PlanetSE::~PlanetSE()
 }
 
 bool PlanetSE::LoadExtras() {
+    // this is called after SE is created.
     if (!StaticSystemEntity::LoadExtras())
         return false;
 
-    /** @todo use this to initialize planet data, create planet manager, or whatever else i decide is needed for planet management
-     *  this is called after SE is created.
-     */
-    std::vector<uint16> typeIDs;
-    sPlanetDataMgr.GetPlanetData(m_self->typeID(), typeIDs);
-    m_data.type_1 = typeIDs.at(0);
-    m_data.type_2 = typeIDs.at(1);
-    m_data.type_3 = typeIDs.at(2);
-    m_data.type_4 = typeIDs.at(3);
-    m_data.type_5 = typeIDs.at(4);
-
-    /** @todo save planet data after creation.  change data every x hours?days? */
+    if (!PlanetDB::LoadPlanetResourceData(m_self->itemID(), m_data)) {
+        std::vector<uint16> typeIDs;
+        sPlanetDataMgr.GetPlanetData(m_self->typeID(), typeIDs);
+        m_data.type_1 = typeIDs.at(0);
+        m_data.type_2 = typeIDs.at(1);
+        m_data.type_3 = typeIDs.at(2);
+        m_data.type_4 = typeIDs.at(3);
+        m_data.type_5 = typeIDs.at(4);
 
     /*  quality: (min=1.0, max=154.275)  */
-    // these are relative indicators of material quantity.  makes no difference to ecu or extraction amount
-    // as system matures, we will begin adjusting these (from extractor data) and saving per planet
-    float sysSec = (1.1 - m_system->GetSecurityRating());    // 0.1 - 2.0
-    int min = round(sysSec *10);
-    m_data.dist_1 = MakeRandomInt(min, 75) * sysSec + MakeRandomFloat(0, 4);
-    m_data.dist_2 = MakeRandomInt(min, 75) * sysSec + MakeRandomFloat(0, 4);
-    m_data.dist_3 = MakeRandomInt(min, 75) * sysSec + MakeRandomFloat(0, 4);
-    m_data.dist_4 = MakeRandomInt(min, 75) * sysSec + MakeRandomFloat(0, 4);
-    m_data.dist_5 = MakeRandomInt(min, 75) * sysSec + MakeRandomFloat(0, 4);
+    /*
+     * [PyDict 5 kvp]
+     *  [PyInt 2288]
+     *  [PyFloat 100.11311298535]
+     *  [PyInt 2073]
+     *  [PyFloat 93.8896871755585]
+     *  [PyInt 2267]
+     *  [PyFloat 88.2820365560074]
+     *  [PyInt 2268]
+     *  [PyFloat 50.6448014279542]
+     *  [PyInt 2270]
+     *  [PyFloat 66.0059005883846]
+     */
 
-    //if (sysSec > 1) {
-        for (uint16 i=0; i<3600; i++)  //this cannot use numList
+        // these are relative indicators of material quantity.  makes no difference to ecu or extraction amount
+        // as system matures, we will begin adjusting these (from extractor data) and saving per planet
+        float sysSec(m_system->GetSecValue());    // 0.1 - 2.0
+        float min = sysSec * 10; //1.0 - 20.0
+        m_data.dist_1 = MakeRandomFloat(min, 75.0f) * sysSec + MakeRandomFloat(0.0f, 4.0f);
+        m_data.dist_2 = MakeRandomFloat(min, 75.0f) * sysSec + MakeRandomFloat(0.0f, 4.0f);
+        m_data.dist_3 = MakeRandomFloat(min, 75.0f) * sysSec + MakeRandomFloat(0.0f, 4.0f);
+        m_data.dist_4 = MakeRandomFloat(min, 75.0f) * sysSec + MakeRandomFloat(0.0f, 4.0f);
+        m_data.dist_5 = MakeRandomFloat(min, 75.0f) * sysSec + MakeRandomFloat(0.0f, 4.0f);
+
+        // these work rather well...graphing the results compare similarly to data from live.
+        uint16 i(0);
+        for (i=0; i<3600; ++i)  //this cannot use numList
             m_data.buffer_1 += hexList[MakeRandomInt(0,15)];   // random fill buffer to capacity, 1k8 bytes.
-        for (uint16 i=0; i<3600; i++)
+        for (i=0; i<3600; ++i)
             m_data.buffer_2 += hexList[MakeRandomInt(0,15)];   // random fill buffer to capacity, 1k8 bytes.
-        for (uint16 i=0; i<3600; i++)
+        for (i=0; i<3600; ++i)
             m_data.buffer_3 += hexList[MakeRandomInt(0,15)];   // random fill buffer to capacity, 1k8 bytes.
-        for (uint16 i=0; i<3600; i++)
+        for (i=0; i<3600; ++i)
             m_data.buffer_4 += hexList[MakeRandomInt(0,15)];   // random fill buffer to capacity, 1k8 bytes.
-        for (uint16 i=0; i<3600; i++)
+        for (i=0; i<3600; ++i)
             m_data.buffer_5 += hexList[MakeRandomInt(0,15)];   // random fill buffer to capacity, 1k8 bytes.
-    /* } else {
-        for (uint16 i=0; i<1000; i++) {
-            m_data.buffer_1 += asciiList[MakeRandomInt(0,56)];   // random fill buffer to capacity, 1k8 bytes.
-            m_data.buffer_2 += alphaList[MakeRandomInt(0,25)];   // random fill buffer to capacity, 1k8 bytes.
-            m_data.buffer_3 += numList[MakeRandomInt(0,9)];   // random fill buffer to capacity, 1k8 bytes.
-            m_data.buffer_4 += numList[MakeRandomInt(0,9)];   // random fill buffer to capacity, 1k8 bytes.
-            m_data.buffer_5 += numList[MakeRandomInt(0,9)];   // random fill buffer to capacity, 1k8 bytes.
-        }
-    } */
-/*
-    for (uint16 i=0; i<800; ++i) {
-        m_data.buffer_1 += std::to_string(0);
-        m_data.buffer_2 += std::to_string(0);
-        m_data.buffer_3 += std::to_string(0);
-        m_data.buffer_4 += std::to_string(0);
-        m_data.buffer_5 += std::to_string(0);
+
+        PlanetDB::SavePlanetResourceData(m_self->itemID(), m_data);
     }
-*/
+
     m_typeBuffers[m_data.type_1] = m_data.buffer_1;
     m_typeBuffers[m_data.type_2] = m_data.buffer_2;
     m_typeBuffers[m_data.type_3] = m_data.buffer_3;
     m_typeBuffers[m_data.type_4] = m_data.buffer_4;
     m_typeBuffers[m_data.type_5] = m_data.buffer_5;
-
-    // should we check for a CO here?
-    //  no, it hasnt been loaded at this point
 
     return true;
 }
@@ -136,10 +132,6 @@ void PlanetSE::Process()
 
 PyRep* PlanetSE::GetResourceData(Call_ResourceDataDict& dict)
 {
-    /*  from eve/client/script/environment/planet\clientPlanet.py
-     * This method is used to fetch spherical harmonic data for a given
-     * resource type on the current planet.
-     */
     // will update this to use PI skills (sent in dict) as system grows..not sure how yet.
     /** @todo  this needs a minor rewrite....bands are dictated by client request.
      * bufferData is random fill based on bands, but kept per planet
@@ -151,57 +143,40 @@ PyRep* PlanetSE::GetResourceData(Call_ResourceDataDict& dict)
      * this resource data *MAY* change over the course of the running server, but not decided how/when/why yet.
      */
 
-  /*  NOTE:
-   *  this data is groups of 32b values.  it forms an odd sine-wave pattern (found and graphed by ai) 
-   *  will need to figure out how to plan, create, group and save data for this
-   *    will have to test multiple sets to see what happens with different patterns
-   */
- 
-    // actual hex from live for "data"
-    //E80E364382F13EBFEC13F03FEB42483F1263B2BF8C94004075360EC19842ACBEC0B7FABF0C5DA73EF4F6E03FC0B21C3EE0D71F3E5206233E8FC6E43E5245E6BFAD29A63F112C81 \
-    BF6038393EFE19C1BF8FA975C2808D093FE0BB5EBF6C9A533FA1DB4FBF04DDAF3D3CE450C0435DB7BCBDDB80BF2EAD783FE028A8C04A733FBF76012BBFEA17FCBFF4F4113E6C7EC9 \
-    3FFB8EDBBE52C084BF04608B3DFA748F3E3715823F5DA7F1BE5FA97B4206CE83BE2597E03FF6AF46BF2F6EA9BE160297BFBD70FB3FC02B75BF66A0AD3FA095213F2ED9033E5B9D50 \
-    BE94BC53BE2C77E9BFDFDDE24066B21F3F5B1A043FC6531D40E2426CBE5012204036F3ACBF4EA60DBFBDDC46BFB469044020D610BFF68E0EBF1145A8BFD3B0063FF43EB7BFAF69DE \
-    3F437B92C14232D1BEA0E45FBFDC639BBE4813C43E476F2D3F3E260F403436BC3EA993B8BFCDE9153F22C3243F0021DCBF9ECB443F619A6EBF824FE03F4118ED3E96AD5C3F9413B5 \
-    3FE8D0CA3D0EE85CBDF3EC6D3E32E5EDBE3DBAA13EB2379BBF18A8233FCFA5E1BE91B0C03FA51AC9BE9F3F593F4B160FC0A817F0BEF1E5AE3F487E6C3F586B943F4921A73FA845FE \
-    BEAE9D103FE725AEBF1B3A9FC14F69733F3B1B04BF18B9AE3FCBF4D0BD447B483F3E1870BFAAA7A1BEEC3C35C076BB1C3F697F493D00C4C7BEE74CFABFA4E6053F972189BCBDC3AE \
-    3F42E984BF85FDBC3E3C9275BF3C07FFBD4C30D0BED828C43E6CF6C3C0C2F5CDBEBD5E3DBFACB29ABFCA75B1BD6A4035BFE537F83E165BD3BD5D3F4FBDACA1F6BF2A97E0BD4C1F44 \
-    3FF054B6BE692C0F3F8EFB933F52BDE4BF5D97D33E4998C8BF22E25BBE581710BF9F093A3E3D8E8F3DBFEF453F9D32443E1B2EAD41B9FB39BFA85A753F73FABFBFE1B155BE01FFBE \
-    BF897341BF715F19BE5739323EC2E50C3FF7A2B23F47499ABF6E4E1E3F93F555BEF51F8E3FBC21C13DC69CE5BFCD1E5DBF997FC23DDB348D3E300E6B3D49D4183FEDE50CBFD2EBAC \
-    BE509C37BE5310D9BF22BFA940BBE2013F9437083FEC5EB33FE79D053E8FB0903F12BB5CBF4D02BC3E26DAC2BF0CD894BDEEB8B7BEAE1F1440564199BEFE322BBFE5F690BE9E1241 \
-    3FDD38A5BFB2AEAC3E3C8681BF19A36F3F3E2C9D3EB039813E46BD47BF200996BE12F0A3BFC1DAFE3E9C5EA4BFAC65223F74A7EBC03047C3BB1CB01ABF15148F3E9B71163E6C545E \
-    3FDB34553F34096E3D6E12A03F3CF08ABFE904303F367E9ABE064D583FEAE2953F3A5DC7BE
-
     /*
     dict.resourceTypeID;
-    dict.advancedPlanetology;
-    dict.oldBand;
     dict.planetology;
     dict.remoteSensing;
+    dict.advancedPlanetology;
+    dict.newBand;               <- min(maxBand, minBand + info.planetology + info.advancedPlanetology * 2)
+    dict.oldBand;               <- is this used?  how?
     dict.updateTime;
     */
     std::map<uint16, std::string>::iterator itr = m_typeBuffers.find(dict.resourceTypeID);
     if (itr == m_typeBuffers.end())
         return nullptr;
-    uint16 size = (uint16)pow(dict.newBand, 2) *4;
+
+    uint16 size = static_cast<uint16>(pow(dict.newBand, 2) * 4);
     std::string data = itr->second.substr(0, size);
     // adjust data for system security.  not sure how to make it 'less' yet
-    _log(PLANET__DEBUG, "PlanetSE::GetResourceData() for %s (%u) using remoteSense: %u, planetology: %u, advPlanetology: %u - updateTime: %lu, proximity: %u, newBand: %u, oldBand: %u, bufferSize: %u", \
+    if (is_log_enabled(PLANET__DEBUG)) {
+        _log(PLANET__DEBUG, "PlanetSE::GetResourceData() for %s (%u) using remoteSense: %u, planetology: %u, advPlanetology: %u - updateTime: %lu, proximity: %s, newBand: %u, oldBand: %u, bufferSize: %u", \
                 sPIDataMgr.GetProductName(dict.resourceTypeID), dict.resourceTypeID, dict.remoteSensing, dict.planetology, dict.advancedPlanetology, \
-                dict.updateTime, dict.proximity, dict.newBand, dict.oldBand, size);
+                dict.updateTime, sPlanetDataMgr.GetProximity(dict.proximity), dict.newBand, dict.oldBand, size);
+        _log(PLANET__DUMP, "PlanetSE::GetResourceData() for %s:  %s", sPIDataMgr.GetProductName(dict.resourceTypeID), data.c_str());
+    }
     PyDict* args = new PyDict();
         args->SetItemString("data", new PyString(data));
         args->SetItemString("numBands", new PyInt(dict.newBand));
         args->SetItemString("proximity", new PyInt(dict.proximity));
-    PyIncRef(args);
+    //PyIncRef(args);
     PyObject* rtn = new PyObject("util.KeyVal", args);
     if (is_log_enabled(PLANET__RES_DUMP))
         rtn->Dump(PLANET__RES_DUMP, "   ");
     return rtn;
 }
 
-PyRep* PlanetSE::GetPlanetResourceInfo()
-{
+PyRep* PlanetSE::GetPlanetResourceInfo() {
     PyDict* res = new PyDict();
         res->SetItem(new PyInt(m_data.type_1), new PyFloat(m_data.dist_1));
         res->SetItem(new PyInt(m_data.type_2), new PyFloat(m_data.dist_2));
@@ -227,7 +202,7 @@ PyRep* PlanetSE::GetPlanetInfo(Colony* pColony) {
         args->SetItem("routes", pColony->GetRoutes());
         args->SetItem("currentSimTime", new PyLong(pColony->GetSimTime()));
     }
-    PyIncRef(args);
+    //PyIncRef(args);
     PyObject *rtn = new PyObject("util.KeyVal", args);
     if (is_log_enabled(PLANET__RES_DUMP))
         rtn->Dump(PLANET__RES_DUMP, "   ");
@@ -327,11 +302,11 @@ void PlanetSE::CreateCustomsOffice()
     //pos.MakeRandomPointOnSphere(GetRadius() + 700000);
 
     //uint32 dist = BUBBLE_RADIUS_METERS + 10000/*m_self->GetAttribute(AttrMoonAnchorDistance).get_long()*/;
-    uint32 radius = GetRadius();
+    float radius = GetRadius();
     float rad = EvE::Trig::Deg2Rad(25);
 
-    pos.x += radius + 700000 * std::sin(rad);
-    pos.z += radius + 700000 * std::cos(rad);
+    pos.x += radius + 700000.0f * std::sin(rad);
+    pos.z += radius + 700000.0f * std::cos(rad);
     pos.y += MakeRandomInt(-1000, 1000);
 
     ItemData idata(typeID, data.ownerID, m_system->GetID(), flagAutoFit, 1, itoa(m_self->itemID()), false);
@@ -342,4 +317,31 @@ void PlanetSE::CreateCustomsOffice()
     pCO = new CustomsSE(iRef, m_services, m_system, data);
     pCO->Init();
     m_system->AddEntity(pCO);
+}
+
+
+void PlanetSE::CreateSHData() {
+    // Parameters (edit as needed)
+    const int num_samples = 450;
+    const double amplitude = 175.0;
+    const double frequency = 5.0; // Hz
+    const double sampling_rate = 225.0; // samples per second
+    const double phase = 0.0;
+
+    // Generate samples (float32)
+    std::vector<float> samples(num_samples);
+    for (int i = 0; i < num_samples; ++i) {
+        double t = static_cast<double>(i) / sampling_rate;
+        samples[i] = static_cast<float>(amplitude * std::sin(2.0 * M_PI * frequency * t + phase));
+    }
+/*
+    std::stringstream hex_stream;
+    hex_stream << std::hex << std::setfill('0');
+    const unsigned char* byte_data = reinterpret_cast<const unsigned char*>(samples);
+    size_t total_bytes = samples.size() * sizeof(float);
+
+    for (uint16 i=0; i < total_bytes; ++i)
+        hex_stream << std::setw(2) << static_cast<unsigned int>(byte_data[i]);
+*/
+
 }

@@ -23,7 +23,7 @@
     Author:     Allan
 */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "Client.h"
 #include "EVEServerConfig.h"
@@ -177,7 +177,7 @@ void Missile::EncodeDestiny(Buffer& into)
         head.flags = Ball::Flag::IsFree;
     into.Append( head );
     MassSector mass = MassSector();
-        mass.mass = m_self->GetAttribute(AttrMass).get_double();
+        mass.mass = m_self->mass();
         mass.cloak = 0;
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
@@ -195,8 +195,8 @@ void Missile::EncodeDestiny(Buffer& into)
         miss.ownerID = m_ownerID;
         miss.formationID = 0xFF;
         miss.effectStamp = m_destiny->GetStateStamp();
-        miss.targetID = m_destiny->GetTargetID();
-        miss.followRange = (float)m_destiny->GetFollowDistance();
+        miss.targetID = m_targetSE->GetID();
+        miss.followRange = m_destiny->GetFollowDistance();
         miss.x = x();
         miss.y = y();
         miss.z = z();

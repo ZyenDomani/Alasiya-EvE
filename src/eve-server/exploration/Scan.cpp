@@ -22,7 +22,7 @@
  * SCAN__RSPDUMP
  */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "Client.h"
 #include "EntityMgr.h"

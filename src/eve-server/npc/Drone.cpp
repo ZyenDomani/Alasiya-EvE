@@ -24,7 +24,7 @@
     Rewrite:    Allan
 */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "EVEServerConfig.h"
 #include "EntityMgr.h"
@@ -64,7 +64,7 @@ m_controllerOwnerID(0)
 DroneSE::~DroneSE() {
     SafeDelete(m_AI);
 }
-
+//AttrDroneMaxVelocityBonus
 void DroneSE::Init() {
     // Create default dynamic attributes in the AttributeMap:
     m_self->SetAttribute(AttrDamage,              EvilZero, false);
@@ -83,9 +83,6 @@ void DroneSE::Init() {
 
     if (sConfig.drone.RegenShields)
         m_processTimer.Start(SHIP_PROCESS_TICK_MS);
-
-    // initialize drone's AI manager  controller not needed for this
-    m_AI->Init();
 
     m_pClient = sEntityMgr.FindClientByCharID(m_ownerID);
     if (m_pClient == nullptr) {
@@ -106,6 +103,9 @@ void DroneSE::Init() {
         m_AI->AssignShip(nullptr);
         StateChange();
     }
+
+    // initialize drone's AI manager  controller not needed for this
+    m_AI->Init();
 }
 
 void DroneSE::AssignTo(Client* pClient) {
@@ -694,7 +694,7 @@ void DroneSE::EncodeDestiny(Buffer& into) {
         head.flags = Ball::Flag::IsFree;
     into.Append(head);
     MassSector mass = MassSector();
-        mass.mass = m_self->GetAttribute(AttrMass).get_double();
+        mass.mass = m_self->mass();
         mass.cloak = 0;
         mass.harmonic = m_harmonic;     // is this ever set for drones?
         mass.corporationID = m_corpID;
@@ -871,7 +871,7 @@ void DroneSE::SendBallData() {
     updates.push_back(sbagility.Encode());
     SetBallMass sbmass;
         sbmass.entityID = GetID();
-        sbmass.mass = m_self->GetAttribute(AttrMass).get_double();
+        sbmass.mass = m_self->mass();
     updates.push_back(sbmass.Encode());
     SetBallSpeed sbms;
         sbms.entityID = GetID();

@@ -38,6 +38,9 @@ class CommandCenterPin;
 class PlanetDB
 {
 public:
+    static bool LoadPlanetResourceData(uint32 planetID, PlanetResourceData& data);
+    static void SavePlanetResourceData(uint32 planetID, PlanetResourceData& data);
+
     static PyRep* GetPlanetsForChar(uint32 charID);
     static PyRep* GetMyLaunchesDetails(uint32 charID);
 

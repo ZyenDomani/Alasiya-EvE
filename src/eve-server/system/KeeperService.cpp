@@ -39,7 +39,7 @@
  * DUNG__DB_MESSAGE
  */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "PyBoundObject.h"
 #include "PyServiceCD.h"
@@ -305,7 +305,7 @@ PyResult KeeperService::Handle_ActivateAccelerationGate(PyCallArgs &call) {
     deltaPosition.z = MakeRandomFloat(-2.0, 2.0) * ONE_AU_IN_METERS;
     GPoint warpToPoint(currentPosition+deltaPosition);              // Make a warp-in point variable
     GVector vectorToDestination(currentPosition, warpToPoint);
-    double distanceToDestination = vectorToDestination.length();
+    int32 distanceToDestination = vectorToDestination.length();
     pClient->GetShipSE()->DestinyMgr()->WarpTo(warpToPoint, distanceToDestination);
 
     /* return error msg from this call, if applicable, else nodeid and timestamp */

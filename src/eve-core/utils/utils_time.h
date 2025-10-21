@@ -78,7 +78,7 @@ extern std::string Win32TimeToString(int64 win32t);
 // returns delta between time and now, in hours
 int32 GetElapsedHours(int64 time);
 // this returns 100 nanosecond resolution in filetime format
-double GetFileTimeNow();        // replacement for Win32TimeNow()
+int64 GetFileTimeNow();        // replacement for Win32TimeNow()
 //  this returns milliseconds
 int64 GetSteadyTime();
 //  this returns milliseconds in microsecond resolution

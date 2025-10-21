@@ -28,7 +28,7 @@
 // note:  these will be same calls as in corpFittingMgr
 
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "PyServiceCD.h"
 #include "character/CharFittingMgr.h"

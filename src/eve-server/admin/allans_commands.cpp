@@ -1,7 +1,7 @@
 
 
 #include <stdio.h>
-#include "eve-server.h"
+#include "../eve-server.h"
 #include "../../eve-common/EVEVersion.h"
 
 #include "PyBoundObject.h"
@@ -406,9 +406,9 @@ PyResult Command_destinyvars(Client* pClient, CommandDB* db, PyServiceMgr* servi
              "InertiaMod: %.3f<br>" //27
              "Heading: %.3f,%.3f,%.3f<br>", //21
              sRef->name(), sRef->itemID(),
-             sRef->GetAttribute(AttrMass).get_float(), dm->GetAlignTime(),
+             sRef->mass(), dm->GetAlignTime(),
              dm->GetAccelTime(), dm->GetMaxVelocity(), (float)(dm->GetWarpSpeed() / 10),
-             dm->GetWarpDropSpeed(), dm->GetRadius(), dm->GetCapNeed(),
+             dm->GetWarpDropSpeed(), sRef->radius(), dm->GetCapNeed(),
              //sRef->GetAttribute(AttrAgility).get_double(),
              dm->GetAgility(),
              sRef->GetAttribute(AttrInertiaMod).get_double(),

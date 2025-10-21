@@ -26,6 +26,10 @@ subsequent chars not added to existing char's local chat (but new chars have exi
 
 same acct can be logged in multiple times
 
+jettison customs office causes segfault
+  - m_planetSE = m_system->GetPlanet(m_oData.planetID)->GetPlanetSE();
+    this is also wrong, as GetPlanet should return PlanetSE, not default SE
+
 work on buglist, integrate this list in there where i can (in order)
     - modules/fitting  ...  see 'module system coding' below for list of current problems
     - drones  ... mostly done.  see notes below for more info
@@ -66,12 +70,23 @@ add agent portraits to server and update 'backupurl' in server code
 *******************************************************
 **********  coding errors/corrections/improvements ... med priority
 
+finish rule of 5 for all classes
+  - use systementity.h as template
+
 any client message errors like  [no messageID: xxxxxx]
 needs the call sent as text, not as integer  i.e. send message as follows:
 PyString("UI/Agents/DefaultMessages/NoMission1")
 
+quantity is off (in db) on some items (purcahsed or gifted)
+  - see items around 140027931
+  
 rewrite wreck creation tables.  wrecks are in invTypes table and listed as s/m/l +few extras
    use npc ship groupID to determine faction and size
+
+update this to use static data instead of db hits:
+StationSvc::Handle_GetSolarSystem
+
+replace all (<type>)(<math result>) c-type casting to use static_cast<type>(<math result>)
 
 remove GPoint/GVector code and just write my own using int64
   positioning is whole numbers, but large (distances in space use meters, mostly in the billions)
@@ -81,14 +96,13 @@ remove GPoint/GVector code and just write my own using int64
   go thru all position data and use int64 instead of double
         except on math calls where precision is required (turn, orbit)
 
-npc ai - update for better ai. add advanced ai for advanced ship classes   -priority level: med-hi
+npc ai - update for better ai. add advanced ai for advanced ship classes   -priority level: med-hi  wip
 NOTE:  copy idea from drones (state/actions) using lessons gleaned
     - will need updates based on drone findings and learned methods
     - npc will attack drones based on class
     - npc lost target <- this method needs better thought to pick next target
     - should npc have 'pool' of available/preferred targets
      can warp-scramble and/or web you.
-update sendGFX to distinguish between weapon and ewar for using AttrGfxTurretID or AttrGfxBoosterID
 
     NPCs targeting drones (from eveuni)
     Frigate rats may attack your light drones and above.
@@ -154,13 +168,14 @@ reconnect to lost probes not implemented yet.
 wh system - started.   k162 for deco only at this time (POC)   -priority level: low
 	- james did lots of work on this system in official
 
-player drones - 85% complete    -priority level: med-h
+player drones - 85% complete    -priority level: med-hi
 drone ai needs:
     - large drones need coding
 mining methods will need updates to test for drones vs pilots
 move mining item depleted call to targmgr
 write specific damage method  254 types coded with incapRatio (below)
 156     incapacitationRatio     NULL    0.75  << at this hull damage %, drone goes offline
+AttrDroneMaxVelocityBonus  dunno what this is but 7 types have it
 
 
 RAM code - implement invention, re    -priority level: low
@@ -420,6 +435,25 @@ see also (gamepc)inventory call while in station....showed "ship module" flags f
 prop mod destiny call - update ship speed to AccelTime math isnt right...see cruc/MoveTrace and cruc/SpeedBoost
     - this is better after SpeedBoost() update, but still needs work (activate/deactivate working)
 
+19:43:02 [Bound] DogmaIMBound::LoadAmmoToBank()
+19:43:02 [FxWarning] FxProc::ParseExpression(): Item Piranha Light Missile(140027127) is set to flagAutoFit.  correcting to Seventh Hi Slot.
+19:43:02 [Bound] DogmaIMBound::LoadAmmoToBank()
+19:43:02 [FxWarning] FxProc::ParseExpression(): Item Piranha Light Missile(140027128) is set to flagAutoFit.  correcting to Eighth Hi Slot.
+19:43:02 [Bound] DogmaIMBound::LoadAmmoToBank()
+19:43:02 [FxWarning] FxProc::ParseExpression(): Item Fusion S(140027129) is set to flagAutoFit.  correcting to First Hi Slot.
+19:43:02 [Bound] DogmaIMBound::LoadAmmoToBank()
+19:43:02 [FxWarning] FxProc::ParseExpression(): Item Fusion S(140027130) is set to flagAutoFit.  correcting to Third Hi Slot.
+19:43:02 [Bound] DogmaIMBound::LoadAmmoToBank()
+19:43:02 [FxWarning] FxProc::ParseExpression(): Item Fusion S(140027131) is set to flagAutoFit.  correcting to Second Hi Slot.
+19:43:02 [Bound] DogmaIMBound::LoadAmmoToBank()
+19:43:02 [FxWarning] FxProc::ParseExpression(): Item Fusion S(140027132) is set to flagAutoFit.  correcting to Fifth Hi Slot.
+
+fleet shit....)
+19:43:47 [LootInfo] added 2909550757  Tritanium to list for Angel Trucker(750000014)
+19:46:15 [InvMsg] IB::List() called by Lee with ownerID 90000000 for Jettisoned Loot Container(140027289:AutoFit:active) - origFlag: AutoFit
+
+
+
 *******************************************************
 *******************************************************
 *****************   module/ship gFx
@@ -438,6 +472,7 @@ this includes fx14 and fx10 calls
 
 all module gfx seem to be working properly
 all drone gfx seem to be working properly
+currently rewriting npc gfx code  wip
 
 
 finish DestinyManager::SendCloakFx()
@@ -446,6 +481,10 @@ finish DestinyManager::SendCloakFx()
 *******************************************************
 *******************************************************
 ********  improvements...low priority
+
+    dont know what these are...
+        shieldRadius            Radius of the force shield that this structure generates.
+        smugglingChance         Chance of being caught Transporting contraband.
 
 rename AttributeMap to AttributeMgr
   actual maps can remain
@@ -784,7 +823,9 @@ finish dot commands
     - add options for commands
     - .tr still needs lots of work.  basic code is done and working
 
-
+npc->rclick->gm menu->view attribs?
+<serveraddress>:500001/gd/type.py?action=TypeDogma&typeID=22824
+  - not sure how i can get server to listen and send pages thru http.
 
 *******************************************************
 *******************************************************
@@ -798,6 +839,10 @@ finish dot commands
 *******************************************************
 *******************************************************
 *****************  db shit
+
+add getuint16 to dbcore
+update getuint to getuint32
+update row calls (row.getint) to use 'new' getuint8, getuint16, getuint32 methods as needed
 
 all PackedRows are marshalled into a buffer, where None is inserted as zero.
     - this negates client conditional checks like using "if x is None:" because x=0 will return false in that check, which makes shit weird

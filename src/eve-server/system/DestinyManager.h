@@ -120,7 +120,6 @@ public:
     double GetAgility()                                 { return m_agility; }   // this is only used by my GetShipVars command
     uint8 GetAlignTime()                                { return m_alignTime; } // this is only used by my GetShipVars command
     float GetWarpDropSpeed()                            { return m_speedToLeaveWarp; }
-    double GetRadius()                                  { return m_radius; }
     double GetCapNeed()                                 { return m_warpCapacitorNeed; }
     float GetRadTic()                                   { return m_orbitRadTic; }
     uint8 GetState()                                    { return m_ballMode; }  // this is only used by my bubble debug command
@@ -230,7 +229,6 @@ protected:
     bool m_hasSentShipUpdates;
 
 	// things dictated by ship and skills
-    double m_radius;                    //in m
     double m_warpCapacitorNeed;         //in GJ     - capacitor charged needed to initiate warp
 
     //things dictated by our entity's configuration:

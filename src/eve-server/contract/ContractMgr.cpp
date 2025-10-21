@@ -23,7 +23,7 @@
     Author:        Zhur
 */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "PyServiceCD.h"
 #include "contract/ContractMgr.h"

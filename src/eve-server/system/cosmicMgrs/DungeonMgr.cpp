@@ -257,7 +257,7 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
     }
 
     if ((sig.dungeonType < Dungeon::Type::Wormhole) // 1 - 5
-    or  (sig.ownerID == factionRogueDrones)) {
+    or  (sig.ownerID == factionUnknown)) {
         sig.sigName = dTemplate.dunName;
     } else {
         sig.sigName = sDataMgr.GetFactionName(sig.ownerID);
@@ -438,16 +438,16 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
             if (sec == 1) {             // hi sec
                 sig.sigStrength = 0.2 /level;  // 1/5 base
                 //sig.sigStrength = 0.0125;        // testing 1/80
-                type = MakeRandomInt(0,5);
+                type = MakeRandomUInt(0,5);
             } else if (sec == 2) {      // lo sec
                 sig.sigStrength = 0.1 /level; // 1/10 base
-                type = MakeRandomInt(0,3);
+                type = MakeRandomUInt(0,3);
             } else if (sec == 4) {      // mid sec
                 sig.sigStrength = 0.0667 /level; // 1/15 base
-                type = MakeRandomInt(0,2);
+                type = MakeRandomUInt(0,2);
             } else {                    // null sec
                 sig.sigStrength = 0.05 /level; // 1/20 base
-                type = MakeRandomInt(0,2);
+                type = MakeRandomUInt(0,2);
             }
         } break;
         case Dungeon::Type::Magnetometric: {     // 3
@@ -455,19 +455,19 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
             if (sec == 3) { // nullsec
                 if (level < 0.1) { // 10% to be drone site
                     level = 3;
-                    type = MakeRandomInt(1,7);
+                    type = MakeRandomUInt(1,7);
                     sig.sigStrength = 0.0125; // 1/80
                 } else if (level < 0.3) {   // 20% to be relic site
                     level = 1;
-                    type = MakeRandomInt(1,8);
+                    type = MakeRandomUInt(1,8);
                     sig.sigStrength = 0.025; // 1/40
                 } else {    // else salvage site
                     level = 1;
-                    type = MakeRandomInt(1,4);
+                    type = MakeRandomUInt(1,4);
                     sig.sigStrength = 0.05; // 1/20
                 }
             } else {    // hi, mid and lo sec
-                type = MakeRandomInt(1,8);
+                type = MakeRandomUInt(1,8);
                 if (level < 0.3) {   // 20% to be relic site
                     level = 1;
                     sig.sigStrength = 0.05; // 1/20
@@ -487,7 +487,7 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
             // type 1, level 1 are covert research (ghost sites)
             // level 2 are digital sites and region-specific (only in nullsec)
             // both are incomplete and will be harder than reg sites.
-            type = MakeRandomInt(1,8);
+            type = MakeRandomUInt(1,8);
             if (sec == 1) {
                 sig.sigStrength = 0.1; // 1/10
                 if (type == 1) { // Covert Research
@@ -513,7 +513,7 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
         } break;
         case Dungeon::Type::Ladar: {             // 5
             faction = 0;
-            type = MakeRandomInt(1,8);
+            type = MakeRandomUInt(1,8);
             if (sec == 1) {
                 sig.sigStrength = 0.1; // 1/10
             } else if (sec == 2) {
@@ -523,7 +523,7 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
             }
         } break;
         case Dungeon::Type::Anomaly: {           // 7
-            type = MakeRandomInt(1,5);
+            type = MakeRandomUInt(1,5);
             // if anomaly is non-drone, set template variables for types.
             //   looking over this again (years later) it dont make much sense.
             //   will have to look deeper when i have time.
@@ -559,10 +559,10 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
         };
         case Dungeon::Type::Unrated: {           // 8
             if (faction == 6) {
-                type = MakeRandomInt(1,3);
+                type = MakeRandomUInt(1,3);
             } else {
                 faction = 0;
-                type = MakeRandomInt(1,5);
+                type = MakeRandomUInt(1,5);
             }
         } break;
         default: {
@@ -592,7 +592,7 @@ int8 DungeonMgr::GetFaction(uint32 factionID) {
         case factionGuristas:       return 4;
         case factionSerpentis:      return 1;
         case factionBloodRaider:    return 3;
-        case factionRogueDrones:    return 6;
+        case factionUnknown:        return 6;
         case 0:                     return 7;
         // these are incomplete.  set to default (region rat)
         case factionAmarr:
@@ -800,7 +800,7 @@ void DungeonMgr::AddDecoToVector(uint8 dunType, uint32 templateID, std::vector<u
         // make 1-20 random items in the anomaly based on system trusec
         for (uint8 i=0; i < level; ++i) {
             Dungeon::GroupData grp = Dungeon::GroupData();
-            step = MakeRandomInt(1,count);
+            step = MakeRandomUInt(1,count);
             std::advance(it,step);      // this is some fancy shit here
             grp.typeID = it->second.typeID;
             grp.typeName = it->second.typeName;
@@ -811,12 +811,12 @@ void DungeonMgr::AddDecoToVector(uint8 dunType, uint32 templateID, std::vector<u
             //if (sig.dungeonType == Gravimetric) {
                 theta =  EvE::Trig::Deg2Rad(degreeSeparation * i);
                 //theta = MakeRandomFloat(0,  EvE::Trig::Pi);
-                grp.x = (radius + pos * std::cos(theta)) * (IsEven(MakeRandomInt(0,10)) ? -1 : 1);
+                grp.x = (radius + pos * std::cos(theta)) * (IsEven(MakeRandomUInt()) ? -1 : 1);
                 grp.z = (radius + pos * std::sin(theta)) * -1;
                 /*
                 grp.y = MakeRandomFloat(-radius, radius);
-            } else if (IsEven(MakeRandomInt(0,10))) {
-                grp.x = (pos + it->second.x + (radius*2)) * (IsEven(MakeRandomInt(0,10)) ? -1 : 1);
+            } else if (IsEven(MakeRandomUInt())) {
+                grp.x = (pos + it->second.x + (radius*2)) * (IsEven(MakeRandomUInt()) ? -1 : 1);
                 grp.z = pos + it->second.z + radius;
             } else {
                 grp.x = (pos + it->second.x + radius) * -1;

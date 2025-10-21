@@ -115,7 +115,7 @@ const GPoint MapData::GetRandPointOnPlanet(uint32 systemID) {
     if (planetIDs.empty())
         return NULL_ORIGIN;
 
-    uint16 i = MakeRandomInt(0, total - 1);
+    uint16 i = MakeRandomUInt(0, total - 1);
     return (planetIDs[i].position + planetIDs[i].radius + 50000);
 }
 
@@ -128,7 +128,7 @@ const GPoint MapData::GetRandPointOnMoon(uint32 systemID) {
     if (moonIDs.empty())
         return NULL_ORIGIN;
 
-    uint16 i = MakeRandomInt(0, total - 1);
+    uint16 i = MakeRandomUInt(0, total - 1);
     return (moonIDs[i].position + moonIDs[i].radius + 10000);
 }
 
@@ -141,7 +141,7 @@ uint32 MapData::GetRandPlanet(uint32 systemID) {
     if (planetIDs.empty())
         return 0;
 
-    uint16 i = MakeRandomInt(0, total - 1);
+    uint16 i = MakeRandomUInt(0, total - 1);
     return planetIDs[i].itemID;
 }
 
@@ -173,7 +173,7 @@ uint32 MapData::GetRandMoon(uint32 systemID) {
     if (moonIDs.empty())
         return 0;
 
-    uint16 i = MakeRandomInt(0, total - 1);
+    uint16 i = MakeRandomUInt(0, total - 1);
     return moonIDs[i].itemID;
 }
 
@@ -188,7 +188,7 @@ const GPoint MapData::GetRandPointInSystem(uint32 systemID, int64 distance/*0*/)
 
     // get random distance from origin, unless given
     if (distance == 0)
-        distance = MakeRandomInt(data.radius / 10, data.radius);
+        distance = MakeRandomLong(data.radius / 10, data.radius);
 
     // get random angle (for x,z)
     double theta = MakeRandomFloat(0, (EvE::Trig::Pi * 2));
@@ -212,7 +212,7 @@ const GPoint MapData::GetAnomalyPoint(SystemManager* pSys)
     std::vector<DBGPointEntity> planetIDs;
     MapDB::GetPlanets(pSys->GetID(), planetIDs, total);
 
-    SystemEntity* pSE(pSys->GetSE(planetIDs[MakeRandomInt(0, total - 1)].itemID));
+    SystemEntity* pSE(pSys->GetSE(planetIDs[MakeRandomUInt(0, total - 1)].itemID));
 
     GPoint pos(pSE->GetPosition());
     pos.MakeRandomPointOnSphereLayer(ONE_AU_IN_METERS / 3, ONE_AU_IN_METERS * 4);
@@ -333,7 +333,7 @@ void MapData::GetMissionDestination(Agent* pAgent, MissionOffer& offer) {
 
         case Agents::Range::SameOrNeighboringSystem: { //2
             if (station or deadspace) {
-                if (IsEven(MakeRandomInt(0, 20))) {
+                if (IsEven(MakeRandomUInt())) {
                     // neighboring system...get gates out of this system...single jump
                     auto JumpItr = m_systemJumps.equal_range(systemID);
                     for (auto it = JumpItr.first; it != JumpItr.second; ++it) {
@@ -480,7 +480,7 @@ void MapData::GetMissionDestination(Agent* pAgent, MissionOffer& offer) {
     uint8 count(0);
     while (run) {
         run = false;
-        systemID = sysList.at(MakeRandomInt(0, (sysList.size() - 1)));
+        systemID = sysList.at(MakeRandomUInt(0, (sysList.size() - 1)));
         if (station and (sDataMgr.GetStationCount(systemID) < 1)) {
             run = true;
             ++count;
@@ -501,7 +501,7 @@ void MapData::GetMissionDestination(Agent* pAgent, MissionOffer& offer) {
         } else {
             bool run(true);
             while (run) {
-                offer.destinationID = list.at(MakeRandomInt(0, (list.size() - 1)));
+                offer.destinationID = list.at(MakeRandomUInt(0, (list.size() - 1)));
                 if (offer.destinationID != pAgent->GetStationID())
                     run = false;
             }

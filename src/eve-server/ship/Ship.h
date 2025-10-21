@@ -333,7 +333,8 @@ public:
 
     /* virtual functions for npc/drone AI and player reporting */
     virtual void     MissileLaunched(Missile* pMissile) { /* Do nothing here */ }
-    virtual void             ReportDamage(uint8 type=0) { /* do nothing here */ }
+    virtual void             ReportDamage(uint8 type=0, SystemEntity* pSourceSE=nullptr)
+                                                        { /* do nothing here */ }
     // tell drones we have a new target
     virtual void                TargetAdded(SystemEntity* pTargetSE);
     // this is call to inform us of yellowbox

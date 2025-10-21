@@ -57,11 +57,12 @@ public:
 
     /* virtual functions default to base class and overridden as needed */
     virtual void        Killed(Damage &fatal_blow);
-    virtual bool        Load();  // sets orbit range and initalizes the AIMgr
+    virtual bool        Load();  // sets npc resists and inits destiny vars
 
     /* virtual functions for npc/drone AI and player reporting */
-    virtual void        ReportDamage(uint8 type=0)      { /* do nothing here */ }  // not used yet
-    // tells AI a missile has been launched at us.  allows defender missile code
+    virtual void        ReportDamage(uint8 type=0, SystemEntity* pSourceSE=nullptr)
+                                                        { m_AI->ReportDamage(type, pSourceSE); }
+    // tell AI a missile has been launched at us.  allows defender missile code
     virtual void     MissileLaunched(Missile* pMissile) { m_AI->MissileLaunched(pMissile); }
     virtual void    TargetLost(SystemEntity* pTargetSE) { m_AI->TargetLost(pTargetSE); }
     virtual void   TargetAdded(SystemEntity* pTargetSE) { /* do nothing here */ }
@@ -92,10 +93,14 @@ public:
     void                CmdDropLoot();
 
 protected:
+    void                SetHauler()                     { m_hauler = true; }
 
 private:
     NPCAIMgr*           m_AI;
     SpawnMgr*           m_spawnMgr;
+
+    bool                m_hauler;
+    uint8               m_moduleCount;
     uint32              m_orbitingID;
 };
 

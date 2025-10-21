@@ -24,7 +24,7 @@
     Updates:    Allan
 */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 #include "EVE_Consts.h"
 
 #include "PyServiceCD.h"

@@ -24,7 +24,7 @@
  * DUNG__DB_MESSAGE
  */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "DungeonEditor.h"
 #include "DungeonDB.h"

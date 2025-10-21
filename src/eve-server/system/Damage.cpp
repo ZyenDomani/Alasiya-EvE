@@ -144,7 +144,7 @@ bool SystemEntity::ApplyDamage(Damage &damage) {
         case EVEDB::invGroups::Missile_Launcher_Snowball: {
             // these dont do any damage
             //TODO:  update this to use real toHit data (once we implement them....)
-            damageID = MakeRandomInt(0,8);
+            damageID = MakeRandomUInt(0,8);
         } break;
         default: {
             float modifier = damage.GetModifier();
@@ -172,7 +172,8 @@ bool SystemEntity::ApplyDamage(Damage &damage) {
         m_self->GetAttribute(AttrShieldEmDamageResonance).get_float(),
         m_self->GetAttribute(AttrShieldExplosiveDamageResonance).get_float() );
 
-    if (HasPilot() or IsDroneSE())
+    // player drones only
+    if (IsDroneSE())
         ShipTakingDamage(damage.srcSE);
 
     bool killed(false);
@@ -202,17 +203,16 @@ bool SystemEntity::ApplyDamage(Damage &damage) {
              GetName(), GetID(), shield_damage, new_charge);
     } else {
         // get fraction of damage partial shield absorbs, and lower total damage by that fraction
-        damage *= (1 - (available_shield / shield_damage));
+        damage *= (1.0f - (available_shield / shield_damage));
         total_damage += available_shield;
 
         if (available_shield > 0.0f) {
             _log(DAMAGE__INFO, "%s(%u): Shield depleted with %.2f damage. %.2f damage remains.",
                  GetName(), GetID(), available_shield, damage.GetTotal());
             m_self->SetAttribute(AttrShieldCharge, EvilZero);
+            // report shields failed to advanced entity
+            ReportDamage(Dmg::Type::ShieldZero, damage.srcSE);
         }
-
-        // report shields failed to advanced entity
-        ReportDamage(1);
 
         //Armor:
         float available_armor = m_self->GetAttribute(AttrArmorHP).get_float() - m_self->GetAttribute(AttrArmorDamage).get_float();
@@ -248,10 +248,10 @@ bool SystemEntity::ApplyDamage(Damage &damage) {
                 _log(DAMAGE__INFO, "%s(%u): Armor depleted with %.2f damage. %.2f damage remains.",
                      GetName(), GetID(), available_armor, damage.GetTotal());
                 m_self->SetAttribute(AttrArmorDamage, m_self->GetAttribute(AttrArmorHP));
+                // report armor failed to advanced entity
+                ReportDamage(Dmg::Type::ArmorZero, damage.srcSE);
             }
 
-            // report armor failed to advanced entity
-            ReportDamage(2);
 
             //Hull/Structure:
             //The base hp and damage attributes represent structure.
@@ -272,6 +272,14 @@ bool SystemEntity::ApplyDamage(Damage &damage) {
                 // module damage.  after armor is gone, make damage to random module.
                 if (HasPilot())
                     GetShipSE()->DamageRandModule(sConfig.server.ModuleDamageChance);    // config option for random module damage chance
+                //  not sure if i wanna enable this one yet...
+                if (!m_damageReported) {
+                    if (new_damage > (m_self->GetAttribute(AttrHP).get_float() / 2)) {
+                        // report hull damage to advanced entity
+                        m_damageReported = true;
+                        ReportDamage(Dmg::Type::HullHalf, damage.srcSE);
+                    }
+                }
             } else {
                 total_damage += available_hull;
                 //dead....
@@ -531,7 +539,7 @@ void ShipSE::Killed(Damage &damage) {
                 //cur.second->SetAttribute(AttrDamage, 5);
                 if (IsRigSlot(cur.second->flag())) {
                     continue;
-                } else if (IsEven(MakeRandomInt(0, 100))) {
+                } else if (IsEven(MakeRandomUInt())) {
                     // item survived.  check qty for drop
                     if (cur.second->categoryID() == EVEDB::invCategories::Blueprint) {
                         // singleton for bpo = 1, bpc = 2.
@@ -539,7 +547,7 @@ void ShipSE::Killed(Damage &damage) {
                         s = (bpRef->copy() ? 2 : s);
                     }
                     if (x > 1) {
-                        d = MakeRandomInt(0, x);
+                        d = MakeRandomUInt(0, x);
                         x -= d;
                     }
                     // move item to vector for insertion into wreck later on

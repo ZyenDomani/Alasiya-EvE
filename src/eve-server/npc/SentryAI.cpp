@@ -7,7 +7,7 @@
  */
 
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "Client.h"
 #include "inventory/AttributeEnum.h"
@@ -324,23 +324,23 @@ void SentryAI::AttackTarget(SystemEntity* pTarget) {
     pTarget->ApplyDamage(d);
 }
 
-double SentryAI::GetTargetTime()
+uint16 SentryAI::GetTargetTime()
 {
-    double targetTime = (m_npc->GetSelf()->GetAttribute(AttrScanSpeed).get_int());
-    float radius = m_npc->GetSelf()->GetAttribute(AttrRadius).get_float();
-    if (!targetTime) {
-        if (radius < 30) {
+    uint16 targetTime = (m_npc->GetSelf()->GetAttribute(AttrScanSpeed).get_int());
+    if (targetTime < 1500) {
+        float radius = m_npc->GetRadius();
+        if (radius < 35) {
             targetTime = 1500;
-        } else if (radius < 60) {
+        } else if (radius < 50) {
+            targetTime = 2000;
+        } else if (radius < 100) {
             targetTime = 2500;
-        } else if (radius < 150) {
-            targetTime = 4000;
-        } else if (radius < 280) {
-            targetTime = 6000;
-        } else if (radius < 550) {
-            targetTime = 8000;
+        } else if (radius < 200) {
+            targetTime = 3500;
+        } else if (radius < 300) {
+            targetTime = 4500;
         } else {
-            targetTime = 13000;
+            targetTime = 6000;
         }
     }
     return targetTime;

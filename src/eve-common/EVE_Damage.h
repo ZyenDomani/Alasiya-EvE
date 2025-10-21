@@ -74,6 +74,17 @@ namespace Dmg {
         };
 
     }
+
+    namespace Type {
+        enum {
+            None        = 0,
+            ShieldHalf  = 1,
+            ShieldZero  = 2,
+            ArmorHalf   = 3,
+            ArmorZero   = 4,
+            HullHalf    = 5
+        };
+    }
 }
 
 /*  many of these to copy from for proper packet building

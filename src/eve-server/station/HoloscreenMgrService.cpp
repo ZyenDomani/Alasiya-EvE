@@ -23,7 +23,7 @@
     Author:        Ubiquitatis
 */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "PyServiceCD.h"
 #include "station/HoloscreenMgrService.h"

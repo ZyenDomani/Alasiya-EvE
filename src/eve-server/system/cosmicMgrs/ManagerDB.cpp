@@ -489,7 +489,7 @@ void ManagerDB::GetGroupTypeIDs(uint8 shipClass, uint16 groupID, uint32 factionI
                 name = "AND typeName NOT LIKE '%Crook%'";
             }
         } break;
-        case factionRogueDrones: {
+        case factionUnknown: {
             if ((shipClass == 2) or (shipClass == 5) or (shipClass == 16) or (shipClass == 19)) {
                 name = "AND typeName LIKE '%Strain%'";
             } else if ((shipClass == 1) or (shipClass == 4) or (shipClass == 15) or (shipClass == 18)) {
@@ -769,8 +769,9 @@ void ManagerDB::SaveStatisticData(StatisticData& data)
         "INSERT INTO srvStatisticData"
         " (timeStamp, timeSpan, pcShots, pcMissiles, ramJobs, shipsSalvaged, pcBounties, npcBounties, oreMined, iskMarket, probesLaunched, sitesScanned)"
         " VALUES "
-        "(%f, %u, %u, %u, %u, %u, %f, %f, %f, %f, %u, %u)", GetFileTimeNow(),
-        data.span, data.pcShots, data.pcMissiles, data.ramJobs, data.shipsSalvaged, data.pcBounties, data.npcBounties, data.oreMined, data.iskMarket, data.probesLaunched, data.sitesScanned ))
+        "(%lli, %u, %u, %u, %u, %u, %f, %f, %f, %f, %u, %u)", GetFileTimeNow(),
+        data.span, data.pcShots, data.pcMissiles, data.ramJobs, data.shipsSalvaged,
+        data.pcBounties, data.npcBounties, data.oreMined, data.iskMarket, data.probesLaunched, data.sitesScanned ))
     {
         _log(DATABASE__ERROR, "SaveStatisticData - unable to save data: %s", err.c_str());
     }

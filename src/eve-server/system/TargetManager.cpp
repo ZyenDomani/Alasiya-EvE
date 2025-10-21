@@ -30,7 +30,7 @@
  *      still have bugs to work out.
  */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "EVEServerConfig.h"
 #include "Profiler.h"
@@ -194,13 +194,18 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
     return true;
 }
 
-bool TargetManager::StartTargeting(SystemEntity* tSE, float lockTime, uint8 maxLockedTargets, double maxTargetLockRange, bool &chase)
+bool TargetManager::StartTargeting(SystemEntity* tSE, uint16 lockTime, uint8 maxLockedTargets, double maxTargetLockRange, bool &chase)
 {       // NOTE  this is for npcs (including player drones)
     if (tSE == nullptr)
         return false;
     // error check for testing drones...will remove later
-    if (maxLockedTargets < 1)
+    if (maxLockedTargets < 1) {
         sLog.Error("TM::StartTargeting()","<1 locked for %s", mySE->GetName());
+        if (sConfig.server.StackTrace)
+            EvE::traceStack();
+        return false;
+    }
+
 
     //first make sure they are not already in the list
     if (m_targets.find(tSE) != m_targets.end()) {

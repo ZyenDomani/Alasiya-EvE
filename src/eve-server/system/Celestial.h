@@ -48,8 +48,8 @@ public:
 
     void Delete();
 
-    double      radius() const { return m_radius; }
-    double      security() const { return m_security; }
+    float      radius() const { return m_radius; }
+    float      security() const { return m_security; }
     uint8       celestialIndex() const { return m_celestialIndex; }
     uint8       orbitIndex() const { return m_orbitIndex; }
 
@@ -78,8 +78,8 @@ protected:
     static uint32 CreateItemID( ItemData &data);
 
     /* these have to be public for inventorydb to load into them. */
-    double m_radius;
-    double m_security;
+    float m_radius;
+    float m_security;
     uint8 m_celestialIndex;
     uint8 m_orbitIndex;
 };

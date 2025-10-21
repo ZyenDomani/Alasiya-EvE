@@ -44,6 +44,9 @@ public:
     virtual void        Activate(uint16 effectID, uint32 targetID=0, int16 repeat=0);
     virtual void        RemoveTarget(SystemEntity* pSE);
 
+    // to call bubble->RemoveActiveModule() from GenericModule base class
+    virtual void        RemoveFromBubbleMap();
+
     /* generic DoCycle() for active modules that only affect ship on Activate/Deactivate (not recurring on each cycle)
      *  for modules that perform action on each DoCycle(), they will override this call in their class implementation
      */

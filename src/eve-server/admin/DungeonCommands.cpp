@@ -10,7 +10,7 @@
 
 
 #include <stdio.h>
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "admin/AllCommands.h"
 #include "admin/CommandDB.h"

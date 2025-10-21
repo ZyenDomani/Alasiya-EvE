@@ -23,7 +23,7 @@
     Author:        Zhur, Allan
 */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "PyServiceCD.h"
 #include "EntityMgr.h"

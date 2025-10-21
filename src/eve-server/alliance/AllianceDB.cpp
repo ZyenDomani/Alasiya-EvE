@@ -18,7 +18,7 @@ void AllianceDB::AddBulletin(uint32 allyID, uint32 ownerID, uint32 cCharID, std:
     DBerror err;
     sDatabase.RunQuery(err,
                        "INSERT INTO alnBulletins (allianceID, ownerID, createCharacterID, createDateTime, editCharacterID, editDateTime, title, body)"
-                       " VALUES (%u, %u, %u, %f, %u, %f, '%s', '%s')",
+                       " VALUES (%u, %u, %u, %lli, %u, %lli, '%s', '%s')",
                        allyID, ownerID, cCharID, GetFileTimeNow(), cCharID, GetFileTimeNow(), title.c_str(), body.c_str());
 }
 
@@ -299,7 +299,7 @@ bool AllianceDB::AddEmployment(uint32 allyID, uint32 corpID)
     if (!sDatabase.RunQuery(err,
                             "INSERT INTO crpEmployment"
                             "  (allianceID, corporationID, startDate)"
-                            " VALUES (%u, %u, %f)",
+                            " VALUES (%u, %u, %lli)",
                             allyID, corpID, GetFileTimeNow()))
     {
         codelog(DATABASE__ERROR, "Error in employment insert query: %s", err.c_str());
@@ -355,7 +355,7 @@ bool AllianceDB::UpdateCorpAlliance(uint32 allyID, uint32 corpID)
     if (!sDatabase.RunQuery(err,
                             "UPDATE crpCorporation SET "
                             "  allianceID = %u, "
-                            "  allianceMemberStartDate = %f, "
+                            "  allianceMemberStartDate = %lli, "
                             "  chosenExecutorID = %u "
                             " WHERE corporationID = %u",
                             allyID, GetFileTimeNow(), executorID, corpID))
@@ -440,7 +440,7 @@ bool AllianceDB::CreateAlliance(Call_CreateAlliance &allyInfo, Client *pClient, 
                                "   allianceName, shortName, description, executorCorpID, creatorCorpID, creatorCharID, "
                                "   startDate, memberCount, url )"
                                " VALUES "
-                               "   ('%s', '%s', '%s', %u, %u, %u, %f, 0, '%s') ",
+                               "   ('%s', '%s', '%s', %u, %u, %u, %lli, 0, '%s') ",
                                aName.c_str(), aShort.c_str(), aDesc.c_str(), corpID, corpID, charID, GetFileTimeNow(), aURL.c_str()))
     {
         codelog(ALLY__DB_ERROR, "Error in CreateAlliance query: %s", err.c_str());

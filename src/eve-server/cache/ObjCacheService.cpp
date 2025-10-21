@@ -28,7 +28,7 @@
  * the rest of this file isnt fully understood (by me) or implemented.
  */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "PyServiceCD.h"
 #include "cache/ObjCacheService.h"

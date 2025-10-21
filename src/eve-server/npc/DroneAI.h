@@ -134,7 +134,7 @@ public:
     // our assigned ship has been attacked
     void                MissileLaunched(Missile* pMissile);
     // our assigned ship has has lost (0=none, 1=shields, 2=armor)
-    void                ReportDamage(uint8 type=0);
+    void                ReportDamage(uint8 type=0, SystemEntity* pSourceSE=nullptr);
     void                TargetDestroyed(SystemEntity* pTargetSE);
     // for assisting.  offensive module activated on target
     void                ModuleActivated(SystemEntity* pTargetSE);

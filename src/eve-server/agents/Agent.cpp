@@ -78,7 +78,7 @@ void Agent::MakeOffer(Character* pChar, MissionOffer& offer) {
     // all missions default to courier
     uint8 misionType = Mission::Type::Courier;
     uint16 connectionSkillType(EvESkill::None);
-	uint8 roll(MakeRandomInt(0, 100));
+    uint8 roll(MakeRandomUInt());
 
 	// random determination here is based on uniform distribution
     switch (m_agentData.divisionID) {
@@ -364,7 +364,7 @@ void Agent::MakeOffer(Character* pChar, MissionOffer& offer) {
     }
 
     // set reward isk based on agent standing, quality, level, system truSec, and char negotiation
-    uint32 isk(MakeRandomInt(sConfig.mission.IskRewardLo, sConfig.mission.IskRewardHi));  //11000-16500
+    uint32 isk(MakeRandomUInt(sConfig.mission.IskRewardLo, sConfig.mission.IskRewardHi));  //11000-16500
     //float charStanding = sStandingMgr.GetRawStanding(m_agentID, pChar);
     float charStanding = sStandingMgr.GetEffectiveStanding(m_agentID, pChar);
     float quality = EvEMath::Agent::EffectiveQuality(m_agentData.quality, pChar->GetSkillLevel(EvESkill::Negotiation), charStanding);
@@ -928,19 +928,19 @@ uint32 Agent::GetResponse(Character* pChar, uint8 rspID) {
             if (HasCurrentMission(pChar->itemID())) {
                 // initial greetings - unfinished mission
                 if (agentStanding > Standings::Hi) {
-                    if (IsEven(MakeRandomInt(0, 20))) {
+                    if (IsEven(MakeRandomUInt())) {
                         return 236733;  //High1:  {[character]player.name}! You're back! If there is anything you need, just ask. But you are going to finish your current mission, right?
                     } else {
                         return 236734;  //High2:  Great to see you, {[character]player.name}, as always. I have to assume there's a good reason that you've come back before finishing your current mission??
                     }
                 } else if (agentStanding > Standings::LoMid) {
-                    switch (MakeRandomInt(1, 3)) {
+                    switch (MakeRandomUInt(1, 3)) {
                         case 1:  return 236730;  //Medium1:  Nice to see you, {[character]player.name}, but you know you still have an unfinished mission from me, right?', None, {u'{[character]player.name}': {'conditionalValues': [], 'variableType': 0, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'player'}})
                         case 2:  return 236731;  //Medium2:  Always a pleasure, of course. But the last mission I gave you isn't going to complete itself.
                         case 3:  return 236732;  //Medium3:  Hey, {[character]player.name}. I really like your style... but I do need you to finish up your current mission for me.', None, {u'{[character]player.name}': {'conditionalValues': [], 'variableType': 0, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'player'}})
                     }
                 } else if (agentStanding > Standings::Bad) {
-                    if (IsEven(MakeRandomInt(0, 20))) {
+                    if (IsEven(MakeRandomUInt())) {
                         return 236735;  //Low1:  You do know you haven't finished your current mission for me, right?
                     } else {
                         return 236736;  //Low3:  {[character]player.name}, you need to finish your current mission for me.', None, {u'{[character]player.name}': {'conditionalValues': [], 'variableType': 0, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'player'}})
@@ -975,39 +975,39 @@ uint32 Agent::GetResponse(Character* pChar, uint8 rspID) {
                 */
 
                 if (agentStanding > Standings::Hi) {
-                    switch (MakeRandomInt(1, 3)) {
+                    switch (MakeRandomUInt(1, 3)) {
                         case 1: return 236723;  //High4:  I am exhilarated at seeing you, {[character]player.name}. I hope I can be of assistance.
                         case 2: return 236724;  //High3:  Nice to see you {[character]player.name}!
                         case 3: return 236726;  //High2:  [character]player.name}! You're back! Please have a seat and make yourself feel comfortable. If there is anything you need, just ask.
                     }
                 } else if (agentStanding > Standings::MidHi) {
-                    if (IsEven(MakeRandomInt(0, 20))) {
+                    if (IsEven(MakeRandomUInt())) {
                         return 236729;  //Greetings, {[character]player.name}.
                     } else {
                         return 135808;  //How can I assist you? ')
                     }
                 } else if (agentStanding > Standings::LoMid) {
-                    if (IsEven(MakeRandomInt(0, 20))) {
+                    if (IsEven(MakeRandomUInt())) {
                         return 236722;  //Medium2: Nice to see you, {[character]player.name}.
                     } else {
                         return 236778;  //Why hello there.  What do you want?
                     }
                 } else if (agentStanding > Standings::Lo) {
                     //***  initial greetings - neutral
-                    if (IsEven(MakeRandomInt(0, 20))) {
+                    if (IsEven(MakeRandomUInt())) {
                         return 236725;  //Low1:  Why hello there. What do you want?
                     } else {
                         return 236720;  //Medium1:  So you think you're tough? If that's the case, I might have some use for you.
                     }
                 } else if (agentStanding > Standings::Bad) {
-                    if (IsEven(MakeRandomInt(0, 20))) {
+                    if (IsEven(MakeRandomUInt())) {
                         return 236727;  //Low3:  I hope you're not here to ask me for a favor. I hate beggars.
                     } else {
                         return 236728;  //Low2:  What do you want? Spit it out, stooge.
                     }
                 } else {
                     //***  initial greetings - negative
-                    if (IsEven(MakeRandomInt(0, 20))) {
+                    if (IsEven(MakeRandomUInt())) {
                         return 236788;  //You've got a lot of nerve, showing your face around here.
                     } else {
                         return 236786;  //Begone, scum.
@@ -1019,25 +1019,25 @@ uint32 Agent::GetResponse(Character* pChar, uint8 rspID) {
         case Agents::Response::NoWork: {
             // initial greetings - no work
             if (agentStanding > Standings::MidHi) {
-                if (IsEven(MakeRandomInt(0, 20))) {
+                if (IsEven(MakeRandomUInt())) {
                     return 236798;  //Sorry, kid, nothing at the moment. Could you come back later?
                 } else {
                     return 236799;  //I'm sorry, but what I've got is promised to another pilot already. Could you come back later?
                 }
             } else if (agentStanding > Standings::LoMid) {
-                if (IsEven(MakeRandomInt(0, 20))) {
+                if (IsEven(MakeRandomUInt())) {
                     return 236703;  //Sorry, I have no jobs available for you.
                 } else {
                     return 236779;  //If you're here to find an excuse to show off those big, shiny weapons of yours, then I suggest you go find some nincompoop working for the {[npcOrganization]agentFactionID.name} military and leave me alone.  If not, then I might lend you an ear, depending on your worth to me.
                 }
             } else if (agentStanding > Standings::Lo) {
-                if (IsEven(MakeRandomInt(0, 20))) {
+                if (IsEven(MakeRandomUInt())) {
                     return 236780;  //You just interrupted me from my studies.  This better be good ...
                 } else {
                     return 129422;  //Who are you?  I've got important business to attend to, so unless you're somebody important get lost.')
                 }
             } else if (agentStanding > Standings::Bad) {
-                if (IsEven(MakeRandomInt(0, 20))) {
+                if (IsEven(MakeRandomUInt())) {
                     return 129421;  //Who are you?  I've got important business to attend to, so unless you're somebody important get lost.')
                 } else {
                     return 236699;  //I'm busy, go away.
@@ -1049,19 +1049,19 @@ uint32 Agent::GetResponse(Character* pChar, uint8 rspID) {
 
         case Agents::Response::InProgress: {
             if (agentStanding > Standings::Hi) {
-                if (IsEven(MakeRandomInt(0, 20))) {
+                if (IsEven(MakeRandomUInt())) {
                     return 236733;  //High1:  {[character]player.name}! You're back! If there is anything you need, just ask. But you are going to finish your current mission, right?
                 } else {
                     return 236734;  //High2:  Great to see you, {[character]player.name}, as always. I have to assume there's a good reason that you've come back before finishing your current mission??
                 }
             } else if (agentStanding > Standings::LoMid) {
-                switch (MakeRandomInt(1, 3)) {
+                switch (MakeRandomUInt(1, 3)) {
                     case 1:  return 236730;  //Medium1:  Nice to see you, {[character]player.name}, but you know you still have an unfinished mission from me, right?', None, {u'{[character]player.name}': {'conditionalValues': [], 'variableType': 0, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'player'}})
                     case 2:  return 236731;  //Medium2:  Always a pleasure, of course. But the last mission I gave you isn't going to complete itself.
                     case 3:  return 236732;  //Medium3:  Hey, {[character]player.name}. I really like your style... but I do need you to finish up your current mission for me.', None, {u'{[character]player.name}': {'conditionalValues': [], 'variableType': 0, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'player'}})
                 }
             } else if (agentStanding > Standings::Bad) {
-                if (IsEven(MakeRandomInt(0, 20))) {
+                if (IsEven(MakeRandomUInt())) {
                     return 236735;  //Low1:  You do know you haven't finished your current mission for me, right?
                 } else {
                     return 236736;  //Low3:  {[character]player.name}, you need to finish your current mission for me.', None, {u'{[character]player.name}': {'conditionalValues': [], 'variableType': 0, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'player'}})
@@ -1076,38 +1076,38 @@ uint32 Agent::GetResponse(Character* pChar, uint8 rspID) {
              * //(136324, 'Excellent. I've just uploaded the coordinates of the pickup station to your NeoCom. Do be quick, okay? ')
              */
             if (agentStanding > Standings::Hi) {
-                switch (MakeRandomInt(1, 3)) {
+                switch (MakeRandomUInt(1, 3)) {
                     case 1:  return 136295;  //Excellent. You're doing us a great service, {[character]player.name}. ')
                     case 2:  return 135877;  //I knew we could count on you, {[character]player.name}. Please hurry. ')
                     case 3:  return 236721;  //You have a long and prosperous future within {[npcOrganization]agentFactionID.name}, {[character]player.name}.
                 }
             } else if (agentStanding > Standings::MidHi) {
-                switch (MakeRandomInt(1, 3)) {
+                switch (MakeRandomUInt(1, 3)) {
                     case 1:  return 236747;  //MedHigh3:Great.  I know I can trust you with this, mate.
                     case 2:  return 236749;  //Wonderful.  I expect a quick result with you on the job.
                     case 3:  return 139327;  //Your assistance is appreciated, {[character]player.name}. ')
                 }
             } else if (agentStanding > Standings::LoMid) {
-                switch (MakeRandomInt(1, 3)) {
+                switch (MakeRandomUInt(1, 3)) {
                     case 1:  return 135811;  //Move quickly, {[character]player.name}. ')
                     case 2:  return 236746;  //MedHigh2: I knew I could count on you.
                     case 3:  return 139398;  //I knew you were the right pilot for the job.')
                 }
             } else if (agentStanding > Standings::Lo) {
-                switch (MakeRandomInt(1, 4)) {
+                switch (MakeRandomUInt(1, 4)) {
                     case 1:   return 236744;  //LowMed4: Now be careful out there, you hear me?
                     case 2:   return 236745;  //MedHigh1:Stay alive, friend.
                     case 3:   return 236741;  //LowMed1:Thank you, and good luck.
                     case 4:   return 236742;  //LowMed2: Thanks, I really appreciate it.
                 }
             } else if (agentStanding > Standings::Bad) {
-                switch (MakeRandomInt(1, 3)) {
+                switch (MakeRandomUInt(1, 3)) {
                     case 1:   return 236745; // Stay alive, friend.
                     case 2:   return 236740;  //Low3:Good good, now get out there and give me some results.
                     case 3:   return 236743;  //LowMed3:Have fun!
                 }
             } else {
-                switch (MakeRandomInt(1, 3)) {
+                switch (MakeRandomUInt(1, 3)) {
                     case 1:   return 236738;  //Low1:Very well then, get going.
                     case 2:   return 135138;  //Don't waste any time. Our people are waiting.
                     case 3:   return 236739;  //Low2:Ok, hurry up will you.
@@ -1153,21 +1153,21 @@ uint32 Agent::GetResponse(Character* pChar, uint8 rspID) {
             sLog.Cyan("Agent::GetResponse():Complete", "Mission delay set for %.2f minutes", delayMins);
 
             if (agentStanding > Standings::Hi) {
-                switch (MakeRandomInt(1, 3)) {
+                switch (MakeRandomUInt(1, 3)) {
                     case 1:   return 236721;  //High1:  You have a long and prosperous future within {[npcOrganization]agentFactionID.name}, {[character]player.name}.
                     case 2:   return 236767;  //High2:  If only I had more excellent pilots like you, {[character]player.name} ...
                     case 3:   return 236768;  //High3:  Your talents as a pilot never cease to amaze me.  Keep up the good work!
                     case 4:   return 236769;  //High4:  I am in your debt {[character]player.name}.  If you ever need anything, just look me up.
                 }
             } else if (agentStanding > Standings::MidHi) {
-                switch (MakeRandomInt(1, 4)) {
+                switch (MakeRandomUInt(1, 4)) {
                     case 1:   return 236766;  //High1:  I thank you from the bottom of my heart.
                     case 2:   return 135818;  //You're a hell of a pilot, {[character]player.name}. Come back in a bit and I'll let you know if there's more work for you.')
                     case 3:   return 236750;  //Fabulous.  I couldn't have asked for a better man for the job.
                     case 4:   return 236764;  //MedHigh5:  I look forward to your next visit.
                 }
             } else if (agentStanding > Standings::LoMid) {
-                switch (MakeRandomInt(1, 6)) {
+                switch (MakeRandomUInt(1, 6)) {
                     case 1:   return 236760;  //MedHigh1:  Thank you very much, I really appreciate it.
                     case 2:   return 236761;  //MedHigh2:  Well done!  Take this reward and my gratitude as well.
                     case 3:   return 236762;  //MedHigh3:  It's a pleasure doing business with you.
@@ -1176,7 +1176,7 @@ uint32 Agent::GetResponse(Character* pChar, uint8 rspID) {
                     case 6:   return 236755;  //Excellent job!
                 }
             } else if (agentStanding > Standings::Lo) {
-                switch (MakeRandomInt(1, 5)) {
+                switch (MakeRandomUInt(1, 5)) {
                     case 1:   return 236754;  //LowMed1:  Thank you.  Your accomplishment has been noted and saved into our database.
                     case 2:   return 236756;  //LowMed3:  Thanks, I really appreciate your help.
                     case 3:   return 236757;  //LowMed4:  I won't forget this.
@@ -1184,14 +1184,14 @@ uint32 Agent::GetResponse(Character* pChar, uint8 rspID) {
                     case 5:   return 236759;  //LowMed6:  You have my gratitude.
                 }
             } else if (agentStanding > Standings::Bad) {
-                switch (MakeRandomInt(1, 4)) {
+                switch (MakeRandomUInt(1, 4)) {
                     case 1:   return 236751;  //Low1:  Not bad.  Get back to me later for another assignment will you?
                     case 2:   return 236752;  //Low2:  Nice work.  I'm starting to like your style.
                     case 3:   return 236753;  //Low3:  Thanks, your services to {[npcOrganization]agentCorpID.name} is duly appreciated.
                     case 4:   return 133764;  //Thanks and good luck, {[character]player.name}. ')
                 }
             } else {
-                switch (MakeRandomInt(1, 4)) {
+                switch (MakeRandomUInt(1, 4)) {
                     case 1:   return 236758;  //I'm grateful for your assistance.
                     case 2:   return 139398;  //I knew you were the right pilot for the job.')
                     case 3:   return 133765;  //Good work, {[character]player.name}. ')
@@ -1241,26 +1241,26 @@ uint32 Agent::GetResponse(Character* pChar, uint8 rspID) {
             sLog.Cyan("Agent::GetResponse():Decline", "Mission delay set for %.2f minutes", delayMins);
 
             if (agentStanding > Standings::Hi) {
-                switch (MakeRandomInt(1, 3)) {
+                switch (MakeRandomUInt(1, 3)) {
                     case 1:   return 135879;  //Damnation, {[character]player.name}! You were our best hope. I just pray I can find someone else.
                     case 2:   return 135144;  //Maybe next time, huh? In any case, {[npcOrganization]agentCorpID.name} will manage. It's your loss.
                     case 3:   return 236794;  //Declined2 `Bah, that mission wasn't that bad. Oh well, wait a bit and I'll come up with something else.
                 }
             } else if (agentStanding > Standings::MidHi) {
-                switch (MakeRandomInt(1, 3)) {
+                switch (MakeRandomUInt(1, 3)) {
                     case 1:   return 139326;  //That’s too bad, {[character]player.name}. Nothing else available right now, I’m afraid.
                     case 2:   return 135858;  //I'm sorry to hear that, {[character]player.name}. I'll find someone else, I suppose.
                     case 3:   return 135142;  //I hope I can find someone else to handle this.
                 }
             } else if (agentStanding > Standings::LoMid) {
-                switch (MakeRandomInt(1, 4)) {
+                switch (MakeRandomUInt(1, 4)) {
                     case 1:   return 133432;  //Too bad, {[character]player.name}. You could have made some serious points with the powers-that-be on this one.
                     case 2:   return 236695;  //Son, I am disappoint.
                     case 3:   return 236793;  //Declined1:  Too bad, I'll try to find someone else then for that job.
                     case 4:   return 236693;  //It's your loss.
                 }
             } else if (agentStanding > Standings::Lo) {
-                switch (MakeRandomInt(1, 5)) {
+                switch (MakeRandomUInt(1, 5)) {
                     case 1:   return 139287;  //I see.  Well, perhaps you will be of some use next time.
                     case 2:   return 236795;  //Declined3:  It's your loss.
                     case 3:   return 236796;  //Declined4 `Well, don't expect me to come up with something as good later on.
@@ -1268,7 +1268,7 @@ uint32 Agent::GetResponse(Character* pChar, uint8 rspID) {
                     case 5:   return 136322;  //I see. Easy money's not good enough, eh? Huh.
                 }
             } else if (agentStanding > Standings::Bad) {
-                switch (MakeRandomInt(1, 5)) {
+                switch (MakeRandomUInt(1, 5)) {
                     case 1:   return 139286;  //I see.  Well, perhaps you will be of some use next time.
                     // this should probably be minmater only...
                     case 2:   return 137499;  //Fine, I’ll get someone more capable. A word of advice: don’t repeat this display of cowardice and uselessness. We don’t tolerate such things in the Republic,
@@ -1277,7 +1277,7 @@ uint32 Agent::GetResponse(Character* pChar, uint8 rspID) {
                     case 5:   return 236801;  //Quitted2 `It's your loss.
                 }
             } else {
-                switch (MakeRandomInt(1, 5)) {
+                switch (MakeRandomUInt(1, 5)) {
                     case 1:   return 135855;  //I guess you can't take the heat. There are others who will.
                     case 2:   return 130895;  //Fine.  Be that way.  Asshole.
                     case 3:   return 236802;  //Quitted3 `Your wayward ways displease me, young one.
@@ -1313,7 +1313,7 @@ uint32 Agent::GetResponse(Character* pChar, uint8 rspID) {
             m_delayMap[pChar->itemID()] = (GetFileTimeNow() + (delayMins * EvE::Time::Minute));
             sLog.Cyan("Agent::GetResponse():Quit", "Mission delay set for %.2f minutes", delayMins);
 
-             if (IsEven(MakeRandomInt(0, 20))) {
+             if (IsEven(MakeRandomUInt())) {
                  // should this one be sent only on standings change?
                 return 139400;  //You are not the pilot I thought you were. I'll be sure to spread the word of your laziness and ingratitude.')
              } else {

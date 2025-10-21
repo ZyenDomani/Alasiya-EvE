@@ -41,11 +41,9 @@ public:
     static PyObjectEx* GetFactionStandings();
     PyRep* GetCorpStandings(Client* pClient);
     PyRep* GetCharStandings(Client* pClient);
-    static PyRep* GetSystemSovInfo(uint32 systemID);
     PyRep* PrimeCharStandings(uint32 charID);
     PyRep* GetStandingTransactions(Call_GetStandingTransactions &args);
     PyRep* GetStandingCompositions(uint32 fromID, uint32 toID);
-
 
     // quick data access for standings manager
     static void GetAllStandings(DBQueryResult& res);
@@ -64,6 +62,11 @@ public:
     static void SaveStandingChanges(uint32 fromID, uint32 toID, uint16 eventType, float pctChange, std::string msg);
 
     static PyRep* GetMyStandings(uint32 charID);
+
+    
+    // this needs to be moved to specific sov data file
+    static PyRep* GetSystemSovInfo(uint32 systemID);
+
 };
 
 #endif

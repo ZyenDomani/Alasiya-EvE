@@ -23,7 +23,7 @@
     Author:        Zhur, Captnoord
 */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "PyServiceCD.h"
 #include "admin/AlertService.h"

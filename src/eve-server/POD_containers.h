@@ -171,8 +171,8 @@ struct CosmicSignature {
     uint32 sigItemID=0;           // itemID of this entry
     float sigStrength=0.0f;
     GPoint position=NULL_ORIGIN;
-    std::string sigID="none";          // this is unique xxx-nnn id displayed in scanner.  can be other values
-    std::string sigName="none";        // site name if scanGroupID is sig or anom and certainty > 0.75
+    std::string sigID="";          // this is unique xxx-nnn id displayed in scanner.  can be other values
+    std::string sigName="";        // site name if scanGroupID is sig or anom and certainty > 0.75
 };
 
 /* POD structure for spawn faction groups */
@@ -222,9 +222,9 @@ struct LootType {
 
 /* POD structure for possible loot drops */
 struct LootList {
-    uint8 minDrop=0;
-    uint8 maxDrop=0;
     uint16 typeID=0;
+    uint32 minDrop=0;
+    uint32 maxDrop=0;
 };
 /* POD structure for statistic data */
 struct StatisticData {
@@ -251,8 +251,8 @@ struct SystemData {
     uint32 factionID=0;
     int64 radius=0;
     float security=0.0f;
-    std::string name="none";
-    std::string securityClass="none";
+    std::string name="";
+    std::string securityClass="";
 };
 
 /* POD structure for solarsystem item. */
@@ -269,14 +269,14 @@ struct SolarSystemData {
     uint32 regionID=0;
     uint32 factionID=0;
     uint32 sunTypeID=0;
+    int64 radius=0;
     float security=0.0f;
-    double radius=0.0;
-    double luminosity=0.0;
+    float luminosity=0.0f;
     GPoint position = NULL_ORIGIN;
     GPoint minPosition = NULL_ORIGIN;
     GPoint maxPosition = NULL_ORIGIN;
-    std::string name="none";
-    std::string securityClass="none";
+    std::string name="";
+    std::string securityClass="";
 };
 struct SystemKillData {
     uint16 killsHour=0;
@@ -361,8 +361,8 @@ struct StationData {
     GPoint dockEntry = NULL_ORIGIN;
     GPoint dockPosition = NULL_ORIGIN;
     GVector dockOrientation = NULL_ORIGIN_V;
-    std::string name="none";
-    std::string description="none";
+    std::string name="";
+    std::string description="";
 };
 
 /* POD structure for corp office data */
@@ -376,8 +376,8 @@ struct OfficeData {
     uint32 corporationID=0;
     int64 rentalFee=0;
     int64 expiryTime=0;
-    std::string ticker="none";
-    std::string name="none";
+    std::string ticker="";
+    std::string name="";
 };
 
 /* POD structure for loading dynamic items */

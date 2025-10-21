@@ -24,7 +24,7 @@
 */
 
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "PyServiceCD.h"
 #include "admin/CommandDispatcher.h"

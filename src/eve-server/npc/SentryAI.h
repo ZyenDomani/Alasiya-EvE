@@ -55,7 +55,7 @@ protected:
     void SetSignaling(SystemEntity* pTarget);
     void CheckDistance(SystemEntity* pTarget);
 
-    double GetTargetTime();
+    uint16 GetTargetTime();
 
     State m_state;
 

@@ -8,7 +8,7 @@
   * @version:  0.15 (config version)
   */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 #include "EVEServerConfig.h"
 #include "market/MarketBotConf.h"
 #include "market/MarketBotMgr.h"

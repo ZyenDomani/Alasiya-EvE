@@ -24,7 +24,7 @@
     Update/Rewrite: Allan
 */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "StaticDataMgr.h"
 #include "system/Celestial.h"
@@ -36,10 +36,10 @@
  */
 CelestialObject::CelestialObject(uint32 _celestialID, const ItemType &_type, const ItemData &_data)
 : InventoryItem(_celestialID, _type, _data),
-  m_radius( 0.0 ),
-  m_security( 0.0 ),
-  m_celestialIndex( 0 ),
-  m_orbitIndex( 0 )
+  m_radius(0.0f),
+  m_security(0.0f),
+  m_celestialIndex(0),
+  m_orbitIndex(0)
   {
       _log(ITEM__TRACE, "Created Default CelestialObject %p for item %s (%u).", this, name(), itemID());
 }
@@ -85,7 +85,7 @@ void CelestialObject::Delete() {
 CelestialSE::CelestialSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
 : ItemSystemEntity(self, services, system)
 {
-    _log(SE__DEBUG, "Created CSE for item %s (%u) with radius of %i.", self->name(), self->itemID(), m_radius);
+    _log(SE__DEBUG, "Created CSE for item %s (%u) with radius of %.1f.", self->name(), self->itemID(), self->radius());
 }
 
 void CelestialSE::MakeDamageState(DoDestinyDamageState &into)
@@ -120,7 +120,7 @@ void AnomalySE::EncodeDestiny(Buffer& into)
     BallHeader head = BallHeader();
         head.entityID = m_self->itemID();
         head.mode = Ball::Mode::STOP;
-        head.radius = m_radius;
+        head.radius = m_self->radius();
         head.posX = x();
         head.posY = y();
         head.posZ = z();
@@ -170,7 +170,7 @@ void WormholeSE::EncodeDestiny(Buffer& into)
     BallHeader head = BallHeader();
         head.entityID = m_self->itemID();
         head.mode = Ball::Mode::STOP;
-        head.radius = m_radius;
+        head.radius = m_self->radius();
         head.posX = x();
         head.posY = y();
         head.posZ = z();

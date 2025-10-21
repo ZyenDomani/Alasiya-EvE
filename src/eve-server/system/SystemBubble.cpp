@@ -26,7 +26,6 @@
 
 #include <algorithm>
 
-#include "eve-server.h"
 #include "EVEServerConfig.h"
 
 #include "Client.h"
@@ -186,16 +185,29 @@ void SystemBubble::Add(SystemEntity* pSE) {
             } break;
             case Bubble::Type::Ice:
             case Bubble::Type::Belt: {
-            // check for roids and load/spawn as needed, but only on first player to enter
-            m_system->GetBeltMgr()->CheckSpawn(m_bubbleID);
-            if (sConfig.npc.RoamingSpawns)
-                if (!m_spawnTimer.Enabled())
-                    SetSpawnTimer();
+                // check for roids and load/spawn as needed, but only on first player to enter
+                m_system->GetBeltMgr()->CheckSpawn(m_bubbleID);
+                // if belt is spawned, inform npcs of new player entering bubble
+                if (m_spawned)
+                    m_system->GetSpawnMgr()->PlayerEnteredBubble(m_bubbleID, pSE->GetPilot());
+                if (sConfig.npc.RoamingSpawns)
+                    if (!m_spawnTimer.Enabled())
+                        SetSpawnTimer();
             } break;
-            case Bubble::Type::Anomaly:
-            case Bubble::Type::Mission:
-            case Bubble::Type::Incursion:
+            case Bubble::Type::Anomaly: {
+                m_system->GetSpawnMgr()->PlayerEnteredBubble(m_bubbleID, pSE->GetPilot());
+            } break;
+            case Bubble::Type::Mission: {
+                sLog.Warning("SysBubble::Add()", "%s has entered a mission bubble", \
+                        pSE->GetPilot()->GetName());
+            } break;
+            case Bubble::Type::Incursion: {
+                sLog.Warning("SysBubble::Add()", "%s has entered a incursion bubble", \
+                        pSE->GetPilot()->GetName());
+            } break;
             case Bubble::Type::Escalation: {
+                sLog.Warning("SysBubble::Add()", "%s has entered a escalation bubble", \
+                        pSE->GetPilot()->GetName());
             } break;
         }
 
@@ -211,6 +223,9 @@ void SystemBubble::Add(SystemEntity* pSE) {
             cur.second->SendGFX(false, pClient);
         // will need to do same thing for active drones, if any
         for (auto &cur : m_drones)
+            cur.second->GetAI()->SendGFX(pClient);
+        // and npcs, if any
+        for (auto &cur : m_npcs)
             cur.second->GetAI()->SendGFX(pClient);
 
         m_players[pClient->GetCharacterID()] = pClient;   //add to bubble's player list
@@ -369,6 +384,14 @@ SystemEntity* const SystemBubble::GetEntity(uint32 entityID) const {
     return nullptr;
 }
 
+void SystemBubble::AddNPC(NPC* pNPC) {
+    m_npcs[pNPC->GetID()] = pNPC;
+}
+
+void SystemBubble::RemoveNPC(NPC* pNPC) {
+    m_npcs.erase(pNPC->GetID());
+}
+
 void SystemBubble::AddActiveModule(ActiveModule* pMod) {
     m_activeModules[pMod->itemID()] = pMod;
 }
@@ -438,15 +461,6 @@ SystemEntity* SystemBubble::GetRandomEntity() {
             return cur.second;
     }
     return nullptr;
-}
-
-uint32 SystemBubble::CountNPCs() {
-    uint32 count(0);
-    for (auto &cur : m_dynamicEntities)
-        if (cur.second->IsNPCSE())
-            ++count;
-
-    return count;
 }
 
 uint32 SystemBubble::GetSystemID() {
@@ -815,17 +829,12 @@ void SystemBubble::SyncPos() {
         }
 }
 
-void SystemBubble::CmdDropLoot()
-{
-    for (auto &dse : m_dynamicEntities) {
-        if (dse.second->IsNPCSE())
-            dse.second->GetNPCSE()->CmdDropLoot();
-    }
+void SystemBubble::CmdDropLoot() {
+    for (auto &cur : m_npcs)
+            cur.second->CmdDropLoot();
 }
 
-
-void SystemBubble::RemoveMarkers()
-{
+void SystemBubble::RemoveMarkers() {
     if (m_hasMarkers) {
         SystemEntity* pSE(nullptr);
         for (auto &cur : m_markers) {

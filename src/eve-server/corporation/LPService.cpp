@@ -23,7 +23,7 @@
     Author:        Bloody.Rabbit,   Allan
 */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "PyServiceCD.h"
 #include "corporation/LPService.h"

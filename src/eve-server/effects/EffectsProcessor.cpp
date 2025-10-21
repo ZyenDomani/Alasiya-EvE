@@ -291,7 +291,7 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
             if (pMod != nullptr) {
                 _log(EFFECTS__WARNING, "FxProc::ParseExpression(): Item %s(%u) is set to flagAutoFit.  correcting to %s.", \
                         data.srcRef->name(), data.srcRef->itemID(), sDataMgr.GetFlagName(pMod->flag()));
-                data.srcRef->SetFlag(pMod->flag());
+                        data.srcRef->SetFlag(pMod->flag());
             }
         }
     }
@@ -579,27 +579,27 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
 EvilNumber FxProc::CalculateAttributeValue(EvilNumber val1/*targ*/, EvilNumber val2/*src*/, int8 method)
 {
     switch (method) {
-        case FX::Math::SkillCheck:
-        case FX::Math::PreAssignment:
-        case FX::Math::PostAssignment:
+        case FX::Math::SkillCheck:              //9
+        case FX::Math::PreAssignment:           //0
+        case FX::Math::PostAssignment:          //8
             return val2;
-        case FX::Math::PreMul:
-        case FX::Math::PostMul:
+        case FX::Math::PreMul:                  //1
+        case FX::Math::PostMul:                 //5
             return val1 * val2;
-        case FX::Math::PreDiv:
-        case FX::Math::PostDiv:
+        case FX::Math::PreDiv:                  //2
+        case FX::Math::PostDiv:                 //6
             if (val2 == EvilZero)
                 return val1;
             return val1 / val2;
-        case FX::Math::ModAdd:
+        case FX::Math::ModAdd:                  //3
             return val1 + val2;
-        case FX::Math::ModSub:
+        case FX::Math::ModSub:                  //4
             return val1 - val2;
-        case FX::Math::PostPercent:
+        case FX::Math::PostPercent:             //7
             return val1 * (1.0f + (val2 / 100.0f));
-        case FX::Math::RevPostPercent:
+        case FX::Math::RevPostPercent:          //12
             return val1 / (1.0f + (val2 / 100.0f));
-        case FX::Math::Invalid:
+        case FX::Math::Invalid:                 //-1
             _log(EFFECTS__WARNING, "FxProc::CalculateNewAttributeValue() - Invalid Association used");
             return val1;
     }

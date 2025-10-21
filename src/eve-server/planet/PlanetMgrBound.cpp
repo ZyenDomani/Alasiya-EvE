@@ -42,7 +42,7 @@
  */
 
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "PyBoundObject.h"
 #include "PyServiceCD.h"
@@ -199,7 +199,7 @@ PyResult PlanetMgrBound::Handle_GetPlanetInfo(PyCallArgs &call) {
         call.client->SendErrorMsg("The PI system is currently disabled.");
         return nullptr;
     } */
-    
+
     _log(PLANET__DEBUG, "PlanetMgrBound::Handle_GetPlanetInfo() size=%lu", call.tuple->size() );
     call.Dump(PLANET__DUMP);
 
@@ -278,11 +278,10 @@ PyResult PlanetMgrBound::Handle_GetProgramResultInfo(PyCallArgs &call) {
 PyResult PlanetMgrBound::Handle_GetResourceData(PyCallArgs &call) {
     //_log(PLANET__DEBUG, "PlanetMgrBound::Handle_GetResourceData() size=%lu", call.tuple->size() );
     //call.Dump(PLANET__DUMP);
-    /*
-        inRange, sh = planet.GetResourceData(resourceTypeID)        << check packets for this call --- none.  :(
-*/
+
+    //        shData = self.remoteHandler.GetResourceData(info)
             /*  this is called by planet view page, by "resource filter" for given typeID
-             *     this is dump before dict decoding
+             *     this is dump before dict decoding below  (passed as 'info' in above call)
              * 12:23:45 [PlanetCallDump]    Dictionary: 8 entries
              * 12:23:45 [PlanetCallDump]      [ 0] Key: String: 'proximity'
              * 12:23:45 [PlanetCallDump]      [ 0] Value: Integer field: 4
@@ -430,7 +429,9 @@ PyResult PlanetMgrBound::Handle_GetCommandPinsForPlanet(PyCallArgs &call) {
 }
 
 PyResult PlanetMgrBound::Handle_GetFullNetworkForOwner(PyCallArgs &call) {
-    /*
+    /*   this is used to get other character's colonies.    it is used to show all player's networks on planets
+     * colonyData.data = remotePlanet.GetFullNetworkForOwner(planetID, characterID)
+     * self.foreignColoniesByPlanet[planetID][characterID] = colonyData
      */
     _log(PLANET__DEBUG, "PlanetMgrBound::Handle_GetFullNetworkForOwner() size=%lu", call.tuple->size() );
     call.Dump(PLANET__DUMP);

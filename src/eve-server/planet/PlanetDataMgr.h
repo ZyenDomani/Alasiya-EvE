@@ -28,6 +28,12 @@ public:
     void GetPlanetData(uint32 planetID, std::vector<uint16> &typeIDs);
 
     const char* GetCommandName(int8 commandID);
+    const char* GetProximity(uint8 level);
+    // scan range in Lightyears
+    float GetScanningRange(uint8 level);
+    // gets min/max bands based on proximity
+    void GetProximityLimits(uint8 level, uint8 &minBand, uint8 &maxBand);
+
 
 protected:
     void Populate();

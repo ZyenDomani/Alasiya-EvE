@@ -10,7 +10,7 @@
 #ifndef EVE_SYSTEM_CONCORD_H
 #define EVE_SYSTEM_CONCORD_H
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "ship/modules/TurretFormulas.h"
 #include "system/SystemEntity.h"
@@ -123,7 +123,7 @@ protected:
     void SetSignaling(SystemEntity* pTarget);
     void CheckDistance(SystemEntity* pTarget);
 
-    double GetTargetTime();
+    uint16 GetTargetTime();
 
     typedef enum {
         Idle,       // not doing anything....idle.

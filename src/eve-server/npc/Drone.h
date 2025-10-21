@@ -81,7 +81,8 @@ public:
     virtual void ShipTakingDamage(SystemEntity* pSourceSE) { m_AI->ShipTakingDamage(pSourceSE); }
     // tell AI a missile has been launched at us.  allows defender missile code (for drone??  probably not)
     virtual void     MissileLaunched(Missile* pMissile) { /* m_AI->ShipAttacked(pMissile); */ }
-    virtual void        ReportDamage(uint8 type=0)      { /* m_AI->ShipAttacked(type); */ }
+    virtual void        ReportDamage(uint8 type=0, SystemEntity* pSourceSE=nullptr)
+                                                        { /* m_AI->ShipAttacked(type); */ }
 
     // tell AI it's target has been destroyed.
     void       TargetDestroyed(SystemEntity* pTargetSE) { m_AI->TargetDestroyed(pTargetSE); }

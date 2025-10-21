@@ -22,7 +22,7 @@
     Rewrite:    Allan
 */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "EVEServerConfig.h"
 #include "PyBoundObject.h"

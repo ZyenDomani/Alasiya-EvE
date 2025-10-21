@@ -24,7 +24,7 @@
     Rewrite:    Allan
 */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "ConsoleCommands.h"
 #include "Client.h"
@@ -50,36 +50,14 @@
 
 SystemEntity::SystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
 :m_self(self),m_services(services),m_system(system),m_bubble(nullptr),m_destiny(nullptr),
-m_targMgr(nullptr),m_killed(false),m_abandoned(false),m_warID(0),m_allyID(0),m_corpID(0),m_fleetID(0),
-m_ownerID(1),m_radius(self->GetAttribute(AttrRadius).get_int()),m_harmonic(EVEPOS::Harmonic::Inactive)
+m_targMgr(nullptr),m_killed(false),m_abandoned(false),m_damageReported(false),m_warID(0),m_allyID(0),m_corpID(0),
+m_fleetID(0),m_ownerID(1),m_harmonic(EVEPOS::Harmonic::Inactive)
 {
     assert(m_system != nullptr);
     assert(m_self.get() != nullptr);
 
-    _log(SE__DEBUG, "Created SE for item %s (%u) with radius of %i.", self->name(), self->itemID(), m_radius);
+    _log(SE__DEBUG, "Created SE for item %s (%u).", self->name(), self->itemID());
 }
-
-// copy c'tor
-SystemEntity::SystemEntity(const SystemEntity* oth)
-: m_self(oth->m_self),m_services(oth->m_services),m_system(oth->m_system),m_bubble(oth->m_bubble),
-m_destiny(oth->m_destiny),m_targMgr(oth->m_targMgr),m_killed(oth->m_killed),m_abandoned(oth->m_abandoned),
-m_warID(oth->m_warID),m_allyID(oth->m_allyID),m_corpID(oth->m_corpID),m_fleetID(oth->m_fleetID),
-m_ownerID(oth->m_ownerID),m_radius(oth->m_radius),m_harmonic(oth->m_harmonic)
-{
-    sLog.Error("SystemEntity", "Calling Copy c'tor.");
-    // nothing to do here
-}
-
-SystemEntity::SystemEntity ( const SystemEntity& oth )
-: m_self(oth.m_self),m_services(oth.m_services),m_system(oth.m_system),m_bubble(oth.m_bubble),
-m_destiny(oth.m_destiny),m_targMgr(oth.m_targMgr),m_killed(oth.m_killed),m_abandoned(oth.m_abandoned),
-m_warID(oth.m_warID),m_allyID(oth.m_allyID),m_corpID(oth.m_corpID),m_fleetID(oth.m_fleetID),
-m_ownerID(oth.m_ownerID),m_radius(oth.m_radius),m_harmonic(oth.m_harmonic)
-{
-    sLog.Error("SystemEntity", "Calling Move c'tor.");
-    // nothing to do here
-}
-
 
 void SystemEntity::Process() {
     if (m_killed) {
@@ -128,7 +106,7 @@ void SystemEntity::EncodeDestiny(Buffer& into)
     BallHeader head = BallHeader();
         head.entityID = m_self->itemID();
         head.mode = Ball::Mode::RIGID;
-        head.radius = m_radius;
+        head.radius = m_self->radius();
         head.posX = x();
         head.posY = y();
         head.posZ = z();
@@ -219,7 +197,7 @@ void SystemEntity::DropLoot(WreckContainerRef wreckRef, uint32 groupID, uint32 o
         if (itr->minDrop == itr->maxDrop) {
             quantity = itr->minDrop;
         } else {
-            quantity = (uint32)(MakeRandomInt(itr->minDrop, itr->maxDrop));
+            quantity = MakeRandomUInt(itr->minDrop, itr->maxDrop);
         }
 
         if (quantity > 1)
@@ -229,7 +207,7 @@ void SystemEntity::DropLoot(WreckContainerRef wreckRef, uint32 groupID, uint32 o
         iRef = sItemFactory.SpawnItem(iLoot);
         wreckRef->AddItem(iRef);
 
-        _log(LOOT__INFO, "added %u  %s to list for %s(%u)", quantity, iRef->name(), m_self->name(), m_self->itemID());
+        _log(LOOT__INFO, "added %u  %s(%u) to list for %s(%u)", quantity, iRef->name(), iRef->typeID(), m_self->name(), m_self->itemID());
         ++itr;
     }
 }
@@ -304,14 +282,6 @@ StaticSystemEntity::StaticSystemEntity(InventoryItemRef self, PyServiceMgr &serv
     // nothing to do here
 }
 
-// copy c'tor
-StaticSystemEntity::StaticSystemEntity(const StaticSystemEntity* oth)
-: SystemEntity(oth->m_self, oth->m_services, oth->m_system)
-{
-    sLog.Error("StaticSystemEntity", "Calling Copy c'tor.");
-    // nothing to do here
-}
-
 bool StaticSystemEntity::LoadExtras() {
     return true;
 }
@@ -335,7 +305,7 @@ void StaticSystemEntity::EncodeDestiny(Buffer& into) {
         head.posX = x();
         head.posY = y();
         head.posZ = z();
-        head.radius = m_radius;
+        head.radius = m_self->radius();
         head.flags = Ball::Flag::IsGlobal;
     into.Append( head );
     RIGID_Struct main;
@@ -348,23 +318,6 @@ BeltSE::BeltSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* sys
 : StaticSystemEntity(self, services, system),
 m_beltMgr(nullptr)
 {
-}
-
-// copy c'tor
-BeltSE::BeltSE(const BeltSE* oth)
-: StaticSystemEntity(oth->m_self, oth->m_services, oth->m_system),
-m_beltMgr(nullptr)
-{
-    sLog.Error("BeltSE", "Calling Copy c'tor.");
-    // nothing to do here
-}
-
-BeltSE::BeltSE ( const BeltSE& oth )
-: StaticSystemEntity(oth.m_self, oth.m_services, oth.m_system),
-m_beltMgr(nullptr)
-{
-    sLog.Error("BeltSE", "Calling Move c'tor.");
-    // nothing to do here
 }
 
 bool BeltSE::LoadExtras() {
@@ -384,25 +337,6 @@ StargateSE::StargateSE(InventoryItemRef self, PyServiceMgr &services, SystemMana
 m_sbuSE(nullptr),
 m_jumps(nullptr)
 {
-}
-
-// copy c'tor
-StargateSE::StargateSE(const StargateSE* oth)
-: StaticSystemEntity(oth->m_self, oth->m_services, oth->m_system),
-m_sbuSE(nullptr),
-m_jumps(nullptr)
-{
-    sLog.Error("StargateSE", "Calling Copy c'tor.");
-    /** @todo  this is incomplete */
-}
-
-StargateSE::StargateSE ( const StargateSE& oth )
-: StaticSystemEntity(oth.m_self, oth.m_services, oth.m_system),
-m_sbuSE(nullptr),
-m_jumps(nullptr)
-{
-    sLog.Error("StargateSE", "Calling Move c'tor.");
-    /** @todo  this is incomplete */
 }
 
 bool StargateSE::LoadExtras() {
@@ -443,11 +377,129 @@ PyDict* StargateSE::MakeSlimItem() {
 }
 
 
-/* Non-Static / Non-Mobile / Non-Destructable / Celestial Objects - Containers, DeadSpace, ForceFields, ScanProbes */
-ItemSystemEntity::ItemSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
+/* FSE - Non-Static, Non-Mobile, Non-Destructible
+ * - ForceFields, CynoFields
+ * - no TargetMgr, no DestinyMgr
+ */
+FieldSystemEntity::FieldSystemEntity(InventoryItemRef self, PyServiceMgr& services, SystemManager* system)
 : SystemEntity(self, services, system)
 {
-    m_keyType = 0;
+
+}
+
+void FieldSystemEntity::EncodeDestiny(Buffer& into) {
+    using namespace Destiny;
+    BallHeader head = BallHeader();
+    head.entityID = m_self->itemID();
+    head.mode = (m_harmonic > EVEPOS::Harmonic::Offline ? Ball::Mode::FIELD : Ball::Mode::STOP);
+    head.radius = m_self->radius();
+    head.posX = x();
+    head.posY = y();
+    head.posZ = z();
+    head.flags = 0 /*(m_harmonic > EVEPOS::Harmonic::Offline ? Ball::Flag::IsMassive : 0)*/; // leave this as 0 to disable client-side bump checks for now
+    into.Append( head );
+    MassSector mass = MassSector();
+    mass.mass = 10000000000;    // as seen in packets
+    mass.cloak = 0;
+    mass.harmonic = m_harmonic;
+    mass.corporationID = m_corpID;
+    mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
+    into.Append( mass );
+    if (head.mode == Ball::Mode::FIELD) {
+        FIELD_Struct main;
+        main.formationID = 0xFF;
+        into.Append( main );
+    } else if (head.mode == Ball::Mode::STOP) {
+        // TODO: is this accurate?
+        STOP_Struct main;
+        main.formationID = 0xFF;
+        into.Append( main );
+    }
+
+    _log(SE__DESTINY, "FSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+
+}
+
+PyDict* FieldSystemEntity::MakeSlimItem() {
+    return SystemEntity::MakeSlimItem();
+}
+
+
+FieldSE::FieldSE(InventoryItemRef self, PyServiceMgr &services, SystemManager *system, const FactionData& data)
+: FieldSystemEntity(self, services, system)
+{
+    m_warID = data.factionID;
+    m_allyID = data.allianceID;
+    m_corpID = data.corporationID;
+    m_ownerID = data.ownerID;
+}
+
+void FieldSE::EncodeDestiny(Buffer& into)
+{
+    using namespace Destiny;
+    BallHeader head = BallHeader();
+    head.entityID = m_self->itemID();
+    head.mode = (m_harmonic > EVEPOS::Harmonic::Offline ? Ball::Mode::FIELD : Ball::Mode::STOP);
+    head.radius = m_self->radius();
+    head.posX = x();
+    head.posY = y();
+    head.posZ = z();
+    head.flags = 0 /*(m_harmonic > EVEPOS::Harmonic::Offline ? Ball::Flag::IsMassive : 0)*/; // leave this as 0 to disable client-side bump checks for now
+    into.Append( head );
+    MassSector mass = MassSector();
+    mass.mass = 10000000000;    // as seen in packets
+    mass.cloak = 0;
+    mass.harmonic = m_harmonic;
+    mass.corporationID = m_corpID;
+    mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
+    into.Append( mass );
+    if (head.mode == Ball::Mode::FIELD) {
+        FIELD_Struct main;
+        main.formationID = 0xFF;
+        into.Append( main );
+    } else if (head.mode == Ball::Mode::STOP) {
+        // TODO: is this accurate?
+        STOP_Struct main;
+        main.formationID = 0xFF;
+        into.Append( main );
+    }
+
+    _log(SE__DESTINY, "FSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+}
+
+PyDict *FieldSE::MakeSlimItem()
+{
+    return SystemEntity::MakeSlimItem();
+}
+
+DungeonEditSE::DungeonEditSE(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, Dungeon::RoomObject data)
+: FieldSystemEntity(self, services, system),
+m_data(data)
+{
+}
+
+PyDict* DungeonEditSE::MakeSlimItem() {
+    _log(SE__SLIMITEM, "MakeSlimItem for DungeonEditSE %s(%u)", GetName(), m_self->itemID());
+    PyDict *slim = new PyDict();
+    slim->SetItemString("itemID", new PyLong(m_self->itemID()));
+    slim->SetItemString("typeID", new PyInt(m_self->typeID()));
+    slim->SetItemString("groupID", new PyInt(m_self->groupID()));
+    slim->SetItemString("dunObjectID", new PyInt(m_self->itemID()));
+    slim->SetItemString("dunRadius", new PyFloat(m_data.radius));
+    slim->SetItemString("dunRoomID", new PyInt(m_data.roomID));
+    slim->SetItemString("dunX", new PyFloat(m_data.x));
+    slim->SetItemString("dunY", new PyFloat(m_data.y));
+    slim->SetItemString("dunZ", new PyFloat(m_data.z));
+
+    return slim;
+}
+
+
+/* Non-Static / Non-Mobile / Non-Destructable / Celestial Objects - Containers, DeadSpace, ScanProbes */
+ItemSystemEntity::ItemSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
+: SystemEntity(self, services, system),
+m_keyType(0)
+{
 }
 
 PyDict* ItemSystemEntity::MakeSlimItem() {
@@ -506,7 +558,7 @@ void ItemSystemEntity::EncodeDestiny(Buffer& into)
     BallHeader head = BallHeader();
         head.entityID = m_self->itemID();
         head.mode = Ball::Mode::RIGID;
-        head.radius = m_radius;
+        head.radius = m_self->radius();
         head.posX = x();
         head.posY = y();
         head.posZ = z();
@@ -531,61 +583,6 @@ void ItemSystemEntity::MakeDamageState(DoDestinyDamageState &into) {
     }
 }
 
-FieldSE::FieldSE(InventoryItemRef self, PyServiceMgr &services, SystemManager *system, const FactionData& data)
-: ItemSystemEntity(self, services, system)
-{
-    m_warID = data.factionID;
-    m_allyID = data.allianceID;
-    m_corpID = data.corporationID;
-    m_ownerID = data.ownerID;
-}
-
-// copy c'tor
-FieldSE::FieldSE(const FieldSE* oth)
-: ItemSystemEntity(oth->m_self, oth->m_services, oth->m_system)
-{
-    sLog.Error("FieldSE", "Calling Copy c'tor.");
-    /** @todo  this is incomplete */
-}
-
-void FieldSE::EncodeDestiny(Buffer& into)
-{
-    using namespace Destiny;
-    BallHeader head = BallHeader();
-        head.entityID = m_self->itemID();
-        head.mode = (m_harmonic > EVEPOS::Harmonic::Offline ? Ball::Mode::FIELD : Ball::Mode::STOP);
-        head.radius = m_radius;
-        head.posX = x();
-        head.posY = y();
-        head.posZ = z();
-        head.flags = 0 /*(m_harmonic > EVEPOS::Harmonic::Offline ? Ball::Flag::IsMassive : 0)*/; // leave this as 0 to disable client-side bump checks for now
-    into.Append( head );
-    MassSector mass = MassSector();
-        mass.mass = 10000000000;    // as seen in packets
-        mass.cloak = 0;
-        mass.harmonic = m_harmonic;
-        mass.corporationID = m_corpID;
-        mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
-    into.Append( mass );
-    if (head.mode == Ball::Mode::FIELD) {
-        FIELD_Struct main;
-        main.formationID = 0xFF;
-        into.Append( main );
-    } else if (head.mode == Ball::Mode::STOP) {
-        // TODO: is this accurate?
-        STOP_Struct main;
-        main.formationID = 0xFF;
-        into.Append( main );
-    }
-
-    _log(SE__DESTINY, "FSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
-}
-
-PyDict *FieldSE::MakeSlimItem()
-{
-    return SystemEntity::MakeSlimItem();
-}
-
 
 /* Non-Static / Non-Mobile / Destructible / Celestial Objects - POS Structures, Outposts, Deployables, empty Ships, Asteroids */
 ObjectSystemEntity::ObjectSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
@@ -595,15 +592,6 @@ m_invul(false)
     m_targMgr = new TargetManager(this);
 
     assert(m_targMgr != nullptr);
-}
-
-// copy c'tor
-ObjectSystemEntity::ObjectSystemEntity(const ObjectSystemEntity* oth)
-: SystemEntity(oth->m_self, oth->m_services, oth->m_system),
-m_invul(false)
-{
-    sLog.Error("ObjectSystemEntity", "Calling Copy c'tor.");
-    /** @todo  this is incomplete */
 }
 
 ObjectSystemEntity::~ObjectSystemEntity()
@@ -624,7 +612,7 @@ void ObjectSystemEntity::EncodeDestiny(Buffer& into)
     BallHeader head = BallHeader();
         head.entityID = m_self->itemID();
         head.mode = Ball::Mode::RIGID;
-        head.radius = m_radius;
+        head.radius = m_self->radius();
         head.posX = x();
         head.posY = y();
         head.posZ = z();
@@ -700,27 +688,6 @@ DeployableSE::DeployableSE(InventoryItemRef self, PyServiceMgr &services, System
     m_ownerID = data.ownerID;
 }
 
-DungeonEditSE::DungeonEditSE(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, Dungeon::RoomObject data)
-: ObjectSystemEntity(self, services, system),
-m_data(data)
-{
-}
-
-PyDict* DungeonEditSE::MakeSlimItem() {
-    _log(SE__SLIMITEM, "MakeSlimItem for DungeonEditSE %s(%u)", GetName(), m_self->itemID());
-    PyDict *slim = new PyDict();
-    slim->SetItemString("itemID", new PyLong(m_self->itemID()));
-    slim->SetItemString("typeID", new PyInt(m_self->typeID()));
-    slim->SetItemString("groupID", new PyInt(m_self->groupID()));
-    slim->SetItemString("dunObjectID", new PyInt(m_self->itemID()));
-    slim->SetItemString("dunRadius", new PyFloat(m_data.radius));
-    slim->SetItemString("dunRoomID", new PyInt(m_data.roomID));
-    slim->SetItemString("dunX", new PyFloat(m_data.x));
-    slim->SetItemString("dunY", new PyFloat(m_data.y));
-    slim->SetItemString("dunZ", new PyFloat(m_data.z));
-
-    return slim;
-}
 
 /* Non-Static / Mobile / Destructible / Celestial Objects - PC's, NPC's, Drones, Ships, Missiles, Wrecks  */
 DynamicSystemEntity::DynamicSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
@@ -733,16 +700,6 @@ m_frozen(false)
 
     assert(m_targMgr != nullptr);
     assert(m_destiny != nullptr);
-}
-
-// copy c'tor
-DynamicSystemEntity::DynamicSystemEntity(const DynamicSystemEntity* oth)
-: SystemEntity(oth->m_self, oth->m_services, oth->m_system),
-m_invul(false),
-m_frozen(false)
-{
-    sLog.Error("DynamicSystemEntity", "Calling Copy c'tor.");
-    /** @todo  this is incomplete */
 }
 
 DynamicSystemEntity::~DynamicSystemEntity()
@@ -782,14 +739,14 @@ void DynamicSystemEntity::EncodeDestiny(Buffer& into)
     BallHeader head = BallHeader();
         head.entityID = m_self->itemID();
         head.mode = Ball::Mode::STOP;
-        head.radius = m_radius;
+        head.radius = m_self->radius();
         head.posX = x();
         head.posY = y();
         head.posZ = z();
         head.flags = Ball::Flag::IsFree;
     into.Append( head );
     MassSector mass = MassSector();
-        mass.mass = m_self->GetAttribute(AttrMass).get_double();
+        mass.mass = m_self->mass();
         mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
@@ -833,6 +790,7 @@ void DynamicSystemEntity::UpdateDamage()
         dmgChange.state = dmgState.Encode();
     PyTuple *up = dmgChange.Encode();
     //source->QueueDestinyUpdate(&up);
+    m_bubble->BubblecastDestinyUpdate(&up, "SE Damage Update");
     PyDecRef(up);
 }
 

@@ -69,9 +69,9 @@ void TurretModule::ApplyDamage()
         return;
     }
 
-    // send gfx for this cycle
-    if (m_needsCharge and (m_ModuleState == Module::State::Activated))
-        SendGFX();
+    // send gfx for this cycle....not for repeat effects...  like autocannons (error in client log about dupe fx)
+    //if (m_needsCharge and (m_ModuleState == Module::State::Activated))
+    //    SendGFX();
 
     // add data to StatisticMgr
     sStatMgr.Increment(Stat::pcShots);
@@ -100,7 +100,7 @@ void TurretModule::ApplyDamage()
         } break;
         case EVEDB::invGroups::Energy_Weapon: {
             // AttrUsageDamagePercent
-            if (m_chargeRef->HasAttribute(AttrCrystalsGetDamaged))
+            if (m_chargeRef->HasAttribute(AttrCrystalsGetDamaged)) {
                 if (MakeRandomFloat(0,1) < m_crystalDmgChance) {
                     m_crystalDmg += m_crystalDmgAmount;
                     if (m_crystalDmg > 1.0f) {
@@ -112,6 +112,7 @@ void TurretModule::ApplyDamage()
                         m_chargeRef->SetAttribute(AttrDamage, m_crystalDmg);
                     }
                 }
+            }
         } break;
     }
 }

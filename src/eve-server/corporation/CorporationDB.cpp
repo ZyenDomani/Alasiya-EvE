@@ -24,7 +24,7 @@
     Updates:    Allan
 */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "Client.h"
 #include "StaticDataMgr.h"
@@ -1286,7 +1286,8 @@ void CorporationDB::AddBulletin(uint32 corpID, uint32 ownerID, uint32 cCharID, s
     DBerror err;
     sDatabase.RunQuery(err,
         "INSERT INTO crpBulletins (corporationID, ownerID, createCharacterID, createDateTime, editCharacterID, editDateTime, title, body)"
-        " VALUES (%u, %u, %u, %f, %u, %f, '%s', '%s')", corpID, ownerID, cCharID, GetFileTimeNow(), cCharID, GetFileTimeNow(), title.c_str(), body.c_str());
+        " VALUES (%u, %u, %u, %lli, %u, %lli, '%s', '%s')",
+        corpID, ownerID, cCharID, GetFileTimeNow(), cCharID, GetFileTimeNow(), title.c_str(), body.c_str());
 }
 
 void CorporationDB::EditBulletin(uint32 bulletinID, uint32 eCharID, int64 eDataTime, std::string& title, std::string& body)
@@ -1425,7 +1426,7 @@ uint32 CorporationDB::CreateAdvert(Client* pClient, uint32 corpID, int64 typeMas
     sDatabase.RunQueryLID(err, adID, "INSERT INTO crpAdRegistry"
     " (corporationID, allianceID, stationID, regionID, raceMask, typeMask,"
     "  createDateTime, expiryDateTime, description, title, memberCount, channelID)"
-    " VALUES (%u,%u,%u,%u,%u,%lli,%f,%f,'%s','%s',%u,%u)",
+    " VALUES (%u,%u,%u,%u,%u,%lli,%lli,%lli,'%s','%s',%u,%u)",
         corpID, pClient->GetAllianceID(), pClient->GetStationID(), pClient->GetRegionID(), 15, typeMask, // raceMask isnt implemented yet
         GetFileTimeNow(), GetFileTimeNow() + (EvE::Time::Day * days), description.c_str(), title.c_str(), members, channelID);
 
@@ -1981,7 +1982,7 @@ void CorporationDB::AddItemEvent(uint32 corpID, uint32 charID, uint16 eTypeID)
     DBerror err;
     sDatabase.RunQuery(err,
         "INSERT INTO crpItemEvent (corporationID, characterID, eventTypeID, eventDateTime)"
-        " VALUES (%u, %u, %u, %f)", corpID, charID, eTypeID, GetFileTimeNow());
+        " VALUES (%u, %u, %u, %lli)", corpID, charID, eTypeID, GetFileTimeNow());
 }
 
 PyRep* CorporationDB::GetItemEvents(uint32 corpID, uint32 charID, int64 fromDate, int64 toDate, uint8 rowsPerPage)
@@ -2030,7 +2031,7 @@ void CorporationDB::AddRoleHistory(uint32 corpID, uint32 charID, uint32 issuerID
     DBerror err;
     sDatabase.RunQuery(err,
         "INSERT INTO crpRoleHistroy (corporationID, characterID, issuerID, changeTime, oldRoles, newRoles, grantable)"
-        " VALUES (%u, %u, %u, %f, %lli, %lli, %i)", corpID, charID, issuerID, GetFileTimeNow(), oldRoles, newRoles, (grantable ? 1 : 0));
+        " VALUES (%u, %u, %u, %lli, %lli, %lli, %i)", corpID, charID, issuerID, GetFileTimeNow(), oldRoles, newRoles, (grantable ? 1 : 0));
 }
 
 PyRep* CorporationDB::GetRoleHistroy(uint32 corpID, uint32 charID, int64 fromDate, int64 toDate, uint8 rowsPerPage)

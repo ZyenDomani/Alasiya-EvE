@@ -24,7 +24,7 @@
     Updates:    Allan
 */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "account/AccountDB.h"
 

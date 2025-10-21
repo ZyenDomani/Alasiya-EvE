@@ -20,7 +20,7 @@
  ------------------------------------------------------------------------------------
  Author:        Zhur
  Additions:  Allan
- Log Version: 11.2
+ Log Version: 11.4
  */
 /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -307,6 +307,7 @@ LOG_TYPE( EFFECTS, MESSAGE, DISABLED, "FxMsg" )
 LOG_TYPE( EFFECTS, DEBUG, DISABLED, "FxDebug" )
 LOG_TYPE( EFFECTS, TRACE, DISABLED, "FxTrace" )
 LOG_TYPE( EFFECTS, DUMP, DISABLED, "FxDump" )
+LOG_TYPE( EFFECTS, DUMP_NPC, DISABLED, "FxDumpNPC" )
 
 LOG_CATEGORY( FACWAR )
 LOG_TYPE( FACWAR, ERROR,   ENABLED, "FacWar Error" )
@@ -440,6 +441,7 @@ LOG_TYPE( NPC, WARNING, DISABLED, "NPC Warning" )
 LOG_TYPE( NPC, MESSAGE, DISABLED, "NPC Msg" )
 LOG_TYPE( NPC, INFO, DISABLED, "NPC Info" )
 LOG_TYPE( NPC, TRACE, DISABLED, "NPC Trace" )
+LOG_TYPE( NPC, DEBUG, DISABLED, "NPC Debug" )
 LOG_TYPE( NPC, AI_TRACE, DISABLED, "NPC AI Trace" )
 LOG_TYPE( NPC, AI_LOGIC, DISABLED, "NPC AI Logic" )
 

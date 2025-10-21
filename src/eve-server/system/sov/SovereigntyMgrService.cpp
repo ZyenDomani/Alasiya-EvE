@@ -47,7 +47,10 @@ SovereigntyMgrService::~SovereigntyMgrService() {
     delete m_dispatch;
 }
 
-// this is only call to this service
+/* this is only call to this service, but it is used by various systems via redirect in client...
+ *  PI -          sovInfo = sm.GetService('sov').GetSystemSovereigntyInfo(self.planet.solarSystemID)
+ *      this is to determine if installing player is part of alliance holding system sov
+ */
 PyResult SovereigntyMgrService::Handle_GetSystemSovereigntyInfo(PyCallArgs &call) {
     SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
@@ -55,5 +58,8 @@ PyResult SovereigntyMgrService::Handle_GetSystemSovereigntyInfo(PyCallArgs &call
         return nullptr;
     }
 
-    return svDataMgr.GetSystemSovereignty(args.arg);
+    // negate this until i have time to review and properly implement sovereignty
+    //return svDataMgr.GetSystemSovereignty(args.arg);
+    // revert to my previous implementation (which is incomplete)
+    return StandingDB::GetSystemSovInfo(args.arg);
 }

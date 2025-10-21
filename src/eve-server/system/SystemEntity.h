@@ -49,6 +49,9 @@ class SystemManager;
 class WreckSE;
 class FieldSE;
 class ProbeSE;
+class FieldSystemEntity;
+class CynoSE;
+
 
 class StationSE;
 class StaticSystemEntity;
@@ -81,33 +84,30 @@ class JumpBridgeSE;
 class PlatformSE;
 class OutpostSE;
 
-/*
- * base class for all SystemEntities  - no TargetMgr or DestinyMgr
- * complete rewrite of entity class system  - allan  9 January 2016
- * finally added rule of 5.  -allan 4Nov21
+// complete rewrite of entity class system  - allan  9 January 2016
+// finally added rule of 5.  -allan 4Nov21
+//   my piss-poor understanding of rule of 5 has been challenged...currently updating c'tors  21Oct25
+
+
+/* SE - base class for all SystemEntities
+ * - no TargetMgr, no DestinyMgr
+ * - provides base method calls
  */
 class SystemEntity {
     friend class SystemBubble;    /* only to update m_bubble */
 public:
     // default c'tor
+    SystemEntity() =delete;
+    // main c'tor
     SystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
     // copy c'tor
-    SystemEntity(const SystemEntity* oth);
-    // copy c'tor
-    SystemEntity(const SystemEntity& oth);
+    SystemEntity(const SystemEntity& oth) =delete;
     // move c'tor
-    SystemEntity(SystemEntity&& oth) noexcept
-    : SystemEntity(oth.GetSelf(), oth.GetServices(), oth.m_system) {
-        std::swap(*this, oth);
-    }
+    SystemEntity(SystemEntity&& oth) noexcept =default;
     // copy assignment
-    SystemEntity& operator=(SystemEntity oth) {
-        std::swap(*this, oth);
-        return *this;
-    }
+    SystemEntity& operator=(const SystemEntity& oth) =delete;
     // move assignment
-    //SystemEntity& operator=(SystemEntity&& oth) =delete;
-
+    SystemEntity& operator=(SystemEntity&& oth) =default;
     // d'tor
     virtual ~SystemEntity()                             { /* do nothing here */ }
 
@@ -127,13 +127,17 @@ public:
     virtual MoonSE*             GetMoonSE()             { return nullptr; }
     virtual StargateSE*         GetGateSE()             { return nullptr; }
     virtual BeltSE*             GetBeltSE()             { return nullptr; }
+	/* Field */
+    virtual FieldSystemEntity*  GetFieldEntity()        { return nullptr; }
+    virtual FieldSE*            GetFieldSE()            { return nullptr; }
+    virtual CynoSE*             GetCynoSE()             { return nullptr; }
+    virtual DungeonEditSE*      GetDungeonEditSE()      { return nullptr; }
     /* Item */
     virtual ItemSystemEntity*   GetItemSE()             { return nullptr; }
     virtual ContainerSE*        GetContSE()             { return nullptr; }
     virtual WreckSE*            GetWreckSE()            { return nullptr; }
     virtual AnomalySE*          GetAnomalySE()          { return nullptr; }
     virtual WormholeSE*         GetWormholeSE()         { return nullptr; }
-    virtual FieldSE*            GetFieldSE()            { return nullptr; }
     virtual ProbeSE*            GetProbeSE()            { return nullptr; }
     /* Object */
     virtual ObjectSystemEntity* GetObjectSE()           { return nullptr; }
@@ -155,7 +159,6 @@ public:
     virtual TCUSE*              GetTCUSE()              { return nullptr; }
     virtual SBUSE*              GetSBUSE()              { return nullptr; }
     virtual IHubSE*             GetIHubSE()             { return nullptr; }
-    virtual DungeonEditSE*      GetDungeonEditSE()      { return nullptr; }
     /* Dynamic */
     virtual DynamicSystemEntity* GetDynamicSE()         { return nullptr; }
     virtual NPC*                GetNPCSE()              { return nullptr; }
@@ -176,13 +179,17 @@ public:
     virtual bool                IsPlanetSE()            { return false; }
     virtual bool                IsMoonSE()              { return false; }
     virtual bool                IsStationSE()           { return false; }
+	/* Field */
+    virtual bool                IsFieldEntity()         { return false; }
+    virtual bool                IsFieldSE()             { return false; }
+    virtual bool                IsCynoSE()              { return false; }
+    virtual bool                IsDungeonEditSE()       { return false; }
     /* Item */
     virtual bool                IsItemEntity()          { return false; }
     virtual bool                IsAnomalySE()           { return false; }
     virtual bool                IsWormholeSE()          { return false; }
     virtual bool                IsCelestialSE()         { return false; }
     virtual bool                IsContainerSE()         { return false; }
-    virtual bool                IsFieldSE()             { return false; }
     virtual bool                IsProbeSE()             { return false; }
     /* Object */
     virtual bool                IsObjectEntity()        { return false; }
@@ -206,7 +213,6 @@ public:
     virtual bool                IsJumpBridgeSE()        { return false; }
     virtual bool                IsReactorSE()           { return false; }
     virtual bool                IsOperSE()              { return false; }
-    virtual bool                IsDungeonEditSE()       { return false; }
     /* Dynamic */
     virtual bool                IsDynamicEntity()       { return false; }
     virtual bool                IsLogin()               { return false; }
@@ -254,7 +260,6 @@ public:
     bool                        IsAbandoned()           { return m_abandoned; }
     void                        SetAbandoned(bool set)  { m_abandoned = set; }
 
-
     /* public generic functions handled in base class. */
     void                        DropLoot(WreckContainerRef wreckRef, uint32 groupID, uint32 ownerID);
     void                        AwardSecurityStatus(InventoryItemRef iRef, Character* pChar);
@@ -292,7 +297,8 @@ public:
     virtual Client*             GetPilot()              { return nullptr; }
 
     /* virtual functions for npc/drone AI and player reporting */
-    virtual void                ReportDamage(uint8 type=0) { /* do nothing here */ }
+    virtual void                ReportDamage(uint8 type=0, SystemEntity* pSourceSE=nullptr)
+                                                        { /* do nothing here */ }
     // we have acquired a target lock
     virtual void      TargetAdded(SystemEntity* pTargetSE) { /* do nothing here */ }
     // this is call to inform us of yellowbox
@@ -320,10 +326,11 @@ protected:
 
     bool                        m_killed;
     bool                        m_abandoned;
+    bool                        m_damageReported;
 
     int32                       m_radius;
 
-    /* this is POS ForceField status */
+    /* this is POS ForceField status/value */
     int32                       m_harmonic;
 
     /* ease of access to common data for ownable objects */
@@ -335,26 +342,24 @@ protected:
 };
 
 
-/* Static / Non-Mobile / Non-Destructable / Celestial Objects
- * - Suns, Planets, Moons, Belts, Gates, Static NPC Stations
- *- no TargetMgr or DestinyMgr*/
+/* SSE - Static, Non-Mobile, Non-Destructable
+ * - Suns, Planets, Moons, Belts, Gates, NPC Stations
+ * - no TargetMgr, no DestinyMgr
+ */
 class StaticSystemEntity : public SystemEntity {
 public:
     // default c'tor
+    StaticSystemEntity() =delete;
+    // main c'tor
     StaticSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
     // copy c'tor
-    StaticSystemEntity(const StaticSystemEntity* oth);
+    StaticSystemEntity(const StaticSystemEntity* oth) =delete;
     // move c'tor
-    /*
-    StaticSystemEntity(StaticSystemEntity&& oth) noexcept
-    : StaticSystemEntity(oth.GetSelf(), oth.GetServices(), oth.m_system) {
-        std::swap(*this, oth);
-    } */
+    StaticSystemEntity(StaticSystemEntity&& oth) noexcept =default;
     // copy assignment
-    //StaticSystemEntity& operator=(StaticSystemEntity& oth) =delete;
+    StaticSystemEntity& operator=(StaticSystemEntity& oth) =delete;
     // move assignment
-    //StaticSystemEntity& operator=(StaticSystemEntity&& oth) =delete;
-
+    StaticSystemEntity& operator=(StaticSystemEntity&& oth) =default;
     // d'tor
     virtual ~StaticSystemEntity()                       { /* Do nothing here */ }
 
@@ -368,7 +373,6 @@ public:
     virtual bool                IsInanimateSE()         { return true; }
     /* Static */
     virtual bool                IsStaticEntity()        { return true; }
-
     /* SystemEntity interface */
     virtual void                EncodeDestiny(Buffer& into);
     virtual PyDict*             MakeSlimItem();
@@ -382,22 +386,17 @@ class BeltSE
 {
 public:
     // default c'tor
+    BeltSE() =delete;
+    // main c'tor
     BeltSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
     // copy c'tor
-    BeltSE(const BeltSE* oth);
-    // copy c'tor
-    BeltSE(const BeltSE& oth);
+    BeltSE(const BeltSE* oth) =delete;
     // move c'tor
-    /*
-    BeltSE(BeltSE&& oth) noexcept
-    : BeltSE(oth.GetSelf(), oth.GetServices(), oth.m_system) {
-        std::swap(*this, oth);
-    } */
+    BeltSE(BeltSE&& oth) noexcept =default;
     // copy assignment
     BeltSE& operator=(BeltSE& oth) =delete;
     // move assignment
-    BeltSE& operator=(BeltSE&& oth) =delete;
-
+    BeltSE& operator=(BeltSE&& oth) =default;
     // d'tor
     virtual ~BeltSE()                                   { /* Do nothing here */ }
 
@@ -407,7 +406,6 @@ public:
     /* class type tests. */
     virtual bool                IsSystemEntity()        { return true; }
     virtual bool                IsBeltSE()              { return true; }
-
     /* virtual functions to be overridden in derived classes */
     virtual bool                LoadExtras();
 
@@ -418,7 +416,7 @@ public:
     void                   SetBeltMgr(BeltMgr* beltMgr) { m_beltMgr = beltMgr; }
 
 protected:
-    BeltMgr*                    m_beltMgr;
+    BeltMgr*                    m_beltMgr;		// we dont own this
 };
 
 class StargateSE
@@ -426,22 +424,17 @@ class StargateSE
 {
 public:
     // default c'tor
+    StargateSE() =delete;
+    // main c'tor
     StargateSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
     // copy c'tor
-    StargateSE(const StargateSE* oth);
-    // copy c'tor
-    StargateSE(const StargateSE& oth);
+    StargateSE(const StargateSE* oth) =delete;
     // move c'tor
-    /*
-    StargateSE(StargateSE&& oth) noexcept
-    : StargateSE(oth.GetSelf(), oth.GetServices(), oth.m_system) {
-        std::swap(*this, oth);
-    } */
+    StargateSE(StargateSE&& oth) noexcept =default;
     // copy assignment
     StargateSE& operator=(StargateSE& oth) =delete;
     // move assignment
-    StargateSE& operator=(StargateSE&& oth) =delete;
-
+    StargateSE& operator=(StargateSE&& oth) =default;
     // d'tor
     virtual ~StargateSE()                               { /* Do nothing here */ }
 
@@ -451,10 +444,8 @@ public:
     /* class type tests. */
     virtual bool                IsSystemEntity()        { return true; }
     virtual bool                IsGateSE()              { return true; }
-
     /* SystemEntity interface */
     virtual PyDict*             MakeSlimItem();
-
     /* virtual functions to be overridden in derived classes */
     virtual bool                LoadExtras();
 
@@ -468,27 +459,156 @@ protected:
     StructureSE*                m_sbuSE;
 };
 
+/* FSE - Non-Static, Non-Mobile, Non-Destructible
+ * - ForceFields, CynoFields
+ * - no TargetMgr, no DestinyMgr
+ */
+class FieldSystemEntity : public SystemEntity {
+public:
+    // default c'tor
+    FieldSystemEntity() =delete;
+    // main c'tor
+    FieldSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
+    // copy c'tor
+    FieldSystemEntity(const FieldSystemEntity* oth) =delete;
+    // move c'tor
+    FieldSystemEntity(FieldSystemEntity&& oth) noexcept =default;
+    // copy assignment
+    FieldSystemEntity& operator=(FieldSystemEntity& oth) =delete;
+    // move assignment
+    FieldSystemEntity& operator=(FieldSystemEntity&& oth) =default;
+    // d'tor
+    virtual ~FieldSystemEntity()                        { /* Do nothing here */ }
 
-/* Non-Static / Non-Mobile / Non-Destructible / Celestial Objects
- * - Containers, DeadSpace, ForceFields, ScanProbes
- *- no TargetMgr or DestinyMgr*/
+    /* class type pointer querys. */
+    virtual const char*         GetSEType()             { return "Field SE"; }
+    virtual FieldSystemEntity*  GetFieldEntity()        { return this; }
+    /* class type tests. */
+    virtual bool                IsSystemEntity()        { return false; }
+    virtual bool                IsFieldEntity()         { return true; }
+    /* Base */
+    virtual bool                isGlobal()              { return false; }
+    virtual bool                IsInanimateSE()         { return true; }
+    /* SystemEntity interface */
+    virtual void                EncodeDestiny(Buffer& into);
+    virtual PyDict*             MakeSlimItem();
+};
+
+/* POS ForceField */
+class FieldSE
+: public FieldSystemEntity
+{
+public:
+    // default c'tor
+    FieldSE() =delete;
+    // main c'tor
+    FieldSE(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, const FactionData& data);
+    // copy c'tor
+    FieldSE(const FieldSE* oth) =delete;
+    // move c'tor
+    FieldSE(FieldSE&& oth) noexcept =default;
+    // copy assignment
+    FieldSE& operator=(FieldSE& oth) =delete;
+    // move assignment
+    FieldSE& operator=(FieldSE&& oth) =default;
+    // d'tor
+    virtual ~FieldSE()                                  { /* Do nothing here */ }
+
+    /* class type pointer querys. */
+    virtual const char*         GetSEType()             { return "Forcefield SE"; }
+    virtual FieldSE*            GetFieldSE()            { return this; }
+    /* class type tests. */
+    virtual bool                IsFieldSE()             { return true; }
+    /* Base */
+    virtual bool                isGlobal()              { return false; }
+    /* SystemEntity interface */
+    virtual void                EncodeDestiny(Buffer& into);
+    virtual PyDict*             MakeSlimItem();
+};
+
+/* Cynosural Field */
+class CynoSE
+: public FieldSystemEntity
+{
+public:
+    // default c'tor
+    CynoSE() =delete;
+    // main c'tor
+    CynoSE(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, const FactionData& data);
+    // copy c'tor
+    CynoSE(const CynoSE* oth) =delete;
+    // move c'tor
+    CynoSE(CynoSE&& oth) noexcept =default;
+    // copy assignment
+    CynoSE& operator=(CynoSE& oth) =delete;
+    // move assignment
+    CynoSE& operator=(CynoSE&& oth) =default;
+    // d'tor
+    virtual ~CynoSE()                                   { /* Do nothing here */ }
+
+    /* class type pointer querys. */
+    virtual const char*         GetSEType()             { return "Cyno SE"; }
+    virtual CynoSE*             GetCynoSE()             { return this; }
+    /* class type tests. */
+    virtual bool                IsCynoSE()              { return true; }
+    /* Base */
+    virtual bool                isGlobal()              { return true; }
+    /* SystemEntity interface */
+    //virtual void                EncodeDestiny(Buffer& into);
+    //virtual PyDict*             MakeSlimItem();
+};
+
+class DungeonEditSE
+: public FieldSystemEntity
+{
+public:
+    DungeonEditSE() =delete;
+    // main c'tor
+    DungeonEditSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system, Dungeon::RoomObject data);
+    // copy c'tor
+    DungeonEditSE(const DungeonEditSE* oth) =delete;
+    // move c'tor
+    DungeonEditSE(DungeonEditSE&& oth) noexcept =default;
+    // copy assignment
+    DungeonEditSE& operator=(DungeonEditSE& oth) =delete;
+    // move assignment
+    DungeonEditSE& operator=(DungeonEditSE&& oth) =default;
+    virtual ~DungeonEditSE()                            { /* Do nothing here */ }
+
+    /* class type pointer querys. */
+    virtual DungeonEditSE*      GetDungeonEditSE()      { return this; }
+    /* class type tests. */
+    /* Base */
+    virtual bool                IsDungeonEditSE()       { return true; }
+    Dungeon::RoomObject         GetData()               { return m_data; }
+    /* SystemEntity interface */
+    //virtual void                EncodeDestiny( Buffer& into );
+    virtual PyDict*             MakeSlimItem();
+
+private:
+    Dungeon::RoomObject m_data;
+};
+
+
+
+/* ISE - Non-Static, Mobile, Non-Destructible
+ * - Containers, DeadSpace
+ * - no TargetMgr, has DestinyMgr
+ */
 class ItemSystemEntity : public SystemEntity {
 public:
     // default c'tor
+    ItemSystemEntity() =delete;
+    // main c'tor
     ItemSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
     // copy c'tor
-    ItemSystemEntity(const ItemSystemEntity* oth);
+    ItemSystemEntity(const ItemSystemEntity* oth) =delete;
     // move c'tor
-    /*
-    ItemSystemEntity(ItemSystemEntity&& oth) noexcept
-    : ItemSystemEntity(oth.GetSelf(), oth.GetServices(), oth.m_system) {
-        std::swap(*this, oth);
-    } */
+    ItemSystemEntity(ItemSystemEntity&& oth) noexcept =default;
     // copy assignment
-    //ItemSystemEntity& operator=(ItemSystemEntity& oth) =delete;
+    ItemSystemEntity& operator=(ItemSystemEntity& oth) =delete;
     // move assignment
-    //ItemSystemEntity& operator=(ItemSystemEntity&& oth) =delete;
-
+    ItemSystemEntity& operator=(ItemSystemEntity&& oth) =default;
     // d'tor
     virtual ~ItemSystemEntity()                         { /* Do nothing here */ }
 
@@ -501,65 +621,34 @@ public:
     /* Base */
     //virtual bool                isGlobal()              { return false; }
     virtual bool                IsInanimateSE()         { return true; }
-
     /* SystemEntity interface */
     virtual void                EncodeDestiny(Buffer& into);
     virtual void                MakeDamageState(DoDestinyDamageState &into);
-
     virtual PyDict*             MakeSlimItem();
 
 private:
-    uint16 m_keyType;           //Training Complex Passkey   (group - Acceleration_Gate_Keys)
+    uint16 m_keyType;           //TrainingComplex/Deadspace Passkey   (group - Acceleration_Gate_Keys)
 };
 
-/* POS ForceField */
-class FieldSE
-: public ItemSystemEntity
-{
-public:
-    // default c'tor
-    FieldSE(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, const FactionData& data);
-    // copy c'tor
-    FieldSE(const FieldSE* oth);
-    // move c'tor
-    FieldSE(FieldSE&& oth) =delete;
-    // copy assignment
-    //FieldSE& operator=(FieldSE& oth) =delete;
-    // move assignment
-    //FieldSE& operator=(FieldSE&& oth) =delete;
 
-    // d'tor
-    virtual ~FieldSE()                             { /* Do nothing here */ }
-
-    /* class type pointer querys. */
-    virtual const char*         GetSEType()             { return "Field SE"; }
-    virtual FieldSE*            GetFieldSE()            { return this; }
-    /* class type tests. */
-    virtual bool                IsSystemEntity()        { return false; }
-    virtual bool                IsFieldSE()             { return true; }
-
-    /* SystemEntity interface */
-    virtual void                EncodeDestiny(Buffer& into);
-
-    virtual PyDict*             MakeSlimItem();
-};
-
-/* Non-Static / Non-Mobile / Destructible / Celestial Objects
+/* OSE - Non-Static, Non-Mobile, Destructible
  * - POS Structures, Outposts, Deployables, empty Ships, Asteroids
- *- has TargetMgr  no DestinyMgr*/
+ * - has TargetMgr,  no DestinyMgr
+ */
 class ObjectSystemEntity : public SystemEntity {
 public:
     // default c'tor
+    ObjectSystemEntity() =delete;
+    // main c'tor
     ObjectSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
     // copy c'tor
-    ObjectSystemEntity(const ObjectSystemEntity* oth);
+    ObjectSystemEntity(const ObjectSystemEntity* oth) =delete;
     // move c'tor
-    ObjectSystemEntity(ObjectSystemEntity&& oth) =delete;
+    ObjectSystemEntity(ObjectSystemEntity&& oth) noexcept =default;
     // copy assignment
-    //ObjectSystemEntity& operator=(ObjectSystemEntity& oth) =delete;
+    ObjectSystemEntity& operator=(ObjectSystemEntity& oth) =delete;
     // move assignment
-    //ObjectSystemEntity& operator=(ObjectSystemEntity&& oth) =delete;
-
+    ObjectSystemEntity& operator=(ObjectSystemEntity&& oth) =default;
     // d'tor
     virtual ~ObjectSystemEntity();
 
@@ -572,14 +661,11 @@ public:
     /* Base */
     //virtual bool                isGlobal()              { return false; }
     virtual bool                IsInanimateSE()         { return true; }
-
     /* SystemEntity interface */
     virtual void                UpdateDamage();
     virtual void                EncodeDestiny(Buffer& into);
     virtual void                MakeDamageState(DoDestinyDamageState &into);
-
     virtual PyDict*             MakeSlimItem();
-
     /* virtual functions default to base class and overridden as needed */
     virtual void                Killed(Damage &damage);
     virtual bool                IsInvul()               { return m_invul; }
@@ -597,16 +683,17 @@ class DeployableSE
 {
 public:
     // default c'tor
+    DeployableSE() =delete;
+    // main c'tor
     DeployableSE(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, const FactionData& data);
     // copy c'tor
-    DeployableSE(const DeployableSE* oth);
+    DeployableSE(const DeployableSE* oth) =delete;
     // move c'tor
-    DeployableSE(DeployableSE&& oth) =delete;
+    DeployableSE(DeployableSE&& oth) noexcept =default;
     // copy assignment
-    //DeployableSE& operator=(DeployableSE& oth) =delete;
+    DeployableSE& operator=(DeployableSE& oth) =delete;
     // move assignment
-    //DeployableSE& operator=(DeployableSE&& oth) =delete;
-
+    DeployableSE& operator=(DeployableSE&& oth) =default;
     // d'tor
     virtual ~DeployableSE()                             { /* Do nothing here */ }
 
@@ -618,46 +705,25 @@ public:
     virtual bool                IsDeployableSE()        { return true; }
 };
 
-class DungeonEditSE
-: public ObjectSystemEntity
-{
-public:
-    DungeonEditSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system, Dungeon::RoomObject data);
-    virtual ~DungeonEditSE()                            { /* Do nothing here */ }
 
-    /* class type pointer querys. */
-    virtual DungeonEditSE*      GetDungeonEditSE()      { return this; }
-    /* class type tests. */
-    /* Base */
-    virtual bool                IsDungeonEditSE()       { return true; }
-    Dungeon::RoomObject         GetData()               { return m_data; }
-
-    /* SystemEntity interface */
-    //virtual void                EncodeDestiny( Buffer& into );
-
-    virtual PyDict*             MakeSlimItem();
-
-private:
-    Dungeon::RoomObject m_data;
-};
-
-
-/* Non-Static / Mobile / Destructible / Celestial Objects
- *- Drones, Ships, Missiles, Wrecks
- * - has TargetMgr and DestinyMgr*/
+/* DSE - Non-Static, Mobile, Destructible
+ * - Drones, Ships, Missiles, Wrecks
+ * - has TargetMgr, has DestinyMgr
+ */
 class DynamicSystemEntity : public SystemEntity {
 public:
     // default c'tor
+    DynamicSystemEntity() =delete;
+    // main c'tor
     DynamicSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
     // copy c'tor
-    DynamicSystemEntity(const DynamicSystemEntity* oth);
+    DynamicSystemEntity(const DynamicSystemEntity* oth) =delete;
     // move c'tor
-    DynamicSystemEntity(DynamicSystemEntity&& oth) =delete;
+    DynamicSystemEntity(DynamicSystemEntity&& oth) noexcept =default;
     // copy assignment
-    //DynamicSystemEntity& operator=(DynamicSystemEntity& oth) =delete;
+    DynamicSystemEntity& operator=(DynamicSystemEntity& oth) =delete;
     // move assignment
-    //DynamicSystemEntity& operator=(DynamicSystemEntity&& oth) =delete;
-
+    DynamicSystemEntity& operator=(DynamicSystemEntity&& oth) =default;
     // d'tor
     virtual ~DynamicSystemEntity();
 
@@ -669,19 +735,15 @@ public:
     virtual bool                IsDynamicEntity()       { return true; }
     /* Base */
     //virtual bool                isGlobal()              { return false; }
-
     /* SystemEntity interface */
     virtual void                UpdateDamage();
     virtual void                EncodeDestiny(Buffer& into);
     virtual void                MakeDamageState(DoDestinyDamageState &into);
-
     virtual PyDict*             MakeSlimItem();
-
     /* virtual functions default to base class and overridden as needed */
     virtual bool                Load()                  { return true; }
     virtual bool                IsInvul()               { return m_invul; }
     virtual bool                IsFrozen()              { return m_frozen; }
-
 
     /* specific functions handled here. */
     void                        AwardBounty(Client* pClient);

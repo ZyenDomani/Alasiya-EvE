@@ -22,9 +22,11 @@ public:
 
     int Initialize();
     void Populate();
+    bool isDefault(uint16 eID);
     bool isWarpSafe(uint16 eID);
     bool isOffensive(uint16 eID);
     bool isAssistance(uint16 eID);
+    uint16 GetDefault(uint16 typeID);
     uint16 GetEffectID(std::string effectName);
     std::string GetEffectGuid(uint16 eID);
     std::string GetEffectName(uint16 eID);

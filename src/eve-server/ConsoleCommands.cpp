@@ -102,7 +102,7 @@ bool ConsoleCommand::Process() {
                 sLog.Warning("          (r)oles", " Prints a list of common roles and their values.");
                 sLog.Warning("       c(o)mmands", " Prints a list of currently loaded Commands and their required role. (long list)");
                 sLog.Warning("           (t)est", " Prints the current test object *varies*");
-                sLog.Warning("        e(f)fects", " Compiles and prints all item effects.");
+                sLog.Warning("        e(f)fects", " Compiles and prints all item effects. (7 for npc)");
                 sLog.Warning("        threa(d)s", " Prints a list of current threads.");
                 sLog.Warning("    reload (l)ogs", " Reloads log.ini to change values without restarting server.");
                 sLog.Warning("(q)uery stat data", " Prints current statistic data.");
@@ -466,6 +466,11 @@ void ConsoleCommand::FxProc(uint8 idx/*0*/) {
             sLog.Green("        FxProcess", "Parsing Effects for Ship Items.");
             std::printf("\n");     // spacer
             ItemDB::GetItems(EVEDB::invCategories::Ship, typeIDs);
+        } break;
+        case 7: {
+            sLog.Green("        FxProcess", "Parsing Effects for NPCs.");
+            std::printf("\n");     // spacer
+            ItemDB::GetNPCs(typeIDs);
         } break;
         case 9: {
             sLog.Green("        FxProcess", "Parsing Effects for All Possible Items.");

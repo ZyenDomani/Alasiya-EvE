@@ -213,7 +213,7 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/)
         //default to 1/80
         sig.sigStrength = 0.0125;
         // default to rogue drones
-        sig.ownerID = factionRogueDrones;
+        sig.ownerID = factionUnknown;
     if (sConfig.debug.AnomalyFaction) {
         sig.ownerID = sConfig.debug.AnomalyFaction;
     } else if (MakeRandomFloat() > 0.1) { // 10% chance to be rogue drones
@@ -336,7 +336,7 @@ uint8 AnomalyMgr::GetDungeonType()
 {
     // this is quick-n-dirty randomization....it needs to be better thought out.
     //    this was originally just for POC
-    uint8 typeID = MakeRandomInt(2,10); // skip typeMission
+    uint8 typeID = MakeRandomUInt(2,10); // skip typeMission
     switch(typeID) {
         case Dungeon::Type::Escalation:  // 9
         case Dungeon::Type::Mission: {   // 1

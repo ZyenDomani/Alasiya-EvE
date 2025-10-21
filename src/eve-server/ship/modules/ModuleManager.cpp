@@ -320,7 +320,7 @@ GenericModule* ModuleManager::GetRandModule()
     if (modVec.empty())
         return nullptr;
 
-    return modVec[MakeRandomInt(0, modVec.size() - 1)];
+    return modVec[MakeRandomUInt(0, modVec.size() - 1)];
 }
 
 bool ModuleManager::InstallRig(ModuleItemRef mRef, EVEItemFlags flag) {
@@ -339,7 +339,7 @@ bool ModuleManager::InstallRig(ModuleItemRef mRef, EVEItemFlags flag) {
                 case 31220:   // Small Gravity Capacitor Upgrade II
                 case 31222:   // Medium Gravity Capacitor Upgrade II
                 case 31224: { // Capital Gravity Capacitor Upgrade II
-                    m_rigScanBonus += (0.01 * mRef->GetAttribute(AttrScanStrengthBonus).get_float());
+                    m_rigScanBonus += (0.01f * mRef->GetAttribute(AttrScanStrengthBonus).get_float());
                 } break;
             }
         }
@@ -378,7 +378,7 @@ void ModuleManager::UninstallRig(uint32 itemID)
             case 31220:   //  Small Gravity Capacitor Upgrade II
             case 31222:   //  Medium Gravity Capacitor Upgrade II
             case 31224: { //  Capital Gravity Capacitor Upgrade II
-                m_rigScanBonus -= (0.01 * pMod->GetAttribute(AttrScanStrengthBonus).get_float());
+                m_rigScanBonus -= (0.01f * pMod->GetAttribute(AttrScanStrengthBonus).get_float());
             } break;
         }
     }
@@ -1245,10 +1245,16 @@ void ModuleManager::ShipWarping()
     if (is_log_enabled(MODULE__WARNING))
         sLog.Magenta("MM::ShipWarping()","Deactivating non-warpsafe modules.");
     // check modules for warpsafe-ness and Deactivate accordingly
-    for (auto &cur : m_modules)
-        if (cur.second != nullptr)
-            if (!cur.second->isWarpSafe())
+    for (auto &cur : m_modules) {
+        if (cur.second != nullptr) {
+            if (cur.second->isWarpSafe()) {
+                // remove this active module from bubble's module list (deactivate makes same call)
+                cur.second->RemoveFromBubbleMap();
+            } else {
                 cur.second->AbortCycle();
+            }
+        }
+    }
 }
 
 void ModuleManager::ShipJumping()

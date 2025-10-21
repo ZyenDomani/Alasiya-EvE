@@ -19,7 +19,7 @@
  */
 
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "EVEServerConfig.h"
 #include "character/Character.h"
@@ -542,7 +542,7 @@ uint32 FactoryDB::InstallJob(const uint32 ownerID, const uint32 installerID, Cal
         " (ownerID, installerID, assemblyLineID, installedItemID, installTime, beginProductionTime, endProductionTime,"
         " runs, outputFlag, licensedProductionRuns)"
         " VALUES"
-        " (%u, %u, %i, %i, %.0f, %lli, %lli,"
+        " (%u, %u, %i, %i, %lli, %lli, %lli,"
         " %i, %i, %i)",
         ownerID, installerID, args.AssemblyLineID, args.bpItemID, GetFileTimeNow(), beginTime, endTime,
         args.runs, args.outputFlag, args.copyRuns))

@@ -27,7 +27,7 @@
 
 /** @todo  go thru and update/optimize this class */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "../../eve-common/EVE_Calendar.h"
 #include "../../eve-common/EVE_Mail.h"
@@ -548,7 +548,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
         }
 
         // random sayings/quotes here?  sure, why not?  lol
-        if (IsEven(MakeRandomInt(0, 10)))
+        if (IsEven(MakeRandomUInt()))
             description += "<br><br><br>And a good time shall be had by all!";
         //description += "Don't wish it was easier; instead, wish you were better.";
         //description += "Endure and survive.";

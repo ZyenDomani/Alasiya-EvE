@@ -39,7 +39,7 @@
  * CORP__DB_MESSAGE
  */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "PyBoundObject.h"
 #include "PyServiceCD.h"

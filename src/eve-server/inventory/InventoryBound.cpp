@@ -24,7 +24,7 @@
     Rewrite:    Allan
 */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "PyServiceCD.h"
 #include "EVEServerConfig.h"
@@ -403,7 +403,8 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
     // test for looting and change owner here
     InventoryItemRef iRef = sItemFactory.GetItemRefFromID(args.containerID);
     if (iRef.get() != nullptr) {
-        if (iRef->groupID() == EVEDB::invGroups::Wreck) {
+        if ((iRef->groupID() == EVEDB::invGroups::Wreck)
+        or (strcmp(iRef->customInfo().c_str(), "Wreck") == 0)) {
             // we are taking loot from a wreck
             InventoryItemRef lRef(nullptr);
             std::vector<int32>::iterator itr = args.itemIDs.begin();

@@ -25,7 +25,7 @@
 */
 
 #include <string>
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "PyServiceCD.h"
 #include "corporation/CorpMgrService.h"

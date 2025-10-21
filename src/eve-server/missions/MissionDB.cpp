@@ -89,7 +89,7 @@ void MissionDB::LoadOpenOffers(DBQueryResult& res) {
 void MissionDB::LoadClosedOffers(DBQueryResult& res) {
     if (!sDatabase.RunQuery(res,
         "SELECT agentID, characterID, courierAmount, courierTypeID, dateAccepted, dateCompleted, dateIssued, destinationID, expiryTime, important, storyline, missionID, name,"
-        " offerID, originID, rewardISK, rewardItemID, rewardItemQty, rewardLP, stateID, typeID FROM agtOffers WHERE dateCompleted > 0 OR expiryTime > %f OR stateID > 2", GetFileTimeNow()))
+        " offerID, originID, rewardISK, rewardItemID, rewardItemQty, rewardLP, stateID, typeID FROM agtOffers WHERE dateCompleted > 0 OR expiryTime > %lli OR stateID > 2", GetFileTimeNow()))
         codelog(DATABASE__ERROR, "Error in LoadClosedOffers query: %s", res.error.c_str());
 }
 

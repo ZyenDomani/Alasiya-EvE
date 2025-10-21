@@ -304,7 +304,7 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>&
             pcs = 6;
         }
     } else {
-        pcs += MakeRandomInt(5, 30);
+        pcs += MakeRandomUInt(5, 30);
         radius += (radius * secValue);
         radius += (pcs * 250);
         elevation = (radius * 0.25);
@@ -317,14 +317,14 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>&
     for (uint8 i = 1; i < pcs; i++) {
         if (ice) {
             if (secRating > -0.2) {
-                roidradius = MakeRandomInt(20, 40) * 1000; // (40k,70k)  72-102k radius
+                roidradius = MakeRandomUInt(20, 40) * 1000; // (40k,70k)  72-102k radius
             } else {
-                roidradius = MakeRandomInt(40, 70) * 1000; // (40k,80k)  82-112k radius
+                roidradius = MakeRandomUInt(40, 70) * 1000; // (40k,80k)  82-112k radius
             }
             radius += roidradius;
             elevation = (radius + (roidradius / 2) / 2);
         } else {
-            roidradius = MakeRandomInt(3000, 8000) * secValue;
+            roidradius = MakeRandomUInt(3000, 8000) * secValue;
         }
         if (anomaly) {
             // random for anomaly...use the "special" placements at end of this file....eventually.

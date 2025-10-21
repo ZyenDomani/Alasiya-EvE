@@ -23,7 +23,7 @@
  * AGENT__RSP_DUMP
  */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 #include "../../eve-common/EVE_Missions.h"
 #include "../../eve-common/EVE_Standings.h"
 

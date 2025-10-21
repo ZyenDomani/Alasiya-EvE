@@ -90,8 +90,8 @@ struct FleetAdvert {
     float local_minStanding=0.0f;;
     float public_minSecurity=0.0f;;
     Client* leader=nullptr;
-    std::string fleetName="none";
-    std::string description="none";
+    std::string fleetName="";
+    std::string description="";
     std::vector<uint32> public_allowedEntities;
     std::vector<uint32> local_allowedEntities;
 };
@@ -106,8 +106,8 @@ struct FleetData {
     Client* creator=nullptr;
     Client* leader=nullptr;
     Client* booster=nullptr;
-    std::string name="none";
-    std::string motd="none";
+    std::string name="";
+    std::string motd="";
     std::multimap<uint32, uint32> isMutedByLeader;
     std::multimap<uint32, uint32> isExcludedFromMuting;
 };
@@ -118,7 +118,7 @@ struct WingData {
     BoostData boost;
     Client* leader=nullptr;
     Client* booster=nullptr;
-    std::string name="none";
+    std::string name="";
 };
 
 // wingID, squad name and member count (5 per wing)
@@ -128,7 +128,7 @@ struct SquadData {
     BoostData boost=BoostData();
     Client* leader=nullptr;;
     Client* booster=nullptr;;
-    std::string name="none";
+    std::string name="";
     std::map<uint32, Client*> members;
 };
 

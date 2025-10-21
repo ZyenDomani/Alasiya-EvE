@@ -25,7 +25,7 @@
 */
 
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "Client.h"
 #include "EntityMgr.h"
@@ -47,6 +47,8 @@ NPC::NPC(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, c
 : DynamicSystemEntity(self, services, system),
 m_AI(new NPCAIMgr(this)),
 m_spawnMgr(spawnMgr),
+m_hauler(false),
+m_moduleCount(0),
 m_orbitingID(0)
 {
     m_allyID = data.allianceID;
@@ -65,8 +67,13 @@ m_orbitingID(0)
     m_self->SetAttribute(AttrShieldCharge,        m_self->GetAttribute(AttrShieldCapacity), false);
     m_self->SetAttribute(AttrCapacitorCharge,     m_self->GetAttribute(AttrCapacitorCapacity), false);
 
-    _log(NPC__TRACE, "Created NPC object for %s (%u) - Data: O:%u, C:%u, A:%u, W:%u", \
-            m_self.get()->name(), m_self.get()->itemID(), \
+    // get 'module' count for this npc
+    uint8 mininum = m_self->GetAttribute(AttrCapacitorCapacity).get_uint32();
+    uint8 maximum = m_self->GetAttribute(AttrCapacitorCapacity).get_uint32();
+    m_moduleCount = MakeRandomUInt(mininum, maximum);
+
+    _log(NPC__TRACE, "Created NPC object for %s (%u) - %u Modules (%u/%u), Data: O:%u, C:%u, A:%u, W:%u", \
+            m_self.get()->name(), m_self.get()->itemID(), m_moduleCount, mininum, maximum, \
             m_ownerID, m_corpID, m_allyID, m_warID);
 }
 
@@ -77,6 +84,9 @@ NPC::~NPC() {
 bool NPC::Load() {
     m_destiny->UpdateShipVariables();
     SetResists();
+
+    // load data
+    m_AI->Init();
 
     //dSE::Load() just returns true for now (no code)
     return DynamicSystemEntity::Load();
@@ -127,7 +137,6 @@ void NPC::UseShieldRecharge() {
         m_AI->DisableRepTimers(true, false);
     }
 
-    // TODO: Need to send SpecialFX / amount update
     UpdateDamage();
 }
 
@@ -151,7 +160,6 @@ void NPC::UseArmorRepairer() {
         m_AI->DisableRepTimers(false, true);
     }
 
-    // TODO: Need to send SpecialFX / amount update
     UpdateDamage();
 }
 
@@ -193,28 +201,28 @@ void NPC::EncodeDestiny(Buffer& into)
     uint8 mode = m_destiny->GetState(); //Ball::Mode::STOP;
 
     BallHeader head = BallHeader();
-    head.entityID = GetID();
-    head.mode = mode;
-    head.radius = GetRadius();
-    head.posX = x();
-    head.posY = y();
-    head.posZ = z();
-    head.flags = Ball::Flag::IsMassive | Ball::Flag::IsFree;
+        head.entityID = GetID();
+        head.mode = mode;
+        head.radius = GetRadius();
+        head.posX = x();
+        head.posY = y();
+        head.posZ = z();
+        head.flags = Ball::Flag::IsMassive | Ball::Flag::IsFree;
     into.Append( head );
     MassSector mass = MassSector();
-    mass.mass = m_self->GetAttribute(AttrMass).get_double();
-    mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
-    mass.harmonic = m_harmonic;
-    mass.corporationID = m_corpID;
-    mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
+        mass.mass = m_self->mass();
+        mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
+        mass.harmonic = m_harmonic;
+        mass.corporationID = m_corpID;
+        mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
     into.Append( mass );
     DataSector data = DataSector();
-    data.maxSpeed = m_destiny->GetMaxVelocity();
-    data.velX = m_destiny->GetVelocity().x;
-    data.velY = m_destiny->GetVelocity().y;
-    data.velZ = m_destiny->GetVelocity().z;
-    data.inertia = m_self->GetAttribute(AttrInertiaMod).get_float();
-    data.speedfraction = m_destiny->GetSpeedFraction();
+        data.maxSpeed = m_destiny->GetMaxVelocity();
+        data.velX = m_destiny->GetVelocity().x;
+        data.velY = m_destiny->GetVelocity().y;
+        data.velZ = m_destiny->GetVelocity().z;
+        data.inertia = m_self->GetAttribute(AttrInertiaMod).get_float();
+        data.speedfraction = m_destiny->GetSpeedFraction();
     into.Append( data );
     switch (mode) {
         case Ball::Mode::WARP: {
@@ -278,12 +286,15 @@ void NPC::EncodeDestiny(Buffer& into)
     }
 
     _log(SE__DESTINY, "NPC::EncodeDestiny(): %s - id:%lli, mode:%s, flags:0x%X, Vel:%.1f, %.1f, %.1f", \
-    GetName(), head.entityID, modeStr.c_str(), head.flags, data.velX, data.velY, data.velZ);
+            GetName(), head.entityID, modeStr.c_str(), head.flags, data.velX, data.velY, data.velZ);
 }
 
 void NPC::Killed(Damage &fatal_blow) {
     if ((m_bubble == nullptr) or (m_destiny == nullptr) or (m_system == nullptr))
         return; // make error here?
+
+    // remove from bubble's gfx map (may/may not be in here)
+    m_bubble->RemoveNPC(this);
 
     //notify our spawn manager that we are gone.
     if ((m_spawnMgr != nullptr) and (m_self.get() != nullptr))
@@ -359,7 +370,8 @@ void NPC::Killed(Damage &fatal_blow) {
         _log(PHYSICS__TRACE, "NPC::Killed() - NPC %s(%u) Position: %.2f,%.2f,%.2f.  Wreck %s(%u) Position: %.2f,%.2f,%.2f.", \
                 GetName(), GetID(), x(), y(), z(), wreckItemRef->name(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
 
-    if ((MakeRandomFloat() < sConfig.npc.LootDropChance) or (m_allyID == factionRogueDrones))
+    // need to determine if this is a hauler, and get size for appropriate loot
+    if ((MakeRandomFloat() < sConfig.npc.LootDropChance) or (m_allyID == factionUnknown) or m_hauler)
         DropLoot(wreckItemRef, m_self->groupID(), killerID);
 
     DBSystemDynamicEntity wreckData = DBSystemDynamicEntity();

@@ -26,7 +26,7 @@
 */
 
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "system/BookmarkDB.h"
 #include "system/BookmarkService.h"
@@ -275,7 +275,8 @@ void BookmarkDB::SaveNewBookmark( BmData& data )
         if (!sDatabase.RunQueryLID(err, data.bookmarkID,
             "INSERT INTO bookmarks"
             " (ownerID, itemID, typeID, memo, created, x, y, z, locationID, note, creatorID, folderID)"
-            " VALUES (%u, %u, %u, '%s', %f, %f, %f, %f, %u, '%s', %u, %u) ",
+            " VALUES (%u, %u, %u, '%s', %lli, %f, %f,"
+            " %f, %u, '%s', %u, %u)",
             data.ownerID, data.itemID, data.typeID, eMemo.c_str(), GetFileTimeNow(), data.point.x, data.point.y,
             data.point.z, data.locationID, eNote.c_str(), data.creatorID, data.folderID ))
         {
@@ -285,7 +286,8 @@ void BookmarkDB::SaveNewBookmark( BmData& data )
         if (!sDatabase.RunQueryLID(err, data.bookmarkID,
             "INSERT INTO bookmarks"
             " (ownerID, itemID, typeID, memo, created, x, y, z, locationID, note, creatorID)"
-            " VALUES (%u, %u, %u, '%s', %f, %f, %f, %f, %u, '%s', %u) ",
+            " VALUES (%u, %u, %u, '%s', %lli, %f, %f,"
+            " %f, %u, '%s', %u)",
             data.ownerID, data.itemID, data.typeID, eMemo.c_str(), GetFileTimeNow(), data.point.x, data.point.y,
             data.point.z, data.locationID, eNote.c_str(), data.creatorID ))
         {

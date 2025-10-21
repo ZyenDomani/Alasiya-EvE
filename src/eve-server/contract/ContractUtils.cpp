@@ -24,7 +24,7 @@
 */
 
 #include <boost/algorithm/string/replace.hpp>
-#include "eve-server.h"
+#include "../eve-server.h"
 
 
 #include "ContractUtils.h"

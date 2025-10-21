@@ -16,18 +16,15 @@
 FxDataMgr::FxDataMgr()
 : m_loaded(false)
 {
-
 }
 
-int FxDataMgr::Initialize()
-{
+int FxDataMgr::Initialize() {
     sLog.Blue("        FxDataMgr", "Effects Data Manager Initialized");
     Populate();
     return 1;
 }
 
-void FxDataMgr::Populate()
-{
+void FxDataMgr::Populate() {
     if (m_loaded)
         return;
 
@@ -136,63 +133,78 @@ void FxDataMgr::Populate()
     sLog.Cyan("        FxDataMgr", "Effects Data loaded in %.3fms.", (GetTimeMSeconds() - begin));
 }
 
-Effect FxDataMgr::GetEffect(uint16 eID)
-{
+uint16 FxDataMgr::GetDefault(uint16 typeID) {
+    auto typeRange = m_typeFxMap.equal_range(typeID);
+    for (auto &it = typeRange.first; it != typeRange.second; ++it) {
+        if (it->second.isDefault)
+            return it->second.effectID;
+    }
+    return 0;
+}
+
+Effect FxDataMgr::GetEffect(uint16 eID) {
     effectMapType::const_iterator itr = m_effectMap.find(eID);
     if (itr != m_effectMap.end())
         return itr->second;
     return m_effectMap.at(0);
 }
 
-void FxDataMgr::GetTypeEffect(uint16 typeID, std::vector< TypeEffects >& typeEffMap)
-{
+void FxDataMgr::GetTypeEffect(uint16 typeID, std::vector< TypeEffects >& typeEffMap) {
     auto itr = m_typeFxMap.equal_range(typeID);
-    for (auto it = itr.first; it != itr.second; it++)
+    for (auto it = itr.first; it != itr.second; ++it)
         typeEffMap.push_back(it->second);
 }
 
-Expression FxDataMgr::GetExpression(uint16 eID)
-{
+Expression FxDataMgr::GetExpression(uint16 eID) {
     std::map<uint16, Expression>::const_iterator itr = m_expMap.find(eID);
     if (itr != m_expMap.end())
         return itr->second;
     return m_expMap.at(0);
 }
 
-Operand FxDataMgr::GetOperand(uint16 oID)
-{
+Operand FxDataMgr::GetOperand(uint16 oID) {
     std::map<uint16, Operand>::const_iterator itr = m_opMap.find(oID);
     if (itr != m_opMap.end())
         return itr->second;
     return m_opMap.at(0);
 }
 
-bool FxDataMgr::isWarpSafe(uint16 eID)
-{
+bool FxDataMgr::isDefault(uint16 eID) {
+    /*  this is NOT right...will have to think about it a while
+    auto typeRange = m_typeFxMap.equal_range(typeID);
+    for (auto &it = typeRange.first; it != typeRange.second; ++it) {
+        if (it->second.isDefault)
+            return it->second.effectID;
+    }
+    std::unordered_multimap<uint16, TypeEffects>::const_iterator itr = m_typeFxMap.find(eID);
+    if (itr != m_typeFxMap.end())
+        return itr->second.isDefault;
+    */
+    return false;   // default to false if effectID not found
+}
+
+bool FxDataMgr::isWarpSafe(uint16 eID) {
     effectMapType::const_iterator itr = m_effectMap.find(eID);
     if (itr != m_effectMap.end())
         return itr->second.isWarpSafe;
     return false;   // default to false if effectID not found
 }
 
-bool FxDataMgr::isOffensive(uint16 eID)
-{
+bool FxDataMgr::isOffensive(uint16 eID) {
     effectMapType::const_iterator itr = m_effectMap.find(eID);
     if (itr != m_effectMap.end())
         return itr->second.isOffensive;
     return false;   // default to false if effectID not found
 }
 
-bool FxDataMgr::isAssistance(uint16 eID)
-{
+bool FxDataMgr::isAssistance(uint16 eID) {
     effectMapType::const_iterator itr = m_effectMap.find(eID);
     if (itr != m_effectMap.end())
         return itr->second.isAssistance;
     return false;   // default to false if effectID not found
 }
 
-uint16 FxDataMgr::GetEffectID(std::string effectName)
-{
+uint16 FxDataMgr::GetEffectID(std::string effectName) {
     std::map<std::string, uint16>::const_iterator itr = m_effectName.find(effectName);
     if (itr != m_effectName.end())
         return itr->second;
@@ -200,8 +212,7 @@ uint16 FxDataMgr::GetEffectID(std::string effectName)
     return 0;
 }
 
-std::string FxDataMgr::GetEffectGuid(uint16 eID)
-{
+std::string FxDataMgr::GetEffectGuid(uint16 eID) {
     effectMapType::const_iterator itr = m_effectMap.find(eID);
     if (itr != m_effectMap.end())
         return itr->second.guid;
@@ -209,8 +220,7 @@ std::string FxDataMgr::GetEffectGuid(uint16 eID)
     return "";   // default to 'nothing' if effectID not found
 }
 
-std::string FxDataMgr::GetEffectName(uint16 eID)
-{
+std::string FxDataMgr::GetEffectName(uint16 eID) {
     effectMapType::const_iterator itr = m_effectMap.find(eID);
     if (itr != m_effectMap.end())
         return itr->second.effectName;
@@ -219,8 +229,7 @@ std::string FxDataMgr::GetEffectName(uint16 eID)
 }
 
 
-void FxDataMgr::GetOperands(DBQueryResult& res)
-{
+void FxDataMgr::GetOperands(DBQueryResult& res) {
     if ( !sDatabase.RunQuery(res,
         " SELECT"
         " operandID,"
@@ -235,8 +244,7 @@ void FxDataMgr::GetOperands(DBQueryResult& res)
     }
 }
 
-void FxDataMgr::GetDgmEffects(DBQueryResult& res)
-{
+void FxDataMgr::GetDgmEffects(DBQueryResult& res) {
     if ( !sDatabase.RunQuery(res,
         " SELECT"
         "   effectID,"
@@ -266,8 +274,7 @@ void FxDataMgr::GetDgmEffects(DBQueryResult& res)
     }
 }
 
-void FxDataMgr::GetExpressions(DBQueryResult& res)
-{
+void FxDataMgr::GetExpressions(DBQueryResult& res) {
     if ( !sDatabase.RunQuery(res,
         " SELECT"
         " expressionID,"
@@ -286,8 +293,7 @@ void FxDataMgr::GetExpressions(DBQueryResult& res)
     }
 }
 
-void FxDataMgr::GetDgmTypeEffects(DBQueryResult &res)
-{
+void FxDataMgr::GetDgmTypeEffects(DBQueryResult &res) {
     if ( !sDatabase.RunQuery(res,
         " SELECT"
         "  typeID,"

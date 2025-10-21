@@ -29,7 +29,7 @@
 #include <map>
 #include <vector>
 
-#include "eve-core.h"
+#include "../eve-server.h"
 
 namespace Bubble {
     namespace Type {
@@ -70,6 +70,7 @@ class TowerSE;
 class TCUSE;
 class SBUSE;
 class IHubSE;
+class NPC;
 class DroneSE;
 class PyObject;
 class ActiveModule;
@@ -91,6 +92,7 @@ public:
     bool IsIce()                                        { return (m_type == Bubble::Type::Ice); }
     bool IsBelt()                                       { return (m_type == Bubble::Type::Belt); }
     bool IsGate()                                       { return (m_type == Bubble::Type::Gate); }
+    bool IsNormal()                                     { return (m_type == Bubble::Type::Normal); }
     bool IsAnomaly()                                    { return (m_type == Bubble::Type::Anomaly); }
     bool IsMission()                                    { return (m_type == Bubble::Type::Mission); }
     bool IsIncursion()                                  { return (m_type == Bubble::Type::Incursion); }
@@ -104,7 +106,7 @@ public:
     void SetSpawnTimer();
 
     /* various count queries */
-    uint32 CountNPCs();
+    uint32 CountNPCs()                                  { return m_npcs.size(); }
     uint32 CountDrones()                                { return m_drones.size(); }
     uint32 CountPlayers()                               { return m_players.size(); }
     uint32 CountDynamics()                              { return m_dynamicEntities.size(); }
@@ -113,6 +115,7 @@ public:
     bool IsEmpty() const                                { return (m_entities.empty() and m_dynamicEntities.empty()); }
     bool HasPlayers() const                             { return !m_players.empty(); }
     bool HasStatics() const                             { return !m_entities.empty(); }
+    // this includes items like containers, wrecks, pos, etc.
     bool HasDynamics() const                            { return !m_dynamicEntities.empty(); }
     double x() const                                    { return m_center.x; }
     double y() const                                    { return m_center.y; }
@@ -185,7 +188,9 @@ public:
     /* for system setstate */
     PyObject* GetDroneState() const;
 
-    /* methods for sending gfx to new ships */
+    /* methods for updating new ships with currently active GFX */
+    void AddNPC(NPC* pNPC);
+    void RemoveNPC(NPC* pNPC);
     void AddActiveModule(ActiveModule* pMod);
     void RemoveActiveModule(ActiveModule* pMod);
 
@@ -226,12 +231,13 @@ private:
 
     uint16 m_bubbleID;
 
-    std::map<uint32, Client*> m_players;                // testing with bubble player list (in std::map)
-    std::map<uint32, DroneSE*> m_drones;                //we do not own these.
-    std::map<uint32, SystemEntity*> m_markers;          // bubble marker cans.  we do own these.
-    std::map<uint32, SystemEntity*> m_entities;         //we do not own these.
-    std::map<uint32, ActiveModule*> m_activeModules;    // for sending gfx to new ships in bubble
-    std::map<uint32, SystemEntity*> m_dynamicEntities;  //entities which may/may not move. we do not own these.
+    std::map<uint32, NPC*>                              m_npcs;             //we do not own these.
+    std::map<uint32, Client*>                           m_players;          // testing with bubble player list (in std::map)
+    std::map<uint32, DroneSE*>                          m_drones;           //we do not own these.
+    std::map<uint32, SystemEntity*>                     m_markers;          // bubble marker cans.  we do own these.
+    std::map<uint32, SystemEntity*>                     m_entities;         //we do not own these.
+    std::map<uint32, ActiveModule*>                     m_activeModules;    // for sending gfx to new ships in bubble
+    std::map<uint32, SystemEntity*>                     m_dynamicEntities;  //entities which may/may not move. we do not own these.
 };
 
 #endif  // _EVE_SERVER_SYSTEM_BUBBLE_H_

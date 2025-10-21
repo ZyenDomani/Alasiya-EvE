@@ -25,7 +25,7 @@
 
 /** @todo  update this...  */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "admin/CommandDB.h"
 

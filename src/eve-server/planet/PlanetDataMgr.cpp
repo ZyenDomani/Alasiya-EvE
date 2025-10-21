@@ -22,7 +22,7 @@
   * PLANET__DB_WARNING
   */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "inventory/ItemFactory.h"
 #include "inventory/InventoryItem.h"
@@ -61,7 +61,7 @@ void PlanetDataMgr::Populate()
 void PlanetDataMgr::GetPlanetData(uint32 planetID, std::vector<uint16> &typeIDs)
 {
     auto itr = m_planetData.equal_range(planetID);
-    for (auto it = itr.first; it != itr.second; it++)
+    for (auto it = itr.first; it != itr.second; ++it)
         typeIDs.push_back(it->second);
 }
 
@@ -85,6 +85,57 @@ const char* PlanetDataMgr::GetCommandName(int8 commandID)
         case KillExtractorHead:             return "KillExtractorHead";
         case PrioritizeRoute:               return "PrioritizeRoute";
         default:                            return "UnknownCommandID";
+    }
+}
+
+const char* PlanetDataMgr::GetProximity(uint8 level) {
+    switch (level) {
+        case 0:         return "Distant";
+        case 1:         return "Region";
+        case 2:         return "Constellation";
+        case 3:         return "System";
+        case 4:         return "Planet";
+        default:        return "Invalid";
+    }
+}
+
+void PlanetDataMgr::GetProximityLimits(uint8 level, uint8& minBand, uint8& maxBand) {
+    switch (level) {
+        case 0: {
+            minBand = 2;
+            maxBand = 6;
+        } break;
+        case 1: {
+            minBand = 4;
+            maxBand = 10;
+        } break;
+        case 2: {
+            minBand = 6;
+            maxBand = 15;
+        } break;
+        case 3: {
+            minBand = 10;
+            maxBand = 20;
+        } break;
+        case 4: {
+            minBand = 15;
+            maxBand = 30;
+        } break;
+        default: {
+            minBand = 0;
+            maxBand = 0;
+        } break;
+    }
+}
+
+float PlanetDataMgr::GetScanningRange(uint8 level) {
+    switch (level) {
+        case 0:         return 9.0f;
+        case 1:         return 7.0f;
+        case 2:         return 5.0f;
+        case 3:         return 3.0f;
+        case 4:         return 1.0f;
+        default:        return 0.0f;
     }
 }
 
@@ -219,7 +270,7 @@ PyRep* PIDataMgr::GetProgramResultInfo(Colony* pColony, uint32 pinID, uint16 typ
     double two = log2(length /25);  //3.584962501
     cycleTime = EvE::max(floor(two) + 1);    //4
     cycleTime = 0.25 * (pow(2, cycleTime));  // this is (float) in hours (0.25, 0.5, etc)
-    numCycles = (uint16)(length / cycleTime);   //73
+    numCycles = static_cast<uint16>(length / cycleTime);   //73
     int64 iCycleTime = cycleTime * EvE::Time::Hour;
 
     uint32 qtyPerCycle = GetProgramOutput(iRef, iCycleTime);

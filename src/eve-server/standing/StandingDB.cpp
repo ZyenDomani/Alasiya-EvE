@@ -149,7 +149,7 @@ void StandingDB::SaveStandingChanges(uint32 fromID, uint32 toID, uint16 eventTyp
     DBerror err;
     sDatabase.RunQuery(err,
         "INSERT INTO repStandingChanges (eventTypeID, eventDateTime, fromID, toID, modification, msg)"
-        " VALUES (%u, %f, %u, %u, %f, '%s')",
+        " VALUES (%u, %lli, %u, %u, %f, '%s')",
         eventType, GetFileTimeNow(), fromID, toID, pctChange, msg.c_str());
 }
 

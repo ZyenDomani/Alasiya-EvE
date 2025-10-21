@@ -93,7 +93,7 @@
  *
  */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "PyServiceCD.h"
 #include "cache/BulkDB.h"

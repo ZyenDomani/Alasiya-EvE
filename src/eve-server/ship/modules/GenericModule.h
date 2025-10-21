@@ -136,6 +136,10 @@ public:
     /* generic access functions to be overridden in derived classes as needed */
     virtual void Update()      // this is used to set char mods on active modules created before pilot entered ship
                                                         { /* do nothing here */ }
+                                                        
+    // to call bubble->RemoveActiveModule() from GenericModule base class
+    virtual void RemoveFromBubbleMap()                  { /* do nothing here */ }
+
     virtual void Overload();
     virtual void DeOverload();
     virtual uint16 GetReloadTime()                      { return 0; }

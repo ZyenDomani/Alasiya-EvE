@@ -24,7 +24,7 @@
     Updates:        Allan
 */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "EntityMgr.h"
 #include "EVEServerConfig.h"
@@ -186,7 +186,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         cdata.description += currentDateTime();
         cdata.securityRating = sConfig.character.startSecRating;
         cdata.title = "No Title";
-        cdata.createDateTime = (int64)GetFileTimeNow();
+        cdata.createDateTime = GetFileTimeNow();
 
     //Set the character's career and race based on the school they picked.
     if (CharacterDB::GetCareerBySchool(cdata.schoolID, cdata.raceID, cdata.careerID)) {

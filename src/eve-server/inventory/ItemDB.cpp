@@ -24,7 +24,7 @@
 */
 
 
-#include "eve-server.h"
+#include "../eve-server.h"
 #include "StaticDataMgr.h"
 
 #include "inventory/ItemDB.h"
@@ -365,6 +365,26 @@ bool ItemDB::DeleteItem(uint32 itemID) {
     return true;
 }
 
+void ItemDB::GetNPCs(std::map< uint16, std::string >& typeIDs) {
+    DBQueryResult res;
+
+    if (!sDatabase.RunQuery(res,
+        "SELECT"
+        "  typeID,"
+        "  typeName"
+        " FROM invTypes "
+        " WHERE groupID IN"
+        "  (SELECT groupID from invGroups WHERE groupName LIKE '%%Asteroid%%' AND `categoryID`=11)"))
+    {
+        codelog(DATABASE__ERROR, "Failed to query NPCs: %s.", res.error.c_str());
+        return;
+    }
+
+    DBResultRow row;
+    while(res.GetRow(row))
+        typeIDs[row.GetUInt(0)] = row.GetText(1);
+}
+
 void ItemDB::GetItems(uint16 catID, std::map< uint16, std::string >& typeIDs) {
     DBQueryResult res;
 
@@ -387,3 +407,4 @@ void ItemDB::GetItems(uint16 catID, std::map< uint16, std::string >& typeIDs) {
     while(res.GetRow(row))
         typeIDs[row.GetUInt(0)] = row.GetText(1);
 }
+

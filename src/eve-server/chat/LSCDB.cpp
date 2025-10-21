@@ -25,7 +25,7 @@
 
 /** @todo this entire file needs review */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 #include "Client.h"
 #include "chat/LSCDB.h"
 #include "chat/LSCService.h"

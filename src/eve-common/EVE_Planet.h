@@ -107,11 +107,11 @@ struct PlanetResourceData {
     float dist_3=0.0f;
     float dist_4=0.0f;
     float dist_5=0.0f;
-    std::string buffer_1="none";
-    std::string buffer_2="none";
-    std::string buffer_3="none";
-    std::string buffer_4="none";
-    std::string buffer_5="none";
+    std::string buffer_1="";
+    std::string buffer_2="";
+    std::string buffer_3="";
+    std::string buffer_4="";
+    std::string buffer_5="";
 };
 
 struct PI_Link {

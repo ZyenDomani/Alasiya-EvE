@@ -154,7 +154,7 @@ void WormholeMgr::CreateExit(SystemManager* pFromSys, SystemManager* pToSys)
     sig.sigStrength = 0.0125;
 
     // determine owner - default to sleeper drones.  may change later
-    sig.ownerID = factionSleepers;
+    sig.ownerID = factionSleeper;
     if (MakeRandomFloat() > 0.1) // 10% chance to be rogue drones
         sig.ownerID = sDataMgr.GetRegionRatFaction(pToSys->GetRegionID());
 

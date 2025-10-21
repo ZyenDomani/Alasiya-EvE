@@ -28,7 +28,7 @@
 #include <boost/algorithm/string/replace.hpp>
 #include <algorithm>    // Added to prevent std::find from freaking out
 
-#include "eve-server.h"
+#include "../eve-server.h"
 #include "PyServiceCD.h"
 
 #include "contract/ContractProxy.h"

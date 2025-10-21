@@ -25,7 +25,7 @@
 
 // @TODO(groove) check characterIDs while doing moves to prevent
 // client trickery
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "mail/MailDB.h"
 #include "EVE_Mail.h"

@@ -53,7 +53,7 @@ public:
      */
     const GPoint &      minPosition() const             { return m_minPosition; }
     const GPoint &      maxPosition() const             { return m_maxPosition; }
-    double              luminosity() const              { return m_luminosity; }
+    float               luminosity() const              { return m_luminosity; }
 
     bool                border() const                  { return m_border; }
     bool                fringe() const                  { return m_fringe; }
@@ -63,9 +63,9 @@ public:
     bool                regional() const                { return m_regional; }
     bool                constellation() const           { return m_constellation; }
 
-    double              security() const                { return m_security; }
+    float               security() const                { return m_security; }
     uint32              factionID() const               { return m_factionID; }
-    double              radius() const                  { return m_radius; }
+    int64               ssRadius() const                { return m_radius; }
     const std::string & securityClass() const           { return m_securityClass; }
 
     // Solar System Inventory Functions:
@@ -138,9 +138,10 @@ protected:
 
     uint32 m_factionID;
 
-    double m_security;
-    double m_radius;
-    double m_luminosity;
+    int64 m_radius;
+
+    float m_security;
+    float m_luminosity;
 
     std::string m_securityClass;
     GPoint m_minPosition;

@@ -35,8 +35,8 @@
 struct CelestialObjectData {
     uint8 celestialIndex=0;
     uint8 orbitIndex=0;
-    double radius=0.0;
-    double security=0.0;
+    float radius=0.0f;
+    float security=0.0f;
 };
 
 

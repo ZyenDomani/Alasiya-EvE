@@ -11,7 +11,7 @@
  * Updated/Corrected cType info *again* on 13 November 2018
  */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 #include "MapConnections.h"
 
 #include "../../eve-common/EVE_Map.h"

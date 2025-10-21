@@ -409,12 +409,12 @@ void ShipItem::Undock() {
 void ShipItem::UpdateMass() {
     std::map< uint32, InventoryItemRef > invMap;
     pInventory->GetInventoryMap(invMap);
-    uint32 mass(GetAttribute(AttrMass).get_uint32());
+    float cMass(mass());
     for (auto &cur : invMap)
-        mass += cur.second->type().mass() * cur.second->quantity();
+        cMass += cur.second->mass() * cur.second->quantity();
 
     // may have to adjust this for player login
-    SetAttribute(AttrMass, mass, HasPilot());
+    SetAttribute(AttrMass, cMass, HasPilot());
 }
 
 void ShipItem::Warp() {
@@ -493,9 +493,8 @@ void ShipItem::AddItem(InventoryItemRef iRef)
 
     // add item mass to ship's mass if set in options (additive...loaded ship should be heavy)
     if (sConfig.server.CargoMassAdditive) {
-        uint32 mass = GetAttribute(AttrMass).get_uint32();
-        uint32 addition = iRef->type().mass() * iRef->quantity();
-        SetAttribute(AttrMass, mass + addition, HasPilot());
+        uint32 addition = iRef->mass() * iRef->quantity();
+        SetAttribute(AttrMass, mass() + addition, HasPilot());
     }
 
     /** @todo update destiny mass after adding item */
@@ -569,9 +568,8 @@ void ShipItem::RemoveItem(InventoryItemRef iRef)
 
     // remove item mass to ship's mass if set in options (additive...loaded ship should be heavy)
     if (sConfig.server.CargoMassAdditive) {
-        uint32 mass = GetAttribute(AttrMass).get_uint32();
-        uint32 addition = iRef->type().mass() * iRef->quantity();
-        SetAttribute(AttrMass, mass - addition, HasPilot());
+        uint32 addition = iRef->mass() * iRef->quantity();
+        SetAttribute(AttrMass, mass() + addition, HasPilot());
     }
 }
 
@@ -1800,11 +1798,11 @@ void ShipItem::ProcessEffects(bool add/*false*/, bool update/*false*/)
 void ShipItem::ProcessShipEffects(bool update/*false*/)
 {
     _log(EFFECTS__TRACE, "ShipItem::ProcessShipEffects()");
-    for (auto &it : type().m_stateFxMap) {
+    for (auto &cur : type().m_stateFxMap) {
         fxData data = fxData();
         data.action = FX::Action::Invalid;
         data.srcRef = static_cast<InventoryItemRef>(this);
-        sFxProc.ParseExpression(this, sFxDataMgr.GetExpression(it.second.preExpression), data);
+        sFxProc.ParseExpression(this, sFxDataMgr.GetExpression(cur.second.preExpression), data);
     }
 
     if (m_isUndocking) {
@@ -2564,7 +2562,7 @@ void ShipSE::EncodeDestiny( Buffer& into) {
         }
     into.Append(head);
     MassSector mass = MassSector();
-        mass.mass = m_self->GetAttribute(AttrMass).get_double();
+        mass.mass = m_self->mass();
         mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
@@ -2774,6 +2772,7 @@ bool ShipSE::LaunchDrone(InventoryItemRef dRef) {
         data.factionID = pChar->warFactionID();
         data.ownerID = pChar->itemID();
     DroneSE* pDrone = new DroneSE(dRef, m_services, m_system, data);
+    // initial init to set needed vars
     pDrone->Init();
 
     // this will launch drone (orbitDistance - 100m) from ship.  ai will adjust if needed
@@ -2782,7 +2781,7 @@ bool ShipSE::LaunchDrone(InventoryItemRef dRef) {
     dRef->SetPosition(position);
     dRef->SaveItem();
 
-    // add drone to system and send new ball data
+    // add drone to system and send new ball data  (this will dupe droneAI->Init(), but it is needed till i get smarter)
     pDrone->Launch(this);
     // add drone to launched drone map (whether onlined or not)
     m_drones[dRef->itemID()] = pDrone;

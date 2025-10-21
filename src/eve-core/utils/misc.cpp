@@ -30,7 +30,9 @@
 // headers for stack trace with File and Line numbers
 #include <unistd.h>
 #include <zconf.h>
-#include "regex"
+#include <regex>
+// header for random_device and uniform_xxx_distribution
+#include <random>
 
 
 #include "eve-core.h"
@@ -118,23 +120,47 @@ int64 npowof2( int64 num )
     return num;
 }
 
-// define random device 
-  std::random_device rd;
+// define random device
+std::random_device rd;
 // seed the generator
-  std::mt19937 gen{rd()};
+std::mt19937 gen{rd()};
 
-int64 MakeRandomInt(int64 lo, int64 hi) {
+int32 MakeRandomInt(int32 lo, int32 hi) {
     if (lo == hi)
         return lo;
-    
+
+    std::uniform_int_distribution<int32> dist{lo, hi}; // set min and max
+    return dist(gen);
+}
+
+uint32 MakeRandomUInt(uint32 lo, uint32 hi) {
+    if (lo == hi)
+        return lo;
+
+    std::uniform_int_distribution<uint32> dist{lo, hi}; // set min and max
+    return dist(gen);
+}
+
+int64 MakeRandomLong(int64 lo, int64 hi) {
+    if (lo == hi)
+        return lo;
+
     std::uniform_int_distribution<int64> dist{lo, hi}; // set min and max
     return dist(gen);
 }
 
-double MakeRandomFloat(double lo, double hi) {
+float MakeRandomFloat(float lo, float hi) {
     if (lo == hi)
         return lo;
-    
+
+    std::uniform_real_distribution<float> dist{lo, hi}; // set min and max
+    return dist(gen);
+}
+
+double MakeRandomDouble(double lo, double hi) {
+    if (lo == hi)
+        return lo;
+
     std::uniform_real_distribution<double> dist{lo, hi}; // set min and max
     return dist(gen);
 }

@@ -114,7 +114,7 @@ public:
 
     // iterate thru the map of modules targeting this object and call AbortCycle on each.
     void                ClearModules();
-    
+
     void                TargetsCleared();
     void                ClearFromTargets();
     void                TargetLost(SystemEntity *tSE);
@@ -155,7 +155,7 @@ public:
     SystemEntity*       GetFirstTarget(bool need_locked=false);
     SystemEntity*       GetTarget(uint32 targetID, bool need_locked=true) const;
 
-    bool                StartTargeting(SystemEntity* who, float lockTime, uint8 maxLockedTargets, double maxTargetLockRange, bool& chase);
+    bool                StartTargeting(SystemEntity* tSE, uint16 lockTime, uint8 maxLockedTargets, double maxTargetLockRange, bool& chase);
 
     bool                CanAttack()                     { return m_canAttack; }
     bool                HasNoTargets() const            { return m_targets.empty(); }
@@ -187,9 +187,11 @@ public:
     uint8               GetTargetCount()                { return m_targets.size(); }
 
     // get full target list for advanced AI
-    void                GetAllTargets(std::map<SystemEntity*, TargetEntry*> &targets) { targets = m_targets; }
+    void                GetAllTargets(std::map<SystemEntity*, TargetEntry*> &targets)
+                                                        { targets = m_targets; }
     // get full targeter list for advanced AI
-    void                GetAllTargeters(std::map<SystemEntity*, TargetedByEntry*> &targetby) { targetby = m_targetedBy; }
+    void                GetAllTargeters(std::map<SystemEntity*, TargetedByEntry*> &targetby)
+                                                        { targetby = m_targetedBy; }
 
 
 protected:

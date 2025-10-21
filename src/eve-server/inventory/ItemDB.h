@@ -46,6 +46,7 @@ public:
     static void SaveAttributes(bool isChar, std::vector< Inv::AttrData > &data);
 
     // only used in ConsoleCommands to test/process fx data
+    static void GetNPCs(std::map<uint16, std::string> &typeIDs);
     static void GetItems(uint16 catID, std::map<uint16, std::string> &typeIDs);
 };
 

@@ -7,7 +7,7 @@
 //work in progress
 
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "PyServiceCD.h"
 #include "corporation/CorpFittingMgr.h"

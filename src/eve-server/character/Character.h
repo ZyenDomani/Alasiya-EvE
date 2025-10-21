@@ -277,7 +277,7 @@ public:
     void                    SaveFullCharacter();
     void                    SaveSkillQueue();
     void                    SaveCertificates();
-    void                    SaveSkillHistory(uint16 eventID, double logDate, uint32 characterID, uint16 skillTypeID, uint8 skillLevel, uint32 absolutePoints);
+    void                    SaveSkillHistory(uint16 eventID, int64 logDate, uint32 characterID, uint16 skillTypeID, uint8 skillLevel, uint32 absolutePoints);
 
     void                    SetLoaded(bool set=false)           { m_loaded = set; }
 

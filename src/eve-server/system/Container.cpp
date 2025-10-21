@@ -24,7 +24,7 @@
     Rewrite:    Allan
 */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "Client.h"
 #include "ConsoleCommands.h"
@@ -72,7 +72,7 @@ CargoContainerRef CargoContainer::Spawn( ItemData &data) {
     uint32 containerID = CargoContainer::CreateItemID(data );
     if (containerID == 0 )
         return CargoContainerRef(nullptr);
-    CargoContainerRef containerRef = CargoContainer::Load(containerID );
+    CargoContainerRef containerRef = CargoContainer::Load(containerID);
 
     // Create default dynamic attributes in the AttributeMap:
     containerRef->SetAttribute(AttrRadius,        containerRef->type().radius(), false);			// Radius
@@ -186,6 +186,13 @@ void CargoContainer::RemoveItem(InventoryItemRef iRef)
         } else if (typeID() == EVEDB::invTypes::CargoContainer) {
             if (is_log_enabled(ITEM__MESSAGE))
                 sLog.Warning( "CargoContainer::RemoveItem()", "Cargo Container %u is empty and being deleted.", m_itemID );
+        } else if (typeID() == itemTypeJetCan) {
+            if (!EvE::icontains(customInfo(), "loot")) {
+                // player jetcan in space; don't delete on empty.  let gc handle it
+                return;
+            }
+            if (is_log_enabled(ITEM__MESSAGE))
+                sLog.Warning( "CargoContainer::RemoveItem()", "Jettison Container %u is empty and being deleted.", m_itemID );
         } else {
             if (is_log_enabled(ITEM__MESSAGE))
                 sLog.Warning( "CargoContainer::RemoveItem()", "Non-Cargo Container %u (type: %u) is empty and being deleted.", m_itemID, typeID() );

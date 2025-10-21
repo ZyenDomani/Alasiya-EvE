@@ -25,7 +25,7 @@
     Updates:    Allan
 */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "character/PaperDollDB.h"
 

@@ -1222,7 +1222,7 @@ PyResult CorpRegistryBound::Handle_GetMemberIDsByQuery(PyCallArgs &call) {
 //SELECT `characterID`\
 `corpRole`, `rolesAtAll`, `rolesAtHQ`, `rolesAtBase`, `rolesAtOther`, \
 `grantableRoles`, `grantableRolesAtHQ`, `grantableRolesAtBase`, `grantableRolesAtOther`,\
-`titleMask`, `blockRoles`, `baseID`, `startDateTime` FROM `chrCharacters` 
+`titleMask`, `blockRoles`, `baseID`, `startDateTime` FROM `chrCharacters`
 bool CorpRegistryBound::GetSearchValues(int8 op, PyRep* rep, std::ostringstream& query)
 {
     using namespace Corp;
@@ -1622,7 +1622,7 @@ PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
             ocmc.charID = args.charID;
             ocmc.newCorpID = PyRep::IntegerValue(change.corporationIDNew);
             ocmc.oldCorpID = PyRep::IntegerValue(change.corporationIDOld);
-            ocmc.newDate = (int64)GetFileTimeNow(); //PyRep::IntegerValue(OCAC.applicationDateTimeNew);
+            ocmc.newDate = GetFileTimeNow(); //PyRep::IntegerValue(OCAC.applicationDateTimeNew);
             ocmc.oldDate = oldInfo.appTime; // PyRep::IntegerValue(OCAC.applicationDateTimeOld);
 
         // both corporations' members will be notified about the change

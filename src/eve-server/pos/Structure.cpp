@@ -647,7 +647,7 @@ void StructureSE::SetAnchor(Client *pClient, GPoint &pos)
         //warpToPoint -= (radius * 1.25);
 
         uint32 dist = /*BUBBLE_RADIUS_METERS + 10000*/ m_self->GetAttribute(AttrMoonAnchorDistance).get_uint32();
-        uint32 radius(m_moonSE->GetRadius());
+        float radius(m_moonSE->GetRadius());
         float rad(EvE::Trig::Deg2Rad(90));
 
         pos = m_moonSE->GetPosition();
@@ -689,7 +689,8 @@ void StructureSE::SetAnchor(Client *pClient, GPoint &pos)
     } else if (m_platform) {
         //verify anchor distance from planet
         uint32 distance(m_planetSE->GetPosition().distance(m_self->position()));
-        uint32 anchorMax = (m_planetSE->GetRadius() + 150000000);
+        // is there an attrib for this?
+        uint32 anchorMax = ((uint32)m_planetSE->GetRadius() + 150000000);
 
         if (distance > anchorMax) {
             pClient->SendErrorMsg("You cannot anchor the %s farther than %u meters from the planet.", \
@@ -1244,10 +1245,10 @@ void StructureSE::Killed(Damage &damage)
             }
             blob << "<i t=" << cur.second->typeID() << " f=" << cur.second->flag() << " s=" << s;
             // all items have 50% chance of drop, even from popped ship
-            if (IsEven(MakeRandomInt(0, 100))) {
+            if (IsEven(MakeRandomUInt())) {
                 // item survived.  check qty for drop
                 if (x > 1) {
-                    d = MakeRandomInt(0, x - 1);
+                    d = MakeRandomUInt(0, x - 1);
                     x -= d;
                 }
                 // move item to vector for insertion into wreck later on

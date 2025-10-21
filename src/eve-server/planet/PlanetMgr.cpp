@@ -11,7 +11,7 @@
   */
 
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "Client.h"
 #include "PyService.h"

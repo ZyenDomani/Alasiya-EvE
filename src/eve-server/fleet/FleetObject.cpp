@@ -9,7 +9,7 @@
   *
   */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "PyBoundObject.h"
 #include "PyServiceCD.h"

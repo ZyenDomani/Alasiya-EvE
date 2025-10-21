@@ -23,7 +23,7 @@
     Author:        Bloody.Rabbit
 */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "PyServiceCD.h"
 #include "account/UserService.h"

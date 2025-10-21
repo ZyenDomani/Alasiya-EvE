@@ -23,7 +23,7 @@ http://www.gnu.org/copyleft/lesser.txt.
 Author: Zhur, Allan
 */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "PyBoundObject.h"
 #include "ship/ShipDB.h"
@@ -57,9 +57,9 @@ bool ShipDB::InsertInsuranceByShipID(uint32 shipID, std::string name, uint32 own
     DBerror err;
     return sDatabase.RunQuery(err, "INSERT INTO shipInsurance"
             " (shipID, shipName, ownerID, isCorpItem, startDate, endDate, fraction, payOutAmount)"
-            " VALUES (%u, '%s', %u, %u, %f, %f, %.2f, %f)",
-                       shipID, name.c_str(), ownerID, isCorpItem, GetFileTimeNow(), \
-                       (GetFileTimeNow() + (EvE::Time::Week * numWeeks)), fraction, payOut );
+            " VALUES (%u, '%s', %u, %u, %lli, %lli, %.2f, %f)",
+            shipID, name.c_str(), ownerID, isCorpItem, GetFileTimeNow(),
+            (GetFileTimeNow() + (EvE::Time::Week * numWeeks)), fraction, payOut );
 }
 
 void ShipDB::DeleteInsuranceByShipID(uint32 shipID) {

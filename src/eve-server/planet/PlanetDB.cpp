@@ -44,6 +44,62 @@
 #include "planet/PlanetDataMgr.h"
 
 
+bool PlanetDB::LoadPlanetResourceData(uint32 planetID, PlanetResourceData& data) {
+    DBQueryResult res;
+
+    if (!sDatabase.RunQuery(res, "SELECT Resource1, Resource2, Resource3, Resource4, Resource5,"
+            "Distributon1, Distributon2, Distributon3, Distributon4, Distributon5,"
+            " Buffer1, Buffer2, Buffer3, Buffer4, Buffer5"
+            " FROM PlanetData"
+            " WHERE PlanetID=%u", planetID)) {
+        _log(DATABASE__ERROR, "Error in LoadPlanetResourceData Query: %s", res.error.c_str());
+        return false;
+    }
+
+    // no data, no error, just return
+    if (res.ColumnCount() < 1)
+        return false;
+
+    DBResultRow row;
+    if (!res.GetRow(row)) {
+        _log(DATABASE__ERROR, "Error in LoadPlanetResourceData query: %s", res.error.c_str());
+        return false;
+    }
+
+    data.type_1 = row.GetUInt(0);
+    data.type_2 = row.GetUInt(1);
+    data.type_3 = row.GetUInt(2);
+    data.type_4 = row.GetUInt(3);
+    data.type_5 = row.GetUInt(4);
+    data.dist_1 = row.GetFloat(5);
+    data.dist_2 = row.GetFloat(6);
+    data.dist_3 = row.GetFloat(7);
+    data.dist_4 = row.GetFloat(8);
+    data.dist_5 = row.GetFloat(9);
+    data.buffer_1 = row.GetText(10);
+    data.buffer_2 = row.GetText(11);
+    data.buffer_3 = row.GetText(12);
+    data.buffer_4 = row.GetText(13);
+    data.buffer_5 = row.GetText(14);
+
+    return true;
+}
+
+void PlanetDB::SavePlanetResourceData(uint32 planetID, PlanetResourceData& data) {
+    DBerror err;
+    if (!sDatabase.RunQuery(err,
+            "UPDATE PlanetData"
+            " SET Resource1=%u,Resource2=%u,Resource3=%u,Resource4=%u,Resource5=%u,"
+            " Distributon1=%f,Distributon2=%f,Distributon3=%f,Distributon4=%f,Distributon5=%f,"
+            " Buffer1='%s',Buffer2='%s',Buffer3='%s',Buffer4='%s',Buffer5='%s'"
+            " WHERE PlanetID=%u",
+            data.type_1, data.type_2, data.type_3, data.type_4, data.type_5,
+            data.dist_1, data.dist_2, data.dist_3, data.dist_4, data.dist_5,
+            data.buffer_1.c_str(), data.buffer_2.c_str(), data.buffer_3.c_str(), data.buffer_4.c_str(), data.buffer_5.c_str(),
+            planetID))
+        _log(DATABASE__ERROR, "SavePlanetResourceData - Unable to update planetID %u : %s", planetID, err.GetError());
+}
+
 void PlanetDB::GetSchematicData(DBQueryResult& res)
 {
     // load info into PIDataMgr
@@ -62,8 +118,8 @@ void PlanetDB::GetPlanetData(DBQueryResult& res)
 {
     // load info into PlanetDataMgr
     if (!sDatabase.RunQuery(res,
-        "SELECT planet.typeID AS planetTypeID,"
-        " resource.typeID AS resourceID"
+        "SELECT planet.typeID,"
+        " resource.typeID"
         " FROM invTypes planet, invTypes resource, dgmTypeAttributes dgm1, dgmTypeAttributes dgm2 "
         " WHERE dgm1.typeID = dgm2.typeID AND dgm1.attributeID = 1632 AND dgm1.valueFloat = planet.typeID AND dgm2.attributeID = 709"
         " AND dgm2.valueFloat = resource.typeID ORDER BY planet.typeID ")) {
@@ -102,9 +158,7 @@ void PlanetDB::UpdatePlanetPins(uint32 ccPinID, uint8 pins)
 {
     DBerror err;
     if (!sDatabase.RunQuery(err, "UPDATE piPlanets SET numberOfPins = %u WHERE ccPinID = %u ", pins, ccPinID))
-    {
         _log(DATABASE__ERROR, "UpdatePlanetPins - Unable to update ccPinID %u : %s", ccPinID, err.GetError());
-    }
 }
 
 //  expired = not blue.os.GetWallclockTime() - launch.launchTime < const.piLaunchOrbitDecayTime (5d)
@@ -397,11 +451,11 @@ void PlanetDB::LoadHeads(uint32 ecuID, std::map< uint16, PI_Heads >& heads)
     DBResultRow row;
     while (res.GetRow(row)) {
         PI_Heads head = PI_Heads();
-            head.typeID = row.GetInt(1);
+            head.typeID = (uint16)row.GetUInt(1);
             head.ecuPinID = ecuID;
             head.latitude = row.GetDouble(2);
             head.longitude = row.GetDouble(3);
-        heads[(uint16)row.GetInt(0)] = head;
+        heads[(uint16)row.GetUInt(0)] = head;
     }
 }
 
@@ -410,8 +464,8 @@ void PlanetDB::SaveLaunch(uint32 contID, uint32 charID, uint32 systemID, uint32 
     DBerror err;
     if (!sDatabase.RunQuery(err,
         "INSERT INTO piLaunches (itemID, status, charID, solarSystemID, planetID, launchTime, x, y, z) "
-        " VALUES (%u, 0, %u, %u, %u, %f, %f, %f, %f)",
-                           contID, charID, systemID, planetID, GetFileTimeNow(), pos.x, pos.y, pos.z))
+        " VALUES (%u, 0, %u, %u, %u, %lli, %f, %f, %f)",
+        contID, charID, systemID, planetID, GetFileTimeNow(), pos.x, pos.y, pos.z))
         {
             _log(DATABASE__ERROR, "SaveLaunch - Unable to save Launch: %s", err.GetError());
         }
@@ -446,7 +500,7 @@ void PlanetDB::SavePins(PI_CCPin* ccPin)
     Inserts << " (ccPinID, pinID, typeID, ownerID, level, latitude, longitude,";
     Inserts << " isCommandCenter, isLaunchable, isProcess, isStorage, isECU,";
     Inserts << " schematicID, programType, headRadius, launchTime,";
-    Inserts << " cycleTime, expiryTime, installTime, lastRunTime)";
+    Inserts << " cycleTime, expiryTime, installTime, lastRunTime, qtyPerCycle)";
     Inserts << " VALUES ";
     bool save(false);
     uint32 ccPinID = ccPin->ccPinID;
@@ -459,7 +513,7 @@ void PlanetDB::SavePins(PI_CCPin* ccPin)
         Inserts << "(" << ccPinID << ", " << cur.first << ", " << cur.second.typeID << ", " << cur.second.ownerID << ", " << cur.second.level << ", " << cur.second.latitude << ", " << cur.second.longitude << ", ";
         Inserts << cur.second.isCommandCenter << ", " << cur.second.isLaunchable << ", " << cur.second.isProcess << ", " << cur.second.isStorage <<", " << cur.second.isECU << ", ";
         Inserts << cur.second.schematicID << ", " << cur.second.programType << ", " << cur.second.headRadius << ", " << cur.second.lastLaunchTime;
-        Inserts << ", " << cur.second.cycleTime << ", " << cur.second.expiryTime << ", " << cur.second.installTime << ", " << cur.second.lastRunTime << ")";
+        Inserts << ", " << cur.second.cycleTime << ", " << cur.second.expiryTime << ", " << cur.second.installTime << ", " << cur.second.lastRunTime << ", " << cur.second.qtyPerCycle << ")";
     }
 
     if (save) {
@@ -473,6 +527,7 @@ void PlanetDB::SavePins(PI_CCPin* ccPin)
         Inserts << " expiryTime=VALUES(expiryTime), ";
         Inserts << " installTime=VALUES(installTime),";
         Inserts << " lastRunTime=VALUES(lastRunTime);";
+        Inserts << " qtyPerCycle=VALUES(qtyPerCycle);";
         // execute the command.
         DBerror err;
         if (!sDatabase.RunQuery(err, Inserts.str().c_str()))
@@ -674,7 +729,7 @@ uint16 PlanetDB::SaveRoute(uint32 ccPinID, PI_Route& route)
         ++itr;
     }
     if (!sDatabase.RunQueryLID(err, routeID,
-        "INSERT INTO `piRoutes`(`ccPinID`, `srcPinID`, `destPinID`, `state`, `priority`, `path`, `typeID`, `itemQty`) "
+        "INSERT INTO piRoutes(ccPinID, srcPinID, destPinID, state, priority, path, typeID, itemQty) "
         " VALUES (%u, %u, %u, %u, %u, '%s', %u, %u)",
         ccPinID, route.srcPinID, route.destPinID, route.state, route.priority, path.c_str(), route.commodityTypeID, route.commodityQuantity))
     {

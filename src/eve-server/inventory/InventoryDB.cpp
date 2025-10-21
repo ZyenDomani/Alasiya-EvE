@@ -26,7 +26,7 @@
 
 /** @todo  most of this needs to go into static data */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "Client.h"
 #include "PyCallable.h"

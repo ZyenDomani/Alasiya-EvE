@@ -68,8 +68,11 @@ int64 filesize( FILE* fd );
  */
 int64 npowof2( int64 num );
 
-int64 MakeRandomInt( int64 lo = 0, int64 hi = 99 );     // default to percentage
-double MakeRandomFloat( double lo = 0, double hi = 1 ); // default to percentage
+int32   MakeRandomInt(int32 lo = 0, int32 hi = 99);     // default to percentage
+int64   MakeRandomLong(int64 lo = 0, int64 hi = 99);    // default to percentage
+uint32  MakeRandomUInt(uint32 lo = 0, uint32 hi = 99);  // default to percentage
+float   MakeRandomFloat(float lo = 0.0f, float hi = 1.0f);  // default to percentage
+double  MakeRandomDouble(double lo = 0.0, double hi = 1.0);  // default to percentage
 
 inline bool IsEven(int64 number)                        { return ((number %2) == 0); }
 inline bool IsNaN(double x)                             { return x!= x; }

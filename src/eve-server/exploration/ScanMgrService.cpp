@@ -23,7 +23,7 @@
     Author:        Allan
 */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "Client.h"
 #include "PyBoundObject.h"

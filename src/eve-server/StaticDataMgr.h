@@ -185,6 +185,12 @@ public:
 
     void                AddOutpost(StationData &stData);
 
+    const char*         GetDmgRptName(uint8 type);
+
+    // get specific hauler type for spawn
+    uint16              GetHaulerTypeID(uint32 faction, uint8 level);
+
+
 protected:
     void                Populate();
 

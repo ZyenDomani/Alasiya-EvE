@@ -10,7 +10,7 @@
 
 #include "iostream"
 
-#include "eve-server.h"
+#include "../eve-server.h"
 #include "../../eve-core/math/Trig.h"
 
 #include "Client.h"
@@ -531,7 +531,7 @@ void testing::RunDroneAttribs() {
                 cur->GetAttribute(AttrProximityRange).get_uint32());
         */
         /*
-        mass = cur->GetAttribute(AttrMass).get_double();
+        mass = cur->mass();
         inertiaMod = cur->GetAttribute(AttrInertiaMod).get_double();
         agility = mass * inertiaMod / 1000000;
         alignTime = 1.386294 * agility;
@@ -739,7 +739,7 @@ void testing::UpdateDungeons() {
             case 3:  factionID = factionBloodRaider;  break;
             case 4:  factionID = factionGuristas;  break;
             case 5:  factionID = factionSanshas;  break;
-            case 6:  factionID = factionRogueDrones;  break;
+            case 6:  factionID = factionUnknown;  break;
         }
 
         sDatabase.RunQuery(err, "INSERT INTO dunDungeons("

@@ -24,7 +24,7 @@
     Updates:    Positron96, Allan
 */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "EVEServerConfig.h"
 #include "StaticDataMgr.h"
@@ -382,7 +382,7 @@ bool MarketDB::RecordTransaction(Market::TxData &data) {
         "    transactionDate, typeID, keyID, quantity, price,"
         "    transactionType, clientID, regionID, stationID, corpTransaction, characterID"
         " ) VALUES ("
-        " %f, %u, %u, %u, %f,"
+        " %lli, %u, %u, %u, %f,"
         " %u, %u, %u, %u, %u, %u)",
         GetFileTimeNow(), data.typeID, data.accountKey, data.quantity, data.price,
         data.isBuy > 0?1:0, data.clientID, data.regionID, data.stationID, data.isCorp?1:0, data.memberID))

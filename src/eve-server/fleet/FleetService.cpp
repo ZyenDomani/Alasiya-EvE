@@ -12,7 +12,7 @@
 
 //work in progress
 
-#include "eve-server.h"
+#include "../eve-server.h"
 #include "chat/LSCService.h"
 #include "fleet/FleetService.h"
 #include "system/SystemBubble.h"
@@ -1135,14 +1135,14 @@ void FleetService::GetRandUnitIDs(uint32 fleetID, int32& wingID, int32& squadID)
     for (auto itr = range.first; itr != range.second; itr++)
         wings.push_back(itr->second);
 
-    wingID = wings.at(MakeRandomInt(0, wings.size() - 1));
+    wingID = wings.at(MakeRandomUInt(0, wings.size() - 1));
 
     range = m_wingSquads.equal_range(wingID);
     for (auto itr = range.first; itr != range.second; itr++)
         squads.push_back(itr->second);
 
     // make sure there is room in this squad for another member
-    squadID = squads.at(MakeRandomInt(0, squads.size() - 1));
+    squadID = squads.at(MakeRandomUInt(0, squads.size() - 1));
 }
 
 void FleetService::LeaveFleet(Client* pClient)
@@ -1489,7 +1489,14 @@ void FleetService::GetFleetMembersOnGrid(Client* pClient, std::vector< uint32 >&
         members.push_back(fItr->second);
 
     for (auto &cur : members) {
+        // gotta test these as a member may be docked/docking (occurred while testing)
         if (cur == nullptr)
+            continue;
+        if (cur->IsDocked())
+            continue;
+        if (cur->GetShipSE() == nullptr)
+            continue;
+        if (cur->GetShipSE()->SysBubble() == nullptr)
             continue;
         if (cur->GetShipSE()->SysBubble()->GetID() == scopeID)
             data.push_back(cur->GetCharacterID());

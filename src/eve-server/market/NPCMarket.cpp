@@ -5,7 +5,7 @@
  * Created on June 10, 2014, 5:13 AM
  */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 #include "NPCMarket.h"
 
 NPCMarket::NPCMarket()

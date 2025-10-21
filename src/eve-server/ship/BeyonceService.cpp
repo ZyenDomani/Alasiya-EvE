@@ -24,7 +24,7 @@
     Rewrite:    Allan
 */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "PyBoundObject.h"
 #include "PyServiceCD.h"
@@ -816,7 +816,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuffAutopilot(PyCallArgs &call) {
             call.client->GetName(), (pDestiny->IsAutoPilot() ? "true" : "false"), \
             pSE->GetName(), pSE->GetID());
 
-    pDestiny->WarpTo(pSE->GetPosition(), pSE->GetRadius(), true, pSE);
+    pDestiny->WarpTo(pSE->GetPosition(), (int)pSE->GetRadius(), true, pSE);
 
     return PyStatic.NewNone();
 }

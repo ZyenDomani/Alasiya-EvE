@@ -12,7 +12,7 @@
 
 /** @todo  fix this....not all agents have an entry in chrNPCCharacters table.  */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "agents/AgentDB.h"
 #include "StaticDataMgr.h"

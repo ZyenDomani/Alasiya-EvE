@@ -23,7 +23,7 @@
     Author:        ozatomic
 */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "PyServiceCD.h"
 #include "account/InfoGatheringMgr.h"

@@ -58,6 +58,8 @@ public:
     bool IsInitialized()                                { return m_initalized; }
     bool IsRatTimerStarted()                            { return m_ratTimer.Enabled(); }
 
+    // info call from sysbubble about new ship in bubble
+    void PlayerEnteredBubble(uint8 bubbleID, Client* pClient);
 
 protected:
     bool FindSpawnForBubble(uint16 bubbleID);
@@ -87,7 +89,7 @@ private:
     uint16 m_groupTimerSetTime;     //ms - this is for hard-coding the respawn timer time.
 
     uint32 m_spawnID;       //in case i need to track a specific spawn group.
-    
+
     std::map<uint32, uint8> m_liveCount;         // bubbleID/rats alive
     std::vector<NPC*> m_ratSpawns;                      //vector of NPC* to spawn
     std::vector<Spawn::toSpawn> m_toSpawn;

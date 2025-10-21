@@ -16,7 +16,7 @@
  *   - all drones have proximity range data
  */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "Client.h"
 #include "EntityMgr.h"
@@ -191,13 +191,13 @@ void DroneAIMgr::Init() {
 
     bool update(!mySE->IsAbandoned());
 
-    double mass = dRef->GetAttribute(AttrMass).get_double();
+    float mass = dRef->mass();
     double inertiaMod = dRef->GetAttribute(AttrInertiaMod).get_double();
 
-    if (mass < 99.0) {
+    if (mass < 99.0f) {
         if (is_log_enabled(DRONE__TRACE))
             sLog.Warning("DroneAI::Init()", " %s  has no mass defined.  setting to 1000.0", dRef->name());
-        mass = 1000.0;
+        mass = 1000.0f;
         dRef->SetAttribute(AttrMass, mass, update);
     }
     if (inertiaMod < 99.0) {
@@ -207,7 +207,7 @@ void DroneAIMgr::Init() {
         dRef->SetAttribute(AttrInertiaMod, inertiaMod, update);
     }
 
-    m_agility = mass * inertiaMod / 1000000;
+    m_agility = mass * inertiaMod / 1000000.0;
     dRef->SetAttribute(AttrAgility, m_agility, false);
 
     m_alignTime = 1.386294 * m_agility;
@@ -240,6 +240,7 @@ void DroneAIMgr::Process() {
     // for OrbitShip & OrbitTarget,  determine if target has moved outside of orbit range and reset drone
     //   by doing this, i cannot set m_moveTime=0 for these....this HAS to Process() in order to work right.
     //   also, cannot hit Move() at end...that will totally change position (but code should compensate for it next tic)
+    //  NOTE:  it does not...drones at orbit around home will routinely wander 250k away (must .syncloc to recall)
 
     //  there are a lot of distance checks here.  compute distance once.
     uint32 targDistance(0);
@@ -1263,18 +1264,18 @@ void DroneAIMgr::Target(SystemEntity* pTargetSE) {
     //TODO: finish this...
 
     _log(DRONE__AI_TRACE, "%s(%u) Target() - %s(%s).", \
-    mySE->GetName(), mySE->GetID(), GetStateName(m_state), GetActionName(m_action));
+            mySE->GetName(), mySE->GetID(), GetStateName(m_state), GetActionName(m_action));
 
     // all is good, set new target
     targSE = pTargetSE;
     bool chase(false);  // chase ref isnt used for drones
     if (!mySE->TargetMgr()->StartTargeting(pTargetSE,
-                                            mySE->GetSelf()->GetAttribute(AttrScanSpeed).get_float(),
+                                            mySE->GetSelf()->GetAttribute(AttrScanSpeed).get_uint32(),
                                             (uint8)mySE->GetSelf()->GetAttribute(AttrMaxLockedTargets).get_uint32(),
                                             shipSE->GetSelf()->GetAttribute(AttrMaxTargetRange).get_double(), chase))
     {
-        _log(DRONE__AI_TRACE, "Drone %s(%u): Targeting of %s(%u) failed.  Clear Target and Return to Idle.",
-             mySE->GetName(), mySE->GetID(), pTargetSE->GetName(), pTargetSE->GetID());
+        _log(DRONE__AI_TRACE, "Drone %s(%u): Targeting of %s(%u) failed.  Clear Target and Return to Idle.", \
+                mySE->GetName(), mySE->GetID(), pTargetSE->GetName(), pTargetSE->GetID());
         //TODO:  target is called before setting state.  figure a way to tell AI targeting failed instead of setting idle
         SetIdle();
         return;
@@ -1924,7 +1925,7 @@ void DroneAIMgr::MissileLaunched(Missile* pMissile) {
     shipSE->GetPilot()->SendNotifyMsg("Incoming Message: %s", BinString(text).c_str());
 }
 
-void DroneAIMgr::ReportDamage(uint8 type/*0*/) {
+void DroneAIMgr::ReportDamage(uint8 type/*0*/, SystemEntity* pSourceSE/*nullptr*/) {
     // TODO:  check mode, state and actions then react
     std::string text = "damaged";
     //01100100 01100001 01101101 01100001 01100111 01100101 01100100
@@ -2110,7 +2111,7 @@ void DroneAIMgr::SendTrueState(int8 state) {
         du.targetID = (GetTargetID() == 0 ? PyStatic.NewNone() : new PyInt(GetTargetID()));
     PyTuple* up(du.Encode());
     if (mySE->SysBubble() != nullptr)
-        mySE->SysBubble()->BubblecastDestinyUpdate(&up, "destiny");
+        mySE->SysBubble()->BubblecastDestinyUpdate(&up, "Drone State Change");
 }
 
 bool DroneAIMgr::IsIdle() {
@@ -2323,7 +2324,7 @@ void DroneAIMgr::Stop() {
         CmdStop stop;
             stop.entityID = mySE->GetID();
         PyTuple* up = stop.Encode();
-        mySE->SysBubble()->BubblecastDestinyUpdate(&up, "destiny drone stop");
+        mySE->SysBubble()->BubblecastDestinyUpdate(&up, "Drone Stop");
     }
 }
 
@@ -2623,7 +2624,7 @@ void DroneAIMgr::UpdatePosition(bool update/*false*/) {
             du.y = pos.y;
             du.z = pos.z;
         PyTuple* up = du.Encode();
-        mySE->SysBubble()->BubblecastDestinyUpdate(&up, "DestinyUpdates");
+        mySE->SysBubble()->BubblecastDestinyUpdate(&up, "Drone Position Update");
         PyDecRef(up);
     }
 }
@@ -2634,7 +2635,7 @@ void DroneAIMgr::SendSpeedFraction() {
         ssf.fraction = m_userSpeedFraction;
     PyTuple* up = ssf.Encode();
     if (mySE->SysBubble() != nullptr)
-        ;// edit  mySE->SysBubble()->BubblecastDestinyUpdate(&up, "destiny drone");
+        ;// edit  mySE->SysBubble()->BubblecastDestinyUpdate(&up, "Drone Speed Update");
 }
 
 /*
@@ -2664,12 +2665,7 @@ void DroneAIMgr::SendGFX(Client* pClient/*nullptr*/) {
     InventoryItemRef iRef = mySE->GetSelf();
     // effects are listed in EVE_Effects.h
     //  NOTE: drones are called 'entities' in client; EVE_Effects has 'entityxxx' for gfx...may not be used like this.
-    uint16 gfxID(0);
-    if (m_booster and iRef->HasAttribute(AttrGfxBoosterID)) {   // graphicID for turret for drone type ships
-        gfxID = iRef->GetAttribute(AttrGfxBoosterID).get_uint32();
-    } else if (iRef->HasAttribute(AttrGfxTurretID)) {           // graphicID for turret for drone type ships
-        gfxID = iRef->GetAttribute(AttrGfxTurretID).get_uint32();
-    }
+    uint16 gfxID(iRef->GetAttribute(AttrGfxTurretID).get_uint32());
 
     bool active(false), start(false), repeat(false);
     if (m_action == DroneAI::Action::Engaged) {
@@ -2679,11 +2675,6 @@ void DroneAIMgr::SendGFX(Client* pClient/*nullptr*/) {
         active = true;
     }
 
-    /*  not sure if this is right for drones...im thinking not
-    std::string guidStr = sFxDataMgr.GetEffectGuid(gfxID);
-    if (guidStr.empty())
-        guidStr = sFxDataMgr.GetEffectGuid(iRef->type().GetDefaultEffect());
-    */
     std::string guidStr = sFxDataMgr.GetEffectGuid(m_effectID);
 
     if (is_log_enabled(DRONE__MESSAGE))
@@ -2710,7 +2701,7 @@ void DroneAIMgr::SendGFX(Client* pClient/*nullptr*/) {
         up->Dump(EFFECTS__DUMP, "");
 
     if (pClient == nullptr) {
-        mySE->SysBubble()->BubblecastDestinyUpdate(&up, "DestinyUpdates");
+        mySE->SysBubble()->BubblecastDestinyUpdate(&up, "Drone GFX Bcast");
     } else {
         // this is to update new ship in bubble with active gfx
         pClient->QueueDestinyUpdate(&up);

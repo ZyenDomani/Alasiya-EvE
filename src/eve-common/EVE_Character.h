@@ -19,19 +19,19 @@ namespace Char {
     };
 
     namespace Race {
-        enum {
-            Caldari     = 1,
-            Minmatar    = 2,
-            Amarr       = 4,
+        enum {                  // * = defined in client
+            Caldari     = 1,    //*
+            Minmatar    = 2,    //*
+            Amarr       = 4,    //*
             Sansha      = 5,    // Caldari + Amarr
             Ammatar     = 6,    // Minmatar + Amarr
-            Gallente    = 8,
+            Gallente    = 8,    //*
             Guristas    = 9,    // Caldari + Gallente
             Serpentis   = 10,   // Minmatar + Gallente
             Jove        = 16,
-            Pirate      = 32,   //Incursion Sansha?
-            Sleepers    = 64,
-            ORE         = 128
+            Pirate      = 32,   //*             rogue drones set to race::pirate
+            Sleeper     = 64,   //*
+            ORE         = 128   //*
         };
     }
 

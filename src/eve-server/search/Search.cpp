@@ -24,7 +24,7 @@
 */
 
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "search/Search.h"
 

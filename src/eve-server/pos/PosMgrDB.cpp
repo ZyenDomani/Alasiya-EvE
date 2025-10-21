@@ -7,7 +7,7 @@
  * @date:   8 December 17
  */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "pos/PosMgrDB.h"
 #include "pos/Structure.h"

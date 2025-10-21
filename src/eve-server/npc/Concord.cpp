@@ -134,7 +134,7 @@ void Concord::EncodeDestiny(Buffer& into) {
         head.flags = Ball::Flag::IsMassive | Ball::Flag::IsFree;
     into.Append( head );
     MassSector mass = MassSector();
-        mass.mass = m_self->GetAttribute(AttrMass).get_double();
+        mass.mass = m_self->mass();
         mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
@@ -658,23 +658,23 @@ void ConcordAI::AttackTarget(SystemEntity* pTarget) {
     pTarget->ApplyDamage(dam);
 }
 
-double ConcordAI::GetTargetTime()
+uint16 ConcordAI::GetTargetTime()
 {
-    double targetTime = (m_npc->GetSelf()->GetAttribute(AttrScanSpeed).get_int());
-    float radius = m_npc->GetSelf()->GetAttribute(AttrRadius).get_float();
-    if (!targetTime) {
-        if (radius < 30) {
+    uint16 targetTime = (m_npc->GetSelf()->GetAttribute(AttrScanSpeed).get_uint32());
+    if (targetTime < 1500) {
+        float radius = m_npc->GetRadius();
+        if (radius < 35) {
             targetTime = 1500;
-        } else if (radius < 60) {
+        } else if (radius < 50) {
+            targetTime = 2000;
+        } else if (radius < 100) {
             targetTime = 2500;
-        } else if (radius < 150) {
-            targetTime = 4000;
-        } else if (radius < 280) {
-            targetTime = 6000;
-        } else if (radius < 550) {
-           targetTime = 8000;
+        } else if (radius < 200) {
+            targetTime = 3500;
+        } else if (radius < 300) {
+           targetTime = 4500;
         } else {
-            targetTime = 13000;
+            targetTime = 6000;
         }
     }
     return targetTime;

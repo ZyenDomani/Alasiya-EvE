@@ -76,6 +76,9 @@ protected:
     PlanetResourceData          m_data;
 
 private:
+    // create full SphericalHarmonic data for all bands on this planet
+    void CreateSHData();
+
     std::map<uint16, std::string> m_typeBuffers;
 
     /* map of charID, Colony* for this planet.
@@ -122,7 +125,7 @@ planetResourceScanningRanges =
 planetResourceUpdateTime = 1 * HOUR
 
 planetResourceMaxValue = 1.21
-MAX_DISPLAY_QUALTY = const.planetResourceMaxValue * 255 * 0.5
+MAX_DISPLAY_QUALTY = const.planetResourceMaxValue * 255 * 0.5                   (154.275)
 qualityRemapped = quality / MAX_DISPLAY_QUALTY
 self.resourceList.AddItem(typeID, quality=max(0, min(1.0, qualityRemapped)))
 

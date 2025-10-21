@@ -12,6 +12,7 @@
 /** updated list from current server data...
  *  allan - 21 March 2017
  *  verified again - 3Feb23
+ * UD:  this list is incomplete  19Sep25
  */
 
 namespace EvE {
@@ -32,7 +33,7 @@ enum {
     modifyTargetSpeed =   29,     // effects.ModifyTargetSpeed
     energyTransfer =   31,     // effects.EnergyTransfer
     energyVampire =   32,     // effects.EnergyDestabilization
-    projectileFired =   34,     // effects.ProjectileFired
+    projectileFired =   34,     // effects.ProjectileFired   AC/Arty/Rail/Blaster/
     energyDestabilization =   36,     // effects.EnergyDestabilization
     empWave =   38,     // effects.EMPWave
     warpScramble =   39,     // effects.WarpScramble
@@ -81,7 +82,7 @@ enum {
     anchorDropForStructures =   1022,     // effects.AnchorDrop
     anchorLiftForStructures =   1023,     // effects.AnchorLift
     projectileFiredForEntities =   1086,     // effects.ProjectileFiredForEntities
-    targetAttackForStructures =   1199,     // effects.ProjectileFiredForEntities
+    targetAttackForStructures =   1199,     // effects.ProjectileFiredForEntities  - this is structure equiv of #10 (attack target with module)
     speedBoostMassAddition =   1253,     // effects.Afterburner
     speedBoostMassSigRad =   1254,     // effects.MicroWarpDrive
     newEwTestscanStrengthBonusTargetHostile =   1271,     // effects.ScanStrengthBonusTarget
@@ -207,7 +208,7 @@ enum {
     warpScrambleBlockMWDWithNPCEffect =   5934,     // effects.WarpScramble
     cloakingPrototype =   5945,     // effects.CloakingPrototype  -- not in Crucible
     shipModeScanStrengthPostDiv =   6012,     // effects.ScanStrengthBonusActivate
-} EffectsID;
+};
     }
 }
 

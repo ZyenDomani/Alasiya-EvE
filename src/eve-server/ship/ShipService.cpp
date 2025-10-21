@@ -22,7 +22,7 @@
     Rewrite:    Allan
 */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "PyBoundObject.h"
 #include "PyServiceCD.h"
@@ -910,7 +910,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
     //args contains id's of items to jettison
     std::vector<int32>::iterator itr = args.ints.begin();
     // loop thru items to see if there is a container in this list.
-    for (; itr != args.ints.end(); itr++) {
+    for (; itr != args.ints.end(); ++itr) {
         // running this list twice is fuckedup, but not sure of another way to determine if container is in jettison list.
         iRef = sItemFactory.GetItemRef(*itr);
         if (iRef.get() == nullptr)
@@ -933,6 +933,8 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                 itr = args.ints.erase(itr);
             } break;
             case EVEDB::invCategories::Orbitals: {
+                throw CustomError("Item is not working at this time");
+                return nullptr;
                 sRef = sItemFactory.GetStructureRef(*itr);
                 if (sRef.get() == nullptr)
                     throw CustomError("Unable to spawn Structure item of type %u.", sRef->typeID());
@@ -1027,7 +1029,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
             // Spawn jetcan then continue loop
             location.MakeRandomPointOnSphere(500.0);
             ItemData p_idata(
-                            23,                         // 23 = cargo container
+                            itemTypeJetCan,
                             pClient->GetCharacterID(),  //owner is Character?  figure out how to test for corp owner
                             pClient->GetLocationID(),
                             flagAutoFit,
@@ -1040,8 +1042,8 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
             // create new container
             ContainerSE* cSE(new ContainerSE(jcRef, *m_manager, pSysMgr, data));
             jcRef->SetMySE(cSE);
-            // set anchored to avoid deletion when empty
-            jcRef->SetAnchor(true);
+            // set anchored to avoid deletion when empty...no, this disables tractoring
+            //jcRef->SetAnchor(true);
             pSysMgr->AddEntity(cSE);
             pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
             pClient->StartJetcanTimer();

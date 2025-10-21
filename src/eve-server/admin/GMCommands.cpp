@@ -27,7 +27,7 @@
 /** @todo this file needs to be updated... */
 
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
 #include "Client.h"
 #include "ConsoleCommands.h"
@@ -194,7 +194,7 @@ PyResult Command_spawnn(Client* who, CommandDB* db, PyServiceMgr* services, cons
     GPoint loc(who->GetShipSE()->GetPosition());
     // Calculate a random coordinate on the sphere centered on the player's position with
     // a radius equal to the radius of the ship/celestial being spawned times 10 for really good measure of separation:
-    double radius = (actualRadius * 5.0) * (double)(MakeRandomInt(1, 3));     // Scale the distance from player that the object will spawn to between 10x and 15x the object's radius
+    double radius = (actualRadius * 5.0) * (MakeRandomFloat(1.0f, 3.0f));     // Scale the distance from player that the object will spawn to between 10x and 15x the object's radius
     loc.MakeRandomPointOnSphere(radius);
 
     // Spawn the item:
