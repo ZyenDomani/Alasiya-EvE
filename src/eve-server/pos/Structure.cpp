@@ -180,22 +180,18 @@ void StructureItem::RemoveItem(InventoryItemRef iRef)
     InventoryItem::RemoveItem(iRef);
 }
 
-void StructureItem::Rename(std::string name)
-{
-    if (mySE->GetPOSSE()->GetState() > EVEPOS::StructureState::Unanchored)
-    {
+void StructureItem::Rename(std::string name) {
+    if (mySE->GetPOSSE()->GetState() > EVEPOS::StructureState::Unanchored) {
         InventoryItem::Rename(std::move(name));
         mySE->GetPOSSE()->SendSlimUpdate();
-    }
-    else
-    {
+    } else {
         throw UserError("SetNameObjectMustBeAnchoredInSpace");
     }
     // {'FullPath': u'UI/Messages', 'messageID': 258480, 'label': u'SetNameObjectMustBeAnchoredInSpaceBody'}(u'You can only rename this type of object if it is anchored in space (and you have a right to do so).', None, None)
 }
 
 StructureSE::StructureSE(StructureItemRef structure, PyServiceMgr &services, SystemManager *system, const FactionData &data)
-    : DynamicSystemEntity(structure, services, system),
+    : ObjectSystemEntity(structure, services, system),
     m_moonSE(nullptr),
     m_planetSE(nullptr),
     m_towerSE(nullptr),
