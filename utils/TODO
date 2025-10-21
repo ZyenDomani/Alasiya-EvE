@@ -18,6 +18,13 @@ NOTE:  for calls that use internal methods that send a reply, model from InjectS
   which calls char::InjectSkillIntoBrain and returns a code for different errors used to customize reply to client
 
 
+current....
+find launchForCorp...see how 'closest planet' is determiend for tower (m_system->GetClosestPlanetSE())
+towerSE - m_hasShield is redundant...can use (m_shieldSE (!/=)= nullptr)
+test planet determination and check distance when launching customs office
+  - complete code for proper init when launched
+
+
 *******************************************************
 *******************************************************
 **********  errors and other found shit...high priority
