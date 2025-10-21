@@ -673,6 +673,7 @@ StaticDataMgr::GetSolarSystemData incomplete (unused - is it needed?)
 GetMyInventory()->ContainsTypeByFlag
     - should this check for items in holds other than default cargoHold?   -yes, but depends on how its used
 
+notes: https://redsroidrage.wordpress.com/2018/11/04/my-factory-planet-layouts/
 pi working.  currently rewriting process code  -priority level: lo
     - rename/refactor comet0's original code?  i still dont like the names he used. :/ (semantics shit)
     - check/rewrite planet xml code as needed (minor improvement)
