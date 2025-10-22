@@ -118,8 +118,7 @@
 TowerSE::TowerSE(StructureItemRef structure, PyServiceMgr& services, SystemManager* system, const FactionData& fData)
 : StructureSE(structure, services, system, fData),
 m_pShieldSE(nullptr),
-m_tdata(EVEPOS::TowerData()),
-m_hasShield(false)
+m_tdata(EVEPOS::TowerData())
 {
     // create AI object for tower here....not written yet.
     //m_ai = new POS_AI(this);
@@ -164,8 +163,11 @@ void TowerSE::Init()
         m_moonSE->SetTower(this);
 
     // set tower in bubble
-    if (m_bubble == nullptr)
-        assert(0);
+    if (m_bubble == nullptr) {
+        _log(POS__ERROR, "TowerSE::Init() - m_bubble == null");
+        return;
+    }
+ 
     m_bubble->SetTowerSE(this);
 
     /** @todo
@@ -190,6 +192,10 @@ void TowerSE::InitData() {
 }
 
 void TowerSE::Scoop() {
+    if (m_pShieldSE != nullptr) {
+        m_pShieldSE->Delete();
+        SafeDelete(m_pShieldSE);
+    }
     StructureSE::Scoop();
     m_moonSE->SetTower(nullptr);
     m_tdata = EVEPOS::TowerData();
@@ -257,15 +263,13 @@ void TowerSE::SetOnline()
 
 void TowerSE::SetOffline()
 {
-    if (m_hasShield) {
+    if (m_pShieldSE != nullptr) {
         m_pShieldSE->Delete();
         SafeDelete(m_pShieldSE);
-        m_hasShield = false;
     }
 
     StructureSE::SetOffline();
 }
-
 
 void TowerSE::Online()
 {
@@ -494,7 +498,7 @@ PyRep* TowerSE::GetProcessInfo()
 
 void TowerSE::CreateForceField()
 {
-    if (m_hasShield)
+    if (m_pShieldSE != nullptr)
         return;
     // create and add force field to tower
     ItemData idata(EVEDB::invTypes::ForceField, m_corpID, m_system->GetID(), flagAutoFit, m_ownerID);
@@ -513,7 +517,6 @@ void TowerSE::CreateForceField()
     iSE->SetHarmonic(m_harmonic);
     m_system->AddEntity(iSE);
     m_pShieldSE = iSE;
-    m_hasShield = true;
 }
 
 PyDict* TowerSE::MakeSlimItem()
