@@ -51,6 +51,10 @@ class DungeonMgr;
 class SpawnMgr;
 class PyServiceMgr;
 
+class MoonSE;
+class PlanetSE;
+class GateSE;
+
 class SystemManager
 {
 public:
@@ -79,6 +83,8 @@ public:
     const char* GetSecurityClass()                      { return m_data.securityClass.c_str(); }
     // 1.0 to -0.9
     const float GetSecurityRating()                     { return m_data.security; }
+    // range is 0.1 for 1.0 system to 2.0 for -0.9 system
+    float GetSecValue()                                 { return m_secValue; }
 
     PyServiceMgr* GetServiceMgr()                       { return &m_services; }
     Inventory* GetSystemInv()                           { return m_solarSystemRef->GetMyInventory(); }
@@ -106,9 +112,6 @@ public:
     AnomalyMgr* GetAnomMgr()                            { return m_anomMgr; }
     DungeonMgr* GetDungMgr()                            { return m_dungMgr; }
 
-    // range is 0.1 for 1.0 system to 2.0 for -0.9 system
-    float GetSecValue()                                 { return m_secValue; }
-
     bool BuildDynamicEntity(const DBSystemDynamicEntity& data, uint32 launcherID=0);
 
     void AddNPC(NPC* pNPC);
@@ -134,9 +137,9 @@ public:
     // system bounty timer system.  20m delay
     void AddBounty(uint32 charID, BountyData& data);
 
-    SystemEntity* GetClosestMoonSE(const GPoint& myPos);
-    SystemEntity* GetClosestPlanetSE(const GPoint& myPos);
-    SystemEntity* GetClosestGateSE(const GPoint& myPos);
+    MoonSE*     GetClosestMoonSE(const GPoint& myPos);
+    PlanetSE*   GetClosestPlanetSE(const GPoint& myPos);
+    GateSE*     GetClosestGateSE(const GPoint& myPos);
 
     // this returns entities in range for display on dscan.
     void DScan(int64 range, const GPoint& position, std::vector< SystemEntity* >& vector);
@@ -154,7 +157,7 @@ public:
 
     std::map< uint32, SystemEntity* > GetEntities()     { return m_entities; }
 
-    SystemEntity* GetPlanet(uint32 planetID);
+    PlanetSE* GetPlanet(uint32 planetID);
 
     void ResetAsteroids();
 
