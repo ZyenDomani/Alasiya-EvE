@@ -90,7 +90,7 @@ public:
 
     uint16 GetSOI()                                     { return m_soi; }
 
-    inline void AddModule(StructureSE* pSE)             { m_structs[pSE->GetID()] = pSE); }
+    inline void AddModule(StructureSE* pSE)             { m_structs[pSE->GetID()] = pSE; }
     inline void RemoveModule(StructureSE* pSE)          { m_structs.erase(pSE->GetID()); }
 
     // structure update methods

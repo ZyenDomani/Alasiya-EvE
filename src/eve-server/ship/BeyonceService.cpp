@@ -700,8 +700,11 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
                 warpToPoint = pSE->GetPlanetSE()->GetCOSE()->GetPosition();
                 GVector vectorFromOrigin(pClient->GetShipSE()->GetPosition(), warpToPoint);
                 vectorFromOrigin.normalize();   //we now have a direction
-                GPoint stopPoint(vectorFromOrigin * 10000 + pClient->GetShip()->radius());  // 10km from CO.
+                GPoint stopPoint(vectorFromOrigin * 10000);
+                distance += pSE->GetPlanetSE()->GetCOSE()->GetRadius();
+                distance += pClient->GetShip()->radius();
                 warpToPoint -= stopPoint;
+                warpToPoint -= distance;
                 distance = 0;
             } else {
                 srandom(toID);  //this is the only place random() is used....other random functions use rand() as it's non-repeatable.

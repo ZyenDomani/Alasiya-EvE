@@ -249,13 +249,13 @@ void StructureSE::InitData()
     }
 
     if (m_sbu) { //SBUs are anchored near stargates
-        m_gateSE = m_system->GetClosestGateSE(GetPosition())->GetGateSE();
+        m_gateSE = m_system->GetClosestGateSE(GetPosition());
         m_data.anchorpointID = m_gateSE->GetID();
     } else if (m_platform) { //Construction Platforms are anchored near planets
-        m_planetSE = m_system->GetClosestPlanetSE(GetPosition())->GetPlanetSE();
+        m_planetSE = m_system->GetClosestPlanetSE(GetPosition());
         m_data.anchorpointID = m_planetSE->GetID();
     } else { //Everything else is anchored near a moon
-        m_moonSE = m_system->GetClosestMoonSE(GetPosition())->GetMoonSE();
+        m_moonSE = m_system->GetClosestMoonSE(GetPosition());
         m_data.anchorpointID = m_moonSE->GetID();
     }
 }

@@ -139,7 +139,7 @@ public:
 
     MoonSE*     GetClosestMoonSE(const GPoint& myPos);
     PlanetSE*   GetClosestPlanetSE(const GPoint& myPos);
-    GateSE*     GetClosestGateSE(const GPoint& myPos);
+    StargateSE* GetClosestGateSE(const GPoint& myPos);
 
     // this returns entities in range for display on dscan.
     void DScan(int64 range, const GPoint& position, std::vector< SystemEntity* >& vector);

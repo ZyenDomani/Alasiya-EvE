@@ -209,7 +209,8 @@ public:
     // uses any numeric value.  string data is compared to on/true/off/false.  None return false.
     static bool GetBool(PyRep* pRep);
 
-    // no default c'tor
+    // default c'tor
+    PyRep() =delete;
     // base c'tor
     PyRep(PyType t);
     // base c'tor
@@ -218,34 +219,37 @@ public:
     PyRep(const PyRep& oth);
     // move c'tor
     PyRep(PyRep&& oth);
-
+    // d'tor
     virtual ~PyRep();
 
     // copy assignment
-    PyRep& operator= (const PyRep& oth) {
+    PyRep& operator=(const PyRep& oth) {
         // this is just noise until proven otherwise
+        sLog.Cyan("PyRep()", "Copy Assign.");
         //if (this == &oth)
         //	return *this;  // don't do anything if self-assigning
         *this = std::move(PyRep(oth));         // copy then move
         return *this;
     }
     // move assignment
-    PyRep& operator= (PyRep&& oth) {
+    PyRep& operator=(PyRep&& oth) {
+        // this is just noise until proven otherwise
+        sLog.Cyan("PyRep()", "Move Assign.");
         std::swap(*this, oth);
         return *this;
     }
 
-    void IncRef() const;
-    void DecRef() const;
-    int16 GetRefCount()                                 { return mRefCount; }
-    bool IsDeleted() const                              { return mDeleted; }
+    void                IncRef() const;
+    void                DecRef() const;
+    int16               GetRefCount()                   { return mRefCount; }
+    bool                IsDeleted() const               { return mDeleted; }
 
 protected:
-    const PyType		mType;
+    const PyType        mType;
 
     /// Reference count of instance.
-    mutable int16               mRefCount;
-    mutable bool                mDeleted;
+    mutable int16       mRefCount;
+    mutable bool        mDeleted;
 };
 
 /**

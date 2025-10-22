@@ -1140,7 +1140,7 @@ PlanetSE* SystemManager::GetClosestPlanetSE(const GPoint& myPos) {
     return itr->second->GetPlanetSE();
 }
 
-GateSE* SystemManager::GetClosestGateSE(const GPoint& myPos) {
+StargateSE* SystemManager::GetClosestGateSE(const GPoint& myPos) {
     std::map<double, SystemEntity*> sorted;
     for (auto &cur : m_gateMap)
         sorted.insert(std::pair<double, SystemEntity*>(myPos.distance(cur.second->GetPosition()), cur.second));

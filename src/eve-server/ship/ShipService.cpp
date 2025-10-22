@@ -473,12 +473,12 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
             case EVEDB::invCategories::Structure: {
                 // test for existing tower
                 if (iRef->groupID() == EVEDB::invGroups::Control_Tower) {
-                    if (pClient->SystemMgr()->GetClosestMoonSE(location)->GetMoonSE()->HasTower()) {
+                    if (pClient->SystemMgr()->GetClosestMoonSE(location)->HasTower()) {
                         pClient->SendErrorMsg("This Moon already has a Control Tower in orbit.  Aborting Drop.");
                         return nullptr;
                     }
                 } else {
-                    if (!pClient->SystemMgr()->GetClosestMoonSE(location)->GetMoonSE()->HasTower()) {
+                    if (!pClient->SystemMgr()->GetClosestMoonSE(location)->HasTower()) {
                         pClient->SendErrorMsg("You need an anchored Control Tower before launching modules.  Aborting Drop.");
                         return nullptr;
                     }
@@ -924,8 +924,8 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                 if (sRef.get() == nullptr)
                     throw CustomError("Unable to spawn Structure item of type %u.", sRef->typeID());
 
-		//  m_system->GetClosestMoonSE(GetPosition())->GetMoonSE();
-		//  m_system->GetClosestGateSE(GetPosition())->GetGateSE();
+		//  m_system->GetClosestMoonSE(GetPosition());
+		//  m_system->GetClosestGateSE(GetPosition());
                 sRef->Move(pClient->GetLocationID(), flagAutoFit, true);
                 StructureSE* sSE(new StructureSE(sRef, *m_manager, pSysMgr, data));
                 location.MakeRandomPointOnSphere(1500.0 + sRef->type().radius());
@@ -943,7 +943,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                     throw CustomError("Unable to spawn Structure item of type %u.", sRef->typeID());
 
                 // get planet
-                PlanetSE* pPlanet = pSysMgr->GetClosestPlanetSE(location)->GetPlanetSE();
+                PlanetSE* pPlanet = pSysMgr->GetClosestPlanetSE(location);
                 // verify distance
                 uint32 distance(pPlanet->GetPosition().distance(sRef->position()));
                 // TODO:  distance check here...must be <100k?   100k - radius - ship < 25k?

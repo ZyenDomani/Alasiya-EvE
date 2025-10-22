@@ -33,7 +33,7 @@ void JumpBridgeSE::Init()
 void JumpBridgeSE::InitData()
 {
     StructureSE::InitData();
-    m_moonSE = m_system->GetClosestMoonSE(GetPosition())->GetMoonSE();
+    m_moonSE = m_system->GetClosestMoonSE(GetPosition());
     m_data.anchorpointID = m_moonSE->GetID();
 
     m_bridgeData.itemID = m_data.itemID;
