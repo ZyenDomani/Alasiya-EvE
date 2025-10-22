@@ -118,13 +118,14 @@ m_active(false),
 m_loaded(false),
 m_newHead(false),
 m_toUpdate(false),
-m_pLevel(5),			// why are we setting default to max?
+m_pLevel(0),
 m_pg(0),
 m_cpu(0),
 m_colonyID(0),
 m_procTime(0)			// process check.  init to zero and stores last proc time, which is lastRunTime in command center
 {
-    tempPinIDs.clear();
+	assert(m_pSE != nullptr);
+	
     _log(COLONY__DEBUG, "Colony::Colony() c'tor called for %s(%u) by %s(%u)", pSE->GetName(), pSE->GetID(), pClient->GetName(), pClient->GetCharacterID());
 }
 
