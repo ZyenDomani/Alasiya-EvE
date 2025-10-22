@@ -649,6 +649,16 @@ void StructureSE::SetAnchor(Client *pClient, GPoint &pos)
         pos = m_moonSE->GetPosition();
         pos.x += ((radius + dist) * std::sin(rad));
         pos.z += ((radius + dist) * std::cos(rad));
+
+        // set new position in middle of grid
+        int64 bubbleDia(BUBBLE_RADIUS_METERS * 2);
+        int64 xGrid(floor(pos.x / bubbleDia));
+        int64 yGrid(floor(pos.y / bubbleDia));
+        int64 zGrid(floor(pos.z / bubbleDia));
+        pos.x = (xGrid * bubbleDia + BUBBLE_RADIUS_METERS);
+        pos.y = (yGrid * bubbleDia + BUBBLE_RADIUS_METERS);
+        pos.z = (zGrid * bubbleDia + BUBBLE_RADIUS_METERS);
+
         m_destiny->SetPosition(pos);
         sBubbleMgr.Add(this);
 
@@ -681,8 +691,19 @@ void StructureSE::SetAnchor(Client *pClient, GPoint &pos)
                  GetName(), m_data.itemID, distance, m_gateSE->GetName());
     } else if (m_tcu or m_ihub) {
         // these are anchored anywhere in system.
+
+        // set new position in middle of grid
+        int64 bubbleDia(BUBBLE_RADIUS_METERS * 2);
+        int64 xGrid(floor(pos.x / bubbleDia));
+        int64 yGrid(floor(pos.y / bubbleDia));
+        int64 zGrid(floor(pos.z / bubbleDia));
+        pos.x = (xGrid * bubbleDia + BUBBLE_RADIUS_METERS);
+        pos.y = (yGrid * bubbleDia + BUBBLE_RADIUS_METERS);
+        pos.z = (zGrid * bubbleDia + BUBBLE_RADIUS_METERS);
+
         m_destiny->SetPosition(pos);
     } else if (m_platform) {
+        //  will these be used here??
         //verify anchor distance from planet
         uint32 distance(m_planetSE->GetPosition().distance(m_self->position()));
         // is there an attrib for this?
@@ -702,7 +723,7 @@ void StructureSE::SetAnchor(Client *pClient, GPoint &pos)
         }
         /*  few attribs to look into...
          * maxStructureDistance
-         * posStructureControlDistanceMax   (maybe multiply this by tower size, or some fraction thereof?)
+         * posStructureControlDistanceMax   15000
          */
         m_destiny->SetPosition(pos);
     }

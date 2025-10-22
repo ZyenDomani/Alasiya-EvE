@@ -30,6 +30,8 @@
 #include "PyServiceCD.h"
 #include "StaticDataMgr.h"
 #include "cache/ObjCacheService.h"
+#include "planet/CustomsOffice.h"
+#include "planet/Planet.h"
 #include "planet/PlanetDB.h"
 #include "planet/Moon.h"
 #include "pos/Structure.h"
@@ -693,21 +695,31 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
         // this will need adjustment for warping to bookmarks
         warpToPoint = pSE->GetPosition();
         if (pSE->IsPlanetSE()) {
-            srandom(toID);  //this is the only place random() is used....other random functions use rand() as it's non-repeatable.
-            int rand = random();
-            double j = (((rand / RAND_MAX) - 1.0f) / 3.0f);
-            double s = 20 * std::pow(0.025f * (10 * std::log10(radius / 1000000) - 39), 20) + 0.5f;
-            s = EvE::max(0.5f, EvE::min(s, 10.5f));
-            double t = std::asin((warpToPoint.x / std::fabs(warpToPoint.x)) * (warpToPoint.z / std::sqrt(std::pow(warpToPoint.x, 2) + std::pow(warpToPoint.z, 2)))) + j;
-            uint32 d = radius * (s + 1) + 1000000;
-            warpToPoint.x += (d * std::sin(t));
-            warpToPoint.y += (0.5f * radius * std::sin(j));
-            warpToPoint.z -= (d * std::cos(t));
+            if (pSE->GetPlanetSE()->HasCOSE()) {
+                // if planet has a customs office, make warpin point 5km from co.
+                warpToPoint = pSE->GetPlanetSE()->GetCOSE()->GetPosition();
+                GVector vectorFromOrigin(pClient->GetShipSE()->GetPosition(), warpToPoint);
+                vectorFromOrigin.normalize();   //we now have a direction
+                GPoint stopPoint(vectorFromOrigin * 10000 + pClient->GetShip()->radius());  // 10km from CO.
+                warpToPoint -= stopPoint;
+                distance = 0;
+            } else {
+                srandom(toID);  //this is the only place random() is used....other random functions use rand() as it's non-repeatable.
+                int rand = random();
+                double j = (((rand / RAND_MAX) - 1.0f) / 3.0f);
+                double s = 20 * std::pow(0.025f * (10 * std::log10(radius / 1000000) - 39), 20) + 0.5f;
+                s = EvE::max(0.5f, EvE::min(s, 10.5f));
+                double t = std::asin((warpToPoint.x / std::fabs(warpToPoint.x)) * (warpToPoint.z / std::sqrt(std::pow(warpToPoint.x, 2) + std::pow(warpToPoint.z, 2)))) + j;
+                uint32 d = radius * (s + 1) + 1000000;
+                warpToPoint.x += (d * std::sin(t));
+                warpToPoint.y += (0.5f * radius * std::sin(j));
+                warpToPoint.z -= (d * std::cos(t));
+            }
         } else if (pSE->IsStationSE()) {
             // fudge the distance a bit for these... its' a lil close by default
             GVector vectorFromOrigin(pClient->GetShipSE()->GetPosition(), warpToPoint);
             vectorFromOrigin.normalize();   //we now have a direction
-            GPoint stopPoint = (vectorFromOrigin * (radius + 2000 + pClient->GetShip()->radius()));
+            GPoint stopPoint(vectorFromOrigin * (radius + 2000 + pClient->GetShip()->radius()));
             warpToPoint -= stopPoint;
             // this makes ship warp to station dock elevation (y), instead of warping to stations "center point" position (where icon is)
             warpToPoint.y = stDataMgr.GetDockPosY(pSE->GetID());
@@ -715,7 +727,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             // fudge the distance a bit for these... its' a lil close by default
             GVector vectorFromOrigin(pClient->GetShipSE()->GetPosition(), warpToPoint);
             vectorFromOrigin.normalize();   //we now have a direction
-            GPoint stopPoint = (vectorFromOrigin * (radius + 500 + pClient->GetShip()->radius()));
+            GPoint stopPoint(vectorFromOrigin * (radius + 500 + pClient->GetShip()->radius()));
             warpToPoint -= stopPoint;
         } else if (pSE->IsMoonSE()) {
             if (pSE->GetMoonSE()->HasTower()) {
@@ -723,7 +735,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
                 warpToPoint = pSE->GetMoonSE()->GetMyTower()->GetPosition();
                 GVector vectorFromOrigin(pClient->GetShipSE()->GetPosition(), warpToPoint);
                 vectorFromOrigin.normalize();   //we now have a direction
-                GPoint stopPoint = (vectorFromOrigin * (BUBBLE_RADIUS_METERS - 20000));  // 20km inside bubble.
+                GPoint stopPoint(vectorFromOrigin * (BUBBLE_RADIUS_METERS - 20000));  // 20km inside bubble.
                 warpToPoint -= stopPoint;
                 distance = 0;
             } else {
@@ -735,7 +747,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             // move warpin point -20km from center of wh.
             GVector vectorFromOrigin(pClient->GetShipSE()->GetPosition(), warpToPoint);
             vectorFromOrigin.normalize();   //we now have a direction
-            GPoint stopPoint = (vectorFromOrigin * 20000) + radius;
+            GPoint stopPoint(vectorFromOrigin * 20000 + radius);
             warpToPoint -= stopPoint;
         } else if (radius > 90000) {
             // this doesnt work for moons

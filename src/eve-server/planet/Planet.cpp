@@ -245,14 +245,12 @@ Colony* PlanetSE::GetColony(Client* pClient)
     return pColony;
 }
 
-void PlanetSE::AbandonColony(Colony* pColony)
-{
+void PlanetSE::AbandonColony(Colony* pColony) {
     pColony->AbandonColony();
     m_colonies.erase(pColony->GetOwner());
 }
 
-void PlanetSE::CreateCustomsOffice()
-{
+void PlanetSE::CreateCustomsOffice() {
     /** @todo  will need to write this code and make it play nice with everything else.
      * a CO will be a special container as a CustomsSE, linked to the planet it orbits, and any colony on that planet.
      * there is only one CO per planet, but ALL chars with a colony on that planet can access their items on the same CO
@@ -263,85 +261,52 @@ void PlanetSE::CreateCustomsOffice()
      */
 
     //ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, uint32 _quantity, const char *_customInfo = "", bool _contraband = false);
+    uint16 typeID(EVEDB::invTypes::InterbusCustomsOffice);
     FactionData data = FactionData();
         data.ownerID = corpInterbus;
         data.factionID = factionInterBus;
         data.allianceID = 0;
         data.corporationID = corpInterbus;
-    uint16 typeID = EVEDB::invTypes::InterbusCustomsOffice;
 
     if (m_system->GetSecurityRating() > 0.49) {
         typeID = EVEDB::invTypes::PlanetaryCustomsOffice;
         data.ownerID = corpCONCORD;
-        data.factionID = factionCONCORD; //sDataMgr.GetRegionFaction(m_system->GetRegionID());
+        data.factionID = sDataMgr.GetRegionFaction(m_system->GetRegionID());
         data.allianceID = 0;
         data.corporationID = corpCONCORD;
     }
 
-    /*  this puts CO in warp-in bubble
-    // calculate warp-in point
-    GPoint pos = GetPosition();
-    uint32 radius = m_self->radius();
-    srandom(m_self->itemID());
-    int64 rand = random();
-    double j = (((rand / RAND_MAX) - 1.0) / 3.0);
-    double s = 20 * pow(0.025 * (10 * log10(radius/1000000) -39), 20) +0.5;
-    s = EvE::max(0.5, EvE::min(s, 10.5));
-    double t = asin((pos.x/fabs(pos.x)) * (pos.z / sqrt(pow(pos.x, 2) + pow(pos.z, 2)))) +j;
-    uint32 d = radius * (s +1) +10000;
-    pos.x += d * sin(t);
-    pos.y += 0.5 * radius * sin(j);
-    pos.z -= d * cos(t);
-    // put CO 50km closer to planet than warpIn point.
-    GVector dir(pos, m_self->position());
-    dir.normalize();
-    pos -= (dir * 50000);
-    */
-    // this puts CO in random 700km orbit around planet
-    GPoint pos(GetPosition());
-    //pos.MakeRandomPointOnSphere(GetRadius() + 700000);
-
-    //uint32 dist = BUBBLE_RADIUS_METERS + 10000/*m_self->GetAttribute(AttrMoonAnchorDistance).get_long()*/;
-    float radius = GetRadius();
-    float rad = EvE::Trig::Deg2Rad(25);
-
-    pos.x += radius + 700000.0f * std::sin(rad);
-    pos.z += radius + 700000.0f * std::cos(rad);
-    pos.y += MakeRandomInt(-1000, 1000);
-
     ItemData idata(typeID, data.ownerID, m_system->GetID(), flagAutoFit, 1, itoa(m_self->itemID()), false);
     StructureItemRef iRef = sItemFactory.SpawnStructure(idata);
-    iRef->SetPosition(pos);
+    // get warpInPoint for planet
+    int32 radius(GetRadius());
+    GPoint warpInPoint(GetPosition());
+    srandom(GetID());  //this is the only place random() is used....other random functions use rand() as it's non-repeatable.
+    int rand = random();
+    double j = (((rand / RAND_MAX) - 1.0f) / 3.0f);
+    double s = 20 * std::pow(0.025f * (10 * std::log10(radius / 1000000) - 39), 20) + 0.5f;
+    s = EvE::max(0.5f, EvE::min(s, 10.5f));
+    double t = std::asin((warpInPoint.x / std::fabs(warpInPoint.x)) * (warpInPoint.z / std::sqrt(std::pow(warpInPoint.x, 2) + std::pow(warpInPoint.z, 2)))) + j;
+    uint32 d = radius * (s + 1) + 1000000;
+    warpInPoint.x += (d * std::sin(t));
+    warpInPoint.y += (0.5f * radius * std::sin(j));
+    warpInPoint.z -= (d * std::cos(t));
+
+    // set new position in middle of grid
+    int64 bubbleDia(BUBBLE_RADIUS_METERS * 2);
+    int64 xGrid(floor(warpInPoint.x / bubbleDia));
+    int64 yGrid(floor(warpInPoint.y / bubbleDia));
+    int64 zGrid(floor(warpInPoint.z / bubbleDia));
+    warpInPoint.x = (xGrid * bubbleDia + BUBBLE_RADIUS_METERS);
+    warpInPoint.y = (yGrid * bubbleDia + BUBBLE_RADIUS_METERS);
+    warpInPoint.z = (zGrid * bubbleDia + BUBBLE_RADIUS_METERS);
+
+    iRef->Move(GetLocationID(), flagAutoFit, true);
     iRef->ChangeSingleton(true, false);
+    iRef->SetPosition(warpInPoint);
     iRef->SaveItem();
-    pCO = new CustomsSE(iRef, m_services, m_system, data);
+    pCO = new CustomsSE(iRef, GetServices(), m_system, data);
     pCO->Init();
     m_system->AddEntity(pCO);
 }
 
-
-void PlanetSE::CreateSHData() {
-    // Parameters (edit as needed)
-    const int num_samples = 450;
-    const double amplitude = 175.0;
-    const double frequency = 5.0; // Hz
-    const double sampling_rate = 225.0; // samples per second
-    const double phase = 0.0;
-
-    // Generate samples (float32)
-    std::vector<float> samples(num_samples);
-    for (int i = 0; i < num_samples; ++i) {
-        double t = static_cast<double>(i) / sampling_rate;
-        samples[i] = static_cast<float>(amplitude * std::sin(2.0 * M_PI * frequency * t + phase));
-    }
-/*
-    std::stringstream hex_stream;
-    hex_stream << std::hex << std::setfill('0');
-    const unsigned char* byte_data = reinterpret_cast<const unsigned char*>(samples);
-    size_t total_bytes = samples.size() * sizeof(float);
-
-    for (uint16 i=0; i < total_bytes; ++i)
-        hex_stream << std::setw(2) << static_cast<unsigned int>(byte_data[i]);
-*/
-
-}

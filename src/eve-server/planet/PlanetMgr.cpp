@@ -143,7 +143,8 @@ bool PlanetMgr::CreatePin(UUNCommand& nc)
                 return true;
             }
             m_colony->CreateCommandPin(uunccc.pinID, uunccc.typeID, uunccc.latitude, uunccc.longitude);
-            if (m_planet->GetCustomsOffice() == nullptr)
+            // create customs office if not exist 
+            if (!m_planet->HasCOSE())
                 m_planet->CreateCustomsOffice();
             return false;
         } break;

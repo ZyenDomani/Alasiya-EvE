@@ -76,9 +76,6 @@ protected:
     PlanetResourceData          m_data;
 
 private:
-    // create full SphericalHarmonic data for all bands on this planet
-    void CreateSHData();
-
     std::map<uint16, std::string> m_typeBuffers;
 
     /* map of charID, Colony* for this planet.

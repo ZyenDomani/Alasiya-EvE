@@ -52,14 +52,15 @@ m_system(system)
 
     m_oData.planetID = atoi(m_self->customInfo().c_str());
     m_planetSE = m_system->GetPlanet(m_oData.planetID)->GetPlanetSE();
+    m_planetSE->SetCustomsOffice(this);
 
     sRef->SetMySE(this);
 
+    _log(PLANET__TRACE, "Created CustomsSE for item %s (%u).", sRef->name(), sRef->itemID());
     _log(SE__DEBUG, "Created CustomsSE for item %s (%u).", sRef->name(), sRef->itemID());
 }
 
-void CustomsSE::Init()
-{
+void CustomsSE::Init() {
     // load data.
     m_cData.itemID = m_self->itemID();
 
@@ -73,6 +74,7 @@ void CustomsSE::Init()
     m_self->SetAttribute(AttrIsGlobal, EvilOne, false);
 
     // this should be based on state/status
+    //NOTE:  can also be reinforced <25% shield
     m_self->SetFlag(flagStructureActive);
 }
 

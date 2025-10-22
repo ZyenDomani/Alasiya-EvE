@@ -29,7 +29,7 @@
 #include <unordered_map>
 #include "system/SystemEntity.h"
 
-static const uint32 BUBBLE_RADIUS_METERS = 300000;       // EVE retail uses 250km and allows grid manipulation  NOTE:  this is based on testing for best results.  -allan
+static const uint32 BUBBLE_RADIUS_METERS = 250000;       // EVE retail uses 250km and allows grid manipulation  NOTE:  this is based on testing for best results.  -allan
 static const uint32 BUBBLE_HYSTERESIS_METERS = 5000;     // How far out of the existing bubble a ship needs to fly before being placed into a new or different bubble
 
 class SystemBubble;

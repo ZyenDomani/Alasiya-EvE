@@ -169,6 +169,9 @@ void Colony::Load()
         return;
     }
 
+    if (!m_pSE->HasCOSE())
+        m_pSE->CreateCustomsOffice();
+
     m_db.LoadPins(m_colonyID, ccPin->pins);
     m_db.LoadLinks(m_colonyID, ccPin->links);
     m_db.LoadRoutes(m_colonyID, ccPin->routes);

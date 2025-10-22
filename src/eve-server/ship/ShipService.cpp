@@ -31,6 +31,7 @@
 #include "npc/Drone.h"
 #include "planet/CustomsOffice.h"
 #include "planet/Moon.h"
+#include <planet/Planet.h>
 #include "pos/Structure.h"
 #include "ship/ShipService.h"
 #include "system/Container.h"
@@ -935,18 +936,47 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                 itr = args.ints.erase(itr);
             } break;
             case EVEDB::invCategories::Orbitals: {
-                throw CustomError("Item is not working at this time");
+                throw CustomError("Cannot add POCO at this time");
                 return nullptr;
                 sRef = sItemFactory.GetStructureRef(*itr);
                 if (sRef.get() == nullptr)
                     throw CustomError("Unable to spawn Structure item of type %u.", sRef->typeID());
 
-		// m_system->GetClosestPlanetSE(GetPosition())->GetPlanetSE();
+                // get planet
+                PlanetSE* pPlanet = pSysMgr->GetClosestPlanetSE(location)->GetPlanetSE();
+                // verify distance
+                uint32 distance(pPlanet->GetPosition().distance(sRef->position()));
+                // TODO:  distance check here...must be <100k?   100k - radius - ship < 25k?
+                // set planet in CO data
+                sRef->SetCustomInfo(std::to_string(pPlanet->GetID()).c_str());
+                // get warpInPoint for planet
+                int32 radius(pPlanet->GetRadius());
+                GPoint warpInPoint(pPlanet->GetPosition());
+                srandom(pPlanet->GetID());  //this is the only place random() is used....other random functions use rand() as it's non-repeatable.
+                int rand = random();
+                double j = (((rand / RAND_MAX) - 1.0f) / 3.0f);
+                double s = 20 * std::pow(0.025f * (10 * std::log10(radius / 1000000) - 39), 20) + 0.5f;
+                s = EvE::max(0.5f, EvE::min(s, 10.5f));
+                double t = std::asin((warpInPoint.x / std::fabs(warpInPoint.x)) * (warpInPoint.z / std::sqrt(std::pow(warpInPoint.x, 2) + std::pow(warpInPoint.z, 2)))) + j;
+                uint32 d = radius * (s + 1) + 1000000;
+                warpInPoint.x += (d * std::sin(t));
+                warpInPoint.y += (0.5f * radius * std::sin(j));
+                warpInPoint.z -= (d * std::cos(t));
+
+                // set new position in middle of grid
+                int64 bubbleDia(BUBBLE_RADIUS_METERS * 2);
+                int64 xGrid(floor(warpInPoint.x / bubbleDia));
+                int64 yGrid(floor(warpInPoint.y / bubbleDia));
+                int64 zGrid(floor(warpInPoint.z / bubbleDia));
+                warpInPoint.x = (xGrid * bubbleDia + BUBBLE_RADIUS_METERS);
+                warpInPoint.y = (yGrid * bubbleDia + BUBBLE_RADIUS_METERS);
+                warpInPoint.z = (zGrid * bubbleDia + BUBBLE_RADIUS_METERS);
+
                 sRef->Move(pClient->GetLocationID(), flagAutoFit, true);
-                CustomsSE* sSE(new CustomsSE(sRef, *m_manager, pSysMgr, data));
-                location.MakeRandomPointOnSphere(1500.0 + sRef->type().radius());
-                sSE->SetPosition(location);
+                sRef->ChangeSingleton(true, false);
+                sRef->SetPosition(warpInPoint);
                 sRef->SaveItem();
+                CustomsSE* sSE(new CustomsSE(sRef, *m_manager, pSysMgr, data));
                 pSysMgr->AddEntity(sSE);
                 pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
                 itr = args.ints.erase(itr);
