@@ -74,7 +74,7 @@ public:
     void SetStandingOwnerID(bool set)                   { m_tdata.standingOwnerID = set; }
     void SetPassword(std::string pass)                  { m_tdata.password = pass; }
 
-    bool HasForceField()                                { return (m_hasShield? true : false); }
+    bool HasForceField()                                { return (m_pShieldSE != nullptr); }
     bool GetStatusDrop()                                { return m_tdata.statusDrop; }
     bool GetCorpWar()                                   { return m_tdata.corpWar; }
     float GetStanding()                                 { return m_tdata.standing; }
@@ -90,7 +90,7 @@ public:
 
     uint16 GetSOI()                                     { return m_soi; }
 
-    inline void AddModule(StructureSE* pSE)             { m_structs.emplace(pSE->GetID(), pSE); }
+    inline void AddModule(StructureSE* pSE)             { m_structs[pSE->GetID()] = pSE); }
     inline void RemoveModule(StructureSE* pSE)          { m_structs.erase(pSE->GetID()); }
 
     // structure update methods
@@ -123,8 +123,6 @@ protected:
 
 private:
     void CreateForceField();
-
-    bool m_hasShield;
 
     int8 m_tsize;   // tower size: small, med, large
 
