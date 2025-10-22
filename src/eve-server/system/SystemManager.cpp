@@ -1113,10 +1113,10 @@ StationItemRef SystemManager::GetStationFromInventory(uint32 stationID) {
     return StationItemRef::StaticCast( m_solarSystemRef->GetMyInventory()->GetByID( stationID ) );
 }
 
-SystemEntity* SystemManager::GetPlanet(uint32 planetID) {
+PlanetSE* SystemManager::GetPlanet(uint32 planetID) {
     std::map<uint32, SystemEntity*>::iterator itr = m_planetMap.find(planetID);
     if (itr != m_planetMap.end())
-        return itr->second;
+        return itr->second->GetPlanetSE();
     return nullptr;
 }
 
@@ -1130,34 +1130,34 @@ uint32 SystemManager::GetClosestPlanetID(const GPoint& myPos) {
     return itr->second->GetID();
 }
 
-SystemEntity* SystemManager::GetClosestPlanetSE(const GPoint& myPos) {
+PlanetSE* SystemManager::GetClosestPlanetSE(const GPoint& myPos) {
     std::map<double, SystemEntity*> sorted;
     for (auto &cur : m_planetMap)
         sorted.insert(std::pair<double, SystemEntity*>(myPos.distance(cur.second->GetPosition()), cur.second));
 
     std::map<double, SystemEntity*>::iterator itr = sorted.begin();
 
-    return itr->second;
+    return itr->second->GetPlanetSE();
 }
 
-SystemEntity* SystemManager::GetClosestGateSE(const GPoint& myPos) {
+GateSE* SystemManager::GetClosestGateSE(const GPoint& myPos) {
     std::map<double, SystemEntity*> sorted;
     for (auto &cur : m_gateMap)
         sorted.insert(std::pair<double, SystemEntity*>(myPos.distance(cur.second->GetPosition()), cur.second));
 
     std::map<double, SystemEntity*>::iterator itr = sorted.begin();
 
-    return itr->second;
+    return itr->second->GetGateSE();
 }
 
-SystemEntity* SystemManager::GetClosestMoonSE(const GPoint& myPos) {
+MoonSE* SystemManager::GetClosestMoonSE(const GPoint& myPos) {
     std::map<double, SystemEntity*> sorted;
     for (auto &cur : m_moonMap)
         sorted.insert(std::pair<double, SystemEntity*>(myPos.distance(cur.second->GetPosition()), cur.second));
 
     std::map<double, SystemEntity*>::iterator itr = sorted.begin();
 
-    return itr->second;
+    return itr->second->GetMoonSE();
 }
 
 void SystemManager::GetClientList(std::vector< Client* >& cVec) {
