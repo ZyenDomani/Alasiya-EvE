@@ -37,7 +37,7 @@ public:
     //virtual bool                isGlobal()              { return true; }
 
     /* SystemEntity interface */
-    virtual void                Process();
+    //virtual void                Process();
     virtual void                EncodeDestiny(Buffer& into);
     virtual PyDict*             MakeSlimItem();
 
