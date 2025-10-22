@@ -57,7 +57,7 @@ bool PlanetDB::LoadPlanetResourceData(uint32 planetID, PlanetResourceData& data)
     }
 
     // no data, no error, just return
-    if (res.ColumnCount() < 1)
+    if (res.GetRowCount() < 1)
         return false;
 
     DBResultRow row;
