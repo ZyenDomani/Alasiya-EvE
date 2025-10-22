@@ -169,12 +169,6 @@ void CustomsSE::InitData()
     _log(POS__MESSAGE, "CustomsSE::InitData() - Pitch: rise: %0.5f, run: %0.5f, angle: %0.5f (%0.3f)", y, hyp, pitch, m_oData.rotation.y);
 }
 
-void CustomsSE::Process() {
-    /* called by EntityMgr::Process on every loop */
-    /*   Base call to Process Movement  */
-    SystemEntity::Process();
-}
-
 PyRep* CustomsSE::GetSettingsInfo()
 {   //self.selectedHour, self.taxRateValues, self.standingValue, self.allowAlliance, self.allowStandings = self.orbitalData
     /*
