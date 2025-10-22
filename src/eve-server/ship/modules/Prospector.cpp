@@ -71,7 +71,8 @@ void Prospector::Activate(uint16 effectID, uint32 targetID, int16 repeat)
         return;
     }
     m_accessChance = m_targetSE->GetSelf()->GetAttribute(AttrAccessDifficulty).get_int();
-    // are there any modifiers for access here?
+    m_accessChance += GetAttribute(AttrAccessDifficultyBonus).get_int();
+    // are there any other modifiers for access here?
     //  are rigs/skills added to module access chance?
 }
 
@@ -147,14 +148,11 @@ void Prospector::SendFailure()
 
 void Prospector::CheckSuccess()
 {
-    int8 chance = m_accessChance;
-    chance += GetAttribute(AttrAccessDifficultyBonus).get_int();
-
     uint8 roll = MakeRandomUInt();
-    if (roll < chance)
+    if (roll < m_accessChance)
         m_success = true;
 
-    _log(MODULE__DEBUG, "Prospector::CheckSuccess - chance: %i, roll: %u, success: %s", chance, roll, (m_success ? "true" : "false"));
+    _log(MODULE__DEBUG, "Prospector::CheckSuccess - chance: %i, roll: %u, success: %s", m_accessChance, roll, (m_success ? "true" : "false"));
 }
 
 void Prospector::DropSalvage() {
