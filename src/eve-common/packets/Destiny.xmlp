@@ -363,7 +363,7 @@ DST_WARPEXIT = 11
             <int name="repeat" />
             <!-- 12: startTime -->
             <long name="startTime" />
-            <!-- 13: graphicInfo or None  - not sure what this is yet.  -->
+            <!-- 13: turretID, boosterID or None  - turretID for fired weapons, boosterID for prop mods, none for neither.  -->
             <raw name="graphicInfo" />
         </tupleInline>
       </tupleInline>
