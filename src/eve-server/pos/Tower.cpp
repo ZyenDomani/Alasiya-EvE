@@ -1,4 +1,3 @@
-
 /**
  * @name Tower.cpp
  *   Class for POS Towers.
@@ -37,8 +36,8 @@
  * flagStructureInactive           = 145,
  * AttrProximityRange = 154,
  * AttrFalloff = 158,
- * AttrMaxStructureDistance = 650,
- * AttrDecloakFieldRange = 651,
+ * AttrMaxStructureDistance = 650,  /The distance that structures have to be from a control tower in order to work with it.
+ * AttrDecloakFieldRange = 651,  //Range of broadcasted decloaking field.
  * AttrOperationConsumptionRate = 687,
  * AttrReinforcedConsumptionRate = 688,
  * AttrResourceReinforced1Type = 694,
@@ -60,34 +59,35 @@
  * AttrPlanetAnchorDistance = 865,
  * AttrControlTowerSize = 1031,
  * AttrAnchoringSecurityLevelMax = 1032,
- * AttrAnchoringRequiresSovereignty = 1033,
- * AttrControlTowerMinimumDistance = 1165,
- * AttrPosPlayerControlStructure = 1167,
+ * AttrAnchoringRequiresSovereignty = 1033,          //Only enforced if the security level is 0.4 or less.
+ * AttrControlTowerMinimumDistance = 1165,           //Minimum distance where a starbase structure can be anchored at from the control tower shield extremity in meters.
+ * AttrPosPlayerControlStructure = 1167,             //If a starbase structure has this attribute = 1 then it can be controlled by owners with infrastructure tactical officer skill and corp role.
  * AttrIsIncapacitated = 1168,
- A ttrStructureArmorRepairAmount = 1170,              //typeID 27*676
- AttrStructureShieldRepairAmount = 1171,             //typeID 27676
- AttrStructureArmorBoostValue = 1172,                // not used
- AttrStructureShieldBoostValue = 1173,               // not used
+ * AttrStructureArmorRepairAmount = 1170,              //typeID 27676
+ * AttrStructureShieldRepairAmount = 1171,             //typeID 27676
+ * AttrStructureArmorBoostValue = 1172,                // not used
+ * AttrStructureShieldBoostValue = 1173,               // not used
  * AttrPosStructureControlAmount = 1174,
  * AttrOnliningRequiresSovereigntyLevel = 1185,
- * AttrPosAnchoredPerSolarSystemAmount = 1195,
+ * AttrPosAnchoredPerSolarSystemAmount = 1195,         //How many structures in this group can be anchored for the same alliance per solar system.  0 means there is no limit.
  * AttrPosStructureControlDistanceMax = 1214,
- * AttrAnchoringRequiresSovereigntyLevel = 1215,
- AttrAnchorDistanceMin = 1590,
- AttrAnchorDistanceMax = 1591,
+ * AttrAnchoringRequiresSovereigntyLevel = 1215,       //**not in my dump**
+ * AttrAnchorDistanceMin = 1590,                  //The minimum distance the object can be anchored, "from what" depends on the object.
+ * AttrAnchorDistanceMax = 1591,                  //The minimum distance the object can be anchored, "from what" depends on the object.
+ 
  * AttrHarvesterType = 709,
  * AttrHarvesterQuality = 710,
- * AttrMoonAnchorDistance = 711,
+ * AttrMoonAnchorDistance = 711,        //How many meters from the standard warp-in distance a moon can be anchored from.
  * AttrUsageDamagePercent = 712,
  * AttrConsumptionType = 713,
  * AttrConsumptionQuantity = 714,
  * AttrMaxOperationalDistance = 715,    for sma, hangar, etc
  * AttrMaxOperationalUsers = 716,    for sma, hangar, etc
- * AttrRefiningYieldMultiplier = 717,
- * AttrOperationalDuration = 719,
+ * AttrRefiningYieldMultiplier = 717,   //The factor by which the structure modifies the using pilot's refining yield rate.
+ * AttrOperationalDuration = 719,   //The amount of time that is taken to refine the ore into the end product.  The structure is busy for the length of this process.
  * AttrRefineryCapacity = 720,
- * AttrRefiningDelayMultiplier = 721,
- * AttrPosControlTowerPeriod = 722,
+ * AttrRefiningDelayMultiplier = 721,     //The factor by which the character can effect the amount of time that the Refining Delay takes.
+ * AttrPosControlTowerPeriod = 722,                  //The interval for fuel consumption of a control tower
  * AttrMoonMiningAmount = 726,
  * AttrControlTowerLaserDamageBonus = 728,
  * AttrControlTowerLaserOptimalBonus = 750,
@@ -101,18 +101,18 @@
  * AttrControlTowerLaserProximityRangeBonus = 760,
  * AttrControlTowerProjectileProximityRangeBonus = 761,
  * AttrControlTowerHybridProximityRangeBonus = 762,
- * AttrMaxGroupActive = 763,
+ * AttrMaxGroupActive = 763,  //Maximum modules of same group that can be activated at same time, 0 = no limit, 1 = 1
  * AttrControlTowerEwRofBonus = 764,
- * AttrScanRange = 765,
+ * AttrScanRange = 765,   //Effective range of scanner in multiples of AUs
  * AttrControlTowerHybridDamageBonus = 766,
  * AttrTrackingSpeedBonus = 767,
  * AttrMaxRangeBonus2 = 769,
- * AttrControlTowerEwTargetSwitchDelayBonus = 770,
+ * AttrControlTowerEwTargetSwitchDelayBonus = 770,  //Bonus attribute to entity Target Switch Delay
  * AttrAmmoCapacity = 771,
- * AttrActivationBlocked = 1349,
+ * AttrActivationBlocked = 1349,  //Used for blocking activation of modules
  * AttrActivationBlockedStrenght = 1350,
- * AttrPosCargobayAcceptType = 1351,
- * AttrPosCargobayAcceptGroup = 1352,
+ * AttrPosCargobayAcceptType = 1351,  //cargo typeID allowed in structures
+ * AttrPosCargobayAcceptGroup = 1352,  //cargo bay container group ID
  */
 
 TowerSE::TowerSE(StructureItemRef structure, PyServiceMgr& services, SystemManager* system, const FactionData& fData)
