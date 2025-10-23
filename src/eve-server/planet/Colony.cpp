@@ -1263,7 +1263,9 @@ PyTuple* Colony::GetPins()
 
         if (cur.second.isECU) {
             if (cur.second.installTime > 0) {
-                dict->SetItem("cycleTime", new PyFloat((float)cur.second.cycleTime / EvE::Time::Hour));
+				//TODO:  test this....
+                //dict->SetItem("cycleTime", new PyFloat((float)cur.second.cycleTime / EvE::Time::Hour));
+                dict->SetItem("cycleTime", new PyLong(cur.second.cycleTime));
                 dict->SetItem("expiryTime", new PyLong(cur.second.expiryTime));
                 dict->SetItem("headRadius", new PyFloat(cur.second.headRadius));
                 dict->SetItem("installTime", new PyLong(cur.second.installTime));
