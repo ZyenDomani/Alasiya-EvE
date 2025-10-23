@@ -39,16 +39,15 @@
 
 CustomsSE::CustomsSE(StructureItemRef sRef, PyServiceMgr &services, SystemManager* system, const FactionData& data)
 : ObjectSystemEntity(sRef, services, system),
-m_system(system)
+m_system(system),
+// zero-init data
+m_cData(EVEPOS::CustomsData()),
+m_oData(EVEPOS::OrbitalData())
 {
     m_warID = data.factionID;
     m_allyID = data.allianceID;
     m_corpID = data.corporationID;
     m_ownerID = data.ownerID;
-
-    // zero-init data
-    m_cData = EVEPOS::CustomsData();
-    m_oData = EVEPOS::OrbitalData();
 
     m_oData.planetID = atoi(m_self->customInfo().c_str());
     m_planetSE = m_system->GetPlanet(m_oData.planetID)->GetPlanetSE();
@@ -71,8 +70,6 @@ void CustomsSE::Init() {
         m_db.SaveCustomsData(m_cData, m_oData);
     }
 
-    m_self->SetAttribute(AttrIsGlobal, EvilOne, false);
-
     // this should be based on state/status
     //NOTE:  can also be reinforced <25% shield
     m_self->SetFlag(flagStructureActive);
@@ -89,18 +86,17 @@ void CustomsSE::InitData()
     m_cData.ownerID = m_self->ownerID();
     m_cData.selectedHour = 0;
     m_cData.standingValue = EVEPOS::StandingValues::StandingNeutral;
+    m_cData.taxRateValues[EVEPOS::TaxValues::Corp]              = 0.05f;
+    m_cData.taxRateValues[EVEPOS::TaxValues::Alliance]          = 0.07f;
+    m_cData.taxRateValues[EVEPOS::TaxValues::StandingHorrible]  = 0.20f;
+    m_cData.taxRateValues[EVEPOS::TaxValues::StandingBad]       = 0.10f;
+    m_cData.taxRateValues[EVEPOS::TaxValues::StandingNeutral]   = 0.08f;
+    m_cData.taxRateValues[EVEPOS::TaxValues::StandingGood]      = 0.05f;
+    m_cData.taxRateValues[EVEPOS::TaxValues::StandingHigh]      = 0.02f;
+    
     m_oData.level = 1;   //{1-CUSTOMSOFFICE_SPACEPORT, 2-CUSTOMSOFFICE_SPACEELEVATOR}   this is for display model
     m_oData.standingOwnerID = m_cData.ownerID;
 
-    std::map<uint8, float> taxRateValues;
-        taxRateValues[EVEPOS::TaxValues::Corp]              = 0.05f;
-        taxRateValues[EVEPOS::TaxValues::Alliance]          = 0.07f;
-        taxRateValues[EVEPOS::TaxValues::StandingHorrible]  = 0.20f;
-        taxRateValues[EVEPOS::TaxValues::StandingBad]       = 0.10f;
-        taxRateValues[EVEPOS::TaxValues::StandingNeutral]   = 0.08f;
-        taxRateValues[EVEPOS::TaxValues::StandingGood]      = 0.05f;
-        taxRateValues[EVEPOS::TaxValues::StandingHigh]      = 0.02f;
-    m_cData.taxRateValues = taxRateValues;
 /*positionRowHeader = blue.DBRowDescriptor((('itemID', const.DBTYPE_I8),
          ('x', const.DBTYPE_R5),
          ('y', const.DBTYPE_R5),
@@ -148,16 +144,6 @@ void CustomsSE::InitData()
 */
     if (y > 0)
         pitch *= -1;
-
-    /*
-     *
-     *   Real: 15.280822
-     *
-     *
-     *
-     *
-     *
-     */
 
     // convert from radians to degrees
     m_oData.rotation.x = EvE::Trig::Rad2Deg(yaw);
