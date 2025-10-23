@@ -61,7 +61,7 @@ public:
         //client->AddBindID(GetBoundID());
     }
 
-    PyTuple* GetOID() const                             { return mOID; }
+    PyTuple* GetOID() const                             { PyIncRef(mOID); return mOID; }
 
 protected:
     friend class PyServiceMgr;    //for access to _SetNodeBindID only.
