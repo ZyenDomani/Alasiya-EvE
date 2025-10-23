@@ -32,25 +32,30 @@ public:
     WormholeMgr();
     ~WormholeMgr();
 
-    void Initialize(PyServiceMgr* svc);
+    void Initialize();
     void Process();
 
-    void Create(CosmicSignature& sig);
+    void Create(CosmicSignature& sig, uint32 exitSystemID=0, uint32 exitSourceItemID=0);
     // this will create a k162 and send data to anomalyMgr for inclusion
-    void CreateExit(SystemManager* pFromSys, SystemManager* pToSys);
+    void CreateExit(SystemManager* pFromSys, SystemManager* pToSys, uint32 sourceItemID);
+    void CreateExit(SystemManager* pFromSys, uint32 exitSystemID, uint32 sourceItemID);
 
 private:
-    //ManagerDB* m_mdb;
-    //ServiceDB* m_sdb;
-    PyServiceMgr* m_services;
+    ManagerDB* m_mdb;
+    ServiceDB* m_sdb;
 
     Timer m_updateTimer;
 
     bool m_initalized;
 
+    // Generic functions used when managing wormholes
+    const ItemType* GetRandomWormholeType(uint32 systemID);
+    uint32 GetRandomDestination(const ItemType* typeID);
+
     // as system matures, this will definitely need to be updated
     std::vector<uint32>         m_wormholes;   //exitID
 };
+
 
 //Singleton
 #define sWHMgr \
