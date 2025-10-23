@@ -1051,14 +1051,10 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
 
         // item can be jettisoned.  check if container was already created
         if ((ccRef.get() == nullptr) and (jcRef.get() == nullptr)) {
-            if (!pClient->IsJetcanAvalible()) {
-                std::string msg = "A Jettison Container is currently being prepped in your cargo hold. \n";
-                msg += "Your estimated wait time is ";
-                msg += std::to_string(pClient->JetcanTime());
-                msg += " seconds.";
-                pClient->SendNotifyMsg(msg.c_str());
-                return tuple;
-            }
+            if (!pClient->IsJetcanAvalible())
+                throw UserError("ShpJettisonPending")
+                    .AddTimeShort("eta", pClient->JetcanTime() * EvE::Time::Second);
+				
             // Spawn jetcan then continue loop
             location.MakeRandomPointOnSphere(500.0);
             ItemData p_idata(
@@ -1088,14 +1084,14 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                 pClient->MoveItem(cur, ccRef->itemID(), flagAutoFit);
             } else {
                 _log(ITEM__WARNING, "%s: CargoContainer %u is full.", pClient->GetName(), ccRef->itemID());
-                throw CustomError("Your Cargo Container is full.  Some items were not transferred.");
+                throw UserError("NotAllItemsWereMoved");
             }
         } else if (jcRef.get() != nullptr) {
             if (jcRef->GetMyInventory()->HasAvailableSpace(flagAutoFit, iRef)) {
                 pClient->MoveItem(cur, jcRef->itemID(), flagAutoFit);
             } else {
                 _log(ITEM__WARNING, "%s: Jetcan %u is full.", pClient->GetName(), jcRef->itemID());
-                throw CustomError("Your jetcan is full.  Some items were not transferred.");
+                throw UserError("NotAllItemsWereMoved");
             }
         } else {
             _log(ITEM__ERROR, "Jettison call for %s - no CC or Jcan.", pClient->GetName());
