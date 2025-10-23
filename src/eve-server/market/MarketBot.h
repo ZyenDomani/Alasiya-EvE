@@ -26,6 +26,19 @@ public:
     void Init();
     void Process();
 
+ // ---marketbot changes
+    int PlaceBuyOrders(uint32 systemID);
+    int PlaceSellOrders(uint32 systemID);
+    int ExpireOldOrders();
+
+    std::vector<uint32> GetEligibleSystems();
+    uint32 SelectRandomItemID();
+    uint32 GetRandomQuantity(uint32 groupID);
+    double CalculateBuyPrice(uint32 itemID);
+    double CalculateSellPrice(uint32 itemID);
+
+    void ForceRun(bool resetTimer = true); // debug command to force MarketBot to run first cycle to generate NPC buy and sell orders.
+
 private:
     bool m_initalized;
 };
