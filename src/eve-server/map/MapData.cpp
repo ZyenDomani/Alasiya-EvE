@@ -477,10 +477,12 @@ void MapData::GetMissionDestination(Agent* pAgent, MissionOffer& offer) {
         sLog.Error("MapData::GetMissionDestination(sysList)", "sysList empty for systemID %u.", systemID);
     }
 
+    uint8 idx(0);
     uint8 count(0);
     while (run) {
         run = false;
-        systemID = sysList.at(MakeRandomUInt(0, (sysList.size() - 1)));
+        idx = MakeRandomUInt(0, (sysList.size() - 1);
+        systemID = sysList.at(idx));
         if (station and (sDataMgr.GetStationCount(systemID) < 1)) {
             run = true;
             ++count;
@@ -489,6 +491,10 @@ void MapData::GetMissionDestination(Agent* pAgent, MissionOffer& offer) {
             // problem....no station found within one jump
             offer.destinationID = pAgent->GetStationID();
             sLog.Error("MapData::GetMissionDestination(run)", "no station found within 1 jump of systemID %u.", systemID);
+            run = false;
+        } else {
+            // If we have searched a system already then do not try it again
+            sysList.erase(sysList.begin() + idx); 
         }
     }
 
