@@ -279,13 +279,11 @@ void TargetManager::ClearTarget(SystemEntity *tSE) {
 }
 
 void TargetManager::ClearModules() {
-    auto cur = m_modules.begin();
-    auto end = m_modules.end();
-
+    auto itr = m_modules.begin();
     ActiveModule* module(nullptr);
-    while (cur != end) {
-        module = cur->second;
-        cur = m_modules.erase(cur);
+    while (itr != m_modules.end()) {
+        module = itr->second;
+        itr = m_modules.erase(cur);
         module->AbortCycle();
     }
 }
