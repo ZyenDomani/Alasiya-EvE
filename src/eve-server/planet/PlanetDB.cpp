@@ -563,9 +563,9 @@ void PlanetDB::UpdatePins(uint32 pinID, PI_CCPin* ccPin)
         if (itr != ccPin->pins.end()) {
             first = false;
             Inserts << " VALUES ";
-            Inserts << "(" << ccPin->ccPinID << ", " << itr->first << ", "<< itr->second.schematicID << ", " << itr->second.programType;
+            Inserts << "(" << ccPin->ccPinID << ", " << itr->first << ", " << itr->second.schematicID << ", " << itr->second.programType;
             Inserts << ", " << itr->second.lastLaunchTime << ", " << itr->second.cycleTime << ", " << itr->second.installTime;
-            Inserts  << ", " << itr->second.lastRunTime << ", " << itr->second.receivedInputsLastCycle << ", " << itr->second.hasReceivedInputs << ")";
+            Inserts << ", " << itr->second.lastRunTime << ", " << itr->second.receivedInputsLastCycle << ", " << itr->second.hasReceivedInputs << ")";
         }
     } else {
         for (auto &cur : ccPin->pins) {
@@ -575,7 +575,7 @@ void PlanetDB::UpdatePins(uint32 pinID, PI_CCPin* ccPin)
             } else {
                 Inserts << ", ";
             }
-            Inserts << "(" << ccPin->ccPinID << ", " << cur.first << ", "<< cur.second.schematicID << ", " << cur.second.programType;
+            Inserts << "(" << ccPin->ccPinID << ", " << cur.first << ", " << cur.second.schematicID << ", " << cur.second.programType;
             Inserts << ", " << cur.second.lastLaunchTime << ", " << cur.second.cycleTime << ", " << cur.second.installTime;
             Inserts << ", " << cur.second.lastRunTime << ", " << cur.second.receivedInputsLastCycle << ", " << cur.second.hasReceivedInputs << ")";
         }
@@ -584,9 +584,9 @@ void PlanetDB::UpdatePins(uint32 pinID, PI_CCPin* ccPin)
     if (!first) {
         // finish creating the command.
         Inserts << " ON DUPLICATE KEY UPDATE ";
-        Inserts << " schematicID=VALUES(schematicID), ";
-        Inserts << " programType=VALUES(programType), ";
-        Inserts << " launchTime=VALUES(launchTime), ";
+        Inserts << " schematicID=VALUES(schematicID),";
+        Inserts << " programType=VALUES(programType),";
+        Inserts << " launchTime=VALUES(launchTime),";
         Inserts << " cycleTime=VALUES(cycleTime),";
         Inserts << " installTime=VALUES(installTime),";
         Inserts << " lastRunTime=VALUES(lastRunTime),";
