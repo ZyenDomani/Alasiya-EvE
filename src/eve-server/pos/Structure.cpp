@@ -164,12 +164,11 @@ void StructureItem::AddItem(InventoryItemRef iRef)
     if (iRef.get() == nullptr)
         return;
 
-    // test for item types and verify flags here...
-
-    InventoryItem::AddItem(iRef);
-
+    // test for item types and verify flags here...will throw if fail
     if (mySE->IsCOSE())
         mySE->GetCOSE()->VerifyAddItem(iRef);
+
+    InventoryItem::AddItem(iRef);
 }
 
 void StructureItem::RemoveItem(InventoryItemRef iRef)
@@ -181,7 +180,7 @@ void StructureItem::RemoveItem(InventoryItemRef iRef)
 }
 
 void StructureItem::Rename(std::string name) {
-    if (mySE->GetPOSSE()->GetState() > EVEPOS::StructureState::Unanchored) {
+    if (mySE->IsPOSSE() and mySE->GetPOSSE()->GetState() > EVEPOS::StructureState::Unanchored) {
         InventoryItem::Rename(std::move(name));
         mySE->GetPOSSE()->SendSlimUpdate();
     } else {
