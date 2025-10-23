@@ -178,8 +178,11 @@ PyResult CorpRegistryBound::Handle_GetEveOwners(PyCallArgs &call) {
 PyResult CorpRegistryBound::Handle_GetInfoWindowDataForChar( PyCallArgs& call )
 {    //takes characterID
     //  returns corpID, allianceID, title
-    // should this be cached instead of db hit?
-    return CharacterDB::GetInfoWindowDataForChar(call.client->GetCharacterID());
+    Call_SingleIntegerArg args;
+    if (!args.Decode (call.tuple))
+        return CharacterDB::GetInfoWindowDataForChar(call.client->GetCharacterID ());
+
+    return CharacterDB::GetInfoWindowDataForChar(args.arg);
 }
 
 PyResult CorpRegistryBound::Handle_GetCorporation(PyCallArgs &call) {
