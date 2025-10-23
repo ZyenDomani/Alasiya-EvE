@@ -202,9 +202,13 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
 
         sRamMthd.HangarRolesCheck(call.client, args.flag);
     }
-
+    
+    uint32 full(0); 
+    uint32 qtyLeft(0);
+    uint32 quantity(0);
+    float efficiency(0.0f);
     InventoryItemRef iRef(nullptr);
-    double tax = CalcTax(GetStanding(call.client));
+    float tax(CalcTax(GetStanding(call.client)));
     for (auto &cur : args.items)  {
         iRef = sItemFactory.GetItemRef(cur);
         if (iRef.get() == nullptr)
@@ -216,11 +220,11 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
         if (!m_db.GetRecoverables(iRef->typeID(), recoverables))
             continue;
 
-        float efficiency = CalcReprocessingEfficiency( call.client, iRef );
+        efficiency = CalcReprocessingEfficiency(call.client, iRef);
         std::vector<Recoverable>::iterator itr = recoverables.begin();
         for (; itr != recoverables.end(); ++itr) {
-            uint32 full = itr->amountPerBatch * iRef->quantity() / iRef->type().portionSize();
-            uint32 quantity(floor(full * efficiency * (1.0f - tax)));
+            full = static_cast<uint32>(floor(itr->amountPerBatch * iRef->quantity() / iRef->type().portionSize()));
+            quantity = static_cast<uint32>(floor(full * efficiency * (1.0f - tax)));
             if (quantity == 0)
                 continue;
 
@@ -233,7 +237,7 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
             iRef2->Move(m_stationRef->GetID(), (EVEItemFlags)args.flag, true);
         }
 
-        uint32 qtyLeft = iRef->quantity() % iRef->type().portionSize();
+        qtyLeft = iRef->quantity() % iRef->type().portionSize();
         if (qtyLeft) {
             iRef->SetQuantity(qtyLeft, true);
         } else {
@@ -256,12 +260,12 @@ float ReprocessingServiceBound::CalcReprocessingEfficiency(const Client* pClient
     */
     /** @todo  check for implants here ... once they're working  */
     CharacterRef cRef = pClient->GetChar();
-    double efficiency =  (0.375f
+    float efficiency =  (0.375f
                         * (1 + (0.02f * cRef->GetSkillLevel(EvESkill::Refining)))             // 2% lvl
                         * (1 + (0.04f * cRef->GetSkillLevel(EvESkill::RefineryEfficiency)))); // 4% lvl
 
     if (item.get() != nullptr) {
-        uint32 specificSkill = item->GetAttribute(AttrReprocessingSkillType).get_uint32();
+        uint32 specificSkill(item->GetAttribute(AttrReprocessingSkillType).get_uint32());
         if (specificSkill) {
             efficiency *= (1 + 0.05f * cRef->GetSkillLevel(specificSkill));
         } else {
@@ -285,7 +289,7 @@ PyRep *ReprocessingServiceBound::GetQuote(uint32 itemID, Client* pClient) {
     // update this for corp items
     if (iRef->ownerID() == pClient->GetCorporationID()) {
         /** @todo update this for item location - need to verify corp roles are being set correctly  */
-        int64 roles = pClient->GetRolesAtAll();
+        int64 roles(pClient->GetRolesAtAll());
         //roles = pClient->GetRolesAtBase() | pClient->GetRolesAtAll();
         //roles = pClient->GetRolesAtHQ() | pClient->GetRolesAtAll();
         //roles = pClient->GetRolesAtOther() | pClient->GetRolesAtAll();
@@ -320,15 +324,16 @@ PyRep *ReprocessingServiceBound::GetQuote(uint32 itemID, Client* pClient) {
     quote.quantityToProcess = iRef->quantity() - quote.leftOvers;
     quote.playerStanding = GetStanding(pClient);
 
-    double tax = CalcTax(quote.playerStanding);
-    double efficiency = CalcReprocessingEfficiency(pClient, iRef);
-
-    for (auto &cur :recoverables) {
-        uint32 ratio = cur.amountPerBatch * quote.quantityToProcess / iRef->type().portionSize();
+    float tax(CalcTax(quote.playerStanding));
+    float efficiency(CalcReprocessingEfficiency(pClient, iRef));
+    
+    uint32 ratio(1);
+    for (auto &cur : recoverables) {
+        ratio = static_cast<uint32>(floor(cur.amountPerBatch * quote.quantityToProcess / iRef->type().portionSize()));
         Rsp_GetQuote_Recoverables_Line line;
             line.typeID		= cur.typeID;
-            line.client		= uint32(efficiency * (1.0f - tax)   * ratio);
-            line.station	= uint32(efficiency * tax            * ratio);
+            line.client		= static_cast<uint32>(floor(efficiency * (1.0f - tax) * ratio));
+            line.station	= static_cast<uint32>(floor(efficiency * tax * ratio));
             line.unrecoverable	= ratio - line.client - line.station;
         quote.lines->AddItem( line.Encode() );
     }
