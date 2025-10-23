@@ -195,13 +195,16 @@ void SystemEntity::DropLoot(WreckContainerRef wreckRef, uint32 groupID, uint32 o
     std::vector<LootList>::iterator itr = lootList.begin();
     while (itr != lootList.end()) {
         if (itr->minDrop == itr->maxDrop) {
-            quantity = itr->minDrop;
+            quantity = itr->maxDrop;
         } else {
             quantity = MakeRandomUInt(itr->minDrop, itr->maxDrop);
         }
 
-        if (quantity > 1)
+        if (quantity < 1) {
+            continue;
+        } else {
             quantity *= secModX10;
+        }
 
         ItemData iLoot(itr->typeID, ownerID, wreckRef->itemID(), flagAutoFit, quantity);
         iRef = sItemFactory.SpawnItem(iLoot);
