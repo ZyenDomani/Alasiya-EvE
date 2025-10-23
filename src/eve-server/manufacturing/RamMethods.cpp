@@ -352,9 +352,9 @@ void RamMethods::MaterialSkillsCheck(Client* const pClient, uint32 runs, const P
                 .AddAmountI("skillLevel", cur.quantity);
             }
         } else {
-            uint32 qtyNeeded = ceil(cur.quantity * rsp.materialMultiplier * runs);
+            uint32 qtyNeeded = round(cur.quantity * rsp.materialMultiplier) * runs;
             if (cur.damagePerJob == 1)
-                qtyNeeded = ceil(qtyNeeded * rsp.charMaterialMultiplier);
+                qtyNeeded += round(cur.quantity * rsp.charMaterialMultiplier - cur.quantity) * runs;
             std::map<uint16, InventoryItemRef>::iterator itr = items.find(cur.typeID);
             if (itr != items.end())
                 if (itr->second->typeID() == cur.typeID) {
@@ -414,7 +414,7 @@ bool RamMethods::Calculate(const Call_InstallJob &args, BlueprintRef bpRef, Char
 
     // set char defaults
     into.charTimeMultiplier = 1.0f;
-    into.charMaterialMultiplier = 1.0f;
+    into.charMaterialMultiplier = EvE::max(1.0f, pChar->GetAttribute(AttrManufactureCostMultiplier).get_float());
 
     const ItemType* pType(nullptr);
     switch(args.activityID) {
@@ -503,11 +503,12 @@ void RamMethods::EncodeBillOfMaterials(const std::vector<EvERam::RequiredItem> &
             into.skills[cur.typeID] = new PyInt(cur.quantity);
             continue;
         }
-
+     
+int qtyNeeded = (uint32)round(cur.quantity * materialMultiplier + (cur.quantity * charMaterialMultiplier - cur.quantity)) * runs;
         // otherwise, make line for material list
         MaterialList_Line line;
         line.requiredTypeID = cur.typeID;
-        line.quantity = (int32)ceil(cur.quantity * materialMultiplier * runs);
+        line.quantity = (int32)round (cur.quantity * materialMultiplier) * runs;
         line.damagePerJob = cur.damagePerJob;
         line.isSkillCheck = false;  // no idea what is this for
         line.requiresHP = false;    // no idea what is this for
@@ -522,7 +523,7 @@ void RamMethods::EncodeBillOfMaterials(const std::vector<EvERam::RequiredItem> &
             // if there are losses, make line for waste material list
             if (charMaterialMultiplier > 1.0) {
                 MaterialList_Line wastage( line );  // simply copy original line ...
-                wastage.quantity = (int32)ceil(wastage.quantity * (charMaterialMultiplier - 1.0)); // ... and calculate proper quantity
+                wastage.quantity =  qtyNeeded - line.quantity;; // ... and calculate proper quantity
                 into.wasteMaterials.lines->AddItem( wastage.Encode() );
             }
             into.rawMaterials.lines->AddItem( line.Encode() );
