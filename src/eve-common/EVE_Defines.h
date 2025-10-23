@@ -202,10 +202,14 @@
 #define IsCharacterID(itemID) \
  ((itemID >= minCharacter) && (itemID <= maxCharacter))
 
+#define IsPlanetID(itemID) \
+ ((itemID >= minUniverseCelestial) && (itemID <= maxUniverseCelestial))
+
 #define IsValidLocationID(itemID) \
 ((IsSolarSystemID(itemID)) \
   or (IsRegionID(itemID)) \
   or (IsStationID(itemID)) \
+  or (IsPlanetID(itemID)) \
   or (IsPlayerItem(itemID)) \
   or (IsCharacterID(itemID)))
 

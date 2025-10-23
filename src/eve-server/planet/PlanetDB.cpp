@@ -48,7 +48,7 @@ bool PlanetDB::LoadPlanetResourceData(uint32 planetID, PlanetResourceData& data)
     DBQueryResult res;
 
     if (!sDatabase.RunQuery(res, "SELECT Resource1, Resource2, Resource3, Resource4, Resource5,"
-            "Distributon1, Distributon2, Distributon3, Distributon4, Distributon5,"
+            " Distributon1, Distributon2, Distributon3, Distributon4, Distributon5,"
             " Buffer1, Buffer2, Buffer3, Buffer4, Buffer5"
             " FROM PlanetData"
             " WHERE PlanetID=%u", planetID)) {
@@ -88,15 +88,29 @@ bool PlanetDB::LoadPlanetResourceData(uint32 planetID, PlanetResourceData& data)
 void PlanetDB::SavePlanetResourceData(uint32 planetID, PlanetResourceData& data) {
     DBerror err;
     if (!sDatabase.RunQuery(err,
-            "UPDATE PlanetData"
-            " SET Resource1=%u,Resource2=%u,Resource3=%u,Resource4=%u,Resource5=%u,"
-            " Distributon1=%f,Distributon2=%f,Distributon3=%f,Distributon4=%f,Distributon5=%f,"
-            " Buffer1='%s',Buffer2='%s',Buffer3='%s',Buffer4='%s',Buffer5='%s'"
-            " WHERE PlanetID=%u",
-            data.type_1, data.type_2, data.type_3, data.type_4, data.type_5,
+        "INSERT INTO PlanetData "
+            " (PlanetID, Resource1,Resource2,Resource3,Resource4,Resource5,"
+            "Distributon1,Distributon2,Distributon3,Distributon4,Distributon5,"
+            "Buffer1,Buffer2,Buffer3,Buffer4,Buffer5)"
+            " VALUES"
+            " (%u,%u,%u,%u,%u,%u,"
+            "%f,%f,%f,%f,%f,"
+            "'%s','%s','%s','%s','%s')"
+            " ON DUPLICATE KEY UPDATE"
+            " Distributon1=VALUES(Distributon1),"
+            " Distributon2=VALUES(Distributon2),"
+            " Distributon3=VALUES(Distributon3),"
+            " Distributon4=VALUES(Distributon4),"
+            " Distributon5=VALUES(Distributon5),"
+            " Buffer1=VALUES(Buffer1),"
+            " Buffer2=VALUES(Buffer2),"
+            " Buffer3=VALUES(Buffer3),"
+            " Buffer4=VALUES(Buffer4),"
+            " Buffer5=VALUES(Buffer5);",
+            planetID, data.type_1, data.type_2, data.type_3, data.type_4, data.type_5,
             data.dist_1, data.dist_2, data.dist_3, data.dist_4, data.dist_5,
-            data.buffer_1.c_str(), data.buffer_2.c_str(), data.buffer_3.c_str(), data.buffer_4.c_str(), data.buffer_5.c_str(),
-            planetID))
+            data.buffer_1.c_str(), data.buffer_2.c_str(), data.buffer_3.c_str(), data.buffer_4.c_str(),
+            data.buffer_5.c_str()))
         _log(DATABASE__ERROR, "SavePlanetResourceData - Unable to update planetID %u : %s", planetID, err.GetError());
 }
 
@@ -500,10 +514,10 @@ void PlanetDB::SavePins(PI_CCPin* ccPin)
     Inserts << " (ccPinID, pinID, typeID, ownerID, level, latitude, longitude,";
     Inserts << " isCommandCenter, isLaunchable, isProcess, isStorage, isECU,";
     Inserts << " schematicID, programType, headRadius, launchTime,";
-    Inserts << " cycleTime, expiryTime, installTime, lastRunTime, qtyPerCycle)";
+    Inserts << " cycleTime, expiryTime, installTime, lastRunTime)";
     Inserts << " VALUES ";
     bool save(false);
-    uint32 ccPinID = ccPin->ccPinID;
+    uint32 ccPinID(ccPin->ccPinID);
     for (auto &cur : ccPin->pins) {
         if (save) {
             Inserts << ", ";
@@ -513,7 +527,7 @@ void PlanetDB::SavePins(PI_CCPin* ccPin)
         Inserts << "(" << ccPinID << ", " << cur.first << ", " << cur.second.typeID << ", " << cur.second.ownerID << ", " << cur.second.level << ", " << cur.second.latitude << ", " << cur.second.longitude << ", ";
         Inserts << cur.second.isCommandCenter << ", " << cur.second.isLaunchable << ", " << cur.second.isProcess << ", " << cur.second.isStorage <<", " << cur.second.isECU << ", ";
         Inserts << cur.second.schematicID << ", " << cur.second.programType << ", " << cur.second.headRadius << ", " << cur.second.lastLaunchTime;
-        Inserts << ", " << cur.second.cycleTime << ", " << cur.second.expiryTime << ", " << cur.second.installTime << ", " << cur.second.lastRunTime << ", " << cur.second.qtyPerCycle << ")";
+        Inserts << ", " << cur.second.cycleTime << ", " << cur.second.expiryTime << ", " << cur.second.installTime << ", " << cur.second.lastRunTime << ")";
     }
 
     if (save) {
@@ -527,7 +541,6 @@ void PlanetDB::SavePins(PI_CCPin* ccPin)
         Inserts << " expiryTime=VALUES(expiryTime), ";
         Inserts << " installTime=VALUES(installTime),";
         Inserts << " lastRunTime=VALUES(lastRunTime);";
-        Inserts << " qtyPerCycle=VALUES(qtyPerCycle);";
         // execute the command.
         DBerror err;
         if (!sDatabase.RunQuery(err, Inserts.str().c_str()))

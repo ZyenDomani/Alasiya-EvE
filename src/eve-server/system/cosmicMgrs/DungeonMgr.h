@@ -37,9 +37,6 @@ class DungeonDataMgr
 : public Singleton< DungeonDataMgr >
 {
 public:
-    DungeonDataMgr();
-    ~DungeonDataMgr()                                   { /* nothing do to yet */ }
-
     // Initializes the Table:
     int Initialize();
 
