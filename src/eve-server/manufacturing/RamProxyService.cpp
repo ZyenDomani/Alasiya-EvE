@@ -306,9 +306,6 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
     std::vector<EvERam::RequiredItem> reqItems;
     sDataMgr.GetRamRequiredItems(bpRef->typeID(), (int8)args.activityID, reqItems);
 
-    // verify installer has skills and all needed materials are present in proper location
-    sRamMthd.MaterialSkillsCheck(call.client, args.runs, bomLocPath, rsp, reqItems);
-
     // quoteOnly is sent for all jobs before installation to approve price and timeframe
     if (PyRep::IntegerValueU32(call.byname["quoteOnly"])) {
         _log(MANUF__INFO, "quoteOnly = true");
@@ -320,8 +317,11 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
         return rsp.Encode();
     }
 
-
     // at this point, it is a real job installation.  check everything else
+    
+    // verify installer has skills and all needed materials are present in proper location
+    sRamMthd.MaterialSkillsCheck(call.client, args.runs, bomLocPath, rsp, reqItems);
+    // check production times
     sRamMthd.ProductionTimeCheck(rsp.productionTime);
 
     if (bpRef->quantity() > 1) {
