@@ -975,8 +975,8 @@ void StaticDataMgr::GetLoot(float secValue, uint32 groupID, std::vector<LootList
 
     float randChance(0.0f);
     uint8 metaLevel(0);
-    uint8 secModX10(secValue * 10);   //[1, 20]
-    int8 secMod(secValue / 10); //[0.01, 0.2]
+    uint8 secModX10(static_cast<uint8>(secValue * 10));   //[1, 20]
+    float secMod(secValue / 10); //[0.01, 0.2]
     // modified chances for metaLevel checks - lower security = higher chance
     //  meta level 0                      0.50 - 0.70
     float one(0.5f + secMod);           //0.51 - 0.70
