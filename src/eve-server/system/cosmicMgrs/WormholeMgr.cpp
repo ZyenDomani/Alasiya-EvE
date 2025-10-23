@@ -107,67 +107,213 @@ void WormholeMgr::Create(CosmicSignature& sig)
      */
     sig.sigStrength = 0.1;
 
-    // create k162 here
-    sig.sigName = "WormHole K162";
-    GPoint pos(sig.position);
-    ItemData wData(30831, sig.ownerID, sig.systemID, flagAutoFit, sig.sigName.c_str(), pos);
-    InventoryItemRef iRef = InventoryItem::SpawnItem(sItemFactory.GetNextTempID(), wData);
-    if (iRef.get() == nullptr) // we'll survive...anomaly is temp item, so not worried about deleting it here.
-        return;
+    //Destination for non-exit wormholes
+    uint32 destSystem = 0; 
+    CelestialObjectRef iRef;
+
+    // For exit wormholes (k162)
+    if (exitSystemID != 0) {
+        GPoint pos(sig.position);
+        ItemData wData(30831, sig.ownerID, sig.systemID, flagNone, sig.sigName.c_str(), pos);
+        iRef = sItemFactory.SpawnWormhole(wData);
+        if (iRef.get() == nullptr)
+            return;
+
+        // Set the destination system attribute for the wormhole
+        // In this case, exitSystemID is the origin wormhole
+        iRef->SetAttribute(AttrWormholeTargetSystem1, exitSystemID);
+    // For all other kinds of wormholes
+    } else {
+        // decide which type of wormhole to create here
+        const ItemType* whType = GetRandomWormholeType(sig.systemID);
+        if (whType == nullptr)
+            _log(WORMHOLE_MGR__DEBUG, "WormholeMgr::Create() - Create Failure, SystemID not in Database %u", sig.systemID);
+            return;
+        destSystem = GetRandomDestination(whType);
+        // create wormhole here
+        sig.sigName = whType->name();
+        sig.sigTypeID = whType->id();
+
+        GPoint pos(sig.position);
+        ItemData wData(whType->id(), sig.ownerID, sig.systemID, flagNone, sig.sigName.c_str(), pos);
+
+        iRef = sItemFactory.SpawnWormhole(wData);
+        if (iRef.get() == nullptr)
+            return;
+
+        // Set the destination system attribute for the wormhole
+        iRef->SetAttribute(AttrWormholeTargetSystem1, destSystem);
+    }
 
     // verify system is loaded
-    SystemManager* pSysMgr = sEntityMgr.FindOrBootSystem(sig.systemID);
+    SystemManager* pSysMgr = sEntityList.FindOrBootSystem(sig.systemID);
     if (pSysMgr == nullptr) {
-        _log(COSMIC_MGR__ERROR, "WormholeMgr::Create() - Boot failure for system %u", sig.systemID);
+        _log(WORMHOLE_MGR__DEBUG, "WormholeMgr::Create() - Boot failure for system %u", sig.systemID);
         return;
     }
 
-    CelestialSE* wSE = new CelestialSE(iRef, *(pSysMgr->GetServiceMgr()), pSysMgr);
-    if (wSE == nullptr) {
-        _log(COSMIC_MGR__ERROR, "WormholeMgr::Create() - SE Create failure for %s(%u)", iRef->name(), iRef->itemID());
-        return;
-    }
     // set itemID to return to anomaly mgr after creation succeeds
     sig.sigItemID = iRef->itemID();
+    if (exitSystemID != 0) {
+        // Set exit wormhole's attributes so it can find its' entrance
+        iRef->SetAttribute(AttrWormholeTargetSystem1, exitSourceItemID);
+        // Set source wormhole's attributes so it can find its' exit
+        CelestialObjectRef sRef;
+        sRef = sItemFactory.GetCelestialRef(exitSourceItemID);
+        sRef->SetAttribute(AttrWormholeTargetSystem2, sig.sigItemID);
+        sRef->SaveItem();
+        // Set exit wormhole's attributes based upon source wormhole's attributes
+        iRef->SetAttribute(AttrWormholeMassRegeneration, sRef->GetAttribute(AttrWormholeMassRegeneration).get_int());
+        iRef->SetAttribute(AttrWormholeTargetSystemClass, sDataMgr.GetWHSystemClass(exitSystemID));
+        iRef->SetAttribute(AttrWormholeMaxStableTime, sRef->GetAttribute(AttrWormholeMaxStableTime).get_int());
+        iRef->SetAttribute(AttrWormholeMaxStableMass, sRef->GetAttribute(AttrWormholeMaxStableMass).get_int());
+        iRef->SetAttribute(AttrWormholeMaxJumpMass, sRef->GetAttribute(AttrWormholeMaxJumpMass).get_int());
+    }
+    iRef->SaveItem();
+
+    // Reload entity from factory
+    WormholeSE* wSE = new WormholeSE(iRef, pSysMgr->GetServiceMgr(), pSysMgr);
+    if (wSE == nullptr) {
+        _log(WORMHOLE_MGR__DEBUG, "WormholeMgr::Create() - SE Create failure for %s(%u)", iRef->name(), iRef->itemID());
+        return;
+    }
+
     // add wormhole to system (signal added to AnomalyMgr on successful return)
     pSysMgr->AddEntity(wSE, false);
     sig.bubbleID = wSE->SysBubble()->GetID();
-    // add exit to vector
+    // add wormhole to vector
     m_wormholes.push_back(iRef->itemID());
 
-    _log(COSMIC_MGR__TRACE, "WormholeMgr::Create() - Created %s in %s(%u) with %.3f%% sigStrength.", \
+    // Call CreateExit() to create an exit wormhole (only if Create() was not called for an exit already)
+    if (exitSystemID == 0) {
+        if (sEntityList.IsSystemLoaded(destSystem)) {
+            SystemManager* pToSys = sEntityList.FindOrBootSystem(destSystem);
+            if (pSysMgr == nullptr) {
+                _log(WORMHOLE_MGR__DEBUG, "WormholeMgr::Create() - Boot failure for system %u", destSystem);
+                return;
+            }
+            CreateExit(pSysMgr, pToSys, sig.sigItemID);
+        } else {
+            CreateExit(pSysMgr, destSystem, sig.sigItemID);
+        }
+    }
+
+    _log(WORMHOLE_MGR__DEBUG, "WormholeMgr::Create() - Created %s in %s(%u) with %.3f%% sigStrength.", \
             iRef->name(), pSysMgr->GetName(), sig.systemID, sig.sigStrength *100);
+
 }
 
-void WormholeMgr::CreateExit(SystemManager* pFromSys, SystemManager* pToSys)
+// Create exit for loaded systems
+void WormholeMgr::CreateExit(SystemManager* pFromSys, SystemManager* pToSys, uint32 sourceItemID)
 {
     // compile data for exit
     CosmicSignature sig = CosmicSignature();
-    /*
-    sig.sigID = sEntityMgr.GetAnomalyID();
+    
+    sig.sigID = sEntityList.GetAnomalyID();
     sig.systemID = pToSys->GetID();
     sig.dungeonType = Dungeon::Type::Wormhole;
 
     sig.sigItemID = 0;
-    sig.sigName = "WormHole K162 ";
+    sig.sigName = "Wormhole K162 ";
     //default to 1/80
     sig.sigStrength = 0.0125;
+    sig.sigTypeID = 30831;
+    sig.sigGroupID = EVEDB::invGroups::Wormhole;
+    sig.scanGroupID = Scanning::Group::Signature;
+    sig.scanAttributeID = AttrScanAllStrength;
+    sig.ownerID = 1;
 
-    // determine owner - default to sleeper drones.  may change later
-    sig.ownerID = factionSleeper;
-    if (MakeRandomFloat() > 0.1) // 10% chance to be rogue drones
-        sig.ownerID = sDataMgr.GetRegionRatFaction(pToSys->GetRegionID());
-
-    sig.position = m_gp.GetAnomalyPoint(pToSys);
+    sig.position = sMapData.GetAnomalyPoint(pToSys);
 
     // send data to Create() for processing
-    Create(sig);
-*/
-    _log(COSMIC_MGR__TRACE, "WormholeMgr::CreateExit() - Creating Exit from %s(%u) to %s(%u)", \
+    Create(sig, pFromSys->GetID());
+
+    // Register this exit wormhole with the destination's AnomalyMgr
+    pToSys->GetAnomMgr()->RegisterExitWH(sig);
+
+    _log(WORMHOLE_MGR__DEBUG, "WormholeMgr::CreateExit() - Creating Exit(loaded) from %s(%u) to %s(%u)", \
                 pFromSys->GetName(), pFromSys->GetID(), pToSys->GetName(), pToSys->GetID());
 }
 
+// Create exit for unloaded systems
+void WormholeMgr::CreateExit(SystemManager* pFromSys, uint32 exitSystemID, uint32 sourceItemID)
+{
+    // compile data for exit
+    CosmicSignature sig = CosmicSignature();
+    
+    sig.sigID = sEntityList.GetAnomalyID();
+    sig.systemID = exitSystemID;
+    sig.dungeonType = Dungeon::Type::Wormhole;
+
+    sig.sigName = "Wormhole K162 ";
+    //default to 1/80
+    sig.sigStrength = 0.0125;
+    sig.sigTypeID = 30831;
+    sig.sigGroupID = EVEDB::invGroups::Wormhole;
+    sig.scanGroupID = Scanning::Group::Signature;
+    sig.scanAttributeID = AttrScanAllStrength;
+    sig.ownerID = 1;
+    sig.position = sMapData.GetAnomalyPoint(exitSystemID);
+
+    CelestialObjectRef iRef;
+    CelestialObjectRef sRef;
+
+    GPoint pos(sig.position);
+    ItemData wData(30831, sig.ownerID, sig.systemID, flagNone, sig.sigName.c_str(), pos);
+    iRef = sItemFactory.SpawnWormhole(wData);
+    if (iRef.get() == nullptr)
+        return;
+    iRef->SetAttribute(AttrWormholeTargetSystem1, pFromSys->GetID());
+
+    // Set exit wormhole's attributes so it can find its' entrance
+    iRef->SetAttribute(AttrWormholeTargetSystem2, sourceItemID);
+    // Set exit wormhole's attributes based upon source wormhole's attributes
+    sRef = sItemFactory.GetCelestialRef( sourceItemID );
+    iRef->SetAttribute(AttrWormholeMassRegeneration, sRef->GetAttribute(AttrWormholeMassRegeneration).get_int());
+    iRef->SetAttribute(AttrWormholeTargetSystemClass, sDataMgr.GetWHSystemClass(exitSystemID));
+    iRef->SetAttribute(AttrWormholeMaxStableTime, sRef->GetAttribute(AttrWormholeMaxStableTime).get_int());
+    iRef->SetAttribute(AttrWormholeMaxStableMass, sRef->GetAttribute(AttrWormholeMaxStableMass).get_int());
+    iRef->SetAttribute(AttrWormholeMaxJumpMass, sRef->GetAttribute(AttrWormholeMaxJumpMass).get_int());
+    sig.sigItemID = iRef->itemID();
+    iRef->SaveItem();
+
+    // Set source wormhole's attributes so it can find its' exit
+    sRef->SetAttribute(AttrWormholeTargetSystem2, sig.sigItemID);
+    sRef->SaveItem();
+
+    // Save the exit wormhole signature to the database
+    m_mdb->SaveAnomaly(sig);
+
+    _log(WORMHOLE_MGR__DEBUG, "WormholeMgr::CreateExit() - Creating Exit(unloaded) from %s(%u) to system(%u)", \
+                pFromSys->GetName(), pFromSys->GetID(), exitSystemID);
+}
+
+// Pick a random type of wormhole to create based upon the class of the system in question
+const ItemType* WormholeMgr::GetRandomWormholeType(uint32 systemID) {
+    std::vector<uint32> destTypes = sDataMgr.GetWHDestinationTypes(sDataMgr.GetWHSystemClass(systemID));
+    if(destTypes.size()<1) {
+        return nullptr;
+    }
+    uint32 typeID = destTypes[MakeRandomInt(0,destTypes.size()-1)];
+    return sItemFactory.GetType(typeID);
+}
+
+// Pick a random destination of wormhole based upon its typeID
+uint32 WormholeMgr::GetRandomDestination(const ItemType* whType) {
+    uint8 targetClass = whType->GetAttribute(AttrWormholeTargetSystemClass).get_uint32();
+    std::vector<uint32> destSystems = sDataMgr.GetWHClassSystems(targetClass);
+    return destSystems[MakeRandomInt(0,destSystems.size()-1)];
+}
+
 //SELECT `locationID`, `wormholeClassID` FROM `mapLocationWormholeClasses`
+
+/* attributeID  attributeName   attributeCategory   attributeIdx    description     categoryID
+1381    wormholeTargetSystemClass   4   0   Target System Class for wormholes   7
+1382    wormholeMaxStableTime   5   0   The maximum amount of time a wormhole will stay open    7
+1383    wormholeMaxStableMass   5   0   The maximum amount of mass a wormhole can transit before collapsing     7
+1384    wormholeMassRegeneration    5   0   The amount of mass a wormhole regenerates per cycle     7
+1385    wormholeMaxJumpMass     5   0   The maximum amount of mass that can transit a wormhole in one go    7
+    */
 
 
 /** @todo  our db is missing data for these.  search newer db files for updated data  */
