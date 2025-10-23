@@ -603,7 +603,17 @@ uint32 ActiveModule::DoCycle() {
             }
         }
     }
+ 
+    // check if ship has sufficient capacitor capacity - if not, abort the cycle
+    if (m_modRef->HasAttribute(AttrCapacitorNeed)) {
+        if ((m_shipRef->GetAttribute(AttrCapacitorCharge).get_float() - GetAttribute(AttrCapacitorNeed).get_float()) < 0.1f) {
+            AbortCycle();
+            return 0;
+        }
 
+        m_shipRef->SetAttribute(AttrCapacitorCharge, newCap);
+        m_shipRef->SetShipCapacitorLevel(newCap / m_shipRef->GetAttribute(AttrCapacitorCapacity).get_float());
+    }
     // not sure if this is entirely accurate...wip
     switch (m_modRef->groupID()) {
         case EVEDB::invGroups::Projectile_Weapon:
@@ -880,13 +890,7 @@ void ActiveModule::ProcessActiveCycle() {
         return;
     }
 
-    float newCap = (m_shipRef->GetAttribute(AttrCapacitorCharge).get_float() - GetAttribute(AttrCapacitorNeed)).get_float();
-    if (newCap >= 0 ) {
-        m_shipRef->SetAttribute(AttrCapacitorCharge, newCap);
-        SetTimer(DoCycle());
-    } else {
-        AbortCycle();
-    }
+    SetTimer(DoCycle());
 }
 
 void ActiveModule::SetTimer(uint32 time) {
@@ -1103,7 +1107,19 @@ void ActiveModule::ReprocessCharge() {
 bool ActiveModule::CanActivate() {
     // there is still more to be done here.  wip
     //  modules that require specific tests are coded in their module class, which will call this if their specific checks pass
-
+ 
+    if (m_modRef->HasAttribute(AttrCapacitorNeed)) {
+        float remainingCapacitorCharge = m_shipRef->GetAttribute(AttrCapacitorCharge).get_float();
+        float requiredCapacitorCharge = GetAttribute(AttrCapacitorNeed).get_float();
+        float newCap = remainingCapacitorCharge - requiredCapacitorCharge;
+        // check if ship has sufficient capacitor capacity
+        if (newCap < 0) {
+            m_shipRef->GetPilot()->SendNotifyMsg("This module requires %.0f GJ, but your capacitor only has %.0f GJ remaining.", \
+                    requiredCapacitorCharge, remainingCapacitorCharge);
+            return false;
+        }
+    }
+ 
     // Check for (13) modules which consume items.
     if (m_modRef->HasAttribute(AttrConsumptionType)) {
         uint16 typeID(m_modRef->GetAttribute(AttrConsumptionType).get_uint32()); // cast uint32 to uint16
