@@ -324,7 +324,7 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
         data.jumps = 1;     // not sure if this is used....
 
         // create buy order
-        uint32 orderID(m_db.StoreOrder(data));
+        uint32 orderID(MarketDB::StoreOrder(data));
         if (orderID == 0) {
             _log(MARKET__ERROR, "PlaceCharOrder - Failed to record buy order in the DB.");
             call.client->SendErrorMsg("Failed to record the order.");
@@ -498,7 +498,7 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
         data.jumps = 1;     // not sure if this is used....
 
         //store the order in the DB.
-        uint32 orderID = m_db.StoreOrder(data);
+        uint32 orderID(MarketDB::StoreOrder(data));
         if (orderID == 0) {
             _log(MARKET__ERROR, "PlaceCharOrder - Failed to record sell order in the DB.");
             call.client->SendErrorMsg("Failed to record the order in the DB!");
@@ -614,7 +614,7 @@ PyResult MarketProxyService::Handle_CancelCharOrder(PyCallArgs &call) {
     }
 
     PyRep* order(m_db.GetOrderRow(args.orderID));
-    if (!m_db.DeleteOrder(args.orderID)) {
+    if (!MarketDB::DeleteOrder(args.orderID)) {
         _log(MARKET__ERROR, "CancelCharOrder - Failed to delete order #%i.", args.orderID);
         PySafeDecRef(order);
         return nullptr;

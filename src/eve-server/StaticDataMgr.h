@@ -183,6 +183,7 @@ public:
     // get specific hauler type for spawn
     uint16              GetHaulerTypeID(uint32 faction, uint8 level);
 
+    bool                GetStationListForSystem(uint32 systemID, std::vector<uint32>& stations) const;
 
 protected:
     void                Populate();

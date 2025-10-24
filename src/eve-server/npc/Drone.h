@@ -36,7 +36,6 @@
  */
 
 class PyServiceMgr;
-class Item;
 class DestinyManager;
 class SystemManager;
 class ServiceDB;

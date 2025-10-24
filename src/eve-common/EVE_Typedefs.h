@@ -15,6 +15,95 @@ typedef EVEDB::invGroups::invGroups EVEItemGroups;
 #include "tables/invTypes.h"
 typedef EVEDB::invTypes::invTypes EVEItemTypes;
 
+//TODO:  work on putting these in namespaces
+
+namespace Item {
+    namespace Wormhole {
+        enum {
+             Z971   = 30579,
+             R943   = 30583,
+             X702   = 30584,
+             O128   = 30642,
+             N432   = 30643,
+             M555   = 30644,
+             B041   = 30645,
+             U319   = 30646,
+             B449   = 30647,
+             N944   = 30648,
+             S199   = 30649,
+             A641   = 30657,
+             R051   = 30658,
+             V283   = 30659,
+             H121   = 30660,
+             C125   = 30661,
+             O883   = 30662,
+             M609   = 30663,
+             L614   = 30664,
+             S804   = 30665,
+             N110   = 30666,
+             J244   = 30667,
+             Z060   = 30668,
+             Z647   = 30671,
+             D382   = 30672,
+             O477   = 30673,
+             Y683   = 30674,
+             N062   = 30675,
+             R474   = 30676,
+             B274   = 30677,
+             A239   = 30678,
+             E545   = 30679,
+             V301   = 30680,
+             I182   = 30681,
+             N968   = 30682,
+             T405   = 30683,
+             N770   = 30684,
+             A982   = 30685,
+             S047   = 30686,
+             U210   = 30687,
+             K346   = 30688,
+             P060   = 30689,
+             N766   = 30690,
+             C247   = 30691,
+             X877   = 30692,
+             H900   = 30693,
+             U574   = 30694,
+             D845   = 30695,
+             N290   = 30696,
+             K329   = 30697,
+             Y790   = 30698,
+             D364   = 30699,
+             M267   = 30700,
+             E175   = 30701,
+             H296   = 30702,
+             V753   = 30703,
+             D792   = 30704,
+             C140   = 30705,
+             Z142   = 30706,
+             Q317   = 30707,
+             G024   = 30708,
+             L477   = 30709,
+             Z457   = 30710,
+             V911   = 30711,
+             W237   = 30712,
+             B520   = 30713,
+             C391   = 30714,
+             C248   = 30715,
+             K162   = 30831,
+            Violent = 32386,
+            Stable  = 32387
+        };
+    }
+
+    namespace Type {
+        enum {
+            JetCan              = 23,
+            Credits             = 29,
+            Trit                = 34,
+            CivilianMiner       = 3651,
+            TypeBillboard       = 11136
+        };
+    }
+}
 
 //List of eve item types which have special purposes in the game.
 typedef enum {

@@ -481,8 +481,8 @@ void MapData::GetMissionDestination(Agent* pAgent, MissionOffer& offer) {
     uint8 count(0);
     while (run) {
         run = false;
-        idx = MakeRandomUInt(0, (sysList.size() - 1);
-        systemID = sysList.at(idx));
+        idx = MakeRandomUInt(0, (sysList.size() - 1));
+        systemID = sysList.at(idx);
         if (station and (sDataMgr.GetStationCount(systemID) < 1)) {
             run = true;
             ++count;
@@ -494,7 +494,7 @@ void MapData::GetMissionDestination(Agent* pAgent, MissionOffer& offer) {
             run = false;
         } else {
             // If we have searched a system already then do not try it again
-            sysList.erase(sysList.begin() + idx); 
+            sysList.erase(sysList.begin() + idx);
         }
     }
 

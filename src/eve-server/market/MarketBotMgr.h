@@ -12,6 +12,11 @@
 #ifndef EVEMU_MARKET_MARKETBOTMGR_H_
 #define EVEMU_MARKET_MARKETBOTMGR_H_
 
+#include <chrono>
+
+using Clock = std::chrono::steady_clock;
+using TimePoint = std::chrono::time_point<Clock>;
+
 
 #include "eve-compat.h"
 #include "eve-common.h"
@@ -43,13 +48,29 @@ public:
     ~MarketBotMgr() { /* do nothing here */ }
 
     int Initialize();
-    void Process();
+
+    void Process(bool overrideTimer=false);
 
     void AddSystem();
     void RemoveSystem();
 
+    int ExpireOldOrders();
+
+    int PlaceBuyOrders(uint32 systemID);
+    int PlaceSellOrders(uint32 systemID);
+
+    std::vector<uint32> GetEligibleSystems();
+
+    uint32 SelectRandomItemID();
+    uint32 GetRandomQuantity(uint32 groupID);
+    double CalculateBuyPrice(uint32 itemID);
+    double CalculateSellPrice(uint32 itemID);
+
+    void ForceRun(bool resetTimer);
+
 private:
-    Timer m_updateTimer;
+    //Timer m_updateTimer;
+    TimePoint m_nextRunTime;
 
     bool m_initalized;
 };

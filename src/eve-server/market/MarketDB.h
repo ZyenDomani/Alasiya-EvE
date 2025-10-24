@@ -49,7 +49,9 @@ public:
 
     PyRep* GetTransactions(uint32 ownerID, Market::TxData &data);
 
-    bool DeleteOrder(uint32 orderID);
+    static bool DeleteOrder(uint32 orderID);
+    static uint32 StoreOrder(Market::SaveData& data);
+
     bool GetOrderInfo(uint32 orderID, Market::OrderInfo &oInfo);
     bool AlterOrderPrice(int32 orderID, double new_price);
     bool RecordTransaction(Market::TxData &data);
@@ -57,12 +59,10 @@ public:
 
     uint32 FindBuyOrder(Call_PlaceCharOrder &call);
     uint32 FindSellOrder(Call_PlaceCharOrder &call);
-    uint32 StoreOrder(Market::SaveData& data);
-
 
     static PyRep* GetNewPriceHistory(uint32 regionID, uint16 typeID, int64 m_timeStamp);
     static PyRep* GetOldPriceHistory(uint32 regionID, uint16 typeID, int64 m_timeStamp);
-    
+
 
     /* for base price estimator */
     static void GetShipIDs(std::map<uint16, Inv::TypeData>& data);

@@ -578,7 +578,7 @@ uint32 ActiveModule::DoCycle() {
 
     // Check for (13) modules which consume items per-cycle (they only consume single type)
     if (m_modRef->HasAttribute(AttrConsumptionType)) {
-        uint16 typeID(m_modRef->GetAttribute(AttrConsumptionType).get_uint32()); // cast uint32 to uint16
+        uint16 typeID(m_modRef->GetAttribute(AttrConsumptionType).get_uint32());
         uint32 qtyNeed(m_modRef->GetAttribute(AttrConsumptionQuantity).get_uint32());
         // verify character has require amount of consumption type available
         if (!m_shipRef->GetMyInventory()->ContainsTypeQtyByFlag(typeID, EVEItemFlags::flagCargoHold, qtyNeed)) {
@@ -603,16 +603,17 @@ uint32 ActiveModule::DoCycle() {
             }
         }
     }
- 
+
     // check if ship has sufficient capacitor capacity - if not, abort the cycle
     if (m_modRef->HasAttribute(AttrCapacitorNeed)) {
-        if ((m_shipRef->GetAttribute(AttrCapacitorCharge).get_float() - GetAttribute(AttrCapacitorNeed).get_float()) < 0.1f) {
+        float newCap(m_shipRef->GetAttribute(AttrCapacitorCharge).get_float());
+        newCap -= GetAttribute(AttrCapacitorNeed).get_float();
+        if (newCap < 0.1f) {
             AbortCycle();
             return 0;
         }
 
         m_shipRef->SetAttribute(AttrCapacitorCharge, newCap);
-        m_shipRef->SetShipCapacitorLevel(newCap / m_shipRef->GetAttribute(AttrCapacitorCapacity).get_float());
     }
     // not sure if this is entirely accurate...wip
     switch (m_modRef->groupID()) {
@@ -1107,7 +1108,7 @@ void ActiveModule::ReprocessCharge() {
 bool ActiveModule::CanActivate() {
     // there is still more to be done here.  wip
     //  modules that require specific tests are coded in their module class, which will call this if their specific checks pass
- 
+
     if (m_modRef->HasAttribute(AttrCapacitorNeed)) {
         float remainingCapacitorCharge = m_shipRef->GetAttribute(AttrCapacitorCharge).get_float();
         float requiredCapacitorCharge = GetAttribute(AttrCapacitorNeed).get_float();
@@ -1119,7 +1120,7 @@ bool ActiveModule::CanActivate() {
             return false;
         }
     }
- 
+
     // Check for (13) modules which consume items.
     if (m_modRef->HasAttribute(AttrConsumptionType)) {
         uint16 typeID(m_modRef->GetAttribute(AttrConsumptionType).get_uint32()); // cast uint32 to uint16

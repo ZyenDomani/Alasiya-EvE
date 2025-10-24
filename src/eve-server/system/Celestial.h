@@ -176,7 +176,7 @@ namespace WormHole {
     }
 
     namespace Size {
-        // these are fuzzy logic
+        // these are fuzzy logic (x/10)
         enum {
             Full = 10,
             Reduced = 5,

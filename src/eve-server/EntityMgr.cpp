@@ -37,7 +37,7 @@
 #include "exploration/Probes.h"
 #include "map/MapDB.h"
 #include "market/MarketMgr.h"
-//#include "market/MarketBotMgr.h"
+#include "market/MarketBotMgr.h"
 #include "missions/MissionDataMgr.h"
 #include "station/Station.h"
 #include "system/DestinyManager.h"
@@ -275,7 +275,7 @@ void EntityMgr::Process() {
                     cur.second->UpdateData();   // update active system timers and dynamic data every 5m
             }
             if (m_minutes % 15 == 0) { // ~15m
-                //sMktBotMgr.Process();  // 15m to 30m
+                sMktBotMgr.Process();  // 15m to 30m
                 sConsole.UpdateStatus();
             }
             if (m_minutes % 60 == 0) { // ~1h

@@ -22,9 +22,9 @@
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/ManagerDB.h"
 
+#include "../eve-common/EVE_Agent.h"
 #include "../eve-common/EVE_Character.h"
 #include "../eve-common/EVE_POS.h"
-#include <EVE_Agent.h>
 
 /*
  * DATA__ERROR          # specific "data not found but should be there" msgs
@@ -2579,4 +2579,15 @@ void StaticDataMgr::AddOutpost(StationData &stData)
     // Update m_stationSystem
     if (m_stationSystem.find(stData.stationID) == m_stationSystem.end())
         m_stationSystem.emplace(stData.stationID, stData.systemID);
+}
+
+//  marketbot shit
+bool StaticDataMgr::GetStationListForSystem(uint32 systemID, std::vector<uint32>& stations) const {
+    auto itr = m_stationList.find(systemID);
+    if (itr != m_stationList.end()) {
+        stations = itr->second;
+        return true;
+    }
+
+    return false;
 }

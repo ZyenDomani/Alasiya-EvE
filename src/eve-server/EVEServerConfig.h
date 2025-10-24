@@ -268,6 +268,8 @@ public:
         std::string cacheDir;
         // used as the base directory for the image server
         std::string imageDir;
+        // path to TraderJoe settings 
+        std::string marketBotSettings;
     } files;
 
     // From <net>

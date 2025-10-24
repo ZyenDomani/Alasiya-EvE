@@ -776,7 +776,7 @@ int main( int argc, char* argv[] )
         sLog.Green(" Wormhole Manager", "Wormhole Manager Enabled.");
         /* create the WormholeMgr singleton */
         sLog.Green("       ServerInit", "Starting Wormhole Manager");
-        sWHMgr.Initialize(&pyServMgr);
+        sWHMgr.Initialize();
     } else {
         sLog.Warning(" Wormhole Manager", "Wormhole Manager Disabled.");
     }
