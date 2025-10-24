@@ -50,7 +50,7 @@ m_oData(EVEPOS::OrbitalData())
     m_ownerID = data.ownerID;
 
     m_oData.planetID = atoi(m_self->customInfo().c_str());
-    m_planetSE = m_system->GetPlanet(m_oData.planetID)->GetPlanetSE();
+    m_planetSE = m_system->GetPlanet(m_oData.planetID);
     m_planetSE->SetCustomsOffice(this);
 
     sRef->SetMySE(this);
@@ -93,7 +93,7 @@ void CustomsSE::InitData()
     m_cData.taxRateValues[EVEPOS::TaxValues::StandingNeutral]   = 0.08f;
     m_cData.taxRateValues[EVEPOS::TaxValues::StandingGood]      = 0.05f;
     m_cData.taxRateValues[EVEPOS::TaxValues::StandingHigh]      = 0.02f;
-    
+
     m_oData.level = 1;   //{1-CUSTOMSOFFICE_SPACEPORT, 2-CUSTOMSOFFICE_SPACEELEVATOR}   this is for display model
     m_oData.standingOwnerID = m_cData.ownerID;
 

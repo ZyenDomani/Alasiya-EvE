@@ -203,10 +203,7 @@ PyResult PlanetMgrBound::Handle_GetPlanetInfo(PyCallArgs &call) {
     _log(PLANET__DEBUG, "PlanetMgrBound::Handle_GetPlanetInfo() size=%lu", call.tuple->size() );
     call.Dump(PLANET__DUMP);
 
-    PyRep* res = m_planet->GetPlanetInfo(m_colony);
-        res->Dump(PLANET__RES_DUMP, "    ");
-
-    return res;
+    return m_planet->GetPlanetInfo(m_colony);
 }
 
 PyResult PlanetMgrBound::Handle_GetExtractorsForPlanet(PyCallArgs &call) {

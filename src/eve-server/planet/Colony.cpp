@@ -125,7 +125,7 @@ m_colonyID(0),
 m_procTime(0)			// process check.  init to zero and stores last proc time, which is lastRunTime in command center
 {
 	assert(m_pSE != nullptr);
-	
+
     _log(COLONY__DEBUG, "Colony::Colony() c'tor called for %s(%u) by %s(%u)", pSE->GetName(), pSE->GetID(), pClient->GetName(), pClient->GetCharacterID());
 }
 
@@ -224,8 +224,8 @@ void Colony::Process()
         //  this is part of clever code to avoid db hits on every update.
         //  this method will check for updated contents and save to db as needed.
         std::map<uint32, PI_Pin>::iterator itr;
-        for (auto &cur : ccPin->pins)
-			// has this pin's data been updated since last save?
+        for (auto &cur : ccPin->pins) {
+            // has this pin's data been updated since last save?
             if (cur.second.update) {
                 m_db.RemoveContents(cur.first);
                 m_db.SavePinContents(m_colonyID, cur.first, cur.second.contents);
@@ -244,6 +244,7 @@ void Colony::Process()
                     }
                 }
             }
+        }
 
         m_db.UpdatePins(0, ccPin);
         m_toUpdate = false;
@@ -365,12 +366,12 @@ void Colony::AbandonColony()
 void Colony::CreateCommandPin(uint32 itemID, uint32 typeID, double latitude, double longitude) {
     m_colonyID = itemID;
     ccPin->ccPinID = itemID;
-    m_db.SaveCommandCenter(itemID, m_client->GetCharacterID(), m_pSE->GetID(), typeID, latitude, longitude);
-    m_db.AddPlanetForChar(m_pSE->SystemMgr()->GetID(), m_pSE->GetID(), m_client->GetCharacterID(), m_colonyID, m_pSE->GetTypeID());
     ccPin->level = PI::Pin::Level0;
     m_procTime = GetFileTimeNow();
     CreatePin(EVEDB::invGroups::Command_Centers, itemID, typeID, latitude, longitude);
-    m_db.SavePins(ccPin);
+    m_db.SaveCommandCenter(itemID, m_client->GetCharacterID(), m_pSE->GetID(), typeID, latitude, longitude);
+    m_db.AddPlanetForChar(m_pSE->SystemMgr()->GetID(), m_pSE->GetID(), m_client->GetCharacterID(), m_colonyID, m_pSE->GetTypeID());
+    //m_db.SavePins(ccPin);
 }
 
 void Colony::CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latitude, double longitude) {
@@ -469,6 +470,7 @@ void Colony::CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latit
     //iRef->SetAttribute(AttrCpuLoad, m_cpu);
     //iRef->SetAttribute(AttrPowerLoad, m_pg);
 
+    m_db.CreatePin(ccPin->ccPinID, iRef->itemID(), pin);
     ccPin->pins[iRef->itemID()] = std::move(pin);
 
     // save map of tempID to itemID - this handles the stacked-calls from client to use real itemIDs
@@ -1416,7 +1418,13 @@ void Colony::ProcessECUs(bool& updateTimes)
         if (!ecu.second.isECU)
             continue;
 
-        if ((ecu.second.expiryTime < EvE::Time::Second ) or (ecu.second.expiryTime > m_procTime)) {
+        if (ecu.second.expiryTime < EvE::Time::Second ) {
+            if (is_log_enabled(COLONY__DEBUG))
+                _log(COLONY__DEBUG, "Colony::ProcessECUs() - expiryTime (%lli) < 1s", \
+                        ecu.second.expiryTime);
+            continue;
+        }
+        if (ecu.second.expiryTime > m_procTime) {
             if (is_log_enabled(COLONY__DEBUG))
                 _log(COLONY__DEBUG, "Colony::ProcessECUs() - expiryTime (%lli) > m_procTime (%lli).", \
                         ecu.second.expiryTime, m_procTime);

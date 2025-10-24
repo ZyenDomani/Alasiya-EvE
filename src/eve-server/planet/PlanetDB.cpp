@@ -506,33 +506,49 @@ void PlanetDB::SaveCCLevel(uint32 pinID, uint8 level)
         _log(DATABASE__ERROR, "SaveCCLevel - Unable to save CCLevel: %s", err.GetError());
 }
 
-void PlanetDB::SavePins(PI_CCPin* ccPin)
-{
+void PlanetDB::CreatePin(uint32 ccPinID, uint32 pinID, PI_Pin &data) {
+    // save newly-created pin data
     std::ostringstream Inserts;
-    // start the insert into command.
     Inserts << "INSERT INTO piPins";
     Inserts << " (ccPinID, pinID, typeID, ownerID, level, latitude, longitude,";
     Inserts << " isCommandCenter, isLaunchable, isProcess, isStorage, isECU,";
-    Inserts << " schematicID, programType, headRadius, launchTime,";
+    Inserts << " headRadius, cycleTime, expiryTime, installTime)";
+    Inserts << " VALUES ";
+    Inserts << "(" << ccPinID << ", " << pinID << ", " << data.typeID << ", " << data.ownerID << ", ";
+    Inserts << data.level << ", " << data.latitude << ", " << data.longitude << ", ";
+    Inserts << data.isCommandCenter << ", " << data.isLaunchable << ", " << data.isProcess << ", ";
+    Inserts << data.isStorage << ", " << data.isECU << ", " << data.headRadius << ", ";
+    Inserts << data.cycleTime << ", " << data.expiryTime << ", " << data.installTime << ")";
+
+    DBerror err;
+    if (!sDatabase.RunQuery(err, Inserts.str().c_str()))
+        _log(DATABASE__ERROR, "SavePins - unable to save pins: %s", err.c_str());
+}
+
+void PlanetDB::SavePins(PI_CCPin* ccPin) {
+    // called when updating network (create, change, install)
+    std::ostringstream Inserts;
+    // start the insert into command.
+    Inserts << "INSERT INTO piPins";
+    Inserts << " (pinID, level, schematicID, programType, headRadius, launchTime,";
     Inserts << " cycleTime, expiryTime, installTime, lastRunTime)";
     Inserts << " VALUES ";
     bool save(false);
-    uint32 ccPinID(ccPin->ccPinID);
     for (auto &cur : ccPin->pins) {
         if (save) {
             Inserts << ", ";
         } else {
             save = true;
         }
-        Inserts << "(" << ccPinID << ", " << cur.first << ", " << cur.second.typeID << ", " << cur.second.ownerID << ", " << cur.second.level << ", " << cur.second.latitude << ", " << cur.second.longitude << ", ";
-        Inserts << cur.second.isCommandCenter << ", " << cur.second.isLaunchable << ", " << cur.second.isProcess << ", " << cur.second.isStorage <<", " << cur.second.isECU << ", ";
-        Inserts << cur.second.schematicID << ", " << cur.second.programType << ", " << cur.second.headRadius << ", " << cur.second.lastLaunchTime;
-        Inserts << ", " << cur.second.cycleTime << ", " << cur.second.expiryTime << ", " << cur.second.installTime << ", " << cur.second.lastRunTime << ")";
+        Inserts << "(" << cur.first << ", " << cur.second.level << ", " << cur.second.schematicID << ", ";
+        Inserts << cur.second.programType << ", " << cur.second.headRadius << ", " << cur.second.lastLaunchTime << ", ";
+        Inserts << cur.second.cycleTime << ", " << cur.second.expiryTime << ", " << cur.second.installTime << ", " << cur.second.lastRunTime << ")";
     }
 
     if (save) {
         // finish creating the command.
         Inserts << " ON DUPLICATE KEY UPDATE ";
+        Inserts << " level=VALUES(level), ";
         Inserts << " schematicID=VALUES(schematicID), ";
         Inserts << " programType=VALUES(programType), ";
         Inserts << " headRadius=VALUES(headRadius),";
@@ -548,54 +564,44 @@ void PlanetDB::SavePins(PI_CCPin* ccPin)
     }
 }
 
-void PlanetDB::UpdatePins(uint32 pinID, PI_CCPin* ccPin)
-{
-    std::ostringstream Inserts;
-    // start the insert into command.
-    Inserts << "INSERT INTO piPins";
-    Inserts << " (ccPinID, pinID, schematicID, programType, launchTime,";
-    Inserts << " cycleTime, installTime, lastRunTime, receivedInputsLastCycle, hasReceivedInputs)";
-
-    bool first(true);
+void PlanetDB::UpdatePins(uint32 pinID, PI_CCPin* ccPin) {
+    // called by Process(), Xfer, UpdatePlantPins() for a contents change
+    DBerror err;
     if (pinID) {
-        std::map<uint32, PI_Pin>::iterator itr;
-        itr = ccPin->pins.find(pinID);
+        std::map<uint32, PI_Pin>::iterator itr = ccPin->pins.find(pinID);
         if (itr != ccPin->pins.end()) {
-            first = false;
-            Inserts << " VALUES ";
-            Inserts << "(" << ccPin->ccPinID << ", " << itr->first << ", " << itr->second.schematicID << ", " << itr->second.programType;
-            Inserts << ", " << itr->second.lastLaunchTime << ", " << itr->second.cycleTime << ", " << itr->second.installTime;
-            Inserts << ", " << itr->second.lastRunTime << ", " << itr->second.receivedInputsLastCycle << ", " << itr->second.hasReceivedInputs << ")";
+            sDatabase.RunQuery(err,
+                               "UPDATE piPins SET"
+                               " state=%u,"
+                               " cycleTime = %lli,"
+                               " installTime = %lli,"
+                               " lastRunTime = %lli,"
+                               " schematicID = %u,"
+                               " qtyPerCycle = %u,"
+                               " hasReceivedInputs=%u,"
+                               " receivedInputsLastCycle=%u"
+                               " WHERE pinID = %u",
+                               itr->second.state, itr->second.cycleTime, itr->second.installTime, itr->second.lastRunTime,
+                               itr->second.schematicID, itr->second.qtyPerCycle, itr->second.hasReceivedInputs,
+                               itr->second.receivedInputsLastCycle, pinID);
         }
     } else {
         for (auto &cur : ccPin->pins) {
-            if (first) {
-                Inserts << " VALUES ";
-                first = false;
-            } else {
-                Inserts << ", ";
-            }
-            Inserts << "(" << ccPin->ccPinID << ", " << cur.first << ", " << cur.second.schematicID << ", " << cur.second.programType;
-            Inserts << ", " << cur.second.lastLaunchTime << ", " << cur.second.cycleTime << ", " << cur.second.installTime;
-            Inserts << ", " << cur.second.lastRunTime << ", " << cur.second.receivedInputsLastCycle << ", " << cur.second.hasReceivedInputs << ")";
+            sDatabase.RunQuery(err,
+                               "UPDATE piPins SET"
+                               " state=%u,"
+                               " cycleTime = %lli,"
+                               " installTime = %lli,"
+                               " lastRunTime = %lli,"
+                               " schematicID = %u,"
+                               " qtyPerCycle = %u,"
+                               " hasReceivedInputs=%u,"
+                               " receivedInputsLastCycle=%u"
+                               " WHERE pinID = %u",
+                               cur.second.state, cur.second.cycleTime, cur.second.installTime, cur.second.lastRunTime,
+                               cur.second.schematicID, cur.second.qtyPerCycle, cur.second.hasReceivedInputs,
+                               cur.second.receivedInputsLastCycle, pinID);
         }
-    }
-
-    if (!first) {
-        // finish creating the command.
-        Inserts << " ON DUPLICATE KEY UPDATE ";
-        Inserts << " schematicID=VALUES(schematicID),";
-        Inserts << " programType=VALUES(programType),";
-        Inserts << " launchTime=VALUES(launchTime),";
-        Inserts << " cycleTime=VALUES(cycleTime),";
-        Inserts << " installTime=VALUES(installTime),";
-        Inserts << " lastRunTime=VALUES(lastRunTime),";
-        Inserts << " hasReceivedInputs=VALUES(hasReceivedInputs),";
-        Inserts << " receivedInputsLastCycle=VALUES(receivedInputsLastCycle);";
-        // execute the command.
-        DBerror err;
-        if (!sDatabase.RunQuery(err, Inserts.str().c_str()))
-            _log(DATABASE__ERROR, "SavePins - unable to save pins: %s", err.c_str());
     }
 }
 

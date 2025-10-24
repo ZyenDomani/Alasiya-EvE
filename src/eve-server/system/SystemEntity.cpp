@@ -50,8 +50,9 @@
 
 SystemEntity::SystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
 :m_self(self),m_services(services),m_system(system),m_bubble(nullptr),m_destiny(nullptr),
-m_targMgr(nullptr),m_killed(false),m_abandoned(false),m_damageReported(false),m_warID(0),m_allyID(0),m_corpID(0),
-m_fleetID(0),m_ownerID(1),m_harmonic(EVEPOS::Harmonic::Inactive)
+m_targMgr(nullptr),m_killed(false),m_abandoned(false),m_damageReported(false),
+m_harmonic(EVEPOS::Harmonic::Inactive),m_warID(0),m_allyID(0),m_corpID(0),
+m_fleetID(0),m_ownerID(1)
 {
     assert(m_system != nullptr);
     assert(m_self.get() != nullptr);

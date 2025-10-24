@@ -642,7 +642,7 @@ void StructureSE::SetAnchor(Client *pClient, GPoint &pos)
         //warpToPoint -= (radius * 1.25);
 
         uint32 dist = /*BUBBLE_RADIUS_METERS + 10000*/ m_self->GetAttribute(AttrMoonAnchorDistance).get_uint32();
-        float radius(m_moonSE->GetRadius());
+        int32 radius(m_moonSE->GetRadius());
         float rad(EvE::Trig::Deg2Rad(90));
 
         pos = m_moonSE->GetPosition();
