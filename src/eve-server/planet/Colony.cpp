@@ -421,7 +421,7 @@ void Colony::CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latit
             pin.isStorage = true;
             pin.isLaunchable = true;
             pin.isCommandCenter = true;
-            pin.lastRunTime = GetFileTimeNow();
+            pin.lastRunTime = 0;
             pin.installTime = GetFileTimeNow(); // pin creation time here.
         } break;
         case Processors: {         // 1028
@@ -511,8 +511,7 @@ void Colony::CreateLink(uint32 src, uint32 dest, uint16 level) {
 void Colony::CreateRoute(uint16 routeID, uint32 typeID, uint32 qty, PyList* path) {
     // routeID is sent as tempID like pins.
     std::list<uint32> list1;
-    list1.clear();
-    for (size_t i = 0; i < path->size(); i++) {
+    for (uint16 i(0); i < path->size(); ++i) {
         if (path->GetItem(i)->IsTuple()) {
             list1.push_back(PyRep::IntegerValue(path->GetItem(i)->AsTuple()->GetItem(1)));
         } else if (path->GetItem(i)->IsInt()) {
@@ -524,7 +523,6 @@ void Colony::CreateRoute(uint16 routeID, uint32 typeID, uint32 qty, PyList* path
 
     if (tempPinIDs.size() > 0) {
         std::list<uint32> list2;
-        list2.clear();
         std::map<uint8, uint32>::iterator itr;
         for (auto &cur : list1) {
             if (IsTempPinID(cur)) {

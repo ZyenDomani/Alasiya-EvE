@@ -184,25 +184,10 @@ PyResult PlanetMgrService::Handle_GetMyLaunchesDetails(PyCallArgs &call) {
 }
 
 PyResult PlanetMgrBound::Handle_GetPlanetResourceInfo(PyCallArgs &call) {
-    /*  this screws up client
-    if (!sConfig.cosmic.PIEnabled) {
-        call.client->SendErrorMsg("The PI system is currently disabled.");
-        return nullptr;
-    } */
-
     return m_planet->GetPlanetResourceInfo();
 }
 
 PyResult PlanetMgrBound::Handle_GetPlanetInfo(PyCallArgs &call) {
-    /*  this screws up client
-    if (!sConfig.cosmic.PIEnabled) {
-        call.client->SendErrorMsg("The PI system is currently disabled.");
-        return nullptr;
-    } */
-
-    _log(PLANET__DEBUG, "PlanetMgrBound::Handle_GetPlanetInfo() size=%lu", call.tuple->size() );
-    call.Dump(PLANET__DUMP);
-
     return m_planet->GetPlanetInfo(m_colony);
 }
 
@@ -384,8 +369,8 @@ PyResult PlanetMgrBound::Handle_UserTransferCommodities(PyCallArgs &call) {
     PyDict* dict = call.tuple->GetItem(1)->AsDict();
     std::map<uint16, uint32> items;
     PyDict::const_iterator itr = dict->begin();
-    for (; itr != dict->end(); itr++)
-        items.insert(std::pair<uint16, uint32>(PyRep::IntegerValue(itr->first), PyRep::IntegerValue(itr->second)));
+    for (; itr != dict->end(); ++itr)
+        items[PyRep::IntegerValue(itr->first)] = PyRep::IntegerValue(itr->second);
 
     PyList* list = call.tuple->GetItem(0)->AsList();
     return m_colony->TransferCommodities(PyRep::IntegerValue(list->items.front()), PyRep::IntegerValue(list->items.back()), std::move(items));

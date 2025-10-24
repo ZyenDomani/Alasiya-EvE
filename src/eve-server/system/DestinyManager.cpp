@@ -2137,10 +2137,10 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance, bool autoPi
          ** @note:  warpCapacitorNeed is type double...max ive seen is shuttles @ 0.00000134771  and indys @ 0.000000108911
          */
 
-        double dist(((double)m_targetDistance / ONE_AU_IN_METERS));
+        double dist((double)m_targetDistance / ONE_AU_IN_METERS);
         double currentShipCap = pClient->GetShip()->GetAttribute(AttrCapacitorCharge).get_double();
-        double capNeeded = mySE->GetSelf()->mass() * m_warpCapacitorNeed * dist * 7.0;  //fudge a bit (seems low)
-        capNeeded *= (1.0f - (0.1f * pClient->GetChar()->GetSkillLevel(EvESkill::WarpDriveOperation)));
+        double capNeeded = mySE->GetSelf()->mass() * m_warpCapacitorNeed * dist;
+        capNeeded *= (1.0 - (0.1 * pClient->GetChar()->GetSkillLevel(EvESkill::WarpDriveOperation)));
 
         _log(DESTINY__WARNING, "Warp Cap need for %s(%u) for %llim (%.3f AU) is %.5f GJ", \
             mySE->GetName(), mySE->GetID(), m_targetDistance, dist, capNeeded);

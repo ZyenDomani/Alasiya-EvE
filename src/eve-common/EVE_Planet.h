@@ -219,7 +219,7 @@ public:
     }
     void Init()
     {
-        Clear();
+        //Clear();
         level = 0;
         ccPinID = 0;
     }

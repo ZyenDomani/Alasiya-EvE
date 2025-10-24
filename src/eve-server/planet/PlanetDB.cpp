@@ -743,9 +743,9 @@ uint16 PlanetDB::SaveRoute(uint32 ccPinID, PI_Route& route)
     std::list<uint32>::iterator itr = route.path.begin();
     while (itr != route.path.end()) {
         path += std::to_string(*itr);
+        ++itr;
         if (itr != route.path.end())
             path += ":";
-        ++itr;
     }
     if (!sDatabase.RunQueryLID(err, routeID,
         "INSERT INTO piRoutes(ccPinID, srcPinID, destPinID, state, priority, path, typeID, itemQty) "
@@ -778,9 +778,9 @@ void PlanetDB::SaveRoutes(PI_CCPin* ccPin)
         itr = cur.second.path.begin();
         while (itr != cur.second.path.end()) {
             path += std::to_string(*itr);
+            ++itr;
             if (itr != cur.second.path.end())
                 path += ":";
-            ++itr;
         }
         Inserts << "(" << ccPinID << ", " << cur.first << ", " << cur.second.srcPinID << ", " << cur.second.destPinID << ", '" << path << "', ";
         Inserts << cur.second.commodityTypeID << ", " << cur.second.commodityQuantity << ")";

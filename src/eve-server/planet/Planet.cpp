@@ -194,7 +194,8 @@ PyRep* PlanetSE::GetPlanetInfo(Colony* pColony) {
     args->SetItem("solarSystemID", new PyInt(m_system->GetID()));
     args->SetItem("radius", new PyInt(GetRadius()));
     args->SetItem("planetID", new PyInt(m_self->itemID()));
-    if (pColony->HasColony()) {
+
+    if (pColony->HasColony()/* and sConfig.cosmic.PIEnabled*/) {
         //pColony->Update();
         args->SetItem("level", new PyInt(pColony->GetLevel()));
         args->SetItem("pins", pColony->GetPins());
@@ -202,7 +203,7 @@ PyRep* PlanetSE::GetPlanetInfo(Colony* pColony) {
         args->SetItem("routes", pColony->GetRoutes());
         args->SetItem("currentSimTime", new PyLong(pColony->GetSimTime()));
     }
-    //PyIncRef(args);
+
     PyObject *rtn = new PyObject("util.KeyVal", args);
     if (is_log_enabled(PLANET__RES_DUMP))
         rtn->Dump(PLANET__RES_DUMP, "   ");
