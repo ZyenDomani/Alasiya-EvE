@@ -104,8 +104,11 @@ int MarketBotMgr::Initialize() {
     return 1;
 }
 
-// Called on minute tick from EntityList
+// Called every 15m from EntityMgr
 void MarketBotMgr::Process(bool overrideTimer/*false*/) {
+    if (!sConfig.server.TraderJoe)
+        return;
+    
     TimePoint now = Clock::now();
 
     sLog.Green("     MarketBotMgr", "MarketBot Process() invoked on tick.");
