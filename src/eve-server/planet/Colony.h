@@ -111,7 +111,7 @@ private:
     uint16 m_cpu;
     uint32 m_colonyID;
 
-    int64 m_procTime;
+    int64 m_procTime;           // filetime  last processed time
 
     std::vector<uint32> tempECUs;
     std::map<uint8, uint32> tempPinIDs;

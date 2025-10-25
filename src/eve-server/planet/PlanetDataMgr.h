@@ -56,7 +56,7 @@ class PIDataMgr
 {
 public:
     PIDataMgr();
-    ~PIDataMgr() { /* nothing do to yet */ }
+    ~PIDataMgr()                                        { /* do nothing here */ }
 
     // Initializes the Table:
     int Initialize();
@@ -66,12 +66,14 @@ public:
     void GetSchematicData(uint8 schematicID, PI_Schematic& data);
 
     uint8 GetProductLevel(uint16 typeID);
-    const char* GetProductName(uint16 typeID);
     uint16 GetHeadType(uint16 ecuTypeID, uint16 programType);
 
     uint32 GetMaxOutput(InventoryItemRef iRef, uint32 qtyPerCycle = 0, int64 cycleTime = 0);
     uint32 GetProgramOutput(InventoryItemRef iRef, int64 cycleTime, int64 startTime=0, int64 currentTime=0);
     uint32 GetProgramOutputPrediction(InventoryItemRef iRef, int64 cycleTime, uint32 numCycles = 0);
+
+    const char* GetProductName(uint16 typeID);
+    const char* GetPinTypeName(uint16 typeID);
 
 protected:
     void Populate();

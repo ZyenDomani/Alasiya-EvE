@@ -141,6 +141,9 @@ public:
         // Misc fees
         float StationServiceFee;
         uint16 CSPA;
+        // for PI/Colony
+        uint8 ColonyTimer;
+        float ECUDiminish;
         float DrillCycleMod;
         float PlantCycleMod;
     } rates;

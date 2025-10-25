@@ -124,14 +124,12 @@ bool PlanetSE::LoadExtras() {
 }
 
 // called from SystemManager::Process() @ 1m
-void PlanetSE::Process()
-{
+void PlanetSE::Process() {
     for (auto &cur : m_colonies)
         cur.second->Process();
 }
 
-PyRep* PlanetSE::GetResourceData(Call_ResourceDataDict& dict)
-{
+PyRep* PlanetSE::GetResourceData(Call_ResourceDataDict& dict) {
     // will update this to use PI skills (sent in dict) as system grows..not sure how yet.
     /** @todo  this needs a minor rewrite....bands are dictated by client request.
      * bufferData is random fill based on bands, but kept per planet

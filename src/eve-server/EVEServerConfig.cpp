@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    12.7
+    Version:    12.8
 */
 
 
@@ -116,7 +116,9 @@ EVEServerConfig::EVEServerConfig()
     rates.StationServiceFee = 0.01f;
     rates.CSPA = 2950;
     rates.WanderTimer = 1;
-    rates.DrillCycleMod = 0.0f;
+    rates.ColonyTimer = 30;
+    rates.ECUDiminish = 0.95f;
+    rates.DrillCycleMod = 1.0f;
     rates.PlantCycleMod = 1.0f;
 
     //market
@@ -490,6 +492,8 @@ bool EVEServerConfig::ProcessRates(const TiXmlElement* ele) {
     AddValueParser("ConcordCritChance",    rates.ConcordCritChance);
     AddValueParser("StationServiceFee",    rates.StationServiceFee);
     AddValueParser("WanderTimer",          rates.WanderTimer);
+    AddValueParser("ColonyTimer",          rates.ColonyTimer);
+    AddValueParser("ECUDiminish",          rates.ECUDiminish);
     AddValueParser("DrillCycleMod",        rates.DrillCycleMod);
     AddValueParser("PlantCycleMod",        rates.PlantCycleMod);
 
@@ -525,6 +529,8 @@ bool EVEServerConfig::ProcessRates(const TiXmlElement* ele) {
     RemoveParser("ConcordCritChance");
     RemoveParser("StationServiceFee");
     RemoveParser("WanderTimer");
+    RemoveParser("ColonyTimer");
+    RemoveParser("ECUDiminish");
     RemoveParser("DrillCycleMod");
     RemoveParser("PlantCycleMod");
 

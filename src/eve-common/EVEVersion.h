@@ -49,10 +49,10 @@ static const char* const EVEMU_BUILD_DATE = __DATE__;
 //static const char* const EVEMU_REVISION = "0.72.75";
 //static const char* const EVEMU_BUILD_DATE = "24 March 2023";
 /* match versions here with stated files for full support */
-static const float Config_Version = 11.7f; /* eve-server.xml and EveServerConfig.cpp */
+static const float Config_Version = 12.8f; /* eve-server.xml and EveServerConfig.cpp */
 static const float Log_Version = 11.4f;    /* logtypes.h and log.ini */
 /* AI versions for shitz-n-giggles */
-static const float Joe_Version = 0.15f;   /* MarketBot.xml and MarketBotConf.cpp */
+static const float Joe_Version = 0.25f;   /* MarketBot.xml and MarketBotConf.cpp */
 /* these  dont have separate config files ...yet */
 static const float NPC_AI_Version = 0.65f;
 static const float Drone_AI_Version = 1.07f;

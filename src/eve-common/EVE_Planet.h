@@ -126,7 +126,7 @@ struct PI_Route {
     int8 state=0;
     int8 priority=0;
     uint16 commodityTypeID=0;
-    uint16 commodityQuantity=0;
+    uint16 commodityQuantity=0;         // current route qty, updated for diminishing returns on each loop
     uint32 srcPinID=0;
     uint32 destPinID=0;
     std::list<uint32> path;

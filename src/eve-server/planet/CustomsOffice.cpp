@@ -346,7 +346,7 @@ void CustomsSE::EncodeDestiny(Buffer& into)
         head.posY = y();
         head.posZ = z();
         head.mode = Ball::Mode::RIGID;
-        head.flags = Ball::Flag::IsGlobal /*| Ball::Flag::IsMassive | HasMiniBalls*/;
+        head.flags = Ball::Flag::IsGlobal | Ball::Flag::IsInteractive /*| Ball::Flag::IsMassive | HasMiniBalls*/;
     into.Append( head );
 
     RIGID_Struct main;

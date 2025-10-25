@@ -24,6 +24,7 @@
 
 #include "../eve-server.h"
 
+#include "EVEServerConfig.h"
 #include "inventory/ItemFactory.h"
 #include "inventory/InventoryItem.h"
 #include "planet/PlanetDataMgr.h"
@@ -269,13 +270,21 @@ PyRep* PIDataMgr::GetProgramResultInfo(Colony* pColony, uint32 pinID, uint16 typ
     double two = log2(length / 25.0);  //3.584962501
     float cycleTime = EvE::max(floor(two) + 1.0f);    //4
     cycleTime = 0.25f * (pow(2, cycleTime));  // this is (float) in hours (0.25, 0.5, etc)
+
+    if (cycleTime < 0.1f) {
+        _log(COLONY__ERROR, "Colony::SetProgramResults() - ecuPinID %u cycleTime < 0.1f.  setting to 1.0", pinID);
+        cycleTime = 1.0f;
+    }
+    // modify time
+    cycleTime *= sConfig.rates.DrillCycleMod;
+
     uint16 numCycles = static_cast<uint16>(length / cycleTime);   //73
     int64 iCycleTime = static_cast<int64>(cycleTime * EvE::Time::Hour);
 
     uint32 qtyPerCycle = GetProgramOutput(iRef, iCycleTime);
     //qtyPerCycle *= heads->size();
 
-    _log(PLANET__TRACE, "PlanetMgr::GetProgramResultInfo() - cycleTime:%.2f, iCycleTime:%lli, length:%.2f, numCycles:%u, qtyPerCycle:%u, headRadius:%.4f", \
+    _log(PLANET__TRACE, "PlanetMgr::GetProgramResultInfo() - cycleTime:%.2fh, iCycleTime:%llius, length:%.2fh, numCycles:%u, qtyPerCycle:%u, headRadius:%.4f", \
                 cycleTime, iCycleTime, length, numCycles, qtyPerCycle, headRadius);
 
     PyTuple* res = new PyTuple(3);
@@ -315,12 +324,12 @@ uint32 PIDataMgr::GetProgramOutput(InventoryItemRef iRef, int64 cycleTime, int64
     // this is in client to display the Extractor window program results.
 
     if (startTime == 0)
-        startTime = GetFileTimeNow() - 2 * EvE::Time::Second;
+        startTime = GetFileTimeNow() - (2 * EvE::Time::Second);
     if (currentTime == 0)
         currentTime = GetFileTimeNow();
 
-    int cycleNum = EvE::max((currentTime - startTime + EvE::Time::Second) / cycleTime - 1, 1);
-    float barWidth = cycleTime / EvE::Time::Second / 900.0; //0.13888
+    int8 cycleNum = EvE::max((currentTime - startTime + EvE::Time::Second) / cycleTime, 1);
+    float barWidth = cycleTime / EvE::Time::Second / 900.0f; //0.13888
     float t = (cycleNum + 0.5f) * barWidth; // 0.20833
     // qtyPerCycle default is 1000.  it is reset to calculated after this returns
     /*
@@ -640,5 +649,9 @@ const char* PIDataMgr::GetProductName(uint16 typeID)
     }
     _log(PLANET__ERROR, "PIDataMgr::GetProductName() - Commodity product not found for typeID: %u", typeID);
     return "NULL";
+}
+
+const char* PIDataMgr::GetPinTypeName(uint16 typeID) {
+    return sItemFactory.GetType(typeID)->name().c_str();
 }
 
