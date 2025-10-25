@@ -254,7 +254,7 @@ PyResult PlanetMgrBound::Handle_GetProgramResultInfo(PyCallArgs &call) {
         return nullptr;
     }
 
-    return sPIDataMgr.GetProgramResultInfo(m_colony, args.ecuID, args.typeID, args.heads, args.headRadius);
+    return sPIDataMgr.GetProgramResultInfo(m_colony, args.ecuID, args.typeID, /*args.heads,*/ args.headRadius);
 }
 
 PyResult PlanetMgrBound::Handle_GetResourceData(PyCallArgs &call) {

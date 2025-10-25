@@ -69,9 +69,9 @@ public:
     void MoveExtractorHead(uint32 ecuID, uint16 headID, double latitude, double longitude);
     void KillExtractorHead(uint32 ecuID, uint16 headID);
 
-    void InstallProgram(uint32 ecuID, uint16 typeID, float headRadius, PlanetMgr* pPMgr);
+    void InstallProgram( uint32 ecuID, uint16 typeID, double headRadius );
     void SetSchematic(uint32 pinID, uint8 schematicID=0);
-    void SetProgramResults(uint32 ecuID, uint16 typeID, uint16 numCycles, float headRadius, float cycleTime, uint32 qtyPerCycle);
+    void SetProgramResults( uint32 ecuID, uint16 typeID, uint16 numCycles, double headRadius, float cycleTime, uint32 qtyPerCycle );
 
     PyRep* LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items);
     void PlanetXfer(uint32 spaceportID, std::map< uint32, uint16 > importItems, std::map< uint32, uint16 > exportItems, double taxRate);
@@ -143,6 +143,14 @@ private:
  3       500 m3  17,215 tf   15,000 MW    1.2m ISK
  4       500 m3  21,315 tf   17,000 MW    1.5m ISK
  5       500 m3  25,415 tf   19,000 MW    2.1m ISK
+
+ commandCenterInfoPerLevel = {
+ 0: util.KeyVal(powerOutput=6000, cpuOutput=1675, upgradeCost=0),
+ 1: util.KeyVal(powerOutput=9000, cpuOutput=7057, upgradeCost=580000),
+ 2: util.KeyVal(powerOutput=12000, cpuOutput=12136, upgradeCost=1510000),
+ 3: util.KeyVal(powerOutput=15000, cpuOutput=17215, upgradeCost=2710000),
+ 4: util.KeyVal(powerOutput=17000, cpuOutput=21315, upgradeCost=4210000),
+ 5: util.KeyVal(powerOutput=19000, cpuOutput=25415, upgradeCost=6310000)}
 
  Structure Properties
  Name                        CPU         Power       Cost

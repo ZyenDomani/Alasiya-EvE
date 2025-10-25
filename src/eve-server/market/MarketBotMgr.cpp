@@ -79,7 +79,7 @@ MarketBotDataMgr::MarketBotDataMgr()
 
 int MarketBotDataMgr::Initialize() {
     m_initalized = true;
-    sLog.Blue(" MarketBotDataMgr", "Market Bot Data Manager Initialized."); // load current data
+    sLog.Blue(" MarketBotDataMgr", "MarketBot Data Manager Initialized."); // load current data
     return 1;
 }
 
@@ -90,7 +90,7 @@ MarketBotMgr::MarketBotMgr()
 
 int MarketBotMgr::Initialize() {
     if (!sMBotConf.ParseFile(sConfig.files.marketBotSettings.c_str())) {
-        sLog.Error("       ServerInit", "Loading Market Bot Config file '%s' failed.", sConfig.files.marketBotSettings.c_str());
+        sLog.Error("       ServerInit", "Loading MarketBot Config file '%s' failed.", sConfig.files.marketBotSettings.c_str());
         return 0;
     }
 
@@ -123,18 +123,18 @@ void MarketBotMgr::Process(bool overrideTimer/*false*/) {
     if (!overrideTimer && now + std::chrono::seconds(5) < m_nextRunTime) { // ---marketbot update; 5 second jitter
         auto timeLeft = std::chrono::duration_cast<std::chrono::milliseconds>(m_nextRunTime - now).count();
         if (timeLeft > 0) {
-            sLog.Green("     Trader Joe", "Update timer not ready yet. Next run in %lld seconds.", timeLeft / 1000);
+            sLog.Green("     TraderJoe", "Update timer not ready yet. Next run in %lld seconds.", timeLeft / 1000);
             _log(MARKET__TRACE, "Trader Joe waiting — next run in %lld seconds.", timeLeft);
             return;
         }
     }
 
-    sLog.Green("     Market Bot Mgr", "Processing old orders...\n");
+    sLog.Green("     MarketBotMgr", "Processing old orders...\n");
     _log(MARKET__TRACE, "Processing old orders...");
     ExpireOldOrders();
 
     std::vector<uint32> eligibleSystems = GetEligibleSystems();
-    sLog.Green("     Market Bot Mgr", "Trader Joe found %zu eligible systems for order placement.", eligibleSystems.size());
+    sLog.Green("     MarketBotMgr", "Trader Joe found %zu eligible systems for order placement.", eligibleSystems.size());
     _log(MARKET__TRACE, "Trader Joe found %zu eligible systems for order placement.", eligibleSystems.size());
 
     int totalBuyOrders = 0;
@@ -142,40 +142,40 @@ void MarketBotMgr::Process(bool overrideTimer/*false*/) {
     int expiredOrders = ExpireOldOrders();
 
     for (uint32 systemID : eligibleSystems) {
-        sLog.Green("     Market Bot Mgr", "Trader Joe placing orders in systemID: %u", systemID);
+        sLog.Green("     MarketBotMgr", "Trader Joe placing orders in systemID: %u", systemID);
         _log(MARKET__TRACE, "Trader Joe placing orders in systemID: %u", systemID);
 
         totalBuyOrders += PlaceBuyOrders(systemID);
         totalSellOrders += PlaceSellOrders(systemID);
     }
 
-    sLog.Green("     Trader Joe", "Master Summary: Created %d buy orders and %d sell orders across %u systems. Removed %d old orders.",
+    sLog.Green("     TraderJoe", "Master Summary: Created %d buy orders and %d sell orders across %u systems. Removed %d old orders.",
     totalBuyOrders, totalSellOrders, static_cast<uint32>(eligibleSystems.size()), expiredOrders);
 
     _log(MARKET__TRACE, "Trader Joe Master Summary: Created %d buy orders and %d sell orders across %zu systems. Removed %d old orders.",
         totalBuyOrders, totalSellOrders, eligibleSystems.size(), expiredOrders);
 
-    sLog.Green("     Trader Joe", "Cycle complete. Resetting timer.");
+    sLog.Green("     TraderJoe", "Cycle complete. Resetting timer.");
     _log(MARKET__TRACE, "Trader Joe cycle complete. Resetting timer.");
     m_nextRunTime = Clock::now() + std::chrono::minutes(sMBotConf.main.DataRefreshTime);
-    sLog.Green("     Trader Joe", "Timer reset. Next run in %d minutes.", sMBotConf.main.DataRefreshTime);
+    sLog.Green("     TraderJoe", "Timer reset. Next run in %d minutes.", sMBotConf.main.DataRefreshTime);
 }
 
 void MarketBotMgr::ForceRun(bool resetTimer) {
     sLog.Warning("     ForceRun", "Manually starting Trader Joe.");
 
     if (!m_initalized) {
-        sLog.Yellow("     Trader Joe", "MarketBotMgr not initialized — skipping run.");
+        sLog.Yellow("     TraderJoe", "MarketBotMgr not initialized — skipping run.");
         return;
     }
 
-    sLog.Green("     Trader Joe", "Running Process() now...");
+    sLog.Green("     TraderJoe", "Running Process() now...");
     this->Process(true);  // force override
-    sLog.Green("     Trader Joe", "Finished Process().");
+    sLog.Green("     TraderJoe", "Finished Process().");
 
     if (resetTimer) {
         m_nextRunTime = Clock::now() + std::chrono::minutes(sMBotConf.main.DataRefreshTime);
-        sLog.Green("     Trader Joe", "Timer reset. Next run in %d minutes.", sMBotConf.main.DataRefreshTime);
+        sLog.Green("     TraderJoe", "Timer reset. Next run in %d minutes.", sMBotConf.main.DataRefreshTime);
     }
 }
 
@@ -187,7 +187,7 @@ int MarketBotMgr::ExpireOldOrders() {
 
     int expiredCount = 0;
 
-    sLog.Yellow("     Trader Joe", "ExpireOldOrders: now = %" PRIu64, now);
+    sLog.Yellow("     TraderJoe", "ExpireOldOrders: now = %" PRIu64, now);
     _log(MARKET__TRACE, "ExpireOldOrders: now = %" PRIu64, now);
 
     if (!sDatabase.RunQuery(res,
@@ -287,17 +287,17 @@ int MarketBotMgr::PlaceBuyOrders(uint32 systemID) {
 int MarketBotMgr::PlaceSellOrders(uint32 systemID) {
     SystemData sysData;
     if (!sDataMgr.GetSystemData(systemID, sysData)) {
-        _log(MARKET__ERROR, "Trader Joe: Failed to get system data for system %u", systemID);
+        _log(MARKET__ERROR, "TraderJoe: Failed to get system data for system %u", systemID);
         return 0;
     }
 
     std::vector<uint32> availableStations;
 
     if (!sDataMgr.GetStationListForSystem(systemID, availableStations)) {
-        _log(MARKET__ERROR, "Trader Joe: No stations found for system %u — skipping order creation.", systemID);
+        _log(MARKET__ERROR, "TraderJoe: No stations found for system %u — skipping order creation.", systemID);
         return 0;
     } else {
-        _log(MARKET__TRACE, "Trader Joe: Found %zu stations in system %u", availableStations.size(), systemID);
+        _log(MARKET__TRACE, "TraderJoe: Found %zu stations in system %u", availableStations.size(), systemID);
     }
 
     size_t stationCount = availableStations.size();
@@ -351,12 +351,12 @@ int MarketBotMgr::PlaceSellOrders(uint32 systemID) {
 
         _log(MARKET__TRACE, "System %u maps to region %u via GetSystemData", systemID, sysData.regionID);
 
-        _log(MARKET__TRACE, "Trader Joe: Storing sell order with orderRange = %u", order.orderRange);
+        _log(MARKET__TRACE, "TraderJoe: Storing sell order with orderRange = %u", order.orderRange);
 
         bool success = MarketDB::StoreOrder(order);
         if (success) {
             ++orderCount;
-            _log(MARKET__TRACE, "Trader Joe: Creating %s order for typeID %u, qty %u, price %.2f, station %u, region %u",
+            _log(MARKET__TRACE, "TraderJoe: Creating %s order for typeID %u, qty %u, price %.2f, station %u, region %u",
                 (order.bid ? "BUY" : "SELL"), order.typeID, order.volEntered, order.price, order.stationID, order.regionID);
         } else {
             _log(MARKET__ERROR, "Trader Joe: Failed to store %s order for typeID %u at station %u",

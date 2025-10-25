@@ -778,7 +778,7 @@ void Colony::SetSchematic(uint32 pinID, uint8 schematicID/*0*/)
         sPIDataMgr.GetSchematicData(schematicID, itr->second.data);
         itr->second.state                   = PI::Pin::State::Idle;
         itr->second.pLevel                  = sPIDataMgr.GetProductLevel(itr->second.data.outputType);
-        itr->second.cycleTime               = itr->second.data.cycleTime * EvE::Time::Second;
+        itr->second.cycleTime               = itr->second.data.cycleTime * sConfig.rates.PlantCycleMod * EvE::Time::Second;
         itr->second.installTime             = GetFileTimeNow();
         itr->second.qtyPerCycle             = itr->second.data.outputQty;
         itr->second.schematicID             = schematicID;
@@ -802,7 +802,7 @@ void Colony::SetSchematic(uint32 pinID, uint8 schematicID/*0*/)
     UpdatePlantPins(pinID); // this MUST be called before Save() and GetColony() to update plant pin with current data
 }
 
-void Colony::InstallProgram(uint32 ecuID, uint16 typeID, float headRadius, PlanetMgr* pPMgr)
+void Colony::InstallProgram(uint32 ecuID, uint16 typeID, double headRadius)
 {
     /*
      * 09:54:54 [PlanetCallDump]       [ 0]   [10]   [ 1]  Tuple: 3 elements
@@ -833,22 +833,25 @@ void Colony::InstallProgram(uint32 ecuID, uint16 typeID, float headRadius, Plane
     itr->second.installTime = GetFileTimeNow();
     itr->second.lastRunTime = GetFileTimeNow();
 
-    PyList* list = new PyList();
-    for (auto &cur : itr->second.heads)
-        list->AddItem(new PyInt(cur.second.ecuPinID));
     // set up extractor program data
-    sPIDataMgr.GetProgramResultInfo(this, ecuID, typeID, list, headRadius);
+    sPIDataMgr.GetProgramResultInfo(this, ecuID, typeID, headRadius);
 }
 
-void Colony::SetProgramResults(uint32 ecuID, uint16 typeID, uint16 numCycles, float headRadius, float cycleTime, uint32 qtyPerCycle)
+void Colony::SetProgramResults(uint32 ecuID, uint16 typeID, uint16 numCycles, double headRadius, float cycleTime, uint32 qtyPerCycle)
 {
     std::map<uint32, PI_Pin>::iterator itr = ccPin->pins.find(ecuID);
     if (itr == ccPin->pins.end()) {
         _log(COLONY__ERROR, "Colony::SetProgramResults() - ecuPinID %u not found in ccPin.pins map", ecuID);
         return;
     }
+    if (cycleTime < 0.1f) {
+        _log(COLONY__ERROR, "Colony::SetProgramResults() - ecuPinID %u cycleTime < 0.1f.  setting to 1.0", ecuID);
+        cycleTime = 1.0f;
+    }
 
-    itr->second.cycleTime = cycleTime * EvE::Time::Hour ;
+    cycleTime *= (1.0f - sConfig.rates.DrillCycleMod);
+
+    itr->second.cycleTime = cycleTime * EvE::Time::Hour;
     itr->second.programType = typeID;
     itr->second.expiryTime = (cycleTime * numCycles) * EvE::Time::Hour + GetFileTimeNow();
     itr->second.headRadius = headRadius;
@@ -864,7 +867,7 @@ void Colony::SetProgramResults(uint32 ecuID, uint16 typeID, uint16 numCycles, fl
     if (!m_colonyTimer.Enabled())
         m_colonyTimer.Start(30 * EvE::Timer::Minute);
 }
-/*{'FullPath': u'UI/Messages', 'messageID': 256790, 'label': u'PlanetBlackListedBody'}(u'{planet} is not available for the general public.', None, {u'{planet}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'planet'}})
+/* {'FullPath': u'UI/Messages', 'messageID': 256790, 'label': u'PlanetBlackListedBody'}(u'{planet} is not available for the general public.', None, {u'{planet}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'planet'}})
  * {'FullPath': u'UI/Messages', 'messageID': 256791, 'label': u'CannotInstallWithoutScanResultsBody'}(u'Your mining foreman reports that an intern seems to have misplaced the necessary mineral survey results. You will need to order a fresh deposit scan before this {typeName} can begin operating.', None, {u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}})
  * {'FullPath': u'UI/Messages', 'messageID': 256792, 'label': u'QueueCannotTrainPastMaximumLevelBody'}(u'You cannot train {typeName} further, as is it already at maximum level.', None, {u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}})
  * {'FullPath': u'UI/Messages', 'messageID': 256793, 'label': u'CannotUpgradeLinkAlreadyMaxedBody'}(u"You cannot upgrade this {typeName}, as it has already been upgraded to technology's bleeding edge.", None, {u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}})
@@ -1205,8 +1208,7 @@ Product     Command Center Export Cost  Launchpad Export Cost   Launchpad Import
     P4        750/m3 or 75k/unit          500/m3 or 50k/unit     250/m3 or 25k/unit
 */
 
-void Colony::PrioritizeRoute(uint16 routeID, uint8 priority)
-{
+void Colony::PrioritizeRoute(uint16 routeID, uint8 priority) {
     // set priority level for route...still not sure how to use it
     std::map<uint16, PI_Route>::iterator itr = ccPin->routes.find(routeID);
     if (itr != ccPin->routes.end()) {
@@ -1215,11 +1217,9 @@ void Colony::PrioritizeRoute(uint16 routeID, uint8 priority)
     }
 }
 
-
-PyTuple* Colony::GetPins()
-{
-    uint8 index = 0;
-    PyTuple* pins = new PyTuple(ccPin->pins.size());
+PyTuple* Colony::GetPins() {
+    uint8 index(0);
+    PyTuple* pins(new PyTuple(ccPin->pins.size()));
 
     for (auto &cur : ccPin->pins) {
         PyDict* dict = new PyDict();
@@ -1232,17 +1232,17 @@ PyTuple* Colony::GetPins()
         dict->SetItem("state", new PyInt(cur.second.state));
         dict->SetItem("level", new PyInt(cur.second.level));
 
-        PyDict* contents = new PyDict();
-        contents->clear();
-        if (cur.second.isStorage)
+        PyDict* contents(new PyDict());
+        if (cur.second.isStorage) {
             for (auto &cur2 : cur.second.contents)
                 contents->SetItem(new PyInt(cur2.first), new PyInt(cur2.second));
+        }
         dict->SetItem("contents", contents);
 
         if (cur.second.isLaunchable)
             dict->SetItem("lastLaunchTime", (cur.second.lastLaunchTime > 0 ? new PyLong(cur.second.lastLaunchTime) : PyStatic.NewNone()));
 
-        if (cur.second.isProcess)
+        if (cur.second.isProcess) {
             if (cur.second.schematicID) {
                 dict->SetItem("schematicID", new PyInt(cur.second.schematicID));
                 std::map<uint32, PI_Plant>::iterator plantPin = ccPin->plants.find(cur.first);
@@ -1260,11 +1260,10 @@ PyTuple* Colony::GetPins()
                 dict->SetItem("hasReceivedInputs", PyStatic.NewFalse());
                 dict->SetItem("receivedInputsLastCycle", PyStatic.NewFalse());
             }
+        }
 
         if (cur.second.isECU) {
             if (cur.second.installTime > 0) {
-				//TODO:  test this....
-                //dict->SetItem("cycleTime", new PyFloat((float)cur.second.cycleTime / EvE::Time::Hour));
                 dict->SetItem("cycleTime", new PyLong(cur.second.cycleTime));
                 dict->SetItem("expiryTime", new PyLong(cur.second.expiryTime));
                 dict->SetItem("headRadius", new PyFloat(cur.second.headRadius));
@@ -1272,8 +1271,7 @@ PyTuple* Colony::GetPins()
                 dict->SetItem("programType", new PyInt(cur.second.programType));
                 dict->SetItem("qtyPerCycle", new PyInt(cur.second.qtyPerCycle));
             }
-            PyList* list = new PyList();
-            list->clear();
+            PyList* list(new PyList());
             for (auto &head : cur.second.heads) {
                 PyTuple* tuple = new PyTuple(3);
                     tuple->SetItem(0, new PyInt(head.first));
@@ -1395,7 +1393,7 @@ void Colony::Update(bool updateTimes/*false*/)
 	 *
 	 * type		# pins	   runtime in us
 	 * empty  	   0         47 - 80
-	 * basic	 < 10
+	 * basic	 < 10       125 - 150
 	 * prod		10 - 20
 	 * adv		20 - 40
 	 * max		  40+
@@ -1417,20 +1415,20 @@ void Colony::ProcessECUs(bool& updateTimes)
             continue;
 
         if (ecu.second.expiryTime < EvE::Time::Second ) {
-            if (is_log_enabled(COLONY__DEBUG))
-                _log(COLONY__DEBUG, "Colony::ProcessECUs() - expiryTime (%lli) < 1s", \
+            if (is_log_enabled(COLONY__WARNING))
+                _log(COLONY__WARNING, "Colony::ProcessECUs() - expiryTime (%lli) < 1s", \
                         ecu.second.expiryTime);
             continue;
         }
         if (ecu.second.expiryTime > m_procTime) {
-            if (is_log_enabled(COLONY__DEBUG))
-                _log(COLONY__DEBUG, "Colony::ProcessECUs() - expiryTime (%lli) > m_procTime (%lli).", \
+            if (is_log_enabled(COLONY__WARNING))
+                _log(COLONY__WARNING, "Colony::ProcessECUs() - expiryTime (%lli) > m_procTime (%lli).", \
                         ecu.second.expiryTime, m_procTime);
             continue;
         }
         if (ecu.second.cycleTime < 0.0f) {
-            if (is_log_enabled(COLONY__DEBUG))
-                _log(COLONY__DEBUG, "Colony::ProcessECUs() - cycleTime < 0.");
+            if (is_log_enabled(COLONY__WARNING))
+                _log(COLONY__WARNING, "Colony::ProcessECUs() - cycleTime < 0.");
             continue;
         }
 
@@ -1595,8 +1593,8 @@ void Colony::ProcessPlants(bool& updateTimes)
                 continue;
             }
             if (plant->second.cycleTime == 0) {
-                if (is_log_enabled(COLONY__DEBUG))
-                    _log(COLONY__DEBUG, "Colony::ProcessPlants() - cycleTime = 0.");
+                if (is_log_enabled(COLONY__WARNING))
+                    _log(COLONY__WARNING, "Colony::ProcessPlants() - cycleTime = 0.");
                 continue;
             } */
 
@@ -1628,8 +1626,8 @@ void Colony::ProcessPlants(bool& updateTimes)
                     }
                 }
             } else {
-                if (is_log_enabled(COLONY__DEBUG))
-                    _log(COLONY__DEBUG, "Colony::ProcessPlants() - divisor < 0 (%i).", divisor);
+                if (is_log_enabled(COLONY__WARNING))
+                    _log(COLONY__WARNING, "Colony::ProcessPlants() - divisor < 0 (%i).", divisor);
                 continue;
             }
             // we are doing 'batch' cycles here.  get #cycles completed based on proc times
@@ -1680,8 +1678,8 @@ void Colony::ProcessPlants(bool& updateTimes)
                 // source is storage.  continue with processing
                 itemItr = srcPin->second.contents.find(it->second.commodityTypeID);
                 if (itemItr == srcPin->second.contents.end()) {
-                    if (is_log_enabled(COLONY__DEBUG))
-                        _log(COLONY__DEBUG, "Colony::ProcessPlants() - Routed Commodity %s (%u) not found in Source Inventory.", \
+                    if (is_log_enabled(COLONY__WARNING))
+                        _log(COLONY__WARNING, "Colony::ProcessPlants() - Routed Commodity %s (%u) not found in Source Inventory.", \
                                 sPIDataMgr.GetProductName(it->second.commodityTypeID), it->second.commodityTypeID);
                     continue;// this material wasnt found in source container....cant move what we aint got..
                 }

@@ -324,8 +324,8 @@ void PlanetDB::LoadPins(uint32 ccPinID, std::map<uint32, PI_Pin>& pins)
             pin.ownerID                 = row.GetInt(2);
             pin.state                   = row.GetInt(3);
             pin.level                   = row.GetInt(4);
-            pin.latitude                = row.GetFloat(5);
-            pin.longitude               = row.GetFloat(6);
+            pin.latitude                = row.GetDouble(5);
+            pin.longitude               = row.GetDouble(6);
             pin.isCommandCenter         = row.GetBool(7);
             pin.isLaunchable            = row.GetBool(8);
             pin.isProcess               = row.GetBool(9);
@@ -333,11 +333,9 @@ void PlanetDB::LoadPins(uint32 ccPinID, std::map<uint32, PI_Pin>& pins)
             pin.isECU                   = row.GetBool(11);
             pin.schematicID             = row.GetInt(12);
             pin.programType             = row.GetInt(13);
-            pin.headRadius              = row.GetFloat(14);
+            pin.headRadius              = row.GetDouble(14);
             pin.lastLaunchTime          = row.GetInt64(15);
             pin.cycleTime               = row.GetInt64(16);
-            if (pin.isECU)              // ecu time is stored as filetime, but used as hours
-                pin.cycleTime           /= EvE::Time::Hour;
             pin.expiryTime              = row.GetInt64(17);
             pin.installTime             = row.GetInt64(18);
             pin.lastRunTime             = row.GetInt64(19);
@@ -813,7 +811,7 @@ void PlanetDB::SaveContents(PI_CCPin* ccPin)
     std::map<uint16, uint32>::iterator itr;
     for (auto &cur : ccPin->pins) {
         if (cur.second.isStorage) {
-            for (itr = cur.second.contents.begin(); itr != cur.second.contents.end(); itr++) {
+            for (itr = cur.second.contents.begin(); itr != cur.second.contents.end(); ++itr) {
                 if (save) {
                     Inserts << ", ";
                 } else {
@@ -844,7 +842,7 @@ void PlanetDB::SavePinContents(uint32 ccPinID, uint32 pinID, std::map< uint16, u
 
     bool save(false);
     std::map<uint16, uint32>::iterator itr;
-    for (itr = contents.begin(); itr != contents.end(); itr++) {
+    for (itr = contents.begin(); itr != contents.end(); ++itr) {
         if (save) {
             Inserts << ", ";
         } else {

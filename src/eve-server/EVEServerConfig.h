@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    12.7
+    Version:    12.8
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -141,6 +141,8 @@ public:
         // Misc fees
         float StationServiceFee;
         uint16 CSPA;
+        float DrillCycleMod;
+        float PlantCycleMod;
     } rates;
 
     // from <market>
@@ -268,7 +270,7 @@ public:
         std::string cacheDir;
         // used as the base directory for the image server
         std::string imageDir;
-        // path to TraderJoe settings 
+        // path to TraderJoe settings
         std::string marketBotSettings;
     } files;
 

@@ -237,7 +237,7 @@ void PIDataMgr::GetSchematicData(uint8 schematicID, PI_Schematic& data)
  * baseValue = 1998.0
  */
 
-PyRep* PIDataMgr::GetProgramResultInfo(Colony* pColony, uint32 pinID, uint16 typeID, PyList* heads, float headRadius)
+PyRep* PIDataMgr::GetProgramResultInfo(Colony* pColony, uint32 pinID, uint16 typeID, double headRadius)
 {
     //  ECU pinID, resource typeID, list of {headID, lat, long}, radius of head (small number...rad maybe?)
     // qtyToDistribute, cycleTime, numCycles = self.remoteHandler.GetProgramResultInfo(pinID, typeID, pin.heads, headRadius)
@@ -263,21 +263,20 @@ PyRep* PIDataMgr::GetProgramResultInfo(Colony* pColony, uint32 pinID, uint16 typ
      *        cycleTime = int(cycleTime * HOUR)
      */
     InventoryItemRef iRef = sItemFactory.GetItemRef(pinID);
-    float cycleTime = iRef->GetAttribute(AttrPinCycleTime).get_float()/*300*/, length = 0;
-    uint16 numCycles = 0;
-    double one = ((headRadius - 0.01f) /0.04);
-    length = one * 335 + 1;  //293
-    double two = log2(length /25);  //3.584962501
-    cycleTime = EvE::max(floor(two) + 1);    //4
-    cycleTime = 0.25 * (pow(2, cycleTime));  // this is (float) in hours (0.25, 0.5, etc)
-    numCycles = static_cast<uint16>(length / cycleTime);   //73
-    int64 iCycleTime = cycleTime * EvE::Time::Hour;
+    //float cycleTime = iRef->GetAttribute(AttrPinCycleTime).get_float()/*300*/;
+    double one((headRadius - 0.01) / 0.04);
+    float length(one * 335.0f + 1.0f);  //length in hours between 1 and 336  (336h = 14d)
+    double two = log2(length / 25.0);  //3.584962501
+    float cycleTime = EvE::max(floor(two) + 1.0f);    //4
+    cycleTime = 0.25f * (pow(2, cycleTime));  // this is (float) in hours (0.25, 0.5, etc)
+    uint16 numCycles = static_cast<uint16>(length / cycleTime);   //73
+    int64 iCycleTime = static_cast<int64>(cycleTime * EvE::Time::Hour);
 
     uint32 qtyPerCycle = GetProgramOutput(iRef, iCycleTime);
     //qtyPerCycle *= heads->size();
 
-    _log(PLANET__TRACE, "PlanetMgr::GetProgramResultInfo() - cycleTime:%.2f, iCycleTime:%lli, length:%.2f, numCycles:%u, qtyPerCycle:%u, heads: %lu, headRadius:%.4f", \
-                cycleTime, iCycleTime, length, numCycles, qtyPerCycle, heads->size(), headRadius);
+    _log(PLANET__TRACE, "PlanetMgr::GetProgramResultInfo() - cycleTime:%.2f, iCycleTime:%lli, length:%.2f, numCycles:%u, qtyPerCycle:%u, headRadius:%.4f", \
+                cycleTime, iCycleTime, length, numCycles, qtyPerCycle, headRadius);
 
     PyTuple* res = new PyTuple(3);
         res->SetItem(0, new PyInt(qtyPerCycle));    //qtyToDistribute  (2843)
@@ -296,7 +295,6 @@ PyRep* PIDataMgr::GetProgramResultInfo(Colony* pColony, uint32 pinID, uint16 typ
     13:17:37 [PlanetResDump]       [ 1]       Long: 1251639296
     13:17:37 [PlanetResDump]       [ 2]    Integer: 33
     */
-    PySafeDecRef(heads);
     return res;
 }
 
@@ -312,7 +310,7 @@ PyRep* PIDataMgr::GetProgramResultInfo(Colony* pColony, uint32 pinID, uint16 typ
                 */
 // ecu program methods from client
 
-uint32 PIDataMgr::GetProgramOutput(InventoryItemRef iRef, int64 cycleTime, int64 startTime, int64 currentTime)
+uint32 PIDataMgr::GetProgramOutput(InventoryItemRef iRef, int64 cycleTime, int64 startTime/*0*/, int64 currentTime/*0*/)
 {
     // this is in client to display the Extractor window program results.
 
@@ -339,15 +337,15 @@ uint32 PIDataMgr::GetProgramOutput(InventoryItemRef iRef, int64 cycleTime, int64
     sinStuff = EvE::max(sinStuff);
     float barHeight = decayValue * (1 + iRef->GetAttribute(AttrECUNoiseFactor).get_float() * sinStuff);     //0.8
     */
-    return uint32(barWidth * 1000);     // 0.13888 * 1000          16
+    return static_cast<uint32>(barWidth * 1000);     // 0.13888 * 1000          16
 }
 
 uint32 PIDataMgr::GetProgramOutputPrediction(InventoryItemRef iRef, int64 cycleTime, uint32 numCycles/*0*/)
 {
-    uint32 val = 0;
+    uint32 val(0);
     if (numCycles > 120)    // hardcoded in client
         numCycles = 120;
-    for (int i=1; i <= numCycles; i++)
+    for (int i(1); i <= numCycles; ++i)
         val += GetProgramOutput(iRef, cycleTime, i * cycleTime);
     return val;
 }

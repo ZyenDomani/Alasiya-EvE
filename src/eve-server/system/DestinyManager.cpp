@@ -2133,7 +2133,7 @@ void DestinyManager::WarpTo(const GPoint& destPoint, int32 distance, bool autoPi
         // check for enough cap to warp.
 
         /*  capacitor for warp formulas from https://oldforums.eveonline.com/?a=topic&threadID=332116
-         *  Energy to warp = warpCapacitorNeed * mass * au * (1 - warp_drive_operation_skill_level * 0.10)
+         *  Energy to warp = warpCapacitorNeed * mass(kG) * au * (1 - warp_drive_operation_skill_level * 0.10)
          ** @note:  warpCapacitorNeed is type double...max ive seen is shuttles @ 0.00000134771  and indys @ 0.000000108911
          */
 
@@ -2999,8 +2999,8 @@ Battleships                             0.155
 void DestinyManager::MakeMissile(Missile* pMissile) {
     SetMaxVelocity(pMissile->GetSpeed());
     //SetPosition(pMissile->GetSelf()->position());
-    m_agility = (pMissile->GetSelf()->type().mass() / 1000000) *
-                    pMissile->GetSelf()->GetAttribute(AttrInertiaMod).get_double();
+    m_agility = (pMissile->GetSelf()->type().mass() * pMissile->GetSelf()->GetAttribute(AttrInertiaMod).get_double());
+    m_agility /= 1000000.0;
     // not sure if this will be used here.  attr 559
     pMissile->GetSelf()->SetAttribute(AttrAgility, m_agility, false);
 

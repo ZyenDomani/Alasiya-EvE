@@ -143,7 +143,7 @@ bool PlanetMgr::CreatePin(UUNCommand& nc)
                 return true;
             }
             m_colony->CreateCommandPin(uunccc.pinID, uunccc.typeID, uunccc.latitude, uunccc.longitude);
-            // create customs office if not exist 
+            // create customs office if not exist
             if (!m_planet->HasCOSE())
                 m_planet->CreateCustomsOffice();
             return false;
@@ -358,8 +358,8 @@ void PlanetMgr::SetLinkLevel(UUNCommand& nc)
                           PyRep::IntegerValue(nc.command_data->GetItem(2)));
 }
 
-void PlanetMgr::SetSchematic(UUNCommand& nc)
-{
+void PlanetMgr::SetSchematic(UUNCommand& nc) {
+    // this is only for plants
     uint32 pinID = 0;
     if (nc.command_data->GetItem(0)->IsTuple()) {
         pinID = PyRep::IntegerValue(nc.command_data->GetItem(0)->AsTuple()->GetItem(1));
@@ -395,8 +395,8 @@ void PlanetMgr::MoveExtractorHead(UUNCommand& nc)
     m_colony->MoveExtractorHead(args.ecuID, (uint16)args.headID, args.latitude, args.longitude);
 }
 
-void PlanetMgr::InstallProgram(UUNCommand& nc)
-{
+void PlanetMgr::InstallProgram(UUNCommand& nc) {
+    // this is only for ECUs
     Call_InstallProgram args;
     if (!args.Decode(nc.command_data)) {
         _log(SERVICE__ERROR, "Failed to decode args for Call_InstallProgram");
@@ -405,7 +405,7 @@ void PlanetMgr::InstallProgram(UUNCommand& nc)
         return;
     }
 
-    m_colony->InstallProgram(args.ecuID, (uint16)args.typeID, args.headRadius, this);
+    m_colony->InstallProgram(args.ecuID, (uint16)args.typeID, args.headRadius);
 }
 
 void PlanetMgr::KillExtractorHead(UUNCommand& nc)

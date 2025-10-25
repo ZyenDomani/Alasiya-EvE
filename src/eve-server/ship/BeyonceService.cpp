@@ -697,11 +697,11 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
         if (pSE->IsPlanetSE()) {
             if (pSE->GetPlanetSE()->HasCOSE()) {
                 // if planet has a customs office, make warpin point 5km from co.
-                warpToPoint = pSE->GetPlanetSE()->GetCOSE()->GetPosition();
+                warpToPoint = pSE->GetPlanetSE()->GetCustomsOffice()->GetPosition();
                 GVector vectorFromOrigin(pClient->GetShipSE()->GetPosition(), warpToPoint);
                 vectorFromOrigin.normalize();   //we now have a direction
                 GPoint stopPoint(vectorFromOrigin * 10000);
-                distance += pSE->GetPlanetSE()->GetCOSE()->GetRadius();
+                distance += pSE->GetPlanetSE()->GetCustomsOffice()->GetRadius();
                 distance += pClient->GetShip()->radius();
                 warpToPoint -= stopPoint;
                 warpToPoint -= distance;

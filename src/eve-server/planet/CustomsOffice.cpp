@@ -70,15 +70,15 @@ void CustomsSE::Init() {
         m_db.SaveCustomsData(m_cData, m_oData);
     }
 
-    // this should be based on state/status
+    // this should be based on state/status...not for co/poco...testing flagAutoFit
     //NOTE:  can also be reinforced <25% shield
-    m_self->SetFlag(flagStructureActive);
+    //m_self->SetFlag(flagStructureActive);
 }
 
 void CustomsSE::InitData()
 {
     // init all data.
-    m_cData.state = EVEPOS::EntityState::Anchored;  // allow corp settings menu
+    m_cData.state = 252; //EVEPOS::EntityState::Anchored;  // allow corp settings menu
     m_cData.timestamp = 0;
     m_cData.status = EVEPOS::StructureState::Online;
     m_cData.allowAlliance = false;

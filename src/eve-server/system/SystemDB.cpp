@@ -191,7 +191,12 @@ bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         entry.position      = pos;
         entry.planetID      = atoi(row.GetText(9));
 
-        if (IsCorpID(entry.ownerID)) {
+        if ((entry.typeID == EVEDB::invTypes::InterbusCustomsOffice)
+        or (entry.typeID == EVEDB::invTypes::PlanetaryCustomsOffice)) {
+            entry.corporationID = entry.ownerID;
+            entry.allianceID    = 0;
+            entry.factionID     = 0;
+        } else if (IsCorpID(entry.ownerID)) {
             entry.corporationID = entry.ownerID;
             if (sDatabase.RunQuery(res2, "SELECT allianceID, warFactionID FROM crpCorporation WHERE corporationID = %u", entry.corporationID))
                 if (res2.GetRow(row2)) {

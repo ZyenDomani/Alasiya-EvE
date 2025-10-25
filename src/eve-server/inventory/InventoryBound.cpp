@@ -302,7 +302,7 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
     }
 
     InventoryItemRef iRef = sItemFactory.GetItemRef(args.itemID);
-
+    //TODO:  test for virtual items here...PI in customs offices are null at this point
     bool moveStack(false);
     int32 quantity(0);
     if (call.byname.find("qty") != call.byname.end())

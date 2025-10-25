@@ -225,8 +225,8 @@ PyRep* PlanetSE::GetExtractorsForPlanet(int32 planetID) {
             dict->SetItem("pinID", new PyInt(row.GetInt(0)));
             dict->SetItem("typeID", new PyInt(row.GetInt(1)));
             dict->SetItem("ownerID", new PyInt(row.GetInt(2)));
-            dict->SetItem("latitude", new PyFloat(row.GetFloat(3)));
-            dict->SetItem("longitude", new PyFloat(row.GetFloat(4)));
+            dict->SetItem("latitude", new PyFloat(row.GetDouble(3)));
+            dict->SetItem("longitude", new PyFloat(row.GetDouble(4)));
         list->AddItem(new PyObject("util.KeyVal", dict));
     }
 
@@ -265,14 +265,14 @@ void PlanetSE::CreateCustomsOffice() {
     uint16 typeID(EVEDB::invTypes::InterbusCustomsOffice);
     FactionData data = FactionData();
         data.ownerID = corpInterbus;
-        data.factionID = factionInterBus;
+        data.factionID = 0; //factionInterBus;
         data.allianceID = 0;
         data.corporationID = corpInterbus;
 
     if (m_system->GetSecurityRating() > 0.49) {
         typeID = EVEDB::invTypes::PlanetaryCustomsOffice;
         data.ownerID = corpCONCORD;
-        data.factionID = sDataMgr.GetRegionFaction(m_system->GetRegionID());
+        data.factionID = 0; //sDataMgr.GetRegionFaction(m_system->GetRegionID());
         data.allianceID = 0;
         data.corporationID = corpCONCORD;
     }

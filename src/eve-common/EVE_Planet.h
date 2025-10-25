@@ -193,12 +193,12 @@ struct PI_Pin {
     int64 installTime=0;                // Process and ECU processing time, Pin Creation Time for others      // saved as filetime
     int64 lastLaunchTime=0;             // Command Center and Spaceports  // saved as filetime
 
-    float latitude=0.0f;                // planetary location common for all pins
-    float longitude=0.0f;               // planetary location common for all pins
-
     float capacity=0.0f;                // pin volume cap in m3.  - this is not implemented yet
     float quantity=0.0f;                // volume of current contents in m3.  - this is not implemented yet
-    float headRadius=0.0f;              // ECU Only
+
+    double headRadius=0.0;              // ECU Only
+    double latitude=0.0;                // planetary location common for all pins
+    double longitude=0.0;               // planetary location common for all pins
 
     std::map<uint16, PI_Heads> heads;   // ECU Only
     std::map<uint16, uint32> contents;  // Storage    <typeID, qty>
