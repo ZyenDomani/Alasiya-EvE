@@ -28,6 +28,8 @@
 #define __UTILS_TIME_H__INCL__
 
 /*
+uSEC = 10L
+MSEC = 10000L
 SEC = 10000000L
 MIN = (SEC * 60L)
 HOUR = (MIN * 60L)
@@ -38,8 +40,9 @@ YEAR = (12 * MONTH)
 namespace EvE {
     namespace Time {
         enum:int64_t {
-            mSecond     = 1000L,        //1000
-            Second      = (mSecond * 1000L),    //10000000
+            uSecond     = 10L,
+            mSecond     = 10000L,        //1000
+            Second      = 10000000L,
             Minute      = (Second * 60L),
             Hour        = (Minute * 60L),
             Day         = (Hour * 24L),
