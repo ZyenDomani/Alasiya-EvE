@@ -54,7 +54,13 @@ protected:
     void                Populate();
 
 private:
-    uint8 m_procCount;
+    //  mission png resources...
+    PyString* InteractPNG;
+    PyString* CourierPNG;
+    PyString* MiningPNG;
+    PyString* KillPNG;
+    PyString* TalkPNG;
+    PyString* SmashPNG;
 
     std::map<std::string, uint32> m_names;
     std::multimap<uint8, CourierData> m_courier;        // level/data
@@ -65,14 +71,6 @@ private:
     std::multimap<uint32, MissionOffer> m_offers;       // charID/data     current mission offers by charID
     std::multimap<uint32, MissionOffer> m_aoffers;      // agentID/data    current mission offers by agentID
     std::multimap<uint32, MissionOffer> m_xoffers;      // charID/data     expired/completed offers by charID
-
-    //  mission png resources...
-    PyString* InteractPNG;
-    PyString* CourierPNG;
-    PyString* MiningPNG;
-    PyString* KillPNG;
-    PyString* TalkPNG;
-    PyString* SmashPNG;
 };
 
 //Singleton

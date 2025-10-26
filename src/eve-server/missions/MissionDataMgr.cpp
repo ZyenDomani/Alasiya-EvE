@@ -22,8 +22,7 @@
 #include "inventory/ItemFactory.h"
 
 MissionDataMgr::MissionDataMgr()
- : m_procCount(0),
- KillPNG(nullptr),
+ : KillPNG(nullptr),
  MiningPNG(nullptr),
  CourierPNG(nullptr)
 {
@@ -57,51 +56,46 @@ void MissionDataMgr::GetInfo() {
     // nothing to do here
 }
 
-// called every minute from EntityMgr::Process()
+// called every 15m from EntityMgr::Process()
 void MissionDataMgr::Process() {
-    // process open offers every 10m
-    if (++m_procCount > 10) {
-        m_procCount = 0;
-
-        Agent* pAgent(nullptr);
-        Client* pClient(nullptr);
-        std::multimap<uint32, MissionOffer>::iterator itr = m_offers.begin();
-        while (itr != m_offers.end()) {
-            if (itr->second.stateID < Mission::State::Failed) {
-                if (itr->second.expiryTime < GetFileTimeNow()) {
-                    pAgent = sEntityMgr.GetAgent(itr->second.agentID);
-                    pClient = sEntityMgr.FindClientByCharID(itr->first);
-                    // notify client if they are online.  eventually we'll send mail also
-                    if (itr->second.stateID == Mission::State::Accepted) {
-                        pAgent->SendMissionUpdate(pClient, "failed");
-                        itr->second.stateID = Mission::State::Failed;
-                        if (itr->second.courierTypeID) {
-                            // remove item from player's possession
-                            if (pClient != nullptr) {
-                                pClient->RemoveMissionItem(itr->second.courierTypeID, itr->second.courierAmount);
-                            } else {
-                                MissionDB::RemoveMissionItem(itr->first, itr->second.courierTypeID, itr->second.courierAmount);
-                            }
+    // process open offers every 15m
+    Agent* pAgent(nullptr);
+    Client* pClient(nullptr);
+    std::multimap<uint32, MissionOffer>::iterator itr = m_offers.begin();
+    while (itr != m_offers.end()) {
+        if (itr->second.stateID < Mission::State::Failed) {
+            if (itr->second.expiryTime < GetFileTimeNow()) {
+                pAgent = sEntityMgr.GetAgent(itr->second.agentID);
+                pClient = sEntityMgr.FindClientByCharID(itr->first);
+                // notify client if they are online.  eventually we'll send mail also
+                if (itr->second.stateID == Mission::State::Accepted) {
+                    pAgent->SendMissionUpdate(pClient, "failed");
+                    itr->second.stateID = Mission::State::Failed;
+                    if (itr->second.courierTypeID) {
+                        // remove item from player's possession
+                        if (pClient != nullptr) {
+                            pClient->RemoveMissionItem(itr->second.courierTypeID, itr->second.courierAmount);
+                        } else {
+                            MissionDB::RemoveMissionItem(itr->first, itr->second.courierTypeID, itr->second.courierAmount);
                         }
-                    } else if (itr->second.stateID == Mission::State::Offered) {
-                        pAgent->SendMissionUpdate(pClient, "offer_expired");
-                        itr->second.stateID = Mission::State::Expired;
                     }
-                    std::multimap<uint32, MissionOffer>::iterator itr2 = m_aoffers.find(itr->second.agentID);
-                    if (itr2 != m_aoffers.end())
-                        m_aoffers.erase(itr2);
-                    m_xoffers.emplace(itr->first, itr->second);
-                    pAgent->RemoveOffer(itr->first);
-                    MissionDB::UpdateMissionOffer(itr->second);
-                    itr = m_offers.erase(itr);
+                } else if (itr->second.stateID == Mission::State::Offered) {
+                    pAgent->SendMissionUpdate(pClient, "offer_expired");
+                    itr->second.stateID = Mission::State::Expired;
                 }
-            } else {
-                ++itr;
+                std::multimap<uint32, MissionOffer>::iterator itr2 = m_aoffers.find(itr->second.agentID);
+                if (itr2 != m_aoffers.end())
+                    m_aoffers.erase(itr2);
+                m_xoffers.emplace(itr->first, itr->second);
+                pAgent->RemoveOffer(itr->first);
+                MissionDB::UpdateMissionOffer(itr->second);
+                itr = m_offers.erase(itr);
             }
         }
+
+        ++itr;
     }
 }
-
 
 void MissionDataMgr::Populate() {
     double start = GetTimeMSeconds();
@@ -352,14 +346,14 @@ void MissionDataMgr::AddMissionOffer(uint32 charID, MissionOffer& data)
 void MissionDataMgr::RemoveMissionOffer(uint32 charID, MissionOffer& data)
 {
     auto itr = m_offers.equal_range(charID);
-    for (auto it = itr.first; it != itr.second; it++)
+    for (auto it = itr.first; it != itr.second; ++it)
         if (it->second.agentID == data.agentID) {
             m_offers.erase(it);
             break;
         }
 
     itr = m_aoffers.equal_range(data.agentID);
-    for (auto it = itr.first; it != itr.second; it++)
+    for (auto it = itr.first; it != itr.second; ++it)
         if (it->second.characterID == charID) {
             m_aoffers.erase(it);
             break;
@@ -369,21 +363,21 @@ void MissionDataMgr::RemoveMissionOffer(uint32 charID, MissionOffer& data)
 void MissionDataMgr::LoadAgentOffers(const uint32 agentID, std::map< uint32, MissionOffer >& data)
 {
     auto itr = m_aoffers.equal_range(agentID);
-    for (auto it = itr.first; it != itr.second; it++)
+    for (auto it = itr.first; it != itr.second; ++it)
         data[it->second.characterID] = (it->second);
 }
 
 void MissionDataMgr::LoadMissionOffers(uint32 charID, std::vector<MissionOffer>& data)
 {
     auto itr = m_offers.equal_range(charID);
-    for (auto it = itr.first; it != itr.second; it++)
+    for (auto it = itr.first; it != itr.second; ++it)
         data.push_back(it->second);
 
     // config switch to allow loading/displaying of expired/completed mission offers
     // not completely working yet.....AgentMgrService::Handle_GetMyJournalDetails() will need work to implement this.
     if (sConfig.server.LoadOldMissions) {
         auto itr = m_xoffers.equal_range(charID);
-        for (auto it = itr.first; it != itr.second; it++)
+        for (auto it = itr.first; it != itr.second; ++it)
             data.push_back(it->second);
     }
 }

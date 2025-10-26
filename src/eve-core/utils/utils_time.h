@@ -39,7 +39,7 @@ namespace EvE {
     namespace Time {
         enum:int64_t {
             mSecond     = 1000L,        //1000
-            Second      = 10000000L,    //10000000
+            Second      = (mSecond * 1000L),    //10000000
             Minute      = (Second * 60L),
             Hour        = (Minute * 60L),
             Day         = (Hour * 24L),

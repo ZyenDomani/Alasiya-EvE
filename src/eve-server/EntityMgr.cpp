@@ -265,7 +265,6 @@ void EntityMgr::Process() {
         // these minute tics do not need to be precise
         if (m_minuteTimer.Check()) {
             ++m_minutes;
-            sMissionDataMgr.Process();  // 1m
 
             if (m_minutes % 5 == 0) { // ~5m
                 sWHMgr.Process();
@@ -277,6 +276,7 @@ void EntityMgr::Process() {
             if (m_minutes % 15 == 0) { // ~15m
                 sMktBotMgr.Process();  // 15m to 30m
                 sConsole.UpdateStatus();
+                sMissionDataMgr.Process();
             }
             if (m_minutes % 60 == 0) { // ~1h
                 MapDB::ManipulateTimeData();    // not used - does nothing at this time
