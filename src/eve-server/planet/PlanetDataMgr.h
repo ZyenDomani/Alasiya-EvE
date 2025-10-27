@@ -61,7 +61,7 @@ public:
     // Initializes the Table:
     int Initialize();
 
-    PyRep* GetProgramResultInfo( Colony* pColony, uint32 pinID, uint16 typeID, double headRadius );
+    PyRep* GetProgramResultInfo( Colony* pColony, uint32 pinID, uint16 typeID, double headRadius, PyList* heads);
 
     void GetSchematicData(uint8 schematicID, PI_Schematic& data);
 
@@ -72,6 +72,7 @@ public:
     uint32 GetProgramOutput(InventoryItemRef iRef, int64 cycleTime, int64 startTime=0, int64 currentTime=0);
     uint32 GetProgramOutputPrediction(InventoryItemRef iRef, int64 cycleTime, uint32 numCycles = 0);
 
+    const char* GetPinName(uint32 pinID);
     const char* GetProductName(uint16 typeID);
     const char* GetPinTypeName(uint16 typeID);
 

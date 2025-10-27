@@ -90,10 +90,12 @@ void MissionDataMgr::Process() {
                 pAgent->RemoveOffer(itr->first);
                 MissionDB::UpdateMissionOffer(itr->second);
                 itr = m_offers.erase(itr);
+            } else {
+                ++itr;
             }
+        } else {
+            ++itr;
         }
-
-        ++itr;
     }
 }
 

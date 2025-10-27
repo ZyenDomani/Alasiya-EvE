@@ -305,9 +305,8 @@ void PlanetDB::LoadPins(uint32 ccPinID, std::map<uint32, PI_Pin>& pins)
     if (!sDatabase.RunQuery(res,
         "SELECT pinID, typeID, ownerID, state, level, latitude, longitude, "
         " isCommandCenter, isLaunchable, isProcess, isStorage, isECU,"
-        " schematicID, programType, headRadius,"
-        " launchTime, cycleTime, expiryTime, installTime, lastRunTime,"
-        " hasReceivedInputs, receivedInputsLastCycle, qtyPerCycle"
+        " schematicID, programType, headRadius, launchTime, cycleTime,"
+        " expiryTime, installTime, lastRunTime, qtyPerCycle"
         " FROM piPins"
         " WHERE ccPinID = %u", ccPinID))
     {
@@ -339,9 +338,7 @@ void PlanetDB::LoadPins(uint32 ccPinID, std::map<uint32, PI_Pin>& pins)
             pin.expiryTime              = row.GetInt64(17);
             pin.installTime             = row.GetInt64(18);
             pin.lastRunTime             = row.GetInt64(19);
-            pin.hasReceivedInputs       = row.GetBool(20);
-            pin.receivedInputsLastCycle = row.GetBool(21);
-            pin.qtyPerCycle             = row.GetInt(22);
+            pin.qtyPerCycle             = row.GetInt(20);
 
         if (pin.isStorage or pin.isProcess)
             LoadContents(row.GetInt(0), pin.contents);
@@ -575,13 +572,10 @@ void PlanetDB::UpdatePins(uint32 pinID, PI_CCPin* ccPin) {
                                " installTime = %lli,"
                                " lastRunTime = %lli,"
                                " schematicID = %u,"
-                               " qtyPerCycle = %u,"
-                               " hasReceivedInputs=%u,"
-                               " receivedInputsLastCycle=%u"
+                               " qtyPerCycle = %u"
                                " WHERE pinID = %u",
                                itr->second.state, itr->second.cycleTime, itr->second.installTime, itr->second.lastRunTime,
-                               itr->second.schematicID, itr->second.qtyPerCycle, itr->second.hasReceivedInputs,
-                               itr->second.receivedInputsLastCycle, pinID);
+                               itr->second.schematicID, itr->second.qtyPerCycle, pinID);
         }
     } else {
         for (auto &cur : ccPin->pins) {
@@ -592,13 +586,10 @@ void PlanetDB::UpdatePins(uint32 pinID, PI_CCPin* ccPin) {
                                " installTime = %lli,"
                                " lastRunTime = %lli,"
                                " schematicID = %u,"
-                               " qtyPerCycle = %u,"
-                               " hasReceivedInputs=%u,"
-                               " receivedInputsLastCycle=%u"
+                               " qtyPerCycle = %u"
                                " WHERE pinID = %u",
                                cur.second.state, cur.second.cycleTime, cur.second.installTime, cur.second.lastRunTime,
-                               cur.second.schematicID, cur.second.qtyPerCycle, cur.second.hasReceivedInputs,
-                               cur.second.receivedInputsLastCycle, pinID);
+                               cur.second.schematicID, cur.second.qtyPerCycle, pinID);
         }
     }
 }

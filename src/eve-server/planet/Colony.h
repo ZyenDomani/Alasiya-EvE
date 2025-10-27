@@ -44,14 +44,14 @@ public:
     void Load();
     void LoadPlants();    // for loading current data to pins
     void Save();
-    void Update(bool updateTimes=false);
+    void Update(bool updateTimes=false);        // initial process pin call.  this will run batches to get time current
     void Shutdown();
     void UpdatePlantPins(uint32 pinID=0);  // for saving current data from runtime plantPin to saved colonyPin
     void AbandonColony();
 
     void Process();
-    void ProcessECUs(bool& save);
-    void ProcessPlants(bool& save);
+    void ProcessECUs(bool& updateTimes);
+    void ProcessPlants(bool& updateTimes);
 
     void RemovePin(uint32 pinID);
     void RemoveLink(uint32 src, uint32 dest);
@@ -69,7 +69,9 @@ public:
     void MoveExtractorHead(uint32 ecuID, uint16 headID, double latitude, double longitude);
     void KillExtractorHead(uint32 ecuID, uint16 headID);
 
+    // this is only for ECUs
     void InstallProgram( uint32 ecuID, uint16 typeID, double headRadius );
+    // this is only for plants
     void SetSchematic(uint32 pinID, uint8 schematicID=0);
     void SetProgramResults( uint32 ecuID, uint16 typeID, uint16 numCycles, double headRadius, float cycleTime, uint32 qtyPerCycle );
 
@@ -115,6 +117,7 @@ private:
 
     std::vector<uint32> tempECUs;
     std::map<uint8, uint32> tempPinIDs;
+    std::vector<uint32> m_ECUs;
     // pLevel, pinID
     std::multimap<uint8, uint32> m_plantMap;        // map plant's P level to pinID.  to be used during Update()
     // srcPinID, routeData

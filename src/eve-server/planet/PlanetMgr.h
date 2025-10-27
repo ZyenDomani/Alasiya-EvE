@@ -36,11 +36,13 @@ protected:
     void SetLinkLevel(UUNCommand& nc);
     void CreateRoute(UUNCommand& nc);
     void RemoveRoute(UUNCommand& nc);
+    // this is only for plants
     void SetSchematic(UUNCommand& nc);
     bool UpgradeCommandCenter(UUNCommand& nc);
     void AddExtractorHead(UUNCommand& nc);
     void KillExtractorHead(UUNCommand& nc);
     void MoveExtractorHead(UUNCommand& nc);
+    // this is only for ECUs
     void InstallProgram(UUNCommand& nc);
     void PrioritizeRoute(UUNCommand& nc);
 

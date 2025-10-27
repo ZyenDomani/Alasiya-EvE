@@ -150,16 +150,14 @@ struct PI_Schematic {
 
 struct PI_Plant {
     // specifically for processing plants. this is not saved in db as a group, but is in pinData
-    bool hasReceivedInputs :1;          // plant has received material from upstream process.  this enables check to verify type/qty for processing
-    bool receivedInputsLastCycle :1;    // plant has received all required mat'l to make a production run.
+    // these two are checked in client for the pin.CanActivate() method.  it will return true if either are true.
+    bool hasReceivedInputs :1;          // Process Only
+    bool receivedInputsLastCycle :1;    // Process Only
 
-    int8 state=0;
     uint8 pLevel=0;                     // production level of this plant
     uint8 schematicID=0;
     uint16 qtyPerCycle=0;
     int64 cycleTime=0;                  // in filetime
-    //int64 expiryTime;                 // in filetime
-    int64 installTime=0;                // in filetime
     int64 lastRunTime=0;                // in filetime
 
     PI_Schematic data=PI_Schematic();
@@ -176,25 +174,18 @@ struct PI_Pin {
     bool isLaunchable :1;               // common for all pins
     bool isCommandCenter :1;            // common for all pins
 
-    // these two are checked in client for the pin.CanActivate() method.  it will return true if either are true.  that is the only reference i can find.
-    bool hasReceivedInputs :1;          // Process Only
-    bool receivedInputsLastCycle :1;    // Process Only
-
     int8 state=-1;                      // common for all pins
     uint16 level=0;                     // common for all pins
     uint16 typeID=0;                    // common for all pins
-    uint16 schematicID=0;               // used in ecu as extractor head typeID
+    uint16 schematicID=0;               // Process type, also used in ecu as extractor head typeID
     uint16 programType=0;               // used in extractors as extracted resource typeID
     uint32 qtyPerCycle=0;               // Process and ECU
     uint32 ownerID=0;                   // common for all pins
-    int64 lastRunTime=0;                // common for all pins - copy of launchTime for Spaceports
+    int64 lastRunTime=0;                // common for all pins - copy of launchTime for Spaceports   // saved as filetime
     int64 cycleTime=0;                  // Process and ECU      // saved as filetime
     int64 expiryTime=0;                 // ECU Only             // saved as filetime
-    int64 installTime=0;                // Process and ECU processing time, Pin Creation Time for others      // saved as filetime
+    int64 installTime=0;                // ECU Only - used by client to calculate data      // saved as filetime
     int64 lastLaunchTime=0;             // Command Center and Spaceports  // saved as filetime
-
-    float capacity=0.0f;                // pin volume cap in m3.  - this is not implemented yet
-    float quantity=0.0f;                // volume of current contents in m3.  - this is not implemented yet
 
     double headRadius=0.0;              // ECU Only
     double latitude=0.0;                // planetary location common for all pins

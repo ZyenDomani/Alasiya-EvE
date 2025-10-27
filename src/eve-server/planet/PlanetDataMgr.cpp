@@ -220,10 +220,10 @@ void PIDataMgr::GetSchematicData(uint8 schematicID, PI_Schematic& data)
  *    AttrExportTax = 1639,
  *    AttrImportTaxMultiplier = 1640,
  *    AttrExportTaxMultiplier = 1641,
- *    AttrPinExtractionQuantity = 1642,
+ *    AttrPinExtractionQuantity = 1642,         // 1000
  *    AttrPinCycleTime = 1643,
  *    AttrExtractorDepletionRange = 1644,
- *    AttrExtractorDepletionRate = 1645,
+ *    AttrExtractorDepletionRate = 1645,        // 1
  *    AttrCommandCenterHoldCapacity = 1646,
  *    AttrECUDecayFactor = 1683,            // this attr is empty
  *    AttrECUMaxVolume = 1684,
@@ -238,9 +238,10 @@ void PIDataMgr::GetSchematicData(uint8 schematicID, PI_Schematic& data)
  * baseValue = 1998.0
  */
 
-PyRep* PIDataMgr::GetProgramResultInfo(Colony* pColony, uint32 pinID, uint16 typeID, double headRadius)
+PyRep* PIDataMgr::GetProgramResultInfo(Colony* pColony, uint32 pinID, uint16 typeID, double headRadius, PyList* heads)
 {
     //  ECU pinID, resource typeID, list of {headID, lat, long}, radius of head (small number...rad maybe?)
+    // def InstallProgram(self, pinID, typeID, headRadius):
     // qtyToDistribute, cycleTime, numCycles = self.remoteHandler.GetProgramResultInfo(pinID, typeID, pin.heads, headRadius)
 
     /** @todo get head interference and calculate decayFactor, noiseFactor and overlapFactor for heads.  */
@@ -267,22 +268,23 @@ PyRep* PIDataMgr::GetProgramResultInfo(Colony* pColony, uint32 pinID, uint16 typ
     //float cycleTime = iRef->GetAttribute(AttrPinCycleTime).get_float()/*300*/;
     double one((headRadius - 0.01) / 0.04);
     float length(one * 335.0f + 1.0f);  //length in hours between 1 and 336  (336h = 14d)
-    double two = log2(length / 25.0);  //3.584962501
-    float cycleTime = EvE::max(floor(two) + 1.0f);    //4
-    cycleTime = 0.25f * (pow(2, cycleTime));  // this is (float) in hours (0.25, 0.5, etc)
+    double two = log(length / 25.0);  //3.584962501
+    uint8 three = static_cast<uint8>(EvE::max(floor(two) + 1.0f));    //4
+    float cycleTime = 0.25f * (2 xor three);  // this is (float) in hours (0.25, 0.5, etc)
 
-    if (cycleTime < 0.1f) {
-        _log(COLONY__ERROR, "Colony::SetProgramResults() - ecuPinID %u cycleTime < 0.1f.  setting to 1.0", pinID);
+    if (cycleTime < 0.01f) {
+        _log(COLONY__ERROR, "Colony::SetProgramResults() - ecuPinID %u cycleTime < 0.01f.  setting to 1.0", pinID);
         cycleTime = 1.0f;
     }
     // modify time
     cycleTime *= sConfig.rates.DrillCycleMod;
+    _log(PLANET__TRACE, "PlanetMgr::GetProgramResultInfo(test) - 0.5 mod cycleTime:%.2fh", cycleTime * 0.5f);
 
-    uint16 numCycles = static_cast<uint16>(length / cycleTime);   //73
-    int64 iCycleTime = static_cast<int64>(cycleTime * EvE::Time::Hour);
+    uint16 numCycles = (uint16)(floor(length / cycleTime));   //73
+    int64 iCycleTime = (cycleTime * EvE::Time::Hour); // should be around 9000000000
 
     uint32 qtyPerCycle = GetProgramOutput(iRef, iCycleTime);
-    //qtyPerCycle *= heads->size();
+    qtyPerCycle *= heads->size();
 
     _log(PLANET__TRACE, "PlanetMgr::GetProgramResultInfo() - cycleTime:%.2fh, iCycleTime:%llius, length:%.2fh, numCycles:%u, qtyPerCycle:%u, headRadius:%.4f", \
                 cycleTime, iCycleTime, length, numCycles, qtyPerCycle, headRadius);
@@ -307,21 +309,38 @@ PyRep* PIDataMgr::GetProgramResultInfo(Colony* pColony, uint32 pinID, uint16 typ
     return res;
 }
 
-/*              heads.append((headID, latitude, longitude))
-                headID, phi, theta = head
-                if surfacePoint:        <<--  this is mousePoint
-                    theta = 2.0 * math.pi - surfacePoint.theta
-                    phi = surfacePoint.phi
-                else:
-                    theta = 2.0 * math.pi - theta
-                    phi = phi
-                return max(0.0, builder.GetValueAt(self.sh, theta, phi))
-                */
 // ecu program methods from client
 
 uint32 PIDataMgr::GetProgramOutput(InventoryItemRef iRef, int64 cycleTime, int64 startTime/*0*/, int64 currentTime/*0*/)
 {
     // this is in client to display the Extractor window program results.
+    /*
+    def GetProgramOutput(self, currentTime, baseValue = None, cycleTime = None, startTime = None):
+        if baseValue is None:
+            baseValue = self.qtyPerCycle
+        if cycleTime is None:
+            cycleTime = self.cycleTime
+        if startTime is None:
+            startTime = self.installTime
+        decayFactor = self.GetAttribute(const.attributeEcuDecayFactor)
+        noiseFactor = self.GetAttribute(const.attributeEcuNoiseFactor)
+        timeDiff = currentTime - startTime
+        cycleNum = max((timeDiff + const.SEC) / cycleTime - 1, 0)
+        barWidth = cycleTime / SEC / 900.0
+        t = (cycleNum + 0.5) * barWidth
+        decayValue = baseValue / (1 + t * decayFactor)
+        f1 = 1.0 / 12
+        f2 = 1.0 / 5
+        f3 = 1.0 / 2
+        phaseShift = baseValue ** 0.7
+        sinA = math.cos(phaseShift + t * f1)
+        sinB = math.cos(phaseShift / 2 + t * f2)
+        sinC = math.cos(t * f3)
+        sinStuff = (sinA + sinB + sinC) / 3
+        sinStuff = max(0, sinStuff)
+        barHeight = decayValue * (1 + noiseFactor * sinStuff)
+        return int(barWidth * barHeight)
+    */
 
     if (startTime == 0)
         startTime = GetFileTimeNow() - (2 * EvE::Time::Second);
@@ -331,22 +350,17 @@ uint32 PIDataMgr::GetProgramOutput(InventoryItemRef iRef, int64 cycleTime, int64
     int8 cycleNum = EvE::max((currentTime - startTime + EvE::Time::Second) / cycleTime, 1);
     float barWidth = cycleTime / EvE::Time::Second / 900.0f; //0.13888
     float t = (cycleNum + 0.5f) * barWidth; // 0.20833
-    // qtyPerCycle default is 1000.  it is reset to calculated after this returns
-    /*
     uint32 qtyPerCycle = iRef->GetDefaultAttribute(AttrPinExtractionQuantity).get_uint32();
-    float decayValue = qtyPerCycle / (1 + t * iRef->GetAttribute(AttrECUDecayFactor).get_float());     // 1000
-    float f1 = 1.0f / 12;   // 0.08333
-    float f2 = 1.0f / 5;    // 0.2
-    float f3 = 1.0f / 2;    // 0.5
+    float decayValue = qtyPerCycle / (1 + t * 1/*iRef->GetAttribute(AttrECUDecayFactor).get_float()*/);     // 1000
     float phaseShift = pow(qtyPerCycle, 0.7);   // 125.89254
-    float sinA = cos(phaseShift + t * f1);      // 0.96985
-    float sinB = cos(phaseShift / 2 + t * f2);  // 0.98784
-    float sinC = cos(t * f3);                   // 0.99457
+    float sinA = cos(phaseShift + t * 0.08333f);      // 0.96985
+    float sinB = cos(phaseShift / 2 + t * 0.2f);  // 0.98784
+    float sinC = cos(t * 0.5f);                   // 0.99457
     float sinStuff = (sinA + sinB + sinC) / 3;  // 0.98408
     sinStuff = EvE::max(sinStuff);
-    float barHeight = decayValue * (1 + iRef->GetAttribute(AttrECUNoiseFactor).get_float() * sinStuff);     //0.8
-    */
-    return static_cast<uint32>(barWidth * 1000);     // 0.13888 * 1000          16
+    float barHeight = decayValue * (1 + 1/*iRef->GetAttribute(AttrECUNoiseFactor).get_float()*/ * sinStuff);     //0.8
+
+    return static_cast<uint32>(floor(barHeight * barWidth));     // 0.13888 * 1000          16
 }
 
 uint32 PIDataMgr::GetProgramOutputPrediction(InventoryItemRef iRef, int64 cycleTime, uint32 numCycles/*0*/)
@@ -652,6 +666,21 @@ const char* PIDataMgr::GetProductName(uint16 typeID)
 }
 
 const char* PIDataMgr::GetPinTypeName(uint16 typeID) {
-    return sItemFactory.GetType(typeID)->name().c_str();
+    const ItemType* iType = sItemFactory.GetType(typeID);
+    if (iType == nullptr)
+        return "NULL";
+    return iType->name().c_str();
 }
 
+const char* PIDataMgr::GetPinName(uint32 pinID) {
+    if (pinID < 65535) { // max uint16
+        const ItemType* iType = sItemFactory.GetType(pinID);
+        if (iType == nullptr)
+            return "NULL";
+        return iType->name().c_str();
+    }
+    InventoryItemRef iRef = sItemFactory.GetItemRef(pinID);
+    if (iRef.get() == nullptr)
+        return "NULL";
+    return iRef->name();
+}
