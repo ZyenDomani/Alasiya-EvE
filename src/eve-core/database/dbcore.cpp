@@ -632,6 +632,17 @@ bool DBResultRow::GetBool(uint32 index) const {
     return false;
 }
 
+int8 DBResultRow::GetInt8(uint32 index) const {
+    if (index >= mResult->ColumnCount()) {
+        _log(DATABASE__ERROR,  "   DBCore::GetUInt8: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount());
+        EvE::traceStack();
+        return 0;
+    }
+
+    //use base 0 on the obscure chance that this is a string column with an 0x hex number in it.
+    return static_cast<int8>(strtol(mRow[index], nullptr, 0));
+}
+
 uint8 DBResultRow::GetUInt8(uint32 index) const {
     if (index >= mResult->ColumnCount()) {
         _log(DATABASE__ERROR,  "   DBCore::GetUInt8: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount());
@@ -641,6 +652,17 @@ uint8 DBResultRow::GetUInt8(uint32 index) const {
 
     //use base 0 on the obscure chance that this is a string column with an 0x hex number in it.
     return static_cast<uint8>(strtoul(mRow[index], nullptr, 0));
+}
+
+int16 DBResultRow::GetInt16(uint32 index) const {
+    if (index >= mResult->ColumnCount()) {
+        _log(DATABASE__ERROR,  "   DBCore::GetUInt8: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount());
+        EvE::traceStack();
+        return 0;
+    }
+
+    //use base 0 on the obscure chance that this is a string column with an 0x hex number in it.
+    return static_cast<int16>(strtol(mRow[index], nullptr, 0));
 }
 
 uint16 DBResultRow::GetUInt16(uint32 index) const {
