@@ -65,7 +65,7 @@ protected:
     Dispatcher* const m_dispatch;
 
 private:
-    uint32 m_systemID;
+    SystemManager* m_pSysMgr;
 };
 
 PyCallable_Make_InnerDispatcher(PlanetORB)
@@ -73,8 +73,7 @@ PyCallable_Make_InnerDispatcher(PlanetORB)
 
 PlanetORB::PlanetORB(PyServiceMgr *mgr)
 : PyService(mgr, "planetOrbitalRegistryBroker"),
-  m_dispatch(new Dispatcher(this)),
-  m_db(nullptr)
+  m_dispatch(new Dispatcher(this))
 {
     _SetCallDispatcher(m_dispatch);
 
