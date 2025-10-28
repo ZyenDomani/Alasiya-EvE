@@ -105,15 +105,12 @@ PyResult PlanetORBBound::Handle_GetTaxRate( PyCallArgs& call )
     SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return nullptr;
+        return pyStatic.NewNone();
     }
 
     CustomsSE* pCOSE = sEntityMgr.FindOrBootSystem(m_systemID)->GetSE(args.arg)->GetCOSE();
-
-    /** @todo  there's more to this...check for standings, alliance  */
-    if (IsPlayerCorp(pCOSE->GetOwnerID()))
-        if (call.client->GetCorporationID() != pCOSE->GetOwnerID())
-            return PyStatic.NewNone();
+    if (pCOSE == nullptr)
+        return pyStatic.NewZero();
 
     return new PyFloat(pCOSE->GetTaxRate(call.client));
 }

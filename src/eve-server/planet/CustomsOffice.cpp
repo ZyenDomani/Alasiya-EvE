@@ -203,19 +203,27 @@ void CustomsSE::UpdateSettings(int8 selectedHour, int8 standingValue, bool ally,
     m_db.UpdateCustomsData(m_cData, m_oData);
 }
 
-float CustomsSE::GetTaxRate(Client* pClient)
-{
-    // get current tax rate based on set values by owning corp
+float CustomsSE::GetTaxRate(Client* pClient) {
+    // get current tax rate based on set values by owning corp to using client
+    uint8 rate = EVEPOS::TaxValues::Corp;
 
-    return m_cData.taxRateValues[EVEPOS::TaxValues::Corp];
+    /** @todo  there's more to this...
+     *  check allowed, corps, public, settings, etc...
+     * check for standings, alliance
+     */
+    if (IsPlayerCorp(GetOwnerID()))
+        if (pClient->GetCorporationID() != GetOwnerID())
+            rate = EVEPOS::TaxValues::StandingNeutral;
+
+    return m_cData.taxRateValues[rate];
 }
 
-void CustomsSE::VerifyAddItem(InventoryItemRef iRef)
-{
+void CustomsSE::VerifyAddItem(InventoryItemRef iRef) {
     // test for planetary resources here
     if ((iRef->categoryID() != EVEDB::invCategories::PlanetaryResources)
-    and (iRef->categoryID() != EVEDB::invCategories::PlanetaryCommodities))
+    and (iRef->categoryID() != EVEDB::invCategories::PlanetaryCommodities)) {
         throw CustomError("You cannot put %s in a %s", iRef->name(), m_self->name());
+    }
 }
 
 void CustomsSE::GetEffectState(PyList& into)
@@ -346,7 +354,7 @@ void CustomsSE::EncodeDestiny(Buffer& into)
         head.posY = y();
         head.posZ = z();
         head.mode = Ball::Mode::RIGID;
-        head.flags = Ball::Flag::IsGlobal | Ball::Flag::IsInteractive /*| Ball::Flag::IsMassive | HasMiniBalls*/;
+        head.flags = Ball::Flag::IsGlobal /*| HasMiniBalls*/;
     into.Append( head );
 
     RIGID_Struct main;

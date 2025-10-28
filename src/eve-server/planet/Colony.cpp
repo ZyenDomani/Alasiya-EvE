@@ -1046,13 +1046,6 @@ void Colony::PlanetXfer(uint32 spaceportID, std::map< uint32, uint16 > importIte
         return;
     }
 
-    if (pin->second.lastLaunchTime > GetFileTimeNow() + 30 * EvE::Time::Second) { // launch cycle time is 60s on live
-        if (m_client->CanThrow())
-            throw CustomError("Your Launch crew on %s is still recovering from the previous launch.", m_pSE->GetName());
-
-        return;
-    }
-
     uint8 toColony(0), fromColony(0);
     double cost(0.0);
     InventoryItemRef iRef(nullptr);
@@ -1066,10 +1059,10 @@ void Colony::PlanetXfer(uint32 spaceportID, std::map< uint32, uint16 > importIte
             continue;   // should never happen
         }
 
-        itr = pin->second.contents.find(iRef->typeID());
         /** @todo  check for available capy and adjust qty accordingly.
          *       if spaceport cant hold entire xfer qty, xfer to full, and return rest back to CO.
          */
+        itr = pin->second.contents.find(iRef->typeID());
         if (itr != pin->second.contents.end()) {
             itr->second += cur.second;
         } else {
@@ -1083,6 +1076,7 @@ void Colony::PlanetXfer(uint32 spaceportID, std::map< uint32, uint16 > importIte
             case 3:     cost += (  300.00 * cur.second);    break;
             case 4:     cost += (25000.00 * cur.second);    break;
         }
+
         iRef->ToVirtual(spaceportID);
         ++toColony;
     }
@@ -1106,7 +1100,7 @@ void Colony::PlanetXfer(uint32 spaceportID, std::map< uint32, uint16 > importIte
                             Account::KeyType::Cash);
     }
 
-    // reset cost for possible export taxes
+    // reset cost for export taxes
     cost = 0;
     // export
     for (auto &cur : exportItems) {
@@ -1121,8 +1115,8 @@ void Colony::PlanetXfer(uint32 spaceportID, std::map< uint32, uint16 > importIte
             }
         } else {
             _log(COLONY__WARNING, "Colony::PlanetXfer():export - item %u not found in spaceport", cur.first);
-			//continue;
-			//  if item not found in src contents, assume client is right and procede with xfer
+            //  if item not found in src contents, assume client is right and proceed with xfer?
+            //continue;
         }
 
         switch (sPIDataMgr.GetProductLevel(cur.first)) {
@@ -1158,13 +1152,7 @@ void Colony::PlanetXfer(uint32 spaceportID, std::map< uint32, uint16 > importIte
                             Account::KeyType::Cash);
     }
 
-    pin->second.lastLaunchTime = GetFileTimeNow();  // launch cycle time is 60s
-
-    // update colony
-    Update(true);   // must update and save SP's lastLaunchTime here
-    //do we do a full save here, or just update contents and times?
-    //Save();
-    m_db.UpdatePins(0, ccPin);
+    // update contents
     m_db.SaveContents(ccPin);
 }
 
@@ -1364,6 +1352,8 @@ void Colony::Update(bool updateTimes/*false*/) {
 	 * prod		10 - 20
 	 * adv		20 - 40
 	 * max		  40+
+         *  Update completed in 1273.000us with 10 links, 10 pins, 6 plants, and 13 routes (s:13, d:13)
+         *
 	 */
     _log(COLONY__INFO, "Colony::Update() - Update completed in %.3fus with %lu links, %lu pins, %lu plants, and %lu routes (s:%lu, d:%lu) ", \
                     GetTimeUSeconds() - profileStartTime, ccPin->links.size(), ccPin->pins.size(), ccPin->plants.size(), ccPin->routes.size(), \
@@ -1472,6 +1462,8 @@ void Colony::ProcessECUs(bool& updateTimes) {
 
 //NOTE:  TODO:  this needs major overhaul...storage pins arent really queried right
 void Colony::ProcessPlants(bool& updateTimes) {
+    // this isnt working and i dont know why....
+    
     if (ccPin->plants.empty() or (m_pLevel < 1))
         return; // nothing to do...
 

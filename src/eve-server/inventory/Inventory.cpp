@@ -205,16 +205,37 @@ void Inventory::AddItem(InventoryItemRef iRef) {
         return;
 
     std::map<uint32, InventoryItemRef>::iterator itr = mContents.find(iRef->itemID());
-    if (itr == mContents.end())
-        mContents[iRef->itemID()] =  iRef;
+    if (itr == mContents.end()) {
+        mContents[iRef->itemID()] = iRef;
+    } else if (m_self->categoryID() == EVEDB::invCategories::PlanetaryInteraction) {
+        // item found...update qty for certain containers...not quite right...
+        itr->second->AlterQuantity(iRef->quantity());
+    }
 
-    if (IsCharacterID(m_myID))
+    if (IsCharacterID(m_myID)) {
         if (iRef->categoryID() == EVEDB::invCategories::Skill) {
             m_contentsByFlag.emplace(flagSkill, iRef);
             return;
         }
+    } else {
+        /*  what if we're splitting stacks in our inventory?  this will fuck it up...
+        auto range = m_contentsByFlag.equal_range(iRef->flag());
+        if (range.first == range.second) {
+            m_contentsByFlag.emplace(iRef->flag(), iRef);
+        } else {
+            for (auto &cur = range.first; cur != range.second; ++cur) {
+                if (cur->second == iRef) {
+                    cur->second->AlterQuantity(iRef->quantity());
+                }
 
-    m_contentsByFlag.emplace(iRef->flag(), iRef);
+                // what if there are multiple stacks of same type?  nah, they can use StackAll() if they want
+                //if (itr->second->typeID() == iRef->typeID())
+                //    cur->second->AlterQuantity(iRef->quantity());
+            }
+        }
+        */
+        m_contentsByFlag.emplace(iRef->flag(), iRef);
+    }
 }
 
 void Inventory::RemoveItem(InventoryItemRef iRef) {
@@ -400,6 +421,7 @@ InventoryItemRef Inventory::GetByID(uint32 id) const {
 
 void Inventory::UpdateFlag(EVEItemFlags newFlag, InventoryItemRef iRef) const
 {
+    sLog.Warning("Inv::UpdateFlag", "this is used...finish code here");
     //  incomplete...wont compile
     // this method is for changing flags for existing items in our inventory
     /*   is this really needed?   currently we remove() then add()
@@ -436,7 +458,7 @@ InventoryItemRef Inventory::FindFirstByFlag(EVEItemFlags flag) const {
 
 InventoryItemRef Inventory::GetByTypeFlag(uint32 typeID, EVEItemFlags flag) const {
     auto range = m_contentsByFlag.equal_range(flag);
-    for (auto itr = range.first; itr != range.second; itr++ )
+    for (auto itr = range.first; itr != range.second; ++itr )
         if (itr->second->typeID() == typeID)
             return itr->second;
 
@@ -450,18 +472,18 @@ void Inventory::GetInventoryMap( std::map< uint32, InventoryItemRef >& invMap ) 
 
 uint32 Inventory::GetItemsByFlag(EVEItemFlags flag, std::vector<InventoryItemRef> &items) const {
     auto range = m_contentsByFlag.equal_range(flag);
-    for (auto itr = range.first; itr != range.second; itr++ )
-            items.push_back(itr->second);
+    for (auto itr = range.first; itr != range.second; ++itr )
+        items.push_back(itr->second);
     return items.size();
 }
 
 bool Inventory::GetTypesByFlag(EVEItemFlags flag, std::map< uint16, InventoryItemRef >& items)
 {
     auto range = m_contentsByFlag.equal_range(flag);
-    for (auto itr = range.first; itr != range.second; itr++ )
+    for (auto itr = range.first; itr != range.second; ++itr )
         items.emplace(itr->second->typeID(), itr->second);
 
-    return(items.size() > 0);
+    return (items.size() > 0);
 }
 
 InventoryItemRef Inventory::GetItemByTypeFlag(uint16 typeID, EVEItemFlags flag)
@@ -478,13 +500,13 @@ InventoryItemRef Inventory::GetItemByTypeFlag(uint16 typeID, EVEItemFlags flag)
 }
 
 bool Inventory::IsEmptyByFlag(EVEItemFlags flag) const {
-    return(m_contentsByFlag.find(flag) == m_contentsByFlag.end());
+    return (m_contentsByFlag.find(flag) == m_contentsByFlag.end());
 }
 
 uint32 Inventory::GetItemsByFlagRange(EVEItemFlags lowflag, EVEItemFlags highflag, std::vector<InventoryItemRef> &items) const
 {
     // i dont yet see a better way to do this one...
-    uint32 count = 0;
+    uint32 count(0);
     for (auto &cur : mContents)
         if (cur.second->flag() >= lowflag && cur.second->flag() <= highflag) {
             items.push_back(cur.second);
@@ -559,7 +581,7 @@ void Inventory::StackAll(EVEItemFlags locFlag, uint32 ownerID/*0*/)
     std::map<uint16, InventoryItemRef>::iterator tItr = types.end();
 
     auto range = m_contentsByFlag.equal_range(locFlag);
-    for (auto itr = range.first; itr != range.second; itr++) {
+    for (auto itr = range.first; itr != range.second; ++itr) {
         iRef = itr->second;
         // check to avoid removing modules(and their charges) from ship(crazy error)
         if (IsModuleSlot(iRef->flag()))
@@ -585,8 +607,7 @@ void Inventory::StackAll(EVEItemFlags locFlag, uint32 ownerID/*0*/)
         cur->Delete();
 }
 
-float Inventory::GetStoredVolume(EVEItemFlags flag, bool combined/*true*/) const
-{
+float Inventory::GetStoredVolume(EVEItemFlags flag, bool combined/*true*/) const {
     float totalVolume(0.0f);
     if (IsHangarFlag(flag) and combined) {
         for (auto &cur : mContents)
@@ -594,7 +615,7 @@ float Inventory::GetStoredVolume(EVEItemFlags flag, bool combined/*true*/) const
                 totalVolume += cur.second->quantity() * cur.second->GetAttribute(AttrVolume).get_float();
     } else {
         auto range = m_contentsByFlag.equal_range(flag);
-        for (auto itr = range.first; itr != range.second; itr++ )
+        for (auto itr = range.first; itr != range.second; ++itr )
             totalVolume += itr->second->quantity() * itr->second->GetAttribute(AttrVolume).get_float();
             // This formula is a hybrid of both old and new ones...and it works \o/
     }

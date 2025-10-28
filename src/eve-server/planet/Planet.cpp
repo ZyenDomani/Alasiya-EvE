@@ -154,7 +154,7 @@ PyRep* PlanetSE::GetResourceData(Call_ResourceDataDict& dict) {
     if (itr == m_typeBuffers.end())
         return nullptr;
 
-    uint16 size = static_cast<uint16>(pow(dict.newBand, 2) * 4);
+    int size = dict.newBand * dict.newBand * 4;         // 18 band SH (18*18*4)
     std::string data = itr->second.substr(0, size);
     // adjust data for system security.  not sure how to make it 'less' yet
     if (is_log_enabled(PLANET__DEBUG)) {

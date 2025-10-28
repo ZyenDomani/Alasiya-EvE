@@ -146,7 +146,9 @@ PyResult InventoryBound::Handle_ImportExportWithPlanet(PyCallArgs &call) {
      * 23:21:49 [PlanetPktTrace]        [ 2]   Key:    Integer: 140000608
      * 23:21:49 [PlanetPktTrace]        [ 2] Value:    Integer: 1000
      * 23:21:49 [PlanetPktTrace]  exportData:
-     * 23:21:49 [PlanetPktTrace]       Dictionary: Empty
+     * 18:45:34 [ColonyPktTrace]       Dictionary: 1 entries
+     * 18:45:34 [ColonyPktTrace]        [ 0]   Key:    Integer: 2401
+     * 18:45:34 [ColonyPktTrace]        [ 0] Value:       Real: 100.000000
      * 23:21:49 [PlanetPktTrace]  taxRate=0.0500000007451
      */
     //{'FullPath': u'UI/Messages', 'messageID': 256577, 'label': u'CannotImportNotEnoughWarehouseSpaceBody'}(u'You cannot import commodities to that spaceport, as it does not have sufficient storage space to handle the incoming goods.', None, None)
@@ -167,15 +169,21 @@ PyResult InventoryBound::Handle_ImportExportWithPlanet(PyCallArgs &call) {
 
     PyDict* dictIn = args.importData->AsDict();
     std::map<uint32, uint16> importItems, exportItems;
-    for (PyDict::const_iterator itr = dictIn->begin(); itr != dictIn->end(); itr++)
+    for (PyDict::const_iterator itr = dictIn->begin(); itr != dictIn->end(); ++itr)
         importItems[PyRep::IntegerValueU32(itr->first)] = PyRep::IntegerValue(itr->second);
     PyDict* dictOut = args.exportData->AsDict();
-    for (PyDict::const_iterator itr = dictOut->begin(); itr != dictOut->end(); itr++)
+    for (PyDict::const_iterator itr = dictOut->begin(); itr != dictOut->end(); ++itr)
         exportItems[PyRep::IntegerValueU32(itr->first)] = PyRep::IntegerValue(itr->second);
 
     // ok, so from here, we need to get officeRef->officeSE->planet->colony to make xfer....crazy shit
     StructureItemRef sRef = StructureItemRef::StaticCast(m_self);
     Colony* pColony = sRef->GetMySE()->GetCOSE()->GetPlanetSE()->GetColony(call.client);
+    if (pColony == nullptr) {
+        // colony doesn't exist...make error and return
+        _log(COLONY__WARNING, "Colony was not found during ImportExportWithPlanet");
+        call.client->SendNotifyMsg("There was an error locating a crew at your spaceport.  No items were transferred.");
+        return nullptr;
+    }
     pColony->PlanetXfer(args.spaceportPinID, importItems, exportItems, args.taxRate);
 
     return nullptr;

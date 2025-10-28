@@ -968,10 +968,10 @@ bool InventoryItem::SetQuantity(int32 qty, bool notify/*false*/, bool deleteOnZe
     //if an object is singleton, there is only one, and it shouldn't be able to alter qty
     if (m_data.singleton) {
         _log(ITEM__ERROR, "II::SetQuantity() - %s(%u): Failed to set quantity %i; the items singleton bit is set", m_data.name.c_str(), m_itemID, qty);
-        // make player error msg here.....
+        // make player error msg here...no, internal onlym
         return false;
     }
-    int32 old_qty = m_data.quantity;
+    int32 old_qty(m_data.quantity);
     m_data.quantity = qty;
 
     if (m_data.quantity > maxEveItem) {
