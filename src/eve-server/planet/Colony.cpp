@@ -889,18 +889,14 @@ PyDict* Colony::TransferCommodities(uint32 srcID, uint32 destID, std::map< uint1
         }
     }
 
-    // update colony
-    Update(true);   // must update and save CC's lastLaunchTime here
-    //do we do a full save here, or just update contents and times?
-    //Save();
-    m_db.UpdatePins(0, ccPin);
+    //update pin contents
     m_db.SaveContents(ccPin);
 
     // simTime = time to stop (currentSimTime), sourceRunTime = lastRunTime
     PyDict* args = new PyDict();
     /** @todo this needs to be updated to use process times (for next cycle end) */
-    args->SetItemString("simTime", new PyLong(GetFileTimeNow() + (EvE::Time::Minute * 15)));  // arbitrary 15 minute run time
-    args->SetItemString("sourceRunTime", new PyLong(m_procTime));
+    args->SetItemString("simTime", new PyLong(GetFileTimeNow()));.
+	args->SetItemString("sourceRunTime", new PyLong(m_procTime));
 
     /*
      * def GetExpeditedTransferTime(linkBandwidth, commodities):
@@ -909,6 +905,16 @@ PyDict* Colony::TransferCommodities(uint32 srcID, uint32 destID, std::map< uint1
      */
     return args;
 }
+
+/*
+Export fee = Base cost × tax rate (×1.5 if launched via CC)
+Import fee = Base cost × tax rate × 0.5
+To open the planet over view from anywhere Press F11 and in the side panel you can use the bottom window to select planet view by right clicking the menu box in the left corner.
+By switching solar systems or regions in the above boxes you can scan planets in regions as far as your abilities allow.
+In the solar system box you can use show info under each solar system and look at orbital bodies to get a list of planet type rather than look at them one at a time. You can also view planet directly from the list.
+You can deploy Command Centers while docked, but you must be in the same system as the planet, and the command center must be in your ship's hold.
+https://www.eve-icsc.com/jumptools/jumpplanner.php use this link you calculate LY range to see what systems will be in range based on your Remote Sensing skill level. It will help with planning.
+*/	
 
 PyRep* Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items)
 {
@@ -973,12 +979,13 @@ PyRep* Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items
         }
 
         //  if item not found in src contents, assume client is right and procede with xfer
+		//  GetProductCost()?
         switch (sPIDataMgr.GetProductLevel(cur.first)) {
-            case 0:     cost += (    0.15 * cur.second);    break;
-            case 1:     cost += (    1.14 * cur.second);    break;
-            case 2:     cost += (   13.50 * cur.second);    break;
-            case 3:     cost += (  900.00 * cur.second);    break;
-            case 4:     cost += (75000.00 * cur.second);    break;
+            case 0:     cost += (      5.0f * cur.second);    break; //5
+            case 1:     cost += (    400.0f * cur.second);    break; //400
+            case 2:     cost += (   7200.0f * cur.second);    break; //7200
+            case 3:     cost += (  60000.0f * cur.second);    break; //60000
+            case 4:     cost += (1200000.0f * cur.second);    break; //1200000
         }
         ItemData iData(cur.first, m_client->GetCharacterID(), locTemp, flagAutoFit, cur.second);
         InventoryItemRef iRef = sItemFactory.SpawnItem(iData);
@@ -1007,21 +1014,23 @@ PyRep* Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items
     // third - create db entry for launch
     m_db.SaveLaunch(contRef->itemID(), m_client->GetCharacterID(), pSysMgr->GetID(), m_pSE->GetID(), location);
 
-    // update colony
-    Update(true);   // must update and save CC's lastLaunchTime here
-    //do we do a full save here, or just update contents and times?
-    //Save();
-    m_db.UpdatePins(0, ccPin);
+    std::map<uint32, PI_Pin>::iterator itr = ccPin->pins.find(m_colonyID);
+    if (itr != ccPin->pins.end())
+        itr->second.lastRunTime = m_procTime;
+	
+    // just update contents and launch time
+    m_db.UpdatePins(m_colonyID, ccPin);
     m_db.SaveContents(ccPin);
 
     // fourth - take taxes and record entry in journal
     if (cost) {
+		cost = cost x launchTax;
         //take the money, send wallet blink event record the transaction in their journal.
         std::string reason = "DESC:  Launching PI items from ";
         reason += m_pSE->GetName();
         AccountService::TransferFunds(
                     m_client->GetCharacterID(),
-                    corpCONCORD,  // pSysMgr->GetSovHolder(),
+                    corpCONCORD,  // pSysMgr->GetSovHolder(), customs office owner
                     cost,
                     reason.c_str(),
                     Journal::EntryType::PlanetaryExportTax,
@@ -1034,6 +1043,7 @@ PyRep* Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items
 
 void Colony::PlanetXfer(uint32 spaceportID, std::map< uint32, uint16 > importItems, std::map< uint32, uint16 > exportItems, double taxRate)
 {
+	//High-sec Customs Offices(CO) have a 10% NPC tax rate
     // import is from CO to planet.  export is from planet to CO
     // this method will make the transfer of items from real to virtual and back as necessary
 
@@ -1070,11 +1080,11 @@ void Colony::PlanetXfer(uint32 spaceportID, std::map< uint32, uint16 > importIte
         }
 
         switch (sPIDataMgr.GetProductLevel(iRef->typeID())) {
-            case 0:     cost += (    0.05 * cur.second);    break;
-            case 1:     cost += (    0.38 * cur.second);    break;
-            case 2:     cost += (    4.50 * cur.second);    break;
-            case 3:     cost += (  300.00 * cur.second);    break;
-            case 4:     cost += (25000.00 * cur.second);    break;
+            case 0:     cost += (      5.0f * cur.second);    break; //5
+            case 1:     cost += (    400.0f * cur.second);    break; //400
+            case 2:     cost += (   7200.0f * cur.second);    break; //7200
+            case 3:     cost += (  60000.0f * cur.second);    break; //60000
+            case 4:     cost += (1200000.0f * cur.second);    break; //1200000
         }
 
         iRef->ToVirtual(spaceportID);
@@ -1087,6 +1097,7 @@ void Colony::PlanetXfer(uint32 spaceportID, std::map< uint32, uint16 > importIte
                             toColony, m_pSE->GetCustomsOffice()->GetID(), spaceportID);
 
     if (cost) {
+		cost = cost x importTax;
         //take the money, send wallet blink event record the transaction in their journal.
         std::string reason = "DESC:  Importing items to ";
         reason += m_pSE->GetName();
@@ -1098,6 +1109,7 @@ void Colony::PlanetXfer(uint32 spaceportID, std::map< uint32, uint16 > importIte
                             Journal::EntryType::PlanetaryImportTax,
                             m_pSE->GetID(),
                             Account::KeyType::Cash);
+		//TODO:  in empire space, there is also an NPC tax of 5% paid to sov holder and listed as "corp tax"
     }
 
     // reset cost for export taxes
@@ -1120,11 +1132,11 @@ void Colony::PlanetXfer(uint32 spaceportID, std::map< uint32, uint16 > importIte
         }
 
         switch (sPIDataMgr.GetProductLevel(cur.first)) {
-            case 0:     cost += (    0.10 * cur.second);    break;
-            case 1:     cost += (    0.76 * cur.second);    break;
-            case 2:     cost += (    9.00 * cur.second);    break;
-            case 3:     cost += (  600.00 * cur.second);    break;
-            case 4:     cost += (50000.00 * cur.second);    break;
+            case 0:     cost += (      5.0f * cur.second);    break; //5
+            case 1:     cost += (    400.0f * cur.second);    break; //400
+            case 2:     cost += (   7200.0f * cur.second);    break; //7200
+            case 3:     cost += (  60000.0f * cur.second);    break; //60000
+            case 4:     cost += (1200000.0f * cur.second);    break; //1200000
         }
         // xfer virtual item to real
         ItemData iData(cur.first, m_client->GetCharacterID(), locTemp, flagAutoFit, cur.second);
@@ -1139,6 +1151,7 @@ void Colony::PlanetXfer(uint32 spaceportID, std::map< uint32, uint16 > importIte
                         fromColony, spaceportID, m_pSE->GetCustomsOffice()->GetID());
 
     if (cost) {
+		cost = cost x exportTax;
         //take the money, send wallet blink event record the transaction in their journal.
         std::string reason = "DESC:  Exporting items from ";
         reason += m_pSE->GetName();
@@ -1150,6 +1163,7 @@ void Colony::PlanetXfer(uint32 spaceportID, std::map< uint32, uint16 > importIte
                             Journal::EntryType::PlanetaryExportTax,
                             m_pSE->GetID(),
                             Account::KeyType::Cash);
+		//TODO:  in empire space, there is also an NPC tax of 5% paid to sov holder and listed as "corp tax"
     }
 
     // update contents
