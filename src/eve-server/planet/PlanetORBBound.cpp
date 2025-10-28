@@ -41,7 +41,8 @@ public:
 
     PlanetORBBound(PyServiceMgr *mgr, uint32 systemID)
     : PyBoundObject(mgr),
-    m_dispatch(new Dispatcher(this))
+    m_dispatch(new Dispatcher(this)),
+    m_pSysMgr(nullptr)
     {
         _SetCallDispatcher(m_dispatch);
 
@@ -50,9 +51,8 @@ public:
         PyCallable_REG_CALL(PlanetORBBound, GetTaxRate);
         PyCallable_REG_CALL(PlanetORBBound, UpdateSettings);
         PyCallable_REG_CALL(PlanetORBBound, GetSettingsInfo);
-        PyCallable_REG_CALL(PlanetORBBound, GMChangeSpaceObjectOwner);
 
-        m_systemID = systemID;
+        m_pSysMgr = sEntityMgr.FindOrBootSystem(systemID);
     }
     virtual ~PlanetORBBound() { delete m_dispatch; }
 
@@ -79,7 +79,6 @@ PlanetORB::PlanetORB(PyServiceMgr *mgr)
     _SetCallDispatcher(m_dispatch);
 
     //PyCallable_REG_CALL(PlanetORB, );
-    //PyCallable_REG_CALL(PlanetORB, );
 }
 
 PlanetORB::~PlanetORB() {
@@ -87,7 +86,7 @@ PlanetORB::~PlanetORB() {
 }
 
 PyBoundObject* PlanetORB::CreateBoundObject(Client *pClient, const PyRep *bind_args) {
-    _log(PLANET__INFO, "PlanetORB bind request for:");  // sends systemID in request
+    _log(PLANET__INFO, "PlanetORB bind request for:");  // sends systemID
     bind_args->Dump(PLANET__INFO, "    ");
     if (!bind_args->IsInt()) {
         codelog(SERVICE__ERROR, "%s Service: invalid bind argument type %s", GetName(), bind_args->TypeString());
@@ -97,10 +96,10 @@ PyBoundObject* PlanetORB::CreateBoundObject(Client *pClient, const PyRep *bind_a
     return new PlanetORBBound(m_manager, bind_args->AsInt()->value());
 }
 
-PyResult PlanetORBBound::Handle_GetTaxRate( PyCallArgs& call )
+PyResult PlanetORBBound::Handle_GetTaxRate(PyCallArgs& call)
 {
     //  taxRate = moniker.GetPlanetOrbitalRegistry(session.solarsystemid).GetTaxRate(itemID)
-    // NOTE:  "return PyNone()" = access denied to customs office.
+    // NOTE:  return "PyNone()" to deny customs office access.
 
     SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
@@ -108,14 +107,20 @@ PyResult PlanetORBBound::Handle_GetTaxRate( PyCallArgs& call )
         return PyStatic.NewNone();
     }
 
-    CustomsSE* pCOSE = sEntityMgr.FindOrBootSystem(m_systemID)->GetSE(args.arg)->GetCOSE();
-    if (pCOSE == nullptr)
-        return PyStatic.NewZero();
-
+    CustomsSE* pCOSE = m_pSysMgr->GetSE(args.arg)->GetCOSE();
+    if (pCOSE == nullptr) {
+        call.client->SendNotification("This Customs Office is unavailable.");
+        return PyStatic.NewNone();
+    }
+    
+    // run tests here or in COSE?
+    // if we run here, we'll have to use redirect for data
+    // if we run in COSE, we'll have to recode methods to allow PyRep* returns (needed to restrict acces by returning PyNone())
+    
     return new PyFloat(pCOSE->GetTaxRate(call.client));
 }
 
-PyResult PlanetORBBound::Handle_GetSettingsInfo( PyCallArgs& call )
+PyResult PlanetORBBound::Handle_GetSettingsInfo(PyCallArgs& call)
 {
     /*   self.orbitalData = self.remoteOrbitalRegistry.GetSettingsInfo(self.orbitalID)  << for customs offices
      *   self.selectedHour, self.taxRateValues, self.standingLevel, self.allowAlliance, self.allowStandings = self.orbitalData
@@ -126,11 +131,15 @@ PyResult PlanetORBBound::Handle_GetSettingsInfo( PyCallArgs& call )
         return nullptr;
     }
 
-    CustomsSE* pCOSE = sEntityMgr.FindOrBootSystem(m_systemID)->GetSE(args.arg)->GetCOSE();
+    CustomsSE* pCOSE = m_pSysMgr->GetSE(args.arg)->GetCOSE();
+    if (pCOSE == nullptr) {
+        call.client->SendNotification("This Customs Office is unavailable.");
+        return nullptr;
+    }
     return pCOSE->GetSettingsInfo();
 }
 
-PyResult PlanetORBBound::Handle_UpdateSettings( PyCallArgs& call )
+PyResult PlanetORBBound::Handle_UpdateSettings(PyCallArgs& call)
 {
     //remoteOrbitalRegistry.UpdateSettings(self.orbitalID, reinforceValue, taxRateValues, standingValue, allowAllianceValue, allowStandingsValue)
     _log(INV__MESSAGE, "Calling PlanetORBBound::UpdateSettings()");
@@ -149,45 +158,13 @@ PyResult PlanetORBBound::Handle_UpdateSettings( PyCallArgs& call )
         return nullptr;
     }
 
-    CustomsSE* pCOSE = sEntityMgr.FindOrBootSystem(m_systemID)->GetSE(args.orbitalID)->GetCOSE();
+    CustomsSE* pCOSE = m_pSysMgr->GetSE(args.orbitalID)->GetCOSE();
+    if (pCOSE == nullptr) {
+        call.client->SendNotification("This Customs Office is unavailable.");
+        return nullptr;
+    }
+    
     pCOSE->UpdateSettings(args.reinforceValue, args.standingValue, args.allowAlliance, args.allowStandings, dict);
 
     return nullptr;
 }
-
-PyResult PlanetORBBound::Handle_GMChangeSpaceObjectOwner( PyCallArgs& call )
-{
-    // this is called when taking ownership of control tower
-    // sends itemID, corpID
-    /*
-                state = slimItem.orbitalState
-                if state in (entities.STATE_UNANCHORING,
-                 entities.STATE_ONLINING,
-                 entities.STATE_ANCHORING,
-                 entities.STATE_OPERATING,
-                 entities.STATE_OFFLINING,
-                 entities.STATE_SHIELD_REINFORCE):
-                    stateText = pos.DISPLAY_NAMES[pos.Entity2DB(state)]
-                    gm.append(('End orbital state change (%s)' % stateText, self.CompleteOrbitalStateChange, (itemID,)))
-                elif state == entities.STATE_ANCHORED:
-                    upgradeType = sm.GetService('godma').GetTypeAttribute2(slimItem.typeID, const.attributeConstructionType)
-                    if upgradeType is not None:
-                        gm.append(('Upgrade to %s' % cfg.invtypes.Get(upgradeType).typeName, self.GMUpgradeOrbital, (itemID,)))
-                gm.append(('GM: Take Control', self.TakeOrbitalOwnership, (itemID, slimItem.planetID)))
-
-    def TakeOrbitalOwnership(self, itemID, planetID):
-        registry = moniker.GetPlanetOrbitalRegistry(session.solarsystemid)
-        registry.GMChangeSpaceObjectOwner(itemID, session.corpid)
-    */
-    _log(PLANET__DEBUG, "PlanetORBBound::Handle_GMChangeSpaceObjectOwner - size %lu", call.tuple->size() );
-    call.Dump(PLANET__DUMP);
-
-    return PyStatic.NewNone();
-}
-
-
-/**
-    def ConfigureOrbital(self, item):
-        sm.GetService('planetUI').OpenConfigureWindow(item)
-
-        */
