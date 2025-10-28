@@ -105,12 +105,12 @@ PyResult PlanetORBBound::Handle_GetTaxRate( PyCallArgs& call )
     SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return pyStatic.NewNone();
+        return PyStatic.NewNone();
     }
 
     CustomsSE* pCOSE = sEntityMgr.FindOrBootSystem(m_systemID)->GetSE(args.arg)->GetCOSE();
     if (pCOSE == nullptr)
-        return pyStatic.NewZero();
+        return PyStatic.NewZero();
 
     return new PyFloat(pCOSE->GetTaxRate(call.client));
 }
