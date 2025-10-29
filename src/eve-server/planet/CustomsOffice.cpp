@@ -188,8 +188,8 @@ void CustomsSE::UpdateSettings(int8 selectedHour, int8 standingValue, bool ally,
 {
     m_cData.allowAlliance    = ally;
     m_cData.allowStandings   = standings;
-    m_cData.selectedHour     = selectedHour;
-    m_cData.standingValue    = standingValue;
+    m_cData.selectedHour     = selectedHour;    // timeframe structure will come out of reinforcement
+    m_cData.standingValue    = standingValue;    // minimum standing allowed for access (EVEPOS::Standing::xx)
 
     using namespace EVEPOS;
     m_cData.taxRateValues[TaxValues::Corp]              = taxRateValues.corporation;
@@ -226,7 +226,10 @@ PyRep* CustomsSE::GetTaxRate(Client* pClient) {
             if (m_cData.allowStandings) {
                 // yes...get char standing
                 standing = static_cast<uint8>(floor(sStandingMgr.GetRawStanding(m_ownerID, pClient->GetCharacterID()) * 10));
-                if (standing >= EVEPOS::Standing::High) {
+                // is char standing below allowed?
+                if (standing < m_cData.standingValue) {
+                    rate = EVEPOS::TaxValues::None;
+                } else if (standing >= EVEPOS::Standing::High) {
                     rate = EVEPOS::TaxValues::StandingHigh;
                 } else if (standing >= EVEPOS::Standing::Good) {
                     rate = EVEPOS::TaxValues::StandingGood;
