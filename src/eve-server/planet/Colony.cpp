@@ -120,8 +120,8 @@ m_loaded(false),
 m_newHead(false),
 m_toUpdate(false),
 m_pLevel(0),
-m_pg(0),
-m_cpu(0),
+m_pg(0),	// not used
+m_cpu(0),	// not used
 m_colonyID(0),
 m_procTime(0)			// process check.  init to zero and stores last proc time, which is lastRunTime in command center
 {
@@ -285,9 +285,13 @@ void Colony::LoadPlants() {
                 }
             }
 
-			// we have at least one plant...update level to allow proc later
-			m_pLevel = 1;  // update  this aint right...will always have 1 as lowest level
-            m_pLevel = (uint8)EvE::min(m_pLevel, plant.pLevel);
+			if (m_pLevel < 1) {
+	            m_pLevel = plant.pLevel;
+			} 
+			if (plant.pLevel < m_pLevel) {
+	            m_pLevel = plant.pLevel;
+			}
+			
             ccPin->plants[cur.first] = plant;
             m_plantMap.emplace(plant.pLevel, cur.first);
         }
@@ -1511,13 +1515,10 @@ void Colony::ProcessPlants(bool& updateTimes) {
     std::map<uint32, PI_Pin>::iterator srcPin;
     std::map<uint32, PI_Pin>::iterator destPin;
     std::map<uint16, uint32>::iterator itemItr;
+	*UD*  remove common data out of plant pin.  store all data in piPin structure
     std::map<uint32, PI_Plant>::iterator destPlant;
     _log(COLONY__INFO, "Colony::ProcessPlants() - Begin Plant Processing.  m_procTime: %lli", m_procTime);
 
-	// there is no p0 plants.  (ecu only)
-	if (curCycle == 0)
-		++curCycle;
-	
     // can this loop be split into smaller calls?  (like warp in destiny)
 	//    ...maybe, but will take some thought and doing to make it work right
     while (curCycle < 5) {
