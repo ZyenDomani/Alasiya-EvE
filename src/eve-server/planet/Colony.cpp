@@ -119,7 +119,7 @@ m_active(false),
 m_loaded(false),
 m_newHead(false),
 m_toUpdate(false),
-m_pLevel(1),
+m_pLevel(0),
 m_pg(0),
 m_cpu(0),
 m_colonyID(0),
@@ -255,8 +255,7 @@ void Colony::LoadPlants() {
         // set proc time on load
         if (cur.second.isCommandCenter) {
             m_procTime = cur.second.lastRunTime;
-            if (m_procTime < EvE::Time::Hour)
-                m_procTime = GetFileTimeNow();
+			continue;
         }
 
         /* load ECUs in mem object
@@ -265,6 +264,7 @@ void Colony::LoadPlants() {
         */
 
         // load plants in mem object
+		// update   remove common data from plant pin in favor of main pin
         if (cur.second.isProcess) {
             PI_Plant plant                  = PI_Plant();
             plant.data                      = PI_Schematic();
@@ -280,12 +280,13 @@ void Colony::LoadPlants() {
                 plant.pLevel        = sPIDataMgr.GetProductLevel(plant.data.outputType);   // i am ordering plant processing by output's Plevel
                 plant.qtyPerCycle   = plant.data.outputQty;     // this is not saved
 
-                if ((cur.second.state == PI::Pin::State::Active) and (plant.lastRunTime == 0)) {
+                if ((cur.second.state == PI::Pin::State::Active) and (plant.lastRunTime < m_procTime)) {
                     update = true;
-                    cur.second.lastRunTime = m_procTime;
                 }
             }
 
+			// we have at least one plant...update level to allow proc later
+			m_pLevel = 1;  // update  this aint right...will always have 1 as lowest level
             m_pLevel = (uint8)EvE::min(m_pLevel, plant.pLevel);
             ccPin->plants[cur.first] = plant;
             m_plantMap.emplace(plant.pLevel, cur.first);
@@ -300,6 +301,7 @@ void Colony::LoadPlants() {
         UpdatePlantPins();
 }
 
+//TODO:  remove dupe data from plants.  have plants map pinID and specific data (schematic, recInputs).  use ccPins to store all common pin data (no dupes)
 void Colony::UpdatePlantPins(uint32 pinID/*0*/)
 {
     std::map<uint32, PI_Pin>::iterator itr;
@@ -751,7 +753,7 @@ void Colony::SetSchematic(uint32 pinID, uint8 schematicID/*0*/) {
     std::map<uint32, PI_Pin>::iterator pinItr = ccPin->pins.find(pinID);
 
     if (schematicID) {
-        // install new schematic.  set lastRunTime to 0
+        // install new schematic.  set lastRunTime to 0.  set installTime to now.   update
         sPIDataMgr.GetSchematicData(schematicID, plantItr->second.data);
         plantItr->second.pLevel                  = sPIDataMgr.GetProductLevel(plantItr->second.data.outputType);
         plantItr->second.cycleTime               = plantItr->second.data.cycleTime * sConfig.rates.PlantCycleMod * EvE::Time::Second;
@@ -761,6 +763,7 @@ void Colony::SetSchematic(uint32 pinID, uint8 schematicID/*0*/) {
         plantItr->second.hasReceivedInputs       = false;
         plantItr->second.receivedInputsLastCycle = false;
 
+		// update this doesnt work right...will always be 0
         m_pLevel = static_cast<uint8>(EvE::min(m_pLevel, plantItr->second.pLevel));
 
         pinItr->second.state = PI::Pin::State::Active;
@@ -942,12 +945,18 @@ PyRep* Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items
     /** @todo check capacities before adding items */
     SystemManager* pSysMgr(m_pSE->SystemMgr());
     GPoint location(pSysMgr->GetSE(m_pSE->GetID())->GetPosition());
+	/* NOTE:  launches spawn ~10000Km from customs office
+	 * create entry in journal (pi launches)
+	 * create bm?
+	 *  cannot be scanned by probes (no anom sig), but does show on d-scan
+	 * 5d timer
+	 */
     location.MakeRandomPointOnSphere(m_pSE->GetRadius() + 2000000);   //2000km orbit for launch can
     ItemData canData(EVEDB::invTypes::PlanetaryLaunchContainer,
                     m_client->GetCharacterID(),  // owner is Character
                     pSysMgr->GetID(),
                     flagAutoFit,
-                    "PI Commodities Container",
+                    "PI Commodities Container",  // do we want to advertise like this?
                     location);
 
     CargoContainerRef contRef = sItemFactory.SpawnCargoContainer(canData);
@@ -1472,9 +1481,7 @@ void Colony::ProcessECUs(bool& updateTimes) {
 
 //NOTE:  TODO:  this needs major overhaul...storage pins arent really queried right
 void Colony::ProcessPlants(bool& updateTimes) {
-    // this isnt working and i dont know why....
-
-    if (ccPin->plants.empty() or (m_pLevel < 1))
+    if (ccPin->plants.empty())
         return; // nothing to do...
 
     /** @note  generally-accepted PI design has plant input and output to/from storage(spaceport or silo)
@@ -1494,6 +1501,8 @@ void Colony::ProcessPlants(bool& updateTimes) {
 
     /** @note  plants are stored separate from other pins, to avoid the cycles and checks for plants in this call.
      * this will also avoid the unnecessary plant-specific data to be stored in std pins for all items
+	 NOTE:  to avoid redundany, plant data is only recInputs, schematic data and pinID.  cc.pins should retain all common data
+	 this will avoid copying, data loss, errors, and other bullshit trying to keep multiple sets updated
      */
     // m_pLevel is set to lowest production level of produced items, and used to order plant processing streams
     uint8 curCycle(m_pLevel);
@@ -1505,7 +1514,12 @@ void Colony::ProcessPlants(bool& updateTimes) {
     std::map<uint32, PI_Plant>::iterator destPlant;
     _log(COLONY__INFO, "Colony::ProcessPlants() - Begin Plant Processing.  m_procTime: %lli", m_procTime);
 
+	// there is no p0 plants.  (ecu only)
+	if (curCycle == 0)
+		++curCycle;
+	
     // can this loop be split into smaller calls?  (like warp in destiny)
+	//    ...maybe, but will take some thought and doing to make it work right
     while (curCycle < 5) {
         if (is_log_enabled(COLONY__DEBUG))
             _log(COLONY__DEBUG, "Colony::ProcessPlants() - Begin Process loop for pLevel %u.", curCycle);
