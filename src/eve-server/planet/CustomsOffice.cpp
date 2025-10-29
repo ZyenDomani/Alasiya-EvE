@@ -246,10 +246,10 @@ PyRep* CustomsSE::GetTaxRate(Client* pClient) {
         // can a char own a customs office?  dunno...check anyway
         sLog.Green("COSE::GetTaxRate", "Character %s(%u) is owner of %s(%u) in %s", \
                 pClient->GetName(), pClient->GetCharacterID(), GetName(), GetID(), m_system->GetName());
-        return new PyFloat(0.10f);
+        rate = EVEPOS::TaxValues::StandingNeutral;
     } else {
         // owner is npc corp.  flat 5% tax rate for all
-        return new PyFloat(0.05f);
+        rate = EVEPOS::TaxValues::StandingGood;
     }
 
     if (rate == EVEPOS::TaxValues::None)
@@ -257,7 +257,9 @@ PyRep* CustomsSE::GetTaxRate(Client* pClient) {
 
     return new PyFloat(m_cData.taxRateValues[rate]);
 }
-// IB::Add->IB::MoveItems->StructureItem::AddItem->COSE::VerifyAddItem
+
+// IB::Add()->IB::MoveItems()->StructureItem::AddItem()->COSE::VerifyAddItem()
+// upon return, structure calls II::Move()  (was previsouly Inv::AddItem() which didnt update anything)
 void CustomsSE::VerifyAddItem(InventoryItemRef iRef) {
     // test for planetary resources here
     if ((iRef->categoryID() != EVEDB::invCategories::PlanetaryResources)
@@ -288,7 +290,7 @@ void CustomsSE::SendEffectUpdate(int16 effectID, bool active)
         shipEff.start = (active ? 1 : 0);
         shipEff.active = (active ? 1 : 0);
         shipEff.environment = ge.Encode();
-        shipEff.startTime = shipEff.timeNow;    // do we need to adjust this?
+        shipEff.startTime = m_cData.timestamp;    // do we need to adjust this?
         shipEff.duration = (active ? 0 : -1);
         shipEff.repeat = (active ? PyStatic.NewTrue() : PyStatic.NewFalse());
         shipEff.randomSeed = PyStatic.NewNone();
@@ -312,7 +314,7 @@ void CustomsSE::SendSlimUpdate()
         slim->SetItemString("warFactionID",             IsFactionID(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
         slim->SetItemString("posTimestamp",             new PyLong(m_cData.timestamp));
         slim->SetItemString("posState",                 new PyInt(m_cData.state));
-        slim->SetItemString("incapacitated",            PyStatic.NewZero());
+        slim->SetItemString("incapacitated",            PyStatic.NewZero());    // fix once attacking is implemented
         slim->SetItemString("posDelayTime",             PyStatic.NewZero()); // fix this
     PyTuple* shipData = new PyTuple(2);
         shipData->SetItem(0,                            new PyLong(m_cData.itemID));
