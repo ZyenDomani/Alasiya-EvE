@@ -207,8 +207,8 @@ void Inventory::AddItem(InventoryItemRef iRef) {
     std::map<uint32, InventoryItemRef>::iterator itr = mContents.find(iRef->itemID());
     if (itr == mContents.end()) {
         mContents[iRef->itemID()] = iRef;
-    } else if (m_self->categoryID() == EVEDB::invCategories::PlanetaryInteraction) {
-        // item found...update qty for certain containers...not quite right...
+    } else if (m_self->categoryID() == EVEDB::invCategories::Orbitals) {
+        // item found...update qty for certain containers...customs offices for now
         itr->second->AlterQuantity(iRef->quantity());
     }
 

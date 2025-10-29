@@ -108,15 +108,12 @@ PyResult PlanetORBBound::Handle_GetTaxRate(PyCallArgs& call)
 
     CustomsSE* pCOSE = m_pSysMgr->GetSE(args.arg)->GetCOSE();
     if (pCOSE == nullptr) {
-        call.client->SendNotification("This Customs Office is unavailable.");
+        _log(PLANET__ERROR, "COSE %u not found in %s(%u)", args.arg, m_pSysMgr->GetName(), m_pSysMgr->GetID());
+        call.client->SendInfoModalMsg("This Customs Office is unavailable.");
         return PyStatic.NewNone();
     }
-    
-    // run tests here or in COSE?
-    // if we run here, we'll have to use redirect for data
-    // if we run in COSE, we'll have to recode methods to allow PyRep* returns (needed to restrict acces by returning PyNone())
-    
-    return new PyFloat(pCOSE->GetTaxRate(call.client));
+
+    return pCOSE->GetTaxRate(call.client);
 }
 
 PyResult PlanetORBBound::Handle_GetSettingsInfo(PyCallArgs& call)
@@ -132,7 +129,8 @@ PyResult PlanetORBBound::Handle_GetSettingsInfo(PyCallArgs& call)
 
     CustomsSE* pCOSE = m_pSysMgr->GetSE(args.arg)->GetCOSE();
     if (pCOSE == nullptr) {
-        call.client->SendNotification("This Customs Office is unavailable.");
+        _log(PLANET__ERROR, "COSE %u not found in %s(%u)", args.arg, m_pSysMgr->GetName(), m_pSysMgr->GetID());
+        call.client->SendInfoModalMsg("This Customs Office is unavailable.");
         return nullptr;
     }
     return pCOSE->GetSettingsInfo();
@@ -141,6 +139,33 @@ PyResult PlanetORBBound::Handle_GetSettingsInfo(PyCallArgs& call)
 PyResult PlanetORBBound::Handle_UpdateSettings(PyCallArgs& call)
 {
     //remoteOrbitalRegistry.UpdateSettings(self.orbitalID, reinforceValue, taxRateValues, standingValue, allowAllianceValue, allowStandingsValue)
+    /*
+     * 20:29:55 [SvcMsg] planetOrbitalRegistryBroker Service: MachoBindObject also contains call to UpdateSettings
+     * 20:29:55 [PlanetCallDump]   Call Arguments:
+     * 20:29:55 [PlanetCallDump]      Tuple: 6 elements
+     * 20:29:55 [PlanetCallDump]       [ 0]    Integer: 140028093
+     * 20:29:55 [PlanetCallDump]       [ 1]    Integer: 0
+     * 20:29:55 [PlanetCallDump]       [ 2] Object:
+     * 20:29:55 [PlanetCallDump]       [ 2]   Type:     String: 'util.KeyVal'
+     * 20:29:55 [PlanetCallDump]       [ 2]   Args:  Dictionary: 7 entries
+     * 20:29:55 [PlanetCallDump]       [ 2]   Args:   [ 0]   Key:     String: 'standingNeutral'
+     * 20:29:55 [PlanetCallDump]       [ 2]   Args:   [ 0] Value:       Real: 0.080000
+     * 20:29:55 [PlanetCallDump]       [ 2]   Args:   [ 1]   Key:     String: 'corporation'
+     * 20:29:55 [PlanetCallDump]       [ 2]   Args:   [ 1] Value:       Real: 0.050000
+     * 20:29:55 [PlanetCallDump]       [ 2]   Args:   [ 2]   Key:     String: 'standingHorrible'
+     * 20:29:55 [PlanetCallDump]       [ 2]   Args:   [ 2] Value:       Real: 0.200000
+     * 20:29:55 [PlanetCallDump]       [ 2]   Args:   [ 3]   Key:     String: 'standingGood'
+     * 20:29:55 [PlanetCallDump]       [ 2]   Args:   [ 3] Value:       Real: 0.050000
+     * 20:29:55 [PlanetCallDump]       [ 2]   Args:   [ 4]   Key:     String: 'alliance'
+     * 20:29:55 [PlanetCallDump]       [ 2]   Args:   [ 4] Value:       Real: 0.070000
+     * 20:29:55 [PlanetCallDump]       [ 2]   Args:   [ 5]   Key:     String: 'standingBad'
+     * 20:29:55 [PlanetCallDump]       [ 2]   Args:   [ 5] Value:       Real: 0.100000
+     * 20:29:55 [PlanetCallDump]       [ 2]   Args:   [ 6]   Key:     String: 'standingHigh'
+     * 20:29:55 [PlanetCallDump]       [ 2]   Args:   [ 6] Value:       Real: 0.020000
+     * 20:29:55 [PlanetCallDump]       [ 3]    Integer: -5
+     * 20:29:55 [PlanetCallDump]       [ 4]    Integer: 1
+     * 20:29:55 [PlanetCallDump]       [ 5]    Integer: 1
+     */
     _log(INV__MESSAGE, "Calling PlanetORBBound::UpdateSettings()");
     call.Dump(PLANET__DUMP);
 
@@ -159,10 +184,11 @@ PyResult PlanetORBBound::Handle_UpdateSettings(PyCallArgs& call)
 
     CustomsSE* pCOSE = m_pSysMgr->GetSE(args.orbitalID)->GetCOSE();
     if (pCOSE == nullptr) {
-        call.client->SendNotification("This Customs Office is unavailable.");
+        _log(PLANET__ERROR, "COSE %u not found in %s(%u)", args.orbitalID, m_pSysMgr->GetName(), m_pSysMgr->GetID());
+        call.client->SendInfoModalMsg("This Customs Office is unavailable.");
         return nullptr;
     }
-    
+
     pCOSE->UpdateSettings(args.reinforceValue, args.standingValue, args.allowAlliance, args.allowStandings, dict);
 
     return nullptr;

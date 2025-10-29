@@ -184,24 +184,19 @@ bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         entry.itemID        = row.GetUInt(0);
         entry.itemName      = row.GetText(1);
         entry.ownerID       = row.GetInt(2);
-        entry.typeID        = row.GetUInt(3);
-        entry.groupID       = row.GetUInt(4);
-        entry.categoryID    = row.GetUInt(5);
+        entry.typeID        = row.GetUInt16(3);
+        entry.groupID       = row.GetUInt16(4);
+        entry.categoryID    = row.GetUInt8(5);
         GPoint pos(row.GetDouble(6), row.GetDouble(7), row.GetDouble(8));
         entry.position      = pos;
         entry.planetID      = atoi(row.GetText(9));
 
-        if ((entry.typeID == EVEDB::invTypes::InterbusCustomsOffice)
-        or (entry.typeID == EVEDB::invTypes::PlanetaryCustomsOffice)) {
-            entry.corporationID = entry.ownerID;
-            entry.allianceID    = 0;
-            entry.factionID     = 0;
-        } else if (IsCorpID(entry.ownerID)) {
+        if (IsCorpID(entry.ownerID)) {
             entry.corporationID = entry.ownerID;
             if (sDatabase.RunQuery(res2, "SELECT allianceID, warFactionID FROM crpCorporation WHERE corporationID = %u", entry.corporationID))
                 if (res2.GetRow(row2)) {
-                    entry.allianceID    = row2.GetUInt(0);
-                    entry.factionID     = row2.GetUInt(1);
+                    entry.allianceID    = row2.GetInt(0);
+                    entry.factionID     = row2.GetInt(1);
                 }
         } else if (IsCharacterID(entry.ownerID)) {
             if (sDatabase.RunQuery(res2,
@@ -211,11 +206,12 @@ bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDy
             {
                 if (res2.GetRow(row2)) {
                     entry.corporationID = row2.GetUInt(0);
-                    entry.allianceID    = row2.GetUInt(1);
-                    entry.factionID     = row2.GetUInt(2);
+                    entry.allianceID    = row2.GetInt(1);
+                    entry.factionID     = row2.GetInt(2);
                 }
             }
         }
+        
         into.push_back(entry);
     }
 

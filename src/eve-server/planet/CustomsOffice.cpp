@@ -30,6 +30,7 @@
 #include "planet/CustomsOffice.h"
 #include "planet/Planet.h"
 #include "pos/Structure.h"
+#include "standing/StandingMgr.h"
 #include "system/Container.h"
 #include "system/Damage.h"
 #include "system/SystemBubble.h"
@@ -85,7 +86,7 @@ void CustomsSE::InitData()
     m_cData.allowStandings  = false;
     m_cData.ownerID = m_self->ownerID();
     m_cData.selectedHour = 0;
-    m_cData.standingValue = EVEPOS::StandingValues::StandingNeutral;
+    m_cData.standingValue = EVEPOS::Standing::Neutral;
     m_cData.taxRateValues[EVEPOS::TaxValues::Corp]              = 0.05f;
     m_cData.taxRateValues[EVEPOS::TaxValues::Alliance]          = 0.07f;
     m_cData.taxRateValues[EVEPOS::TaxValues::StandingHorrible]  = 0.20f;
@@ -203,21 +204,57 @@ void CustomsSE::UpdateSettings(int8 selectedHour, int8 standingValue, bool ally,
     m_db.UpdateCustomsData(m_cData, m_oData);
 }
 
-float CustomsSE::GetTaxRate(Client* pClient) {
+PyRep* CustomsSE::GetTaxRate(Client* pClient) {
     // get current tax rate based on set values by owning corp to using client
-    uint8 rate = EVEPOS::TaxValues::Corp;
+    uint8 standing(0);
+    uint8 rate = EVEPOS::TaxValues::None;
 
-    /** @todo  there's more to this...
-     *  check allowed, corps, public, settings, etc...
-     * check for standings, alliance
-     */
-    if (IsPlayerCorp(GetOwnerID()))
-        if (pClient->GetCorporationID() != GetOwnerID())
-            rate = EVEPOS::TaxValues::StandingNeutral;
+    // do access checks
+    if (IsPlayerCorp(m_ownerID)) {
+        // owner is player corp and accessor is
+        if (pClient->GetCorporationID() == m_ownerID) {
+            // in same corp
+            rate = EVEPOS::TaxValues::Corp;
+        } else if (pClient->GetAllianceID() == m_allyID) {
+            // in same alliance...is alliance allowed?
+            if (m_cData.allowAlliance) {
+                // yes
+                rate = EVEPOS::TaxValues::Alliance;
+            }
+        } else {
+            // in diff corp...is plain standings allowed?
+            if (m_cData.allowStandings) {
+                // yes...get char standing
+                standing = static_cast<uint8>(floor(sStandingMgr.GetRawStanding(m_ownerID, pClient->GetCharacterID()) * 10));
+                if (standing >= EVEPOS::Standing::High) {
+                    rate = EVEPOS::TaxValues::StandingHigh;
+                } else if (standing >= EVEPOS::Standing::Good) {
+                    rate = EVEPOS::TaxValues::StandingGood;
+                } else if (standing >= EVEPOS::Standing::Neutral) {
+                    rate = EVEPOS::TaxValues::StandingNeutral;
+                } else if (standing >= EVEPOS::Standing::Bad) {
+                    rate = EVEPOS::TaxValues::StandingBad;
+                } else {
+                    rate = EVEPOS::TaxValues::StandingHorrible;
+                }
+            }
+        }
+    } else if (IsCharacterID(m_ownerID)) {
+        // can a char own a customs office?  dunno...check anyway
+        sLog.Green("COSE::GetTaxRate", "Character %s(%u) is owner of %s(%u) in %s", \
+                pClient->GetName(), pClient->GetCharacterID(), GetName(), GetID(), m_system->GetName());
+        return new PyFloat(0.10f);
+    } else {
+        // owner is npc corp.  flat 5% tax rate for all
+        return new PyFloat(0.05f);
+    }
 
-    return m_cData.taxRateValues[rate];
+    if (rate == EVEPOS::TaxValues::None)
+        return PyStatic.NewNone();
+
+    return new PyFloat(m_cData.taxRateValues[rate]);
 }
-
+// IB::Add->IB::MoveItems->StructureItem::AddItem->COSE::VerifyAddItem
 void CustomsSE::VerifyAddItem(InventoryItemRef iRef) {
     // test for planetary resources here
     if ((iRef->categoryID() != EVEDB::invCategories::PlanetaryResources)

@@ -168,7 +168,8 @@ void StructureItem::AddItem(InventoryItemRef iRef)
     if (mySE->IsCOSE())
         mySE->GetCOSE()->VerifyAddItem(iRef);
 
-    InventoryItem::AddItem(iRef);
+    //InventoryItem::AddItem(iRef);
+    iRef->Move(mySE->GetID(), flagCargoHold, true);
 }
 
 void StructureItem::RemoveItem(InventoryItemRef iRef)

@@ -119,7 +119,7 @@ m_active(false),
 m_loaded(false),
 m_newHead(false),
 m_toUpdate(false),
-m_pLevel(0),
+m_pLevel(1),
 m_pg(0),
 m_cpu(0),
 m_colonyID(0),
@@ -895,8 +895,8 @@ PyDict* Colony::TransferCommodities(uint32 srcID, uint32 destID, std::map< uint1
     // simTime = time to stop (currentSimTime), sourceRunTime = lastRunTime
     PyDict* args = new PyDict();
     /** @todo this needs to be updated to use process times (for next cycle end) */
-    args->SetItemString("simTime", new PyLong(GetFileTimeNow()));.
-	args->SetItemString("sourceRunTime", new PyLong(m_procTime));
+    args->SetItemString("simTime", new PyLong(GetFileTimeNow()));
+    args->SetItemString("sourceRunTime", new PyLong(m_procTime));
 
     /*
      * def GetExpeditedTransferTime(linkBandwidth, commodities):
@@ -914,7 +914,18 @@ By switching solar systems or regions in the above boxes you can scan planets in
 In the solar system box you can use show info under each solar system and look at orbital bodies to get a list of planet type rather than look at them one at a time. You can also view planet directly from the list.
 You can deploy Command Centers while docked, but you must be in the same system as the planet, and the command center must be in your ship's hold.
 https://www.eve-icsc.com/jumptools/jumpplanner.php use this link you calculate LY range to see what systems will be in range based on your Remote Sensing skill level. It will help with planning.
-*/	
+*/
+
+/*  import/export taxes
+ *  GetProductLevel(typeID) will return PLevel of item.
+ *  use that to calculate cost for import/export operations
+ * Product     Command Center Export Cost  Launchpad Export Cost   Launchpad Import Cost
+ *    P0         15/m3 or .15/unit           10/m3 or .1/unit        5/m3 or .05/unit
+ *    P1          3/m3 or 1.14/unit           2/m3 or .76/unit       1/m3 or .38/unit
+ *    P2          9/m3 or 13.5/unit           6/m3 or 9/unit         3/m3 or 4.5/unit
+ *    P3        150/m3 or 900/unit          100/m3 or 600/unit      50/m3 or 300/unit
+ *    P4        750/m3 or 75k/unit          500/m3 or 50k/unit     250/m3 or 25k/unit
+ */
 
 PyRep* Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items)
 {
@@ -978,14 +989,13 @@ PyRep* Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items
 			continue;
         }
 
-        //  if item not found in src contents, assume client is right and procede with xfer
-		//  GetProductCost()?
+        //  if item not found in src contents, assume client is right and proceed with xfer
         switch (sPIDataMgr.GetProductLevel(cur.first)) {
-            case 0:     cost += (      5.0f * cur.second);    break; //5
-            case 1:     cost += (    400.0f * cur.second);    break; //400
-            case 2:     cost += (   7200.0f * cur.second);    break; //7200
-            case 3:     cost += (  60000.0f * cur.second);    break; //60000
-            case 4:     cost += (1200000.0f * cur.second);    break; //1200000
+            case 0:     cost += (    0.15f * cur.second);    break; //5
+            case 1:     cost += (    1.14f * cur.second);    break; //400
+            case 2:     cost += (   13.50f * cur.second);    break; //7200
+            case 3:     cost += (  900.00f * cur.second);    break; //60000
+            case 4:     cost += (75000.00f * cur.second);    break; //1200000
         }
         ItemData iData(cur.first, m_client->GetCharacterID(), locTemp, flagAutoFit, cur.second);
         InventoryItemRef iRef = sItemFactory.SpawnItem(iData);
@@ -1017,14 +1027,13 @@ PyRep* Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items
     std::map<uint32, PI_Pin>::iterator itr = ccPin->pins.find(m_colonyID);
     if (itr != ccPin->pins.end())
         itr->second.lastRunTime = m_procTime;
-	
+
     // just update contents and launch time
     m_db.UpdatePins(m_colonyID, ccPin);
     m_db.SaveContents(ccPin);
 
     // fourth - take taxes and record entry in journal
     if (cost) {
-		cost = cost x launchTax;
         //take the money, send wallet blink event record the transaction in their journal.
         std::string reason = "DESC:  Launching PI items from ";
         reason += m_pSE->GetName();
@@ -1080,11 +1089,11 @@ void Colony::PlanetXfer(uint32 spaceportID, std::map< uint32, uint16 > importIte
         }
 
         switch (sPIDataMgr.GetProductLevel(iRef->typeID())) {
-            case 0:     cost += (      5.0f * cur.second);    break; //5
-            case 1:     cost += (    400.0f * cur.second);    break; //400
-            case 2:     cost += (   7200.0f * cur.second);    break; //7200
-            case 3:     cost += (  60000.0f * cur.second);    break; //60000
-            case 4:     cost += (1200000.0f * cur.second);    break; //1200000
+            case 0:     cost += (     .05f * cur.second);    break; //5
+            case 1:     cost += (    0.38f * cur.second);    break; //400
+            case 2:     cost += (    4.50f * cur.second);    break; //7200
+            case 3:     cost += (  300.00f * cur.second);    break; //60000
+            case 4:     cost += (25000.00f * cur.second);    break; //1200000
         }
 
         iRef->ToVirtual(spaceportID);
@@ -1094,16 +1103,15 @@ void Colony::PlanetXfer(uint32 spaceportID, std::map< uint32, uint16 > importIte
     if (toColony)
         if (is_log_enabled(COLONY__TRACE))
             _log(COLONY__TRACE, "Colony::PlanetXfer() - Imported %u items from customs office %u to spaceport %u", \
-                            toColony, m_pSE->GetCustomsOffice()->GetID(), spaceportID);
+                            toColony, m_pSE->GetID(), spaceportID);
 
     if (cost) {
-		cost = cost x importTax;
         //take the money, send wallet blink event record the transaction in their journal.
         std::string reason = "DESC:  Importing items to ";
         reason += m_pSE->GetName();
         AccountService::TransferFunds(
                             m_client->GetCharacterID(),
-                            m_pSE->GetCustomsOffice()->GetOwnerID(),
+                            m_pSE->GetOwnerID(),
                             cost,
                             reason.c_str(),
                             Journal::EntryType::PlanetaryImportTax,
@@ -1132,11 +1140,11 @@ void Colony::PlanetXfer(uint32 spaceportID, std::map< uint32, uint16 > importIte
         }
 
         switch (sPIDataMgr.GetProductLevel(cur.first)) {
-            case 0:     cost += (      5.0f * cur.second);    break; //5
-            case 1:     cost += (    400.0f * cur.second);    break; //400
-            case 2:     cost += (   7200.0f * cur.second);    break; //7200
-            case 3:     cost += (  60000.0f * cur.second);    break; //60000
-            case 4:     cost += (1200000.0f * cur.second);    break; //1200000
+            case 0:     cost += (    0.10f * cur.second);    break; //5
+            case 1:     cost += (    0.76f * cur.second);    break; //400
+            case 2:     cost += (    9.00f * cur.second);    break; //7200
+            case 3:     cost += (  600.00f * cur.second);    break; //60000
+            case 4:     cost += (50000.00f * cur.second);    break; //1200000
         }
         // xfer virtual item to real
         ItemData iData(cur.first, m_client->GetCharacterID(), locTemp, flagAutoFit, cur.second);
@@ -1148,16 +1156,15 @@ void Colony::PlanetXfer(uint32 spaceportID, std::map< uint32, uint16 > importIte
     if (fromColony)
         if (is_log_enabled(COLONY__TRACE))
             _log(COLONY__TRACE, "Colony::PlanetXfer() - Exported %u items from spaceport %u to customs office %u", \
-                        fromColony, spaceportID, m_pSE->GetCustomsOffice()->GetID());
+                        fromColony, spaceportID, m_pSE->GetID());
 
     if (cost) {
-		cost = cost x exportTax;
         //take the money, send wallet blink event record the transaction in their journal.
         std::string reason = "DESC:  Exporting items from ";
         reason += m_pSE->GetName();
         AccountService::TransferFunds(
                             m_client->GetCharacterID(),
-                            m_pSE->GetCustomsOffice()->GetOwnerID(),
+                            m_pSE->GetOwnerID(),
                             cost,
                             reason.c_str(),
                             Journal::EntryType::PlanetaryExportTax,
@@ -1169,17 +1176,6 @@ void Colony::PlanetXfer(uint32 spaceportID, std::map< uint32, uint16 > importIte
     // update contents
     m_db.SaveContents(ccPin);
 }
-
-/*  import/export taxes
- *  GetProductLevel(typeID) will return PLevel of item.
- *  use that to calculate cost for import/export operations
-Product     Command Center Export Cost  Launchpad Export Cost   Launchpad Import Cost
-    P0         15/m3 or .15/unit           10/m3 or .1/unit        5/m3 or .05/unit
-    P1          3/m3 or 1.14/unit           2/m3 or .76/unit       1/m3 or .38/unit
-    P2          9/m3 or 13.5/unit           6/m3 or 9/unit         3/m3 or 4.5/unit
-    P3        150/m3 or 900/unit          100/m3 or 600/unit      50/m3 or 300/unit
-    P4        750/m3 or 75k/unit          500/m3 or 50k/unit     250/m3 or 25k/unit
-*/
 
 void Colony::PrioritizeRoute(uint16 routeID, uint8 priority) {
     // set priority level for route...still not sure how to use it
@@ -1477,7 +1473,7 @@ void Colony::ProcessECUs(bool& updateTimes) {
 //NOTE:  TODO:  this needs major overhaul...storage pins arent really queried right
 void Colony::ProcessPlants(bool& updateTimes) {
     // this isnt working and i dont know why....
-    
+
     if (ccPin->plants.empty() or (m_pLevel < 1))
         return; // nothing to do...
 

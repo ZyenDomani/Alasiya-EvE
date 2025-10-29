@@ -166,6 +166,7 @@ namespace EVEPOS {
     namespace TaxValues {
         // used to determine tax rate on POCO based on relationship with owner
         enum {
+            None                = 0,
             Corp                = 1,
             Alliance            = 2,
             StandingHigh        = 3,
@@ -176,14 +177,14 @@ namespace EVEPOS {
         };
     }
 
-    namespace StandingValues {
+    namespace Standing {
         // if access by standing, these set minimum standing required, and associated tax rate.
         enum {
-            StandingHorrible    = -10,
-            StandingBad         = -5,
-            StandingNeutral     = 0,
-            StandingGood        = 5,
-            StandingHigh        = 10
+            Horrible    = -10,
+            Bad         = -5,
+            Neutral     = 0,
+            Good        = 5,
+            High        = 10
         };
     }
 /*

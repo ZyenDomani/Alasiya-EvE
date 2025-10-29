@@ -37,8 +37,8 @@ public:
     PyObjectEx*         GetFactionStandings()           { PyIncRef(m_factionStandings); return m_factionStandings; }
 
     // this will calculate corp or faction standings to character
-    float               GetEffectiveStanding(uint32 fromID, Character* pChar);    // to be used by all corp/faction checks
-     // this is raw standings
+    float               GetEffectiveStanding(uint32 fromID, Character* pChar);    // to be used by all NPC corp/faction checks
+     // this is raw standings (used for player corps)
     float               GetRawStanding(uint32 fromID, uint32 toID);  //  fromID = char|agent|corp|faction|alliance;   toID = me|myCorp|myAlliance.
 
     void                SetStanding(uint32 fromID, uint32 toID, float value);

@@ -62,7 +62,7 @@ public:
     // for orbital infrastructure
     void                     SetPlanet(uint32 planetID) { m_oData.planetID = planetID; }
     uint32                      GetPlanetID()           { return m_oData.planetID; }
-    float                       GetTaxRate(Client* pClient);
+    PyRep*                      GetTaxRate(Client* pClient);
 
     PyRep*                      GetSettingsInfo();
     void     GetSettingsInfo(EVEPOS::CustomsData &data) { data = m_cData; }
