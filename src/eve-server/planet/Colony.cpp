@@ -239,6 +239,7 @@ void Colony::LoadPlants() {
             ecu.headRadius              = row.GetDouble(1);
             ecu.headTypeID              = row.GetUInt16(2);
             ecu.programType             = row.GetUInt16(3);
+			//ecu.cycleCount		= ??
 
             m_db.LoadHeads(cur.first, ecu.heads);
 
@@ -742,10 +743,11 @@ void Colony::InstallProgram(uint32 ecuID, uint16 typeID, double headRadius) {
 
     std::map<uint32, PI_ECU>::iterator ecuItr = ccPin->ecus.find(ecuID);
 
+	ecuItr->second.cycleCount = 0;
     ecuItr->second.expiryTime = 0;
     ecuItr->second.headTypeID = 0;
     ecuItr->second.programType = 0;
-    pinItr->second.lastRunTime = 0;     // this will enable one cycle on next update
+    pinItr->second.lastRunTime = 0;
 
     if (typeID < 1) {
         // uninstall program
@@ -782,6 +784,7 @@ void Colony::SetProgramResults(uint32 ecuID, uint16 typeID, uint16 numCycles, do
 
     itr->second.cycleTime = cycleTime * EvE::Time::Hour;
     itr->second.qtyPerCycle = qtyPerCycle;
+	ecuItr->second.cycleCount = numCycles;
     ecuItr->second.programType = typeID;
     ecuItr->second.expiryTime = cycleTime * EvE::Time::Hour * numCycles + GetFileTimeNow();
     ecuItr->second.headRadius = headRadius;
@@ -1339,6 +1342,9 @@ void Colony::Update(bool updateTimes/*false*/) {
 }
 
 void Colony::ProcessECUs(bool& updateTimes) {
+	if (ccPin->ecus.empty)
+		return;
+	
     uint16 cycles(0);
     uint32 amount(0);
     double delta(0.0), divisor(0.0);
@@ -1348,7 +1354,7 @@ void Colony::ProcessECUs(bool& updateTimes) {
     std::map<uint32, PI_Pin>::iterator destItr;     // pinID, data
     for (auto &cur : ccPin->ecus) {
 		// this should never be invalid
-        ecuItr = ccPin->pins.find(it->second);
+        ecuItr = ccPin->pins.find(cur.first);
         if (ecuItr->second.state < PI::Pin::State::Active) {
             if (is_log_enabled(COLONY__WARNING))
                 _log(COLONY__WARNING, "Colony::ProcessECUs(%u) - Inactive", ecuItr->first);
@@ -1370,12 +1376,12 @@ void Colony::ProcessECUs(bool& updateTimes) {
         // first - get elapsed times and generate runs to simulate.  this avoids looping
         if (ecuItr->second.expiryTime < m_procTime) {
             // ecu program is complete.  determine cycles remaining from last runtime and continue
-            delta = ((double)ecuItr->second.expiryTime - ecuItr->second.lastRunTime) / EvE::Time::Hour;
+            delta = round(((double)ecuItr->second.expiryTime - ecuItr->second.lastRunTime) / EvE::Time::Hour);
             ecuItr->second.lastRunTime = ecuItr->second.expiryTime;
             ecuItr->second.expiryTime = 0;
             ecuItr->second.state = PI::Pin::State::Idle;
             if (delta < 1.0) {
-                // error...no run count
+                // warning...no run count
                 if (is_log_enabled(COLONY__WARNING))
                     _log(COLONY__WARNING, "Colony::ProcessECUs(%u) - delta < 1", ecuItr->first);
                 continue;
@@ -1390,10 +1396,10 @@ void Colony::ProcessECUs(bool& updateTimes) {
             if (is_log_enabled(COLONY__WARNING))
                 _log(COLONY__WARNING, "Colony::ProcessECUs(%u) - cycles < 1.", ecuItr->first);
             continue;
-        }
-
-        /** @todo  verify cycles isnt over program cycle count ...no ref to program cycle count yet */
-		can probably add this to ecu pin data
+        } 
+		
+		if (cycles > ecuItr->second.cycleCount)
+			cycles = ecuItr->second.cycleCount;
 
         if (is_log_enabled(COLONY__DEBUG))
             _log(COLONY__DEBUG, "Colony::ProcessECUs(%u) - begin processing with %u cycle%s (%0.3f / %0.3f)", \
@@ -1405,7 +1411,7 @@ void Colony::ProcessECUs(bool& updateTimes) {
             //  get total matl xferd
             amount = it->second.commodityQuantity * cycles;
 
-            // third - update destination contents per route movement as noted above (ECU does not store matls)
+            // third - update destination contents per route movement as noted above (ECU does not store matls - nothing to deduct from)
             destItr = ccPin->pins.find(it->second.destItrID);
             typeItr = destItr->second.contents.find(it->second.commodityTypeID);
             if (typeItr != destItr->second.contents.end()) {
