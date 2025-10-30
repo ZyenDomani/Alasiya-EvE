@@ -57,7 +57,7 @@ public:
 
     void CreatePin(uint32 ccPinID, uint32 pinID, PI_Pin &data);
     void UpdatePins(uint32 pinID, PI_CCPin* ccPin);     // save data for pinID.  send ID=0 to save all pins
-    void UpdateECUPin(uint32 pinID, PI_CCPin* ccPin);
+    void UpdateECUPin(uint32 ecuID, PI_CCPin* ccPin);
     void SavePins(PI_CCPin* ccPin); // this does NOT save contents, heads, or schematic data
     void SaveHeads(uint32 ccPinID, uint32 ownerID, uint32 ecuID, std::map< uint16, PI_Heads >& heads);
     void SaveLinks(PI_CCPin* ccPin);
@@ -71,6 +71,8 @@ public:
     void RemoveContents(uint32 pinID);
     void DeleteColony(uint32 ccPinID, uint32 planetID, uint32 charID);
     void LoadPins(uint32 ccPinID, std::map<uint32, PI_Pin>& pins);
+    void LoadECU(uint32 ecuID, DBQueryResult& res);
+    void LoadProcess(uint32 plantID, DBQueryResult& res);
     void LoadHeads(uint32 ecuID, std::map< uint16, PI_Heads >& heads);
     void LoadLinks(uint32 ccPinID, std::map<uint32, PI_Link>& links);
     void LoadRoutes(uint32 ccPinID, std::map< uint16, PI_Route >& routes);

@@ -42,11 +42,10 @@ public:
 
     void Init();
     void Load();
-    void LoadPlants();    // for loading current data to pins
+    void LoadPlants();                          // for loading plant data
     void Save();
     void Update(bool updateTimes=false);        // initial process pin call.  this will run batches to get time current
     void Shutdown();
-    void UpdatePlantPins(uint32 pinID=0);  // for saving current data from runtime plantPin to saved colonyPin
     void AbandonColony();
 
     void Process();
@@ -116,8 +115,7 @@ private:
     int64 m_procTime;           // filetime  last processed time
 
     std::vector<uint32> tempECUs;
-    std::map<uint8, uint32> tempPinIDs;
-    std::vector<uint32> m_ECUs;
+    std::map<uint32, uint32> tempPinIDs;
     // pLevel, pinID
     std::multimap<uint8, uint32> m_plantMap;        // map plant's P level to pinID.  to be used during Update()
     // srcPinID, routeData

@@ -66,11 +66,11 @@ bool PlanetDB::LoadPlanetResourceData(uint32 planetID, PlanetResourceData& data)
         return false;
     }
 
-    data.type_1 = row.GetUInt(0);
-    data.type_2 = row.GetUInt(1);
-    data.type_3 = row.GetUInt(2);
-    data.type_4 = row.GetUInt(3);
-    data.type_5 = row.GetUInt(4);
+    data.type_1 = row.GetUInt16(0);
+    data.type_2 = row.GetUInt16(1);
+    data.type_3 = row.GetUInt16(2);
+    data.type_4 = row.GetUInt16(3);
+    data.type_5 = row.GetUInt16(4);
     data.dist_1 = row.GetFloat(5);
     data.dist_2 = row.GetFloat(6);
     data.dist_3 = row.GetFloat(7);
@@ -213,7 +213,7 @@ uint32 PlanetDB::GetLaunchPlanet(uint32 launchID)
         return 0;
     }
 
-    return row.GetInt(0);
+    return row.GetUInt(0);
 }
 
 void PlanetDB::GetLaunchDetails(Launch::Data& data)
@@ -228,10 +228,10 @@ void PlanetDB::GetLaunchDetails(Launch::Data& data)
         return;
     }
 
-    data.itemID = row.GetInt(0);
-    data.status = row.GetInt(1);
-    data.solarSystemID = row.GetInt(2);
-    data.planetID = row.GetInt(3);
+    data.itemID = row.GetUInt(0);
+    data.status = row.GetUInt8(1);
+    data.solarSystemID = row.GetUInt(2);
+    data.planetID = row.GetUInt(3);
     data.launchTime = row.GetInt64(4);
     data.x = row.GetDouble(5);
     data.y = row.GetDouble(6);
@@ -249,7 +249,7 @@ uint32 PlanetDB::GetLaunchItemID(uint32 launchID)
         return 0;
     }
 
-    return row.GetInt(0);
+    return row.GetUInt(0);
 }
 
 void PlanetDB::UpdateLaunchStatus(uint32 itemID, uint8 status)
@@ -292,8 +292,8 @@ bool PlanetDB::LoadColony(uint32 charID, uint32 planetID, PI_CCPin* ccPin)
     }
     DBResultRow row;
     if (res.GetRow(row)) {
-        ccPin->level = row.GetInt(1);
-        ccPin->ccPinID = row.GetInt(0);
+        ccPin->level = row.GetUInt8(1);
+        ccPin->ccPinID = row.GetUInt(0);
         return true;
     }
     return false;
@@ -305,8 +305,7 @@ void PlanetDB::LoadPins(uint32 ccPinID, std::map<uint32, PI_Pin>& pins)
     if (!sDatabase.RunQuery(res,
         "SELECT pinID, typeID, ownerID, state, level, latitude, longitude, "
         " isCommandCenter, isLaunchable, isProcess, isStorage, isECU,"
-        " schematicID, programType, headRadius, launchTime, cycleTime,"
-        " expiryTime, installTime, lastRunTime, qtyPerCycle"
+        " schematicID, cycleTime, installTime, lastRunTime, qtyPerCycle"
         " FROM piPins"
         " WHERE ccPinID = %u", ccPinID))
     {
@@ -319,10 +318,10 @@ void PlanetDB::LoadPins(uint32 ccPinID, std::map<uint32, PI_Pin>& pins)
     DBResultRow row;
     while (res.GetRow(row)) {
         PI_Pin pin = PI_Pin();
-            pin.typeID                  = row.GetInt(1);
-            pin.ownerID                 = row.GetInt(2);
-            pin.state                   = row.GetInt(3);
-            pin.level                   = row.GetInt(4);
+            pin.typeID                  = row.GetUInt16(1);
+            pin.ownerID                 = row.GetUInt(2);
+            pin.state                   = row.GetInt8(3);
+            pin.level                   = row.GetUInt16(4);
             pin.latitude                = row.GetDouble(5);
             pin.longitude               = row.GetDouble(6);
             pin.isCommandCenter         = row.GetBool(7);
@@ -330,23 +329,17 @@ void PlanetDB::LoadPins(uint32 ccPinID, std::map<uint32, PI_Pin>& pins)
             pin.isProcess               = row.GetBool(9);
             pin.isStorage               = row.GetBool(10);
             pin.isECU                   = row.GetBool(11);
-            pin.schematicID             = row.GetInt(12);
-            pin.programType             = row.GetInt(13);
-            pin.headRadius              = row.GetDouble(14);
-            pin.lastLaunchTime          = row.GetInt64(15);
-            pin.cycleTime               = row.GetInt64(16);
-            pin.expiryTime              = row.GetInt64(17);
-            pin.installTime             = row.GetInt64(18);
-            pin.lastRunTime             = row.GetInt64(19);
-            pin.qtyPerCycle             = row.GetInt(20);
+            pin.schematicID             = row.GetUInt16(12);
+            pin.lastLaunchTime          = row.GetInt64(13);
+            pin.cycleTime               = row.GetInt64(14);
+            pin.installTime             = row.GetInt64(15);
+            pin.lastRunTime             = row.GetInt64(16);
+            pin.qtyPerCycle             = row.GetUInt(17);
 
         if (pin.isStorage or pin.isProcess)
-            LoadContents(row.GetInt(0), pin.contents);
+            LoadContents(row.GetUInt(0), pin.contents);
 
-        if (pin.isECU)
-            LoadHeads(row.GetInt(0), pin.heads);
-
-        pins[row.GetInt(0)] = std::move(pin);
+        pins[row.GetUInt(0)] = std::move(pin);
     }
 }
 
@@ -367,17 +360,16 @@ void PlanetDB::LoadLinks(uint32 ccPinID, std::map<uint32, PI_Link >& links)
     DBResultRow row;
     while (res.GetRow(row)) {
         PI_Link link = PI_Link();
-            link.level = row.GetInt(1);
-            link.state = row.GetInt(2);
+            link.level = row.GetUInt16(1);
+            link.state = row.GetInt8(2);
             link.typeID = 2280; // only link type in game
-            link.endpoint1 = row.GetInt(3);
-            link.endpoint2 = row.GetInt(4);
-        links[row.GetInt(0)] = link;
+            link.endpoint1 = row.GetUInt(3);
+            link.endpoint2 = row.GetUInt(4);
+        links[row.GetUInt(0)] = link;
     }
 }
 
-void PlanetDB::LoadRoutes(uint32 ccPinID, std::map<uint16, PI_Route >& routes)
-{
+void PlanetDB::LoadRoutes(uint32 ccPinID, std::map<uint16, PI_Route >& routes) {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         "SELECT routeID, srcPinID, destPinID, state, priority, path, typeID, itemQty"
@@ -395,12 +387,12 @@ void PlanetDB::LoadRoutes(uint32 ccPinID, std::map<uint16, PI_Route >& routes)
     while (res.GetRow(row)) {
         tempPath.clear();
         PI_Route route = PI_Route();
-            route.srcPinID = row.GetInt(1);
-            route.destPinID = row.GetInt(2);
-            route.state = row.GetInt(3);
-            route.priority = row.GetInt(4);
-            route.commodityTypeID = row.GetInt(6);
-            route.commodityQuantity = row.GetInt(7);
+            route.srcPinID = row.GetUInt(1);
+            route.destPinID = row.GetUInt(2);
+            route.state = row.GetInt8(3);
+            route.priority = row.GetInt8(4);
+            route.commodityTypeID = row.GetUInt16(6);
+            route.commodityQuantity = row.GetUInt16(7);
 
         tempPath = row.GetText(5);
         if (!tempPath.empty()) {
@@ -417,7 +409,7 @@ void PlanetDB::LoadRoutes(uint32 ccPinID, std::map<uint16, PI_Route >& routes)
             route.path.insert(route.path.end(), (atoi(tempPath.c_str())));
         }
 
-        routes[row.GetInt(0)] = route;
+        routes[row.GetUInt16(0)] = route;
     }
 }
 
@@ -438,7 +430,18 @@ void PlanetDB::LoadContents(uint32 pinID, std::map<uint16, uint32>& contents)
 
     DBResultRow row;
     while (res.GetRow(row)) {
-        contents[row.GetInt(0)] = row.GetInt(1);
+        contents[row.GetUInt16(0)] = row.GetUInt(1);
+    }
+}
+
+void PlanetDB::LoadECU(uint32 ecuID, DBQueryResult& res) {
+    if (!sDatabase.RunQuery(res,
+        "SELECT expiryTime, headRadius, headTypeID, programType"
+        " FROM piPins"
+        " WHERE pinID = %u", ecuID))
+    {
+        _log(DATABASE__ERROR, "Error in LoadECU Query: %s", res.error.c_str());
+        return;
     }
 }
 
@@ -460,11 +463,11 @@ void PlanetDB::LoadHeads(uint32 ecuID, std::map< uint16, PI_Heads >& heads)
     DBResultRow row;
     while (res.GetRow(row)) {
         PI_Heads head = PI_Heads();
-            head.typeID = (uint16)row.GetUInt(1);
+            head.typeID = row.GetUInt16(1);
             head.ecuPinID = ecuID;
             head.latitude = row.GetDouble(2);
             head.longitude = row.GetDouble(3);
-        heads[(uint16)row.GetUInt(0)] = head;
+        heads[row.GetUInt16(0)] = head;
     }
 }
 
@@ -496,9 +499,9 @@ void PlanetDB::SaveCCLevel(uint32 pinID, uint8 level)
 {
     DBerror err;
     if (!sDatabase.RunQuery(err, "UPDATE piCCPin SET level = %u WHERE pinID = %u", level, pinID))
-        _log(DATABASE__ERROR, "SaveCCLevel - Unable to save CCLevel: %s", err.GetError());
+        _log(DATABASE__ERROR, "SaveCCLevel - Unable to save CCLevel(1): %s", err.GetError());
     if (!sDatabase.RunQuery(err, "UPDATE piPins SET level = %u WHERE pinID = %u", level, pinID))
-        _log(DATABASE__ERROR, "SaveCCLevel - Unable to save CCLevel: %s", err.GetError());
+        _log(DATABASE__ERROR, "SaveCCLevel - Unable to save CCLevel(2): %s", err.GetError());
 }
 
 void PlanetDB::CreatePin(uint32 ccPinID, uint32 pinID, PI_Pin &data) {
@@ -507,13 +510,13 @@ void PlanetDB::CreatePin(uint32 ccPinID, uint32 pinID, PI_Pin &data) {
     Inserts << "INSERT INTO piPins";
     Inserts << " (ccPinID, pinID, typeID, ownerID, level, latitude, longitude,";
     Inserts << " isCommandCenter, isLaunchable, isProcess, isStorage, isECU,";
-    Inserts << " headRadius, cycleTime, expiryTime, installTime)";
+    Inserts << " cycleTime, installTime)";
     Inserts << " VALUES ";
     Inserts << "(" << ccPinID << ", " << pinID << ", " << data.typeID << ", " << data.ownerID << ", ";
     Inserts << data.level << ", " << data.latitude << ", " << data.longitude << ", ";
     Inserts << data.isCommandCenter << ", " << data.isLaunchable << ", " << data.isProcess << ", ";
-    Inserts << data.isStorage << ", " << data.isECU << ", " << data.headRadius << ", ";
-    Inserts << data.cycleTime << ", " << data.expiryTime << ", " << data.installTime << ")";
+    Inserts << data.isStorage << ", " << data.isECU << ", " << data.cycleTime << ", ";
+    Inserts << data.installTime << ")";
 
     DBerror err;
     if (!sDatabase.RunQuery(err, Inserts.str().c_str()))
@@ -525,8 +528,8 @@ void PlanetDB::SavePins(PI_CCPin* ccPin) {
     std::ostringstream Inserts;
     // start the insert into command.
     Inserts << "INSERT INTO piPins";
-    Inserts << " (pinID, level, schematicID, programType, headRadius, launchTime,";
-    Inserts << " cycleTime, expiryTime, installTime, lastRunTime)";
+    Inserts << " (pinID, level, schematicID, launchTime,";
+    Inserts << " cycleTime, installTime, lastRunTime)";
     Inserts << " VALUES ";
     bool save(false);
     for (auto &cur : ccPin->pins) {
@@ -536,8 +539,8 @@ void PlanetDB::SavePins(PI_CCPin* ccPin) {
             save = true;
         }
         Inserts << "(" << cur.first << ", " << cur.second.level << ", " << cur.second.schematicID << ", ";
-        Inserts << cur.second.programType << ", " << cur.second.headRadius << ", " << cur.second.lastLaunchTime << ", ";
-        Inserts << cur.second.cycleTime << ", " << cur.second.expiryTime << ", " << cur.second.installTime << ", " << cur.second.lastRunTime << ")";
+        Inserts << cur.second.lastLaunchTime << ", " << cur.second.cycleTime << ", ";
+        Inserts << cur.second.installTime << ", " << cur.second.lastRunTime << ")";
     }
 
     if (save) {
@@ -545,11 +548,8 @@ void PlanetDB::SavePins(PI_CCPin* ccPin) {
         Inserts << " ON DUPLICATE KEY UPDATE ";
         Inserts << " level=VALUES(level), ";
         Inserts << " schematicID=VALUES(schematicID), ";
-        Inserts << " programType=VALUES(programType), ";
-        Inserts << " headRadius=VALUES(headRadius),";
         Inserts << " launchTime=VALUES(launchTime), ";
         Inserts << " cycleTime=VALUES(cycleTime),";
-        Inserts << " expiryTime=VALUES(expiryTime), ";
         Inserts << " installTime=VALUES(installTime),";
         Inserts << " lastRunTime=VALUES(lastRunTime);";
         // execute the command.
@@ -560,7 +560,7 @@ void PlanetDB::SavePins(PI_CCPin* ccPin) {
 }
 
 void PlanetDB::UpdatePins(uint32 pinID, PI_CCPin* ccPin) {
-    // called by Process(), Xfer, UpdatePlantPins() for a contents change
+    // called by Process() for a contents change
     DBerror err;
     if (pinID) {
         std::map<uint32, PI_Pin>::iterator itr = ccPin->pins.find(pinID);
@@ -594,11 +594,16 @@ void PlanetDB::UpdatePins(uint32 pinID, PI_CCPin* ccPin) {
     }
 }
 
-void PlanetDB::UpdateECUPin(uint32 pinID, PI_CCPin* ccPin)
-{
-    std::map<uint32, PI_Pin>::iterator itr = ccPin->pins.find(pinID);
-    if (itr == ccPin->pins.end()) {
-        _log(PLANET__ERROR, "PlanetDB::UpdateECUPin() - pinID %u not found in ccPin.pins map", pinID);
+void PlanetDB::UpdateECUPin(uint32 ecuID, PI_CCPin* ccPin) {
+    std::map<uint32, PI_Pin>::iterator pinItr = ccPin->pins.find(ecuID);
+    if (pinItr == ccPin->pins.end()) {
+        _log(PLANET__ERROR, "PlanetDB::UpdateECUPin() - pinID %u not found in ccPin.pins map", ecuID);
+        return;
+    }
+
+    std::map<uint32, PI_ECU>::iterator ecuItr = ccPin->ecus.find(ecuID);
+    if (ecuItr == ccPin->ecus.end()) {
+        _log(PLANET__ERROR, "PlanetDB::UpdateECUPin() - pinID %u not found in ccPin.pins map", ecuID);
         return;
     }
 
@@ -614,8 +619,8 @@ void PlanetDB::UpdateECUPin(uint32 pinID, PI_CCPin* ccPin)
         "  installTime = %lli,"
         "  lastRunTime = %lli"
         " WHERE pinID = %u",
-        itr->second.programType, itr->second.headRadius, itr->second.qtyPerCycle, itr->second.schematicID, itr->second.expiryTime,
-        itr->second.cycleTime, itr->second.installTime, itr->second.lastRunTime, pinID))
+        ecuItr->second.programType, ecuItr->second.headRadius, pinItr->second.qtyPerCycle, pinItr->second.schematicID,
+        ecuItr->second.expiryTime, pinItr->second.cycleTime, pinItr->second.installTime, pinItr->second.lastRunTime, ecuID))
     {
         _log(DATABASE__ERROR, "UpdateECUPin - Unable to update pin: %s", err.GetError());
     }
@@ -850,46 +855,47 @@ void PlanetDB::SavePinContents(uint32 ccPinID, uint32 pinID, std::map< uint16, u
     }
 }
 
-void PlanetDB::RemovePin(uint32 pinID)
-{
+void PlanetDB::RemovePin(uint32 pinID) {
     DBerror err;
     sDatabase.RunQuery(err, "DELETE FROM piPins WHERE pinID = %u", pinID);
     sDatabase.RunQuery(err, "DELETE FROM entity WHERE itemID = %u", pinID);
     sDatabase.RunQuery(err, "DELETE FROM entity_attributes WHERE itemID = %u", pinID);
 }
 
-void PlanetDB::RemoveHead(uint32 ecuID, uint32 headID)
-{
+void PlanetDB::RemoveHead(uint32 ecuID, uint32 headID) {
     DBerror err;
     sDatabase.RunQuery(err, "DELETE FROM piECUHeads WHERE ecuID = %u AND headID = %u", ecuID, headID);
+    sDatabase.RunQuery(err, "DELETE FROM entity WHERE itemID = %u", headID);
+    sDatabase.RunQuery(err, "DELETE FROM entity_attributes WHERE itemID = %u", headID);
 }
 
-void PlanetDB::RemoveLink(uint32 linkID)
-{
+void PlanetDB::RemoveLink(uint32 linkID) {
     DBerror err;
     sDatabase.RunQuery(err, "DELETE FROM piLinks WHERE linkID = %u", linkID);
+    sDatabase.RunQuery(err, "DELETE FROM entity WHERE itemID = %u", linkID);
+    sDatabase.RunQuery(err, "DELETE FROM entity_attributes WHERE itemID = %u", linkID);
 }
 
-void PlanetDB::RemoveRoute(uint16 routeID)
-{
+void PlanetDB::RemoveRoute(uint16 routeID) {
     DBerror err;
     sDatabase.RunQuery(err, "DELETE FROM piRoutes WHERE routeID = %u", routeID);
+    sDatabase.RunQuery(err, "DELETE FROM entity WHERE itemID = %u", routeID);
+    sDatabase.RunQuery(err, "DELETE FROM entity_attributes WHERE itemID = %u", routeID);
 }
 
-void PlanetDB::RemoveContents(uint32 pinID)
-{
+void PlanetDB::RemoveContents(uint32 pinID) {
     DBerror err;
     sDatabase.RunQuery(err, "DELETE FROM piPinContents WHERE pinID = %u", pinID);
 }
 
-void PlanetDB::DeleteLaunch(uint32 contID)
-{
+void PlanetDB::DeleteLaunch(uint32 contID) {
     DBerror err;
     sDatabase.RunQuery(err, "DELETE FROM piLaunches WHERE itemID = %u", contID);
+    sDatabase.RunQuery(err, "DELETE FROM entity WHERE itemID = %u", contID);
+    sDatabase.RunQuery(err, "DELETE FROM entity_attributes WHERE itemID = %u", contID);
 }
 
-void PlanetDB::DeleteColony(uint32 ccPinID, uint32 planetID, uint32 charID)
-{
+void PlanetDB::DeleteColony(uint32 ccPinID, uint32 planetID, uint32 charID) {
     /** @todo  remove items from entity* table... */
     DBerror err;
     sDatabase.RunQuery(err, "DELETE FROM entity WHERE locationID = %u AND ownerID = %u", planetID, charID);

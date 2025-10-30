@@ -86,7 +86,7 @@
     Umokka
     */
 
-/* 
+/*
 Base costs for each tier of products per unit.
 level			Base Cost
 P0                  5 ISK
@@ -146,7 +146,6 @@ void Colony::Init()
 void Colony::Shutdown()
 {
     Update();
-    UpdatePlantPins();
     m_db.SaveContents(ccPin);
 }
 
@@ -179,10 +178,7 @@ void Colony::Load()
     m_loaded = (!ccPin->pins.empty());
 }
 
-void Colony::Save()
-{
-    /** @todo maybe separate these saves */
-    UpdatePlantPins(); // this MUST be called before Save() and GetColony() to update plant pins with current data
+void Colony::Save() {
     m_db.SavePins(ccPin);
     m_db.SaveLinks(ccPin);
     m_db.SaveRoutes(ccPin);
@@ -226,46 +222,49 @@ uint32 Colony::GetOwner()
 }
 
 void Colony::LoadPlants() {
-    bool update(false);
     for (auto &cur: ccPin->pins) {
         // set proc time on load
         if (cur.second.isCommandCenter) {
             m_procTime = cur.second.lastRunTime;
-			continue;
+            continue;
         }
 
-        /* load ECUs in mem object
-        if (cur.second.isECU)
-            m_ECUs.push_back(cur.first);
-        */
+        if (cur.second.isECU) {
+            DBQueryResult res;
+            DBResultRow row;
+            m_db.LoadECU(cur.first, res);
+            res.GetRow(row);
+            PI_ECU ecu                  = PI_ECU();
+            ecu.expiryTime              = row.GetInt64(0);
+            ecu.headRadius              = row.GetDouble(1);
+            ecu.headTypeID              = row.GetUInt16(2);
+            ecu.programType             = row.GetUInt16(3);
+
+            m_db.LoadHeads(cur.first, ecu.heads);
+
+            ccPin->ecus[cur.first] = ecu;
+            continue;
+        }
 
         // load plants in mem object
-		// update   remove common data from plant pin in favor of main pin
         if (cur.second.isProcess) {
             PI_Plant plant                  = PI_Plant();
             plant.data                      = PI_Schematic();
-            plant.schematicID               = cur.second.schematicID;
             plant.hasReceivedInputs         = false;
             plant.receivedInputsLastCycle   = false;
 
-            if (plant.schematicID) {
-                sPIDataMgr.GetSchematicData(plant.schematicID, plant.data);
+            if (cur.second.schematicID) {
+                sPIDataMgr.GetSchematicData(cur.second.schematicID, plant.data);
                 cur.second.cycleTime    = plant.data.cycleTime * EvE::Time::Second; // data.cycleTime is in seconds
                 cur.second.qtyPerCycle  = plant.data.outputQty;     // this is not saved
                 plant.pLevel        	= sPIDataMgr.GetProductLevel(plant.data.outputType);   // i am ordering plant processing by output's Plevel
-
-                if ((cur.second.state == PI::Pin::State::Active) and (cur.second.lastRunTime < m_procTime)) {
-                    update = true;
-                }
             }
 
-			if (m_pLevel < 1) {
-	            m_pLevel = plant.pLevel;
-			} 
-			if (plant.pLevel < m_pLevel) {
-	            m_pLevel = plant.pLevel;
-			}
-			
+            if (m_pLevel < 1)
+                m_pLevel = plant.pLevel;
+            if (plant.pLevel < m_pLevel)
+                m_pLevel = plant.pLevel;
+
             ccPin->plants[cur.first] = plant;
             m_plantMap.emplace(plant.pLevel, cur.first);
         }
@@ -274,41 +273,6 @@ void Colony::LoadPlants() {
     // set process timer
     if (!m_colonyTimer.Enabled())
         m_colonyTimer.Start(sConfig.rates.ColonyTimer * EvE::Timer::Minute);
-
-    if (update)
-        UpdatePlantPins();
-}
-
-//TODO:  remove dupe data from plants.  have plants map pinID and specific data (schematic, recInputs).  use ccPins to store all common pin data (no dupes)
-void Colony::UpdatePlantPins(uint32 pinID/*0*/)
-{
-	**is this needed??
-	
-    std::map<uint32, PI_Pin>::iterator itr;
-    std::map<uint32, PI_Plant>::iterator itr2;
-    if (pinID) {
-        itr = ccPin->pins.find(pinID);
-        if (itr != ccPin->pins.end()) {
-            itr2 = ccPin->plants.find(pinID);
-            if (itr2 != ccPin->plants.end()) {
-                itr->second.cycleTime               = itr2->second.cycleTime;
-                itr->second.lastRunTime             = itr2->second.lastRunTime;
-                itr->second.schematicID             = itr2->second.schematicID;
-                itr->second.qtyPerCycle             = itr2->second.qtyPerCycle;
-            }
-        }
-    } else {
-        for (auto &cur : ccPin->plants) {
-            itr = ccPin->pins.find(cur.first);
-            if (itr != ccPin->pins.end()) {
-                itr->second.cycleTime               = cur.second.cycleTime;
-                itr->second.lastRunTime             = cur.second.lastRunTime;
-                itr->second.schematicID             = cur.second.schematicID;
-                itr->second.qtyPerCycle             = cur.second.qtyPerCycle;
-            }
-        }
-    }
-    m_db.UpdatePins(pinID, ccPin);
 }
 
 void Colony::AbandonColony()
@@ -400,8 +364,7 @@ void Colony::CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latit
         case Extractor_Control_Units: { // 1063
             pin.isECU = true;
             pin.qtyPerCycle = iRef->GetAttribute(AttrPinExtractionQuantity).get_uint32();
-			**update**  can take out some of the "ecu only" pin data and put in PI_ECU data
-			ccPin->ecus[iRef->itemID()] = PI_ECU();
+            ccPin->ecus[iRef->itemID()] = PI_ECU();
         } break;
         case Spaceports:{   // 1030
             pin.isStorage = true;
@@ -439,19 +402,19 @@ void Colony::CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latit
 
     // save map of tempID to itemID - this handles the stacked-calls from client to use real itemIDs
     if (groupID != Command_Centers)
-        tempPinIDs.insert(std::pair<uint8, uint32>(pinID, iRef->itemID()));
+        tempPinIDs.insert(std::pair<uint32, uint32>(pinID, iRef->itemID()));
 
     _log(COLONY__INFO, "Colony::CreatePin() - Created pin for %s(%u)", iRef->name(), iRef->itemID());
 }
 
 void Colony::CreateLink(uint32 src, uint32 dest, uint16 level) {
     if (IsTempPinID(src) and (tempPinIDs.size() > 0)) {
-        std::map<uint8, uint32>::iterator itr = tempPinIDs.find(src);
+        std::map<uint32, uint32>::iterator itr = tempPinIDs.find(src);
         if (itr != tempPinIDs.end())
             src = itr->second;
     }
     if (IsTempPinID(dest) and (tempPinIDs.size() > 0)) {
-        std::map<uint8, uint32>::iterator itr = tempPinIDs.find(dest);
+        std::map<uint32, uint32>::iterator itr = tempPinIDs.find(dest);
         if (itr != tempPinIDs.end())
             dest = itr->second;
     }
@@ -487,7 +450,7 @@ void Colony::CreateRoute(uint16 routeID, uint32 typeID, uint32 qty, PyList* path
 
     if (tempPinIDs.size() > 0) {
         std::list<uint32> list2;
-        std::map<uint8, uint32>::iterator itr;
+        std::map<uint32, uint32>::iterator itr;
         for (auto &cur : list1) {
             if (IsTempPinID(cur)) {
                 itr = tempPinIDs.find(cur);
@@ -672,31 +635,32 @@ void Colony::RemoveRoute(uint16 routeID) {
 }
 
 void Colony::AddExtractorHead(uint32 ecuID, uint16 headID, double latitude, double longitude) {
-    std::map<uint32, PI_Pin>::iterator pinItr = ccPin->pins.find(ecuID);
-    if (pinItr == ccPin->pins.end()) {
+    std::map<uint32, PI_ECU>::iterator ecuItr = ccPin->ecus.find(ecuID);
+    if (ecuItr == ccPin->ecus.end()) {
         _log(COLONY__ERROR, "Colony::MoveExtractorHead() - ecuID %u not found in ccPin.pins map", ecuID);
         return;
     }
+
 
     m_newHead = true;
     tempECUs.push_back(ecuID);
     PI_Heads head = PI_Heads();
-        head.typeID = pinItr->second.schematicID;
+        head.typeID = ecuItr->second.programType;
         head.ecuPinID = ecuID;
         head.latitude = latitude;
         head.longitude = longitude;
-    pinItr->second.heads[headID] = head;
+    ecuItr->second.heads[headID] = head;
 }
 
 void Colony::MoveExtractorHead(uint32 ecuID, uint16 headID, double latitude, double longitude) {
-    std::map<uint32, PI_Pin>::iterator pinItr = ccPin->pins.find(ecuID);
-    if (pinItr == ccPin->pins.end()) {
+    std::map<uint32, PI_ECU>::iterator ecuItr = ccPin->ecus.find(ecuID);
+    if (ecuItr == ccPin->ecus.end()) {
         _log(COLONY__ERROR, "Colony::MoveExtractorHead() - ecuID %u not found in ccPin.pins map", ecuID);
         return;
     }
 
-    std::map<uint16, PI_Heads>::iterator headItr = pinItr->second.heads.find(headID);
-    if (headItr == pinItr->second.heads.end()) {
+    std::map<uint16, PI_Heads>::iterator headItr = ecuItr->second.heads.find(headID);
+    if (headItr == ecuItr->second.heads.end()) {
         _log(COLONY__ERROR, "Colony::MoveExtractorHead() - headID %u not found in pin.heads map", headID);
         return;
     }
@@ -709,17 +673,17 @@ void Colony::MoveExtractorHead(uint32 ecuID, uint16 headID, double latitude, dou
 }
 
 void Colony::KillExtractorHead(uint32 ecuID, uint16 headID) {
-    std::map<uint32, PI_Pin>::iterator itr = ccPin->pins.find(ecuID);
-    if (itr == ccPin->pins.end()) {
+    std::map<uint32, PI_ECU>::iterator ecuItr = ccPin->ecus.find(ecuID);
+    if (ecuItr == ccPin->ecus.end()) {
         _log(COLONY__ERROR, "Colony::KillExtractorHead() - ecuID %u not found in ccPin.pins map", ecuID);
         return;
     }
-    itr->second.heads.erase(headID);
+    ecuItr->second.heads.erase(headID);
 }
 
 void Colony::SetSchematic(uint32 pinID, uint8 schematicID/*0*/) {
     if (IsTempPinID(pinID) and (tempPinIDs.size() > 0)) {
-        std::map<uint8, uint32>::iterator itr = tempPinIDs.find(pinID);
+        std::map<uint32, uint32>::iterator itr = tempPinIDs.find(pinID);
         if (itr != tempPinIDs.end())
             pinID = itr->second;
     }
@@ -736,15 +700,17 @@ void Colony::SetSchematic(uint32 pinID, uint8 schematicID/*0*/) {
         // install new schematic.  set lastRunTime to 0.  set installTime to now.   update
         sPIDataMgr.GetSchematicData(schematicID, plantItr->second.data);
         plantItr->second.pLevel                  = sPIDataMgr.GetProductLevel(plantItr->second.data.outputType);
-        plantItr->second.cycleTime               = plantItr->second.data.cycleTime * sConfig.rates.PlantCycleMod * EvE::Time::Second;
-        plantItr->second.qtyPerCycle             = plantItr->second.data.outputQty;
-        plantItr->second.schematicID             = schematicID;
-        plantItr->second.lastRunTime             = 0;
+        pinItr->second.cycleTime                 = plantItr->second.data.cycleTime * sConfig.rates.PlantCycleMod * EvE::Time::Second;
+        pinItr->second.qtyPerCycle               = plantItr->second.data.outputQty;
+        pinItr->second.schematicID               = schematicID;
+        pinItr->second.lastRunTime               = 0;
         plantItr->second.hasReceivedInputs       = false;
         plantItr->second.receivedInputsLastCycle = false;
 
-		// update this doesnt work right...will always be 0
-        m_pLevel = static_cast<uint8>(EvE::min(m_pLevel, plantItr->second.pLevel));
+        if (m_pLevel < 1)
+            m_pLevel = plantItr->second.pLevel;
+        if (plantItr->second.pLevel < m_pLevel)
+            m_pLevel = plantItr->second.pLevel;
 
         pinItr->second.state = PI::Pin::State::Active;
 
@@ -758,8 +724,6 @@ void Colony::SetSchematic(uint32 pinID, uint8 schematicID/*0*/) {
         pinItr->second.state = PI::Pin::State::Idle;
         _log(COLONY__INFO, "Colony::SetSchematic() - Cleared Schematic from plantID %u", pinID);
     }
-    // save schematic update
-    UpdatePlantPins(pinID); // this MUST be called before Save() and GetColony() to update plant pin with current data
 }
 
 void Colony::InstallProgram(uint32 ecuID, uint16 typeID, double headRadius) {
@@ -769,35 +733,41 @@ void Colony::InstallProgram(uint32 ecuID, uint16 typeID, double headRadius) {
      * 09:54:54 [PlanetCallDump]       [ 0]   [10]   [ 1]   [ 1]    Integer: 2272       typeID
      * 09:54:54 [PlanetCallDump]       [ 0]   [10]   [ 1]   [ 2]       Real: 0.011281   headRadius
      */
-    std::map<uint32, PI_Pin>::iterator itr = ccPin->pins.find(ecuID);
-    if (itr == ccPin->pins.end()) {
+    std::map<uint32, PI_Pin>::iterator pinItr = ccPin->pins.find(ecuID);
+    if (pinItr == ccPin->pins.end()) {
+        ccPin->ecus.erase(ecuID);
         _log(COLONY__ERROR, "Colony::InstallProgram() - ecuPinID %u not found in ccPin.pins map", ecuID);
         return;
     }
+
+    std::map<uint32, PI_ECU>::iterator ecuItr = ccPin->ecus.find(ecuID);
+
+    ecuItr->second.expiryTime = 0;
+    ecuItr->second.headTypeID = 0;
+    ecuItr->second.programType = 0;
+    pinItr->second.lastRunTime = 0;     // this will enable one cycle on next update
+
     if (typeID < 1) {
         // uninstall program
-        itr->second = PI_Pin();
+        pinItr->second.state = PI::Pin::State::Idle;
+        pinItr->second.installTime = 0;
+        ecuItr->second.headRadius = 0.0;
+        //ecuItr->second.heads.clear();
         // reset extraction quantity in ecu attrib.  this doesnt check for invalid item
         sItemFactory.GetItemRef(ecuID)->ResetAttribute(AttrPinExtractionQuantity);
         return;
+    } else {
+        // install program
+        pinItr->second.state = PI::Pin::State::Active;
+        pinItr->second.installTime = GetFileTimeNow();
+        ecuItr->second.headRadius = headRadius;
+        PyList* heads = new PyList();
+        for (auto &cur : ecuItr->second.heads)
+            heads->AddItem(new PyInt(cur.second.typeID));
+
+        // set up extractor program data
+        sPIDataMgr.GetProgramResultInfo(this, ecuID, typeID, headRadius, heads);
     }
-    if (itr->second.programType != typeID) {
-        // is this installing a new program?
-        _log(COLONY__ERROR, "Colony::InstallProgram() - typeID %u does not match previously saved program.  *edit*  not sure wtf that means now.", typeID);
-        return;
-    }
-
-    itr->second.state = PI::Pin::State::Active;
-    itr->second.headRadius = headRadius;
-    itr->second.lastRunTime = GetFileTimeNow();
-    itr->second.installTime = GetFileTimeNow();
-
-    PyList* heads = new PyList();
-    for (auto &cur : itr->second.heads)
-        heads->AddItem(new PyInt(cur.second.typeID));
-
-    // set up extractor program data
-    sPIDataMgr.GetProgramResultInfo(this, ecuID, typeID, headRadius, heads);
 }
 
 void Colony::SetProgramResults(uint32 ecuID, uint16 typeID, uint16 numCycles, double headRadius, float cycleTime, uint32 qtyPerCycle)
@@ -808,12 +778,14 @@ void Colony::SetProgramResults(uint32 ecuID, uint16 typeID, uint16 numCycles, do
         return;
     }
 
+    std::map<uint32, PI_ECU>::iterator ecuItr = ccPin->ecus.find(ecuID);
+
     itr->second.cycleTime = cycleTime * EvE::Time::Hour;
-    itr->second.programType = typeID;
-    itr->second.expiryTime = cycleTime * EvE::Time::Hour * numCycles + GetFileTimeNow();
-    itr->second.headRadius = headRadius;
     itr->second.qtyPerCycle = qtyPerCycle;
-    itr->second.schematicID = sPIDataMgr.GetHeadType(sItemFactory.GetItemRef(ecuID)->typeID(), typeID);
+    ecuItr->second.programType = typeID;
+    ecuItr->second.expiryTime = cycleTime * EvE::Time::Hour * numCycles + GetFileTimeNow();
+    ecuItr->second.headRadius = headRadius;
+    ecuItr->second.headTypeID = sPIDataMgr.GetHeadType(sItemFactory.GetItemRef(ecuID)->typeID(), typeID);
 
     m_db.UpdateECUPin(ecuID, ccPin);
 
@@ -968,14 +940,16 @@ PyRep* Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items
     for (auto &cur : items) {
         std::map<uint16, uint32>::iterator cont = pin->second.contents.find(cur.first);
         if (cont != pin->second.contents.end()) {
-            if (cont->second > cur.second) {
+            if (cont->second >= cur.second) {
                 cont->second -= cur.second;
             } else {
+                // set qty to amount contained in pin.
+                cur.second = cont->second;
                 pin->second.contents.erase(cont);
             }
         } else {
             _log(COLONY__WARNING, "Colony::LaunchCommodities() - item %u not found in command center", cur.first);
-			continue;
+            continue;
         }
 
         //  if item not found in src contents, assume client is right and proceed with xfer
@@ -1221,16 +1195,17 @@ PyTuple* Colony::GetPins() {
         }
 
         if (cur.second.isECU) {
+            std::map<uint32, PI_ECU>::iterator ecuPin = ccPin->ecus.find(cur.first);
             if (cur.second.installTime) {
                 dict->SetItem("cycleTime", new PyLong(cur.second.cycleTime));
-                dict->SetItem("expiryTime", new PyLong(cur.second.expiryTime));
-                dict->SetItem("headRadius", new PyFloat(cur.second.headRadius));
+                dict->SetItem("expiryTime", new PyLong(ecuPin.second.expiryTime));
+                dict->SetItem("headRadius", new PyFloat(ecuPin.second.headRadius));
                 dict->SetItem("installTime", new PyLong(cur.second.installTime));
-                dict->SetItem("programType", new PyInt(cur.second.programType));
+                dict->SetItem("programType", new PyInt(ecuPin.second.programType));
                 dict->SetItem("qtyPerCycle", new PyInt(cur.second.qtyPerCycle));
             }
             PyList* list(new PyList());
-            for (auto &head : cur.second.heads) {
+            for (auto &head : ecuPin.second.heads) {
                 PyTuple* tuple = new PyTuple(3);
                     tuple->SetItem(0, new PyInt(head.first));
                     tuple->SetItem(1, new PyFloat(head.second.latitude));
@@ -1511,7 +1486,7 @@ void Colony::ProcessPlants(bool& updateTimes) {
             _log(COLONY__INFO, "Colony::ProcessPlants() - Begin Processing for Plant %u", it->second);
 
             // first, find plant pin in plant map
-            plantItr = ccPin->plants.find(it->second); 
+            plantItr = ccPin->plants.find(it->second);
 			plantPin = ccPin->pins.find(plantItr->first);
             if (plantItr == ccPin->plants.end()) {
 				// this should never hit...
@@ -1520,7 +1495,7 @@ void Colony::ProcessPlants(bool& updateTimes) {
                 continue;
             }
             // plant pin found.  begin basic data integrity  checks
-            
+
 			// verify plant's not idle
             if ((srcPin->second.state == PI::Pin::State::Idle)
 			or (plantItr->second.schematicID == 0))

@@ -148,6 +148,17 @@ struct PI_Schematic {
     std::map<uint16, uint16> inputs;
 };
 
+struct PI_ECU {
+    uint16 headTypeID=0;                // extractor head typeID
+    uint16 programType=0;               // extracted resource typeID
+
+    int64 expiryTime=0;                 // ECU Only             // saved as filetime
+
+    double headRadius=0.0;              // ECU Only
+
+    std::map<uint16, PI_Heads> heads;   // ECU Only
+};
+
 struct PI_Plant {
     // specifically for processing plants. this is not saved in db as a group, but is in pinData
     // these two are checked in client for the pin.CanActivate() method.  it will return true if either are true.
@@ -155,10 +166,6 @@ struct PI_Plant {
     bool receivedInputsLastCycle :1;    // Process Only
 
     uint8 pLevel=0;                     // production level of this plant
-    uint8 schematicID=0;
-    uint16 qtyPerCycle=0;
-    int64 cycleTime=0;                  // in filetime
-    int64 lastRunTime=0;                // in filetime
 
     PI_Schematic data=PI_Schematic();
 };
@@ -175,23 +182,19 @@ struct PI_Pin {
     bool isCommandCenter :1;            // common for all pins
 
     int8 state=-1;                      // common for all pins
+    uint16 schematicID=0;               // Process schematic and ECU resource typeID
     uint16 level=0;                     // common for all pins
     uint16 typeID=0;                    // common for all pins
-    uint16 schematicID=0;               // Process type, also used in ecu as extractor head typeID
-    uint16 programType=0;               // used in extractors as extracted resource typeID
     uint32 qtyPerCycle=0;               // Process and ECU
     uint32 ownerID=0;                   // common for all pins
     int64 lastRunTime=0;                // common for all pins - copy of launchTime for Spaceports   // saved as filetime
     int64 cycleTime=0;                  // Process and ECU      // saved as filetime
-    int64 expiryTime=0;                 // ECU Only             // saved as filetime
-    int64 installTime=0;                // ECU Only - used by client to calculate data      // saved as filetime
+    int64 installTime=0;                // used by client to calculate data      // saved as filetime
     int64 lastLaunchTime=0;             // Command Center and Spaceports  // saved as filetime
 
-    double headRadius=0.0;              // ECU Only
     double latitude=0.0;                // planetary location common for all pins
     double longitude=0.0;               // planetary location common for all pins
 
-    std::map<uint16, PI_Heads> heads;   // ECU Only
     std::map<uint16, uint32> contents;  // Storage    <typeID, qty>
 };
 
@@ -201,15 +204,13 @@ public:
     PI_CCPin() : level(0), ccPinID(0)                   { /* Init(); */ }
     ~PI_CCPin()                                         { /* do nothing here */ }
 
-    void Clear()
-    {
+    void Clear() {
         pins.clear();
         links.clear();
         plants.clear();
         routes.clear();
     }
-    void Init()
-    {
+    void Init() {
         //Clear();
         level = 0;
         ccPinID = 0;
@@ -221,14 +222,11 @@ public:
     uint8 level;
     uint32 ccPinID;
 
-    // pinID, pinData
-    std::map<uint32, PI_Pin> pins;
-    // linkID, linkData
-    std::map<uint32, PI_Link> links;
-    // routeID, routeData
-    std::map<uint16, PI_Route> routes;
-    // plantPinID, plantData   - this dynamic data is not saved
-    std::map<uint32, PI_Plant> plants;
+    std::map<uint32, PI_Pin> pins;      // pinID, pinData
+    std::map<uint32, PI_Link> links;    // linkID, linkData
+    std::map<uint16, PI_Route> routes;  // routeID, routeData
+    std::map<uint32, PI_ECU> ecus;      // ecuPinID, ecuData   - this dynamic data is not saved
+    std::map<uint32, PI_Plant> plants;  // plantPinID, plantData   - this dynamic data is not saved
 };
 
 /*  these are internal client state events
