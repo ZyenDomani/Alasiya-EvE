@@ -205,13 +205,14 @@ void Colony::Process() {
         for (auto &cur : ccPin->pins) {
             // has this pin's data been updated since last save?
             if (cur.second.update) {
-                m_db.RemoveContents(cur.first);
-                m_db.SavePinContents(m_colonyID, cur.first, cur.second.contents);
+				// need to figure out how to update client with current contents
+				//    maybe use onitemchange packet here?   storage has an itemRef
                 cur.second.update = false;
             }
         }
 
-        m_db.UpdatePins(0, ccPin);
+		// we dont need to hit db on every update...only shutdown
+        //m_db.UpdatePins(0, ccPin);
         m_toUpdate = false;
     }
 }
@@ -239,7 +240,7 @@ void Colony::LoadPlants() {
             ecu.headRadius              = row.GetDouble(1);
             ecu.headTypeID              = row.GetUInt16(2);
             ecu.programType             = row.GetUInt16(3);
-			//ecu.cycleCount		= ??
+			ecu.cycleCount		= ??
 
             m_db.LoadHeads(cur.first, ecu.heads);
 
@@ -1422,6 +1423,9 @@ void Colony::ProcessECUs(bool& updateTimes) {
                 destItr->second.contents[it->second.commodityTypeID] = amount;
             }
 
+			// trigger contents update
+			destItr->second.update = true;
+
             if (is_log_enabled(COLONY__DEBUG))
                 _log(COLONY__DEBUG, "Colony::ProcessECUs(%u) - Dest: %s(%u) updated with %u %s(%u).", \
                         ecuItr->first, sPIDataMgr.GetPinName(it->second.destItrID), it->second.destItrID, amount, \
@@ -1431,13 +1435,12 @@ void Colony::ProcessECUs(bool& updateTimes) {
 				// routing is straight to plant.  trigger input
 				std::map<uint32, PI_Plant>::iterator plantItr = ccPin->plants.find(it->second);
                 // i dunno which is first...will have to look in client code again to determine which to use
-				plantItr->second.hasReceivedInputs = false;
-                plantItr->second.receivedInputsLastCycle = false;
+				plantItr->second.hasReceivedInputs = true;
+                plantItr->second.receivedInputsLastCycle = true;
 			}
 			
-            // 'update' is part of clever code to avoid db hits.
-            //  this will delete existing contents and insert current contents upon completion of processing
-            destItr->second.update = true;
+        	// trigger to update pin contents
+       		m_toUpdate = true;
         }
 
         if (is_log_enabled(COLONY__DEBUG))
@@ -1449,38 +1452,34 @@ void Colony::ProcessECUs(bool& updateTimes) {
     }
 }
 
-//NOTE:  TODO:  this needs major overhaul...storage pins arent really queried right
 void Colony::ProcessPlants(bool& updateTimes) {
     if (m_plantMap.empty())
         return; // nothing to do...
 
-    /** @note  generally-accepted PI design has plant input and output to/from storage(spaceport or silo)
-     * for input buffers and follows this guideline...
-     * silo->plant->silo->plant->silo
-     * however, there may be rare cases where colony is restricted or other design constraints limit routing and
-     * plants must be linked together, where the output of one provides the direct input of the next, as follows...
-     * silo->plant->plant->plant->silo
+    /** @note  generally-accepted PI design has plant input/output from/to storage (spaceport or silo)
+     * for input buffers and possibily feeding multiple plants.
+	 * this design is arranged as shown below...
+     * silo->plant(s)->silo->plant(s)->silo
+	 *
+     * however, there may be cases where the colony is restricted or other design constraints limit routing and
+     * plants must be linked together, where the output of one provides the direct input of the next, as shown below...
+     * silo->plant(s)->plant(s)->plant(s)->silo
      * with plants as needed for production requirements of the colony.
      *
      * this will need to check for and be able to process both cases, and could be somewhat complicated.
      *
-     * plants will have to be processed in order from p1 to p4 products, to provide input for downstream plants
-     * this WILL have to loop for each cycle to correctly set inputs and outputs for each plant, and provide
-     * positive material control (and be more realistic) per run.
+     * plants will have to be processed in product order from p1 to p4 to provide input for downstream plants
+     * this WILL have to loop for each product cycle to correctly set inputs and outputs for each plant, and provide
+     * positive material control (and be more realistic) per run.   
+	 * each pLevel will run multiple cycles based on run times within it's loop
      */
 
-    /** @note  plants are stored separate from other pins, to avoid the cycles and checks for plants in this call.
-     * this will also avoid the unnecessary plant-specific data to be stored in std pins for all items
-	 NOTE:  to avoid redundany, plant data is only recInputs, schematic data and pinID.  cc.pins should retain all common data
-	 this will avoid copying, data loss, errors, and other bullshit trying to keep multiple sets updated
-     */
-    // m_pLevel is set to lowest production level of produced items, and used to order plant processing streams
     uint8 curCycle(m_pLevel);
     uint16 tempCycles(0);
     int32 cycles(0), cycles2(0), amount(0), divisor(0), delta(0);
     std::map<uint32, PI_Pin>::iterator srcItr;		// either plant or storage {itemID, data}
     std::map<uint32, PI_Pin>::iterator destItr;		// either plant or storage {itemID, data}
-    std::map<uint32, PI_Pin>::iterator pinItr;	    // common pin data for plant {itemID, data}
+    std::map<uint32, PI_Pin>::iterator plantPinItr;	// common pin data for plant {itemID, data}
     std::map<uint16, uint32>::iterator itemItr;	    // routed item [typeID, qty}
 	std::map<uint32, PI_Plant>::iterator plantItr;  // plant-specific data  {itemID, data}
     _log(COLONY__INFO, "Colony::ProcessPlants() - Begin Plant Processing.  m_procTime: %lli", m_procTime);
@@ -1491,52 +1490,49 @@ void Colony::ProcessPlants(bool& updateTimes) {
         if (is_log_enabled(COLONY__DEBUG))
             _log(COLONY__DEBUG, "Colony::ProcessPlants() - Begin Process loop for pLevel %u.", curCycle);
 
-        // plants must be processed in order to correctly make products and send to downstream recipients.
-        // this allows for both silo->plant->silo->plant and silo->plant->plant->plant->silo routing (or any combination of plant and silo routing)
+        // plants must be processed in order to correctly consume inputs, make products and send outputs to downstream recipients.
         auto cycleItr = m_plantMap.equal_range(curCycle);
         for (auto it = cycleItr.first; it != cycleItr.second; ++it) {
-            _log(COLONY__INFO, "Colony::ProcessPlants() - Begin Processing for Plant %u", it->second);
+            _log(COLONY__INFO, "Colony::ProcessPlants() - Begin Processing for %s(%u)", sPIDataMgr.GetPinName(it->second), it->second);
 
             // first, find plant pin in plant map
             plantItr = ccPin->plants.find(it->second);
-			pinItr = ccPin->pins.find(plantItr->first);
-            if (plantItr == ccPin->plants.end()) {
+			plantPinItr = ccPin->pins.find(plantItr->first);
+            if ((plantItr == ccPin->plants.end()) or (plantPinItr == ccPin->pins.end())) {
 				// this should never hit...
-                _log(COLONY__ERROR, "Colony::ProcessPlants() - Plant %u not found in ccPin.pins map", it->second);
+                _log(COLONY__ERROR, "Colony::ProcessPlants() - Plant not found in [plants/pins] map");
                 it = m_plantMap.erase(it);
                 continue;
             }
             // plant pin found.  begin basic data integrity  checks
 
 			// verify plant's not idle
-            if ((srcItr->second.state == PI::Pin::State::Idle)
-			or (pinItr->second.schematicID == 0))
+            if ((plantPinItr->second.state == PI::Pin::State::Idle)
+			or (plantPinItr->second.schematicID == 0))
                 continue;
 
             // second, check processing times for active plants
-            delta = static_cast<int32>(floor((double)(m_procTime - pinItr->second.lastRunTime)  / EvE::Time::Minute));
-            divisor = static_cast<int32>(floor((double)pinItr->second.cycleTime / EvE::Time::Minute));
+            delta = static_cast<int32>(floor((double)(m_procTime - plantPinItr->second.lastRunTime)  / EvE::Time::Minute));
+            divisor = static_cast<int32>(floor((double)plantPinItr->second.cycleTime / EvE::Time::Minute));
             if (divisor < 1) {
                 if (is_log_enabled(COLONY__WARNING))
-                    _log(COLONY__WARNING, "Colony::ProcessPlants() - divisor invalid (%i).  setting plant to idle", divisor);
-                pinItr->second.lastRunTime = 0;
-                pinItr->second.state = PI::Pin::State::Idle;
+                    _log(COLONY__WARNING, "Colony::ProcessPlants() - divisor invalid (%i).  set plant to idle and continue.", divisor);
+                plantPinItr->second.state = PI::Pin::State::Idle;
                 continue;
             }
 
             if (delta < divisor) {
                 if (is_log_enabled(COLONY__DEBUG))
-                    _log(COLONY__DEBUG, "Colony::ProcessPlants() - Pin active but cycle incomplete (%i < %i).", \
+                    _log(COLONY__DEBUG, "Colony::ProcessPlants() - Plant active but cycle incomplete (%i < %i).", \
                             delta, divisor);
                 continue;
             }
 
             // we are doing 'batch' cycles here.  get #cycles completed based on proc times
             cycles = delta / divisor;
-            if (cycles < 1) {
-                _log(COLONY__WARNING, "Colony::ProcessPlants() - Cycle count < 1");
+            if (cycles < 1) 
                 continue;
-            }
+            
             if (is_log_enabled(COLONY__DEBUG))
                 _log(COLONY__DEBUG, "Colony::ProcessPlants() - current cycle count is %i (%i / %i).", \
                             cycles, delta, divisor);
@@ -1544,32 +1540,33 @@ void Colony::ProcessPlants(bool& updateTimes) {
             // basic data checks done.
 
             // third, check supply routes for available matls and xfer to this plant
-            _log(COLONY__INFO, "Colony::ProcessPlants() - Begin Input Route loop for Plant %u.", plantItr->first);
+            _log(COLONY__INFO, "Colony::ProcessPlants() - Begin Input Route loop for Plant.");
             auto destRouteItr = m_destRoutes.equal_range(plantItr->first);
             for (auto it = destRouteItr.first; it != destRouteItr.second; ++it) {
-                //NOTE:  client verifies plant routing before sending to server
-                // this route supplies this plant with input matls.
+                // this route supplies current plant with input matls.
                 srcItr = ccPin->pins.find(it->second.srcItrID);
                 if (srcItr == ccPin->pins.end()) {
                     // route source pin not found.    should never hit
                     _log(COLONY__ERROR, "Colony::ProcessPlants() - Source Pin %u not found in ccPin.pins map", it->second.srcItrID);
                     it = m_destRoutes.erase(it);
                     plantItr->second.hasReceivedInputs = false;
-                    plantItr->second.receivedInputsLastCycle = false;
-                    updateTimes = true;
                     continue;
                 }
-                // verify supplier is NOT a plant or ECU here, as this was done in previous cycle checks...probably not needed
-                if (!srcItr->second.isStorage) {
-                    sLog.Blue("Colony::ProcessPlants()", "pin is not Storage");
+				
+				// is source plant or ecu?
+				if (srcItr.second.isECU or srcItr.second.isPlant) {
+					//yep.  nothing to do here...mat'l/qty (supposedly) already routed
+                    _log(COLONY__ERROR, "Colony::ProcessPlants() - Source %s is Plant or ECU.  Skipping this input routing loop.", sPIDataMgr.GetPinName(srcItr->first));
                     continue;
-                }
-                // source is storage.  continue with processing
+				}
+				
+                // source found as storage.  search for routed commodity and continue
                 itemItr = srcItr->second.contents.find(it->second.commodityTypeID);
                 if (itemItr == srcItr->second.contents.end()) {
                     if (is_log_enabled(COLONY__WARNING))
                         _log(COLONY__WARNING, "Colony::ProcessPlants() - Routed Commodity %s (%u) not found in Source Inventory.", \
                                 sPIDataMgr.GetProductName(it->second.commodityTypeID), it->second.commodityTypeID);
+                    plantItr->second.hasReceivedInputs = false;
                     break;
                 }
 
@@ -1580,53 +1577,63 @@ void Colony::ProcessPlants(bool& updateTimes) {
                     _log(COLONY__ERROR, "Colony::ProcessPlants() - Pin %u not found in ccPin.pins map for this plant.", \
                             it->second.destItrID);
                     it = m_destRoutes.erase(it);
-                    plantItr->second.hasReceivedInputs = false;
-                    plantItr->second.receivedInputsLastCycle = false;
-                    updateTimes = true;
                     continue;
                 }
+				
+				// dest should be current plant  (searched by destID using currentPlantID)
+				if (destItr->first != plantItr->first) {
+					// should never hit
+                    _log(COLONY__ERROR, "Colony::ProcessPlants() - route %u, dest %s(%u) != current plant %s(%u).  Breaking out.", \
+                            it->first, sPIDataMgr.GetPinName(it->second.destItrID), it->second.destItrID, \
+							sPIDataMgr.GetPinName(plantItr->first), plantItr->first);
+					// what do we need to do here?  change current plant?
+					break;
+				}
 
-                // destination good; remove contents from storage pin
+                // destination valid; remove contents from storage pin
                 amount = it->second.commodityQuantity * cycles;
-                if (itemItr->second > amount) {
+                if (itemItr->second >= amount) {
                     itemItr->second -= amount;
                 } else {
                     // not enough for all cycles
                     amount = itemItr->second;
                     srcItr->second.contents.erase(itemItr);
                 }
+				
+				// trigger contents update
+				srcItr->second.update = true;
+				
                 if (is_log_enabled(COLONY__DEBUG))
-                    _log(COLONY__DEBUG, "Colony::ProcessPlants() - Removed %i %s (%u) from Source Pin %u.", \
-                            amount, sPIDataMgr.GetProductName(it->second.commodityTypeID), it->second.commodityTypeID, srcItr->first);
+                    _log(COLONY__DEBUG, "Colony::ProcessPlants() - Removed %i %s(%u) from %s(%u).", \
+                            amount, sPIDataMgr.GetProductName(it->second.commodityTypeID), it->second.commodityTypeID, \
+							sPIDataMgr.GetPinName(srcItr->first), srcItr->first);
 
-                // trigger to update contents of source pin
-                srcItr->second.update = true;
-
-                // add contents to this plant's pin
+                // add contents to dest plant's pin
                 itemItr = destItr->second.contents.find(it->second.commodityTypeID);
                 if (itemItr != destItr->second.contents.end()) {
                     itemItr->second += amount;
                 } else {
                     destItr->second.contents[it->second.commodityTypeID] = amount;
                 }
-                // trigger to update contents of dest pin
-                destItr->second.update = true;
-
+				
+				// trigger contents update
+				destItr->second.update = true;
+				
+        		// trigger to update pin contents
+       			m_toUpdate = true;
+				
+                if (is_log_enabled(COLONY__DEBUG))
+                    _log(COLONY__DEBUG, "Colony::ProcessPlants() - Added %i %s(%u) to %s(%u).", \
+                            amount, sPIDataMgr.GetProductName(it->second.commodityTypeID), it->second.commodityTypeID, \
+							sPIDataMgr.GetPinName(destItr->first), destItr->first);
+							
                 // we have received a material from this route.  check for plant
                 if (destItr->second.isProcess) {
                     //enable check for all required materials in this Schematic for this plant
                     plantItr->second.hasReceivedInputs = true;
                 }
 
-                if (is_log_enabled(COLONY__DEBUG))
-                    _log(COLONY__DEBUG, "Colony::ProcessPlants() - Added %i %s (%u) to Plant Inventory.", \
-                            amount, sPIDataMgr.GetProductName(it->second.commodityTypeID), it->second.commodityTypeID);
             }
-
-            // fourth, process input material requirements
-            cycles2 = 0;
-            _log(COLONY__INFO, "Colony::ProcessPlants() - %s Input Check loop for Plant %u.", \
-                    plantItr->second.hasReceivedInputs ? "Begin" : "Skipping", plantItr->first);
 
             // verify plant pin
             destItr = ccPin->pins.find(plantItr->first);
@@ -1636,6 +1643,11 @@ void Colony::ProcessPlants(bool& updateTimes) {
                 m_destRoutes.erase(destItr->first);
                 break;
             }
+
+            // fourth, process input material requirements
+            cycles2 = 0;
+            _log(COLONY__INFO, "Colony::ProcessPlants() - %s Input Check loop for Plant %u.", \
+                    plantItr->second.hasReceivedInputs ? "Begin" : "Skipping", plantItr->first);
 
             plantItr->second.receivedInputsLastCycle = false;
 
@@ -1655,7 +1667,6 @@ void Colony::ProcessPlants(bool& updateTimes) {
                     // skip further processing
                     plantItr->second.state = PI::Pin::State::Idle;
                     plantItr->second.hasReceivedInputs = false;
-                    updateTimes = true;
                     continue;
                 }
 
@@ -1665,12 +1676,11 @@ void Colony::ProcessPlants(bool& updateTimes) {
                     itemItr = destItr->second.contents.find(mats.first);
                     if (itemItr == destItr->second.contents.end()) {
                         if (is_log_enabled(COLONY__DEBUG))
-                            _log(COLONY__DEBUG, "Colony::ProcessPlants() - %s (%u) not found in Plant Inventory.", \
+                            _log(COLONY__DEBUG, "Colony::ProcessPlants() - %s (%u) not found in Plant Inventory.  Break out of loop.", \
                                     sPIDataMgr.GetProductName(mats.first), mats.first);
                         // this required material was not found in plant inventory.  skip further processing
                         plantItr->second.hasReceivedInputs = false;
-                        updateTimes = true;
-                        continue;
+                        break;
                     }
                     if (itemItr->second >= (mats.second * cycles)) {
                         itemItr->second -= (mats.second * cycles);
@@ -1679,7 +1689,7 @@ void Colony::ProcessPlants(bool& updateTimes) {
                         // this required material was not sufficient quantity for (num cycles) runs.
                         // determine how many cycles we can run with current material quantity
                         if (is_log_enabled(COLONY__DEBUG))
-                            _log(COLONY__DEBUG, "Colony::ProcessPlants() - Not enough %s (%u) for %i cycles.  Need %u, Have %u", \
+                            _log(COLONY__DEBUG, "Colony::ProcessPlants() - Not enough %s(%u) for %i cycles.  Need %u, Have %u", \
                                     sPIDataMgr.GetProductName(mats.first), mats.first, cycles, mats.second * cycles, itemItr->second);
                         cycles2 = itemItr->second / mats.second;
                         if (cycles2 > 0) {
@@ -1689,19 +1699,26 @@ void Colony::ProcessPlants(bool& updateTimes) {
                                 _log(COLONY__DEBUG, "Colony::ProcessPlants() - Have enough material for %i cycles.", cycles2);
                         } else {
                             plantItr->second.hasReceivedInputs = false;
-                            updateTimes = true;
                             break;
                         }
                     }
+					
+					// trigger contents update
+					destItr->second.update = true;
+				
 					//TODO:  check for qtys after inputs from multiple sources...
                     // set temp variable with minimum cycle count
                     if (tempCycles > cycles2)
                         tempCycles = cycles2;
                     cycles2 = 0;
                 }
+				
+        		// trigger to update pin contents
+        		m_toUpdate = true;
+				
                 // we have enough mat'l for at least one process.  set cycles based on material in inventory.
                 if (cycles > tempCycles)
-                    cycles = tempCycles;    // temp variable no longer needed at this point.
+                    cycles = tempCycles;
             } else {
                 // we have not received inputs last cycle
                 plantItr->second.hasReceivedInputs = false;
@@ -1711,32 +1728,11 @@ void Colony::ProcessPlants(bool& updateTimes) {
 
             // at this point, we have looped thru all required mats and set plant variables accordingly.
 
-            // fifth, process manufacturing cycle
-            _log(COLONY__INFO, "Colony::ProcessPlants() - %s manufacturing loop for Plant %u.", \
-                    plantItr->second.receivedInputsLastCycle ? "Begin" : "Skipping", plantItr->first);
-            if (plantItr->second.receivedInputsLastCycle and (cycles > 0)) {
-                /* plant has received all required mats for production.
-                 * set timers for runtimes and state to active
-                 * this will allow routing (and subsequent process checks) on next loop, as defined in beginning of this loop
-                 */
-                if (is_log_enabled(COLONY__DEBUG))
-                    _log(COLONY__DEBUG, "Colony::ProcessPlants() - Updating timers for %i cycles using current inventory.", cycles);
-
-                destItr->second.state = PI::Pin::State::Active;
-                updateTimes = true;
-
-                if (is_log_enabled(COLONY__DEBUG))
-                    _log(COLONY__DEBUG, "Colony::ProcessPlants() - Received Inputs.");
-            } else {
-                cycles = 0;
-            }
-
-            // sixth, manufacturing complete.  move finished product per route
-            _log(COLONY__INFO, "Colony::ProcessPlants() - %s Output Routing loop for Plant %u.", \
-                    cycles > 0 ? "Begin" : "Skipping", plantItr->first);
+            // fifth, process manufacturing cycle and move finished product per route
+            _log(COLONY__INFO, "Colony::ProcessPlants() - %s Output Routing loop for %s(%u).", \
+                    cycles > 0 ? "Begin" : "Skipping", sPIDataMgr.GetPinName(plantItr->first), plantItr->first);
+					
             if (cycles and plantItr->second.receivedInputsLastCycle) {
-                // at this point, *SOMETHING* has changed in this plant, so send it to update
-                destItr->second.update = true;
                 auto srcRouteItr = m_srcRoutes.equal_range(plantItr->first);
                 for (auto it = srcRouteItr.first; it != srcRouteItr.second; ++it) {
                     // get destination pin and update qty there for this round
@@ -1759,6 +1755,10 @@ void Colony::ProcessPlants(bool& updateTimes) {
                         // create new stack
                         destItr->second.contents[it->second.commodityTypeID] = amount;
                     }
+					
+					// trigger contents update
+					destItr->second.update = true;
+
                     if (is_log_enabled(COLONY__DEBUG))
                         _log(COLONY__DEBUG, "Colony::ProcessPlants() - Added %u %s (%u) to Dest %u.", \
                                 amount, sPIDataMgr.GetProductName(it->second.commodityTypeID), \
@@ -1780,20 +1780,26 @@ void Colony::ProcessPlants(bool& updateTimes) {
                         destPlantItr->second.hasReceivedInputs = true;
                     }
 
-                    destItr->second.update = true;
                     // this plant has used all inputs.  set received to false to begin next cycle of mat'l xfer
                     plantItr->second.hasReceivedInputs = false;
                 }
+					
+				// trigger contents update
+				destItr->second.update = true;
                 // update last run time based on current process cycles
-                plantItr->second.lastRunTime += plantItr->second.cycleTime * cycles;
-
+                destItr->second.lastRunTime += plantItr->second.cycleTime * cycles;
+				// update colony process time (and pin contents)
+        		updateTimes = true;
                 // if there are materials left, verify qty and move excess back to previous storage, if applicable
             } else {
                 // not enough mat'l for one cycle.
                 plantItr->second.hasReceivedInputs = false;
                 plantItr->second.receivedInputsLastCycle = false;
             }
+			
+            _log(COLONY__INFO, "Colony::ProcessPlants() -  %s(%u): Processing Complete", sPIDataMgr.GetPinName(it->second), it->second);
         }
+		
         if (is_log_enabled(COLONY__DEBUG))
             _log(COLONY__DEBUG, "Colony::ProcessPlants() - Process loop complete for pLevel %u.", curCycle);
 
