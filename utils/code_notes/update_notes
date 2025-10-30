@@ -1,51 +1,67 @@
 
 
-/usr/local/src/Alasiya-EvE/src/eve-server/planet/Colony.cpp: In member function ‘PyTuple* Colony::GetPins()’:
-/usr/local/src/Alasiya-EvE/src/eve-server/planet/Colony.cpp:1182:76: error: ‘struct PI_Plant’ has no member named ‘cycleTime’
-                     dict->SetItem("cycleTime", new PyLong(plantPin->second.cycleTime));
-                                                                            ^
-/usr/local/src/Alasiya-EvE/src/eve-server/planet/Colony.cpp:1201:63: error: ‘std::map<unsigned int, PI_ECU>::iterator’ has no member named ‘second’
-                 dict->SetItem("expiryTime", new PyLong(ecuPin.second.expiryTime));
-                                                               ^
-/usr/local/src/Alasiya-EvE/src/eve-server/planet/Colony.cpp:1202:64: error: ‘std::map<unsigned int, PI_ECU>::iterator’ has no member named ‘second’
-                 dict->SetItem("headRadius", new PyFloat(ecuPin.second.headRadius));
-                                                                ^
-/usr/local/src/Alasiya-EvE/src/eve-server/planet/Colony.cpp:1204:63: error: ‘std::map<unsigned int, PI_ECU>::iterator’ has no member named ‘second’
-                 dict->SetItem("programType", new PyInt(ecuPin.second.programType));
-                                                               ^
-/usr/local/src/Alasiya-EvE/src/eve-server/planet/Colony.cpp:1208:38: error: ‘std::map<unsigned int, PI_ECU>::iterator’ has no member named ‘second’
-             for (auto &head : ecuPin.second.heads) {
-                                      ^
-/usr/local/src/Alasiya-EvE/src/eve-server/planet/Colony.cpp: In member function ‘PyRep* Colony::GetColony()’:
-/usr/local/src/Alasiya-EvE/src/eve-server/planet/Colony.cpp:1262:89: error: ‘struct PI_Pin’ has no member named ‘heads’
-                 m_db.SaveHeads(m_colonyID, m_client->GetCharacterID(), cur, itr->second.heads);
-                                                                                         ^
-/usr/local/src/Alasiya-EvE/src/eve-server/planet/Colony.cpp: In member function ‘void Colony::ProcessECUs(bool&)’:
-/usr/local/src/Alasiya-EvE/src/eve-server/planet/Colony.cpp:1351:38: error: ‘it’ was not declared in this scope
-         ecuPinItr = ccPin->pins.find(it->second);
-                                      ^
-/usr/local/src/Alasiya-EvE/src/eve-server/planet/Colony.cpp:1371:31: error: ‘struct PI_Pin’ has no member named ‘expiryTime’
-         if (ecuPinItr->second.expiryTime < m_procTime) {
-                               ^
-/usr/local/src/Alasiya-EvE/src/eve-server/planet/Colony.cpp:1373:48: error: ‘struct PI_Pin’ has no member named ‘expiryTime’
-             delta = ((double)ecuPinItr->second.expiryTime - ecuPinItr->second.lastRunTime) / EvE::Time::Hour;
-                                                ^
-/usr/local/src/Alasiya-EvE/src/eve-server/planet/Colony.cpp:1374:63: error: ‘struct PI_Pin’ has no member named ‘expiryTime’
-             ecuPinItr->second.lastRunTime = ecuPinItr->second.expiryTime;
-                                                               ^
-/usr/local/src/Alasiya-EvE/src/eve-server/planet/Colony.cpp:1375:31: error: ‘struct PI_Pin’ has no member named ‘expiryTime’
-             ecuPinItr->second.expiryTime = 0;
-                               ^
-/usr/local/src/Alasiya-EvE/src/eve-server/planet/Colony.cpp:1396:3: error: ‘can’ was not declared in this scope
-   can probably add this to ecu pin data
-   ^
-/usr/local/src/Alasiya-EvE/src/eve-server/planet/Colony.cpp: In member function ‘void Colony::ProcessPlants(bool&)’:
-/usr/local/src/Alasiya-EvE/src/eve-server/planet/Colony.cpp:1472:3: error: ‘UD’ was not declared in this scope
-  *UD*  remove common data out of plant pin.  store all data in piPin structure
-   ^
-/usr/local/src/Alasiya-EvE/src/eve-server/planet/Colony.cpp:1501:25: error: ‘struct PI_Plant’ has no member named ‘schematicID’
-    or (plantItr->second.schematicID == 0))
-                         ^
-/usr/local/src/Alasiya-EvE/src/eve-server/planet/Colony.cpp:1766:25: error: ‘destPlant’ was not declared in this scope
-                         destPlant = ccPin->plants.find(destPin->first);
-                         ^
+ecu > silo > plant > silo > plant > silo
+
+ecu > plant > plant > plant > silo
+
+ecu > silo > plant > plant > silo
+
+ecu > silo > plant > silo
+
+ecu > plant > silo
+
+loop  (proc pLevel)
+  get plant @ this plevel
+
+  data
+    get cycle count (proc times)
+
+  loop (plant @ pLevel)
+    get route using current plant as dest  (can be multiple routes)
+    get route source
+    if src = plant or src = ecu
+	continue - mat'l type/qty (should be) already updated
+    if src = storage
+        get route mat'l type/qty
+	check src for type/qty
+	remove qty from src
+	add qty to dest
+	set dest mat'l received (prev cycle)
+
+    loop [recInput prev pLevel]  (plant req mat'l)
+        check plant inventory per schematic data
+	    check type/qty vs cycle count and revise based on mat'l/qty in storage
+	flag rec mat'l for next check
+
+    if all req mat'l in plant storage, set recInput this pLevel
+    remove prev pLevel recInput
+
+    loop [recInput this pLevel]  (plant output mat'l)
+	get route using current plant as src
+	get route dest
+	get route mat'l type/qty per cycle
+	remove req type/qty from plant storage per cycle
+	add cycle qty to dest
+	remove recInput this pLevel
+
+
+
+*****************************
+notes to update virtual planetary commodities in planet pins to actual inventoryItems
+  - code already in place to handle (storage) inventory and updates
+  - will have to update process code to allow for multiple run cycles per loop without using existing inventory capy checks
+keep using pin.storage for run cycles.  when cycle complete, set remaining items to itemRefs in container's inventory, which will allow for capy checks and client updates
+  - delete pin.storage contents after this?   update storage?
+pitfall....items in pin.storage are virtual using typeIDs....not itemIDs
+  - not sure how to get around this yet
+
+after cycle completion, use ContentsByTypeID to get itemRef, call Move() which will test capys and send updates to client.
+will have to update sysMgr::LoadDynamics to skip items on planets (not sure how yet)
+  - planet pins will not be loaded at time of system load call, so will segfault.
+
+
+
+
+
+
+
