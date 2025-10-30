@@ -1402,8 +1402,8 @@ void Colony::ProcessECUs(bool& updateTimes) {
 			cycles = ecuItr->second.cycleCount;
 
         if (is_log_enabled(COLONY__DEBUG))
-            _log(COLONY__DEBUG, "Colony::ProcessECUs(%u) - begin processing with %u cycle%s (%0.3f / %0.3f)", \
-                    ecuItr->first, cycles, cycles > 1 ? "s":"", delta, divisor);
+            _log(COLONY__DEBUG, "Colony::ProcessECUs(%u) - begin processing with %u of %u cycle%s (%0.3f / %0.3f)", \
+                    ecuItr->first, cycles, ecuItr->second.cycleCount, ecuItr->second.cycleCount > 1 ? "s":"", delta, divisor);
 
         // second - see if this ecu has a route and move contents per route.  this will simulate xfer of raw matls from heads to storage
         auto routeItr = m_srcRoutes.equal_range(ecuItr->first);     // this ecu is route origin
@@ -1427,6 +1427,14 @@ void Colony::ProcessECUs(bool& updateTimes) {
                         ecuItr->first, sPIDataMgr.GetPinName(it->second.destItrID), it->second.destItrID, amount, \
                         sPIDataMgr.GetProductName(it->second.commodityTypeID), it->second.commodityTypeID);
 
+			if (destItr->second.isPlant) {
+				// routing is straight to plant.  trigger input
+				std::map<uint32, PI_Plant>::iterator plantItr = ccPin->plants.find(it->second);
+                // i dunno which is first...will have to look in client code again to determine which to use
+				plantItr->second.hasReceivedInputs = false;
+                plantItr->second.receivedInputsLastCycle = false;
+			}
+			
             // 'update' is part of clever code to avoid db hits.
             //  this will delete existing contents and insert current contents upon completion of processing
             destItr->second.update = true;
