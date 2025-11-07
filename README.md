@@ -24,4 +24,6 @@
 - ~65% functional.  see http://eve.alasiya.net/?p=op_status for more info
 - current EvEmu code is based on this, but has some changes that were made without consideration of systems interaction
 
+<br /> <br />
+NOTE:  current db structure is out of date. 21 Oct 25
 
