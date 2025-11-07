@@ -116,7 +116,7 @@ struct PlanetResourceData {
 
 struct PI_Link {
     int8 state=0;
-    uint16 level=0;
+    uint8 level=0;
     uint16 typeID=0;
     uint32 endpoint1=0;
     uint32 endpoint2=0;
@@ -149,12 +149,13 @@ struct PI_Schematic {
 };
 
 struct PI_ECU {
-    uint16 headTypeID=0;                // extractor head typeID
+    uint16 headTypeID=0;                // ECU Only   *saved in pins
     uint16 programType=0;               // extracted resource typeID
+    uint16 cycleCount=0;                // ECU Only   *saved in pins
 
-    int64 expiryTime=0;                 // ECU Only             // saved as filetime
+    int64 expiryTime=0;                 // ECU Only
 
-    double headRadius=0.0;              // ECU Only
+    double headRadius=0.0;              // ECU Only   *saved in pins
 
     std::map<uint16, PI_Heads> heads;   // ECU Only
 };
@@ -162,8 +163,8 @@ struct PI_ECU {
 struct PI_Plant {
     // specifically for processing plants. this is not saved in db as a group, but is in pinData
     // these two are checked in client for the pin.CanActivate() method.  it will return true if either are true.
-    bool hasReceivedInputs :1;          // Process Only
-    bool receivedInputsLastCycle :1;    // Process Only
+    bool hasReceivedInputs :1;          // Process Only  - material received from silo/plant/ecu
+    bool receivedInputsLastCycle :1;    // Process Only  - received all matl/qty for at least one cycle
 
     uint8 pLevel=0;                     // production level of this plant
 
@@ -171,7 +172,7 @@ struct PI_Plant {
 };
 
 struct PI_Pin {
-    bool update :1;                     // specifically for updating contents in db. this is a runtime value.
+    bool update :1;                     // specifically for updating pin contents in client.   not saved
 
     bool isECU :1;                      // common for all pins
     bool isBase :1;                     // common for all pins
@@ -181,16 +182,34 @@ struct PI_Pin {
     bool isLaunchable :1;               // common for all pins
     bool isCommandCenter :1;            // common for all pins
 
+    // used to set ECU/Plant currently running;  cc active used for colony.tic()
     int8 state=-1;                      // common for all pins
-    uint16 schematicID=0;               // Process schematic and ECU resource typeID
-    uint16 level=0;                     // common for all pins
+    uint8 level=0;                      // common for all pins
     uint16 typeID=0;                    // common for all pins
-    uint32 qtyPerCycle=0;               // Process and ECU
     uint32 ownerID=0;                   // common for all pins
-    int64 lastRunTime=0;                // common for all pins - copy of launchTime for Spaceports   // saved as filetime
-    int64 cycleTime=0;                  // Process and ECU      // saved as filetime
-    int64 installTime=0;                // used by client to calculate data      // saved as filetime
-    int64 lastLaunchTime=0;             // Command Center and Spaceports  // saved as filetime
+    // Process' material data
+    // ignored for other pins
+    // used here for ECU resourceID
+    uint16 schematicID=0;               // Process
+    // ECU data   0 when no installed program
+    // ignored for other pins
+    uint32 qtyPerCycle=0;               // Process, ECU
+    // while !=0, calls update on all colony pins.   used with cycleTime for nextTickTime
+    // xfer time for storage.
+    // must be 0 or not sent for Spaceports and CC
+    int64 lastRunTime=0;                // Process, ECU, Storage
+    // only used for CC and Spaceports
+    // ECU saves expiryTime here
+    // ignored for other pins
+    int64 launchTime=0;                 // Command, Spaceport
+    // used to calculate nextTickTime    base is 60 * SEC (1m in filetime)
+    // hardcoded as 0 for storage (sending not required)
+    int64 cycleTime=0;                  // Process, ECU
+    // used by client to calculate misc data
+    // program install in ecu
+    // no references in other pins
+    // kept here as pin build time
+    int64 installTime=0;                // Process, ECU
 
     double latitude=0.0;                // planetary location common for all pins
     double longitude=0.0;               // planetary location common for all pins
@@ -199,10 +218,12 @@ struct PI_Pin {
 };
 
 
-class PI_CCPin {
+class PI_CCData {
 public:
-    PI_CCPin() : level(0), ccPinID(0)                   { /* Init(); */ }
-    ~PI_CCPin()                                         { /* do nothing here */ }
+    PI_CCData() : level(0), colonyID(0)                 { /* Init(); */ }
+    ~PI_CCData()                                        { /* do nothing here */ }
+    // do we need to delete copy/move semantics?
+    //    probably not...this is passed as pointer to everything, so there is no copy or move
 
     void Clear() {
         pins.clear();
@@ -213,20 +234,20 @@ public:
     void Init() {
         //Clear();
         level = 0;
-        ccPinID = 0;
+        colonyID = 0;
     }
 
     uint8 GetLevel()                                    { return level; }
-    uint32 GetPinID()                                   { return ccPinID; }
+    uint32 GetColonyID()                                { return colonyID; }
 
     uint8 level;
-    uint32 ccPinID;
+    uint32 colonyID;
 
-    std::map<uint32, PI_Pin> pins;      // pinID, pinData
-    std::map<uint32, PI_Link> links;    // linkID, linkData
-    std::map<uint16, PI_Route> routes;  // routeID, routeData
-    std::map<uint32, PI_ECU> ecus;      // ecuPinID, ecuData   - this dynamic data is not saved
-    std::map<uint32, PI_Plant> plants;  // plantPinID, plantData   - this dynamic data is not saved
+    std::map<uint32, PI_ECU> ecus;      // pinID, data   - this dynamic data is not saved
+    std::map<uint32, PI_Pin> pins;      // pinID, data
+    std::map<uint32, PI_Link> links;    // linkID, data
+    std::map<uint16, PI_Route> routes;  // routeID, data
+    std::map<uint32, PI_Plant> plants;  // pinID, data   - this dynamic data is not saved
 };
 
 /*  these are internal client state events

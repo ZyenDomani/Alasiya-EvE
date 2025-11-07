@@ -1516,8 +1516,8 @@ enum EveAttrEnum {
     AttrExportTax = 1639,
     AttrImportTaxMultiplier = 1640,
     AttrExportTaxMultiplier = 1641,
-    AttrPinExtractionQuantity = 1642,
-    AttrPinCycleTime = 1643,
+    AttrPinExtractionQuantity = 1642,                   // 1000
+    AttrPinCycleTime = 1643,                            // 300
     AttrExtractorDepletionRange = 1644,
     AttrExtractorDepletionRate = 1645,
     AttrCommandCenterHoldCapacity = 1646,

@@ -2108,7 +2108,7 @@ void ShipItem::VerifyHoldType(EVEItemFlags flag, InventoryItemRef iRef, Client* 
             } else {
                 sLog.Error("ShipItem::VerifyHoldType", "testing %s to add %u %s of cat %s has reached the end.",
                         sDataMgr.GetFlagName(flag), iRef->quantity(), iRef->name(), sDataMgr.GetCategoryName(iRef->categoryID()));
-                throw CustomError("Internal Server Error.");
+                throw CustomError("Internal Server Error while verifying cargo space for %s.", iRef->name());
             }
         }
     }

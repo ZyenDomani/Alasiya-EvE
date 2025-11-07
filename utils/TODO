@@ -29,6 +29,11 @@ when PI started on planet, check for customs office and create interbus customs 
 *******************************************************
 **********  errors and other found shit...high priority
 
+(u)int8 types use null ('\000') in place of 0
+  this causes problems with c-style strings, which i use extensively in saving thru stringstream and it's insertion op (<<)
+  to fix this, as there are very few cases it's required, cast the int8 data to int16 before insertion
+  there are ~1600 uses of (u)int8 in current code; around 20 of them are saved 
+
 subsequent chars not added to existing char's local chat (but new chars have existing chars in chat)
 
 same acct can be logged in multiple times
@@ -86,7 +91,7 @@ PyString("UI/Agents/DefaultMessages/NoMission1")
 
 quantity is off (in db) on some items (purcahsed or gifted)
   - see items around 140027931
-  
+
 rewrite wreck creation tables.  wrecks are in invTypes table and listed as s/m/l +few extras
    use npc ship groupID to determine faction and size
 

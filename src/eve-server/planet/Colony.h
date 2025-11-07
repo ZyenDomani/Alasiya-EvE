@@ -44,13 +44,14 @@ public:
     void Load();
     void LoadPlants();                          // for loading plant data
     void Save();
-    void Update(bool updateTimes=false);        // initial process pin call.  this will run batches to get time current
+    void Update();                              // initial process pin call.  this will run batches to get time current
     void Shutdown();
     void AbandonColony();
+    void SendUpdate();
 
     void Process();
-    void ProcessECUs(bool& updateTimes);
-    void ProcessPlants(bool& updateTimes);
+    void ProcessECUs();
+    void ProcessPlants();
 
     void RemovePin(uint32 pinID);
     void RemoveLink(uint32 src, uint32 dest);
@@ -75,9 +76,9 @@ public:
     void SetProgramResults( uint32 ecuID, uint16 typeID, uint16 numCycles, double headRadius, float cycleTime, uint32 qtyPerCycle );
 
     PyRep* LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items);
-    void PlanetXfer(uint32 spaceportID, std::map< uint32, uint16 > importItems, std::map< uint32, uint16 > exportItems, double taxRate);
+    void PlanetXfer(uint32 pinID, std::map< uint32, uint16 > importItems, std::map< uint32, uint16 > exportItems, double taxRate);
 
-    void PrioritizeRoute(uint16 routeID, uint8 priority);
+    void PrioritizeRoute(uint16 routeID, int8 priority);
 
     uint32 GetOwner();
 
@@ -87,16 +88,17 @@ public:
     PyTuple* GetRoutes();
     PyDict* TransferCommodities(uint32 srcID, uint32 destID, std::map< uint16, uint32 > items);
 
-    bool HasColony()                                    { return (ccPin->ccPinID ? true : false); }
+    bool HasColony()                                    { return (ccData->colonyID ? true : false); }
 
-    int8 GetLevel()                                     { return ccPin->level; }
+    int8 GetLevel()                                     { return ccData->level; }
     int64 GetSimTime()                                  { return m_procTime; }
 
 private:
     PyServiceMgr* m_svcMgr;
     PlanetSE* m_pSE;
-    PI_CCPin* ccPin;
+    PI_CCData* ccData;
     Client* m_client;
+    PyList* pPinList;
 
     Timer m_colonyTimer;
 
@@ -123,6 +125,15 @@ private:
     // destPinID, routeData
     std::multimap<uint32, PI_Route> m_destRoutes;     // map destPin to routeData
 };
+
+/*  FINALLY found how to update pins without resending entire colony (must send on uunc)
+     'OnItemChange',     << uses same data as InventoryItem::SendItemChange
+     'OnPlanetPinsChanged',     << client internal
+     'OnRefreshPins']   << list of pins here to refresh contents
+     'OnEditModeBuiltOrDestroyed',      << client internal
+     'OnPlanetPinPlaced']       << client internal for adding new pin
+     'ProcessColonyDataSet'     << seems to be for updating *something* after TransferCommodities
+     */
 
 /*
  *

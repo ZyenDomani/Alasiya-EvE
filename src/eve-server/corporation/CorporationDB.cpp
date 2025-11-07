@@ -2143,8 +2143,8 @@ void CorporationDB::AddVoteCase(uint32 corpID, uint32 charID, Call_InsertVoteCas
         } else {
             str << ",";
         }
-        str << "(" << std::to_string((int64)voteCaseID) << "," << std::to_string(cur.optionID) << ",\"" << cur.optionText << "\"," << std::to_string(cur.parameter) << ",";
-        str << std::to_string(cur.parameter1) << "," << std::to_string(cur.parameter2) << ")";
+        str << "(" << voteCaseID << "," << cur.optionID << ",\"" << cur.optionText << "\"," << cur.parameter << ",";
+        str << cur.parameter1 << "," << cur.parameter2 << ")";
     }
 
     if (set)

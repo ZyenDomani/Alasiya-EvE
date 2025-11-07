@@ -422,13 +422,13 @@ InventoryItemRef Inventory::GetByID(uint32 id) const {
 void Inventory::UpdateFlag(EVEItemFlags newFlag, InventoryItemRef iRef) const
 {
     sLog.Warning("Inv::UpdateFlag", "this is used...finish code here");
-    //  incomplete...wont compile
     // this method is for changing flags for existing items in our inventory
-    /*   is this really needed?   currently we remove() then add()
+    /* wont compile
     auto range = m_contentsByFlag.equal_range(iRef->flag());
-    for (auto itr = range.first; itr != range.second; itr++ )
-        if (itr->second == iRef)
-            m_contentsByFlag.erase(itr);
+    for (auto &cur = range.first; cur != range.second; ++cur ) {
+        if (cur->second == iRef)
+            m_contentsByFlag.erase(cur);
+    }
     m_contentsByFlag.emplace(newFlag, iRef);
     */
 }

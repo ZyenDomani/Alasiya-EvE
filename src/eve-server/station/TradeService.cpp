@@ -359,6 +359,7 @@ PyResult TradeBound::Handle_Add(PyCallArgs &call) {
         mTI.customInfo = "";
         pTSes->m_tradelist.insert(pTSes->m_tradelist.end(), mTI);
 
+        // TODO:  packets show new location as stationID
     itemRef->Move(tradeContainerID, (EVEItemFlags)flag, true);
 
     PyDict* dict = new PyDict();

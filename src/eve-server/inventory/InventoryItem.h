@@ -182,8 +182,11 @@ public:
     virtual bool            HasPilot()                  { return false; }
     virtual Client*         GetPilot()                  { return nullptr; }
 
-    /* specific function from real item to virtual item for PI commodity xfer */
-    void                    ToVirtual(uint32 locationID);    // this deletes the real item without updating client with 'this is deleted' data
+    /* specific function from real item to virtual item for PI commodity xfer
+     * this deletes the real item without updating client with 'this is deleted' data
+     * also sends the location change packet to client
+     */
+    void                    ToVirtual(uint32 locationID);
 
     /*********************************************************************************************
      *

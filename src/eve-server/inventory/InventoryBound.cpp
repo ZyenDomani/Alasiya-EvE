@@ -48,7 +48,7 @@ pInventory(item->GetMyInventory()),
 m_flag(flag),
 m_self(item),
 m_itemID(item->itemID()),
-m_ownerID(ownerID),
+m_ownerID(ownerID),             // passed as calling character...NOT our owner
 m_passive(passive)
 {
     _SetCallDispatcher(m_dispatch);
@@ -186,6 +186,12 @@ PyResult InventoryBound::Handle_ImportExportWithPlanet(PyCallArgs &call) {
     }
     pColony->PlanetXfer(args.spaceportPinID, importItems, exportItems, args.taxRate);
 
+    PyList* list = new PyList();
+    list->AddItemInt(args.spaceportPinID);
+    PyTuple* tuple = new PyTuple(1);
+    tuple->items[0] = list;
+    //may also need OnItemChange with this
+    call.client->SendNotification("OnRefreshPins", "clientID", &tuple, false);
     return nullptr;
 }
 
@@ -310,7 +316,23 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
     }
 
     InventoryItemRef iRef = sItemFactory.GetItemRef(args.itemID);
-    //TODO:  test for virtual items here...PI in customs offices are null at this point
+    //  test for virtual items here...PI in customs offices are null at this point
+    if (iRef.get() == nullptr) {
+        // may be virtual...run the tests
+        if (!IsPlayerItem(args.containerID))
+            return nullptr;
+        // 99%+ chance this is valid...
+        InventoryItem* pRef = sItemFactory.GetItemRef(args.containerID).get();
+        if (pRef->groupID() != EVEDB::invGroups::Orbital_Infrastructure)
+            return nullptr;
+        // so, this item is virtual.  we dont have enough data to create it here.
+        _log(INV__ERROR, "IB::Handle_Add() - virtual item?  %i in %s in %u", args.itemID, pRef->name(), pRef->locationID());
+        return nullptr;
+        /*
+        ItemData iData(typeID, call.client->GetCharacterID(), args.containerID, flagAutoFit, qty);
+        iRef = sItemFactory.SpawnItem(iData);
+        */
+    }
     bool moveStack(false);
     int32 quantity(0);
     if (call.byname.find("qty") != call.byname.end())
@@ -511,7 +533,8 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
         case EVEDB::invCategories::Orbitals: {
             switch (m_self->groupID()) {
                 case EVEDB::invGroups::Orbital_Construction_Platform: {
-                        ; // not sure what to do here yet
+                    // not sure what to do here yet...follow customs for now
+                    customs = true;
                 } break;
                 case EVEDB::invGroups::Orbital_Infrastructure: {
                     // orbital command centers and customs offices
@@ -677,8 +700,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
             }
         } else if (customs) {
             pInventory->ValidateAddItem(toFlag, iRef);  // this will throw if it fails
-            StructureItemRef sRef = StructureItemRef::StaticCast(m_self);
-            sRef->AddItem(iRef);// this will throw if it fails
+            iRef->Move(m_itemID, toFlag, true);
         } else {
             pInventory->ValidateAddItem(toFlag, iRef);  // this will throw if it fails
             iRef->Donate(m_ownerID, m_itemID, toFlag);

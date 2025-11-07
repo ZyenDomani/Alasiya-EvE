@@ -55,43 +55,43 @@ public:
     void GetSchematicData(DBQueryResult& res);
     void GetSchematicTimes(DBQueryResult& res);
 
-    void CreatePin(uint32 ccPinID, uint32 pinID, PI_Pin &data);
-    void UpdatePins(uint32 pinID, PI_CCPin* ccPin);     // save data for pinID.  send ID=0 to save all pins
-    void UpdateECUPin(uint32 ecuID, PI_CCPin* ccPin);
-    void SavePins(PI_CCPin* ccPin); // this does NOT save contents, heads, or schematic data
-    void SaveHeads(uint32 ccPinID, uint32 ownerID, uint32 ecuID, std::map< uint16, PI_Heads >& heads);
-    void SaveLinks(PI_CCPin* ccPin);
-    void SaveRoutes(PI_CCPin* ccPin);
-    void SaveContents(PI_CCPin* ccPin);
-    void SavePinContents(uint32 ccPinID, uint32 pinID, std::map< uint16, uint32 >& contents);
+    void CreatePin(uint32 colonyID, uint32 pinID, PI_Pin &data);
+    void UpdateECUPin(uint32 ecuID, PI_CCData* data);
+    void SavePins(PI_CCData* data); // this does NOT save contents, heads, or schematic data
+    void SaveHeads(uint32 colonyID, uint32 ownerID, uint32 ecuID, std::map< uint16, PI_Heads >& heads);
+    void SaveLinks(PI_CCData* data);
+    void SaveRoutes(PI_CCData* data);
+    void SavePinContents(uint32 pinID, PI_CCData* data);
+    void SaveAllContents(PI_CCData* data);
     void RemovePin(uint32 pinID);
     void RemoveHead(uint32 ecuID, uint32 headID);
     void RemoveLink(uint32 linkID);
     void RemoveRoute(uint16 routeID);
     void RemoveContents(uint32 pinID);
-    void DeleteColony(uint32 ccPinID, uint32 planetID, uint32 charID);
-    void LoadPins(uint32 ccPinID, std::map<uint32, PI_Pin>& pins);
+    void DeleteColony(uint32 colonyID, uint32 planetID, uint32 charID);
+    void LoadPins(uint32 colonyID, std::map<uint32, PI_Pin>& pins);
     void LoadECU(uint32 ecuID, DBQueryResult& res);
-    void LoadProcess(uint32 plantID, DBQueryResult& res);
     void LoadHeads(uint32 ecuID, std::map< uint16, PI_Heads >& heads);
-    void LoadLinks(uint32 ccPinID, std::map<uint32, PI_Link>& links);
-    void LoadRoutes(uint32 ccPinID, std::map< uint16, PI_Route >& routes);
+    void LoadLinks(uint32 colonyID, std::map<uint32, PI_Link>& links);
+    void LoadRoutes(uint32 colonyID, std::map< uint16, PI_Route >& routes);
     void LoadContents(uint32 pinID, std::map< uint16, uint32 >& contents);
-    void SaveCCLevel(uint32 pinID, uint8 level);
+    void SaveCCLevel(uint32 colonyID, uint8 level);
+    void UpdateCCLaunch(uint32 pinID, int64 launchTime);
     void SavePinLevel(uint32 pinID, uint8 level);
     void SaveLinkLevel(uint32 linkID, uint8 level);
-    void SaveCommandCenter(uint32 pinID, uint32 charID, uint32 planetID, uint32 typeID, double latitude, double longitude);
+    void SaveCommandCenter(uint32 colonyID, uint32 charID, uint32 planetID, uint32 typeID);
     static void GetExtractorsForPlanet(uint32 planetID, DBQueryResult& res);
 
+    int64 GetLastLaunchTime(uint32 colonyID);
     void SaveLaunch(uint32 contID, uint32 charID, uint32 systemID, uint32 planetID, GPoint& pos);
     static void DeleteLaunch(uint32 contID);
-    void UpdatePinTimes(PI_CCPin* ccPin);
-    void AddPlanetForChar(uint32 solarSystemID, uint32 planetID, uint32 charID, uint32 ccPinID, uint16 typeID);
-    void UpdatePlanetPins(uint32 ccPinID, uint8 pins=1);
+    void UpdatePinTimes(PI_CCData* data);
+    void AddPlanetForChar(uint32 solarSystemID, uint32 planetID, uint32 charID, uint32 colonyID, uint16 typeID);
+    void UpdatePlanetPins(uint32 colonyID, uint8 pins=1);
 
-    bool LoadColony(uint32 charID, uint32 planetID, PI_CCPin* ccPin);
+    bool LoadColony(uint32 charID, uint32 planetID, PI_CCData* data);
 
-    uint16 SaveRoute(uint32 ccPinID, PI_Route& route);
+    uint16 SaveRoute(uint32 colonyID, PI_Route& route);
 };
 
 #endif  // EVEMU_PLANET_PLANETDB_H_

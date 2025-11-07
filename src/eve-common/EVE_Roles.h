@@ -134,13 +134,13 @@ namespace SessionType {
 namespace Corp {
     namespace Role {
         enum:int64_t {
-            Member                          = 0,
+            Member                          = 0,        // initial setting for all members
             Director                        = 1,        // only role that can lock/unlock bp
             PersonnelManager                = 128,
             Accountant                      = 256,
             SecurityOfficer                 = 512,
             FactoryManager                  = 1024,
-            StationManager                  = 2048,
+            StationManager                  = 2048,     // configure customs office (checked in client)
             Auditor                         = 4096,
             HangarCanTake1                  = 8192,
             HangarCanTake2                  = 16384,

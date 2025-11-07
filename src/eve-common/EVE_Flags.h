@@ -15,7 +15,7 @@ enum EVEItemFlags {
     flagWallet                      = 1,
     // flagFactory                     = 2,  // not in client
     flagWardrobe                    = 3,  // dunno what this is for  clothes?
-    flagHangar                      = 4,  // station hangar and ship corp hangar 1
+    flagHangar                      = 4,  // station, customs office and ship corp hangar 1
     flagCargoHold                   = 5,    //AttrCapacity
     flagBriefcase                   = 6,  // dunno what this is for
     flagSkill                       = 7,

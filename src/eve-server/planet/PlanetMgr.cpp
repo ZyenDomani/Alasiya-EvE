@@ -37,15 +37,15 @@ m_planet(pPlanet)
 PyRep* PlanetMgr::UpdateNetwork(UUNCommandList& uuncl)
 {
     using namespace PI;
-    bool cancel = false;
-    for (int i = 0; i < uuncl.commandList->size(); i++) {
+    bool cancel(false);
+    for (uint16 i(0); i < uuncl.commandList->size(); ++i) {
         if (cancel)
             return m_colony->GetColony();
         UUNCommand uunc;
         if (!uunc.Decode(uuncl.commandList->GetItem(i)->AsTuple())) {
             _log(SERVICE__ERROR, "Failed to decode args for UUNCommand");
             uuncl.commandList->Dump(PLANET__WARNING, "      ");
-            m_client->SendErrorMsg("Internal Server Error.");
+            m_client->SendErrorMsg("Internal Server Error while processing command to Update Network");
             return nullptr;
         }
         _log(PLANET__TRACE, "PlanetMgr::UserUpdateNetwork() - loop: %u, command: %s(%i)", i, sPlanetDataMgr.GetCommandName(uunc.command), uunc.command);
@@ -139,7 +139,7 @@ bool PlanetMgr::CreatePin(UUNCommand& nc)
             if (!uunccc.Decode(nc.command_data)) {
                 _log(SERVICE__ERROR, "Failed to decode args for UUNCCommandCenter");
                 nc.command_data->Dump(PLANET__WARNING, "      ");
-                m_client->SendErrorMsg("Internal Server Error.");
+                m_client->SendErrorMsg("Internal Server Error while processing command to Create New Facility.");
                 return true;
             }
             m_colony->CreateCommandPin(uunccc.pinID, uunccc.typeID, uunccc.latitude, uunccc.longitude);
@@ -152,7 +152,8 @@ bool PlanetMgr::CreatePin(UUNCommand& nc)
         case Capsuleer_Bases:{
             // Not Supported yet
             _log(PLANET__ERROR, "PlanetMgr::UserUpdateNetwork::CreatePin() Planet Bases (type/group %u/%u) not supported.", typeID, groupID);
-            m_client->SendErrorMsg("Internal Server Error.");
+            m_client->SendErrorMsg("Internal Server Error. <br>The %s are not supported yet.", \
+                    sItemFactory.GetType(typeID)->name().c_str());
             return true;
         } break;
     }
@@ -214,7 +215,7 @@ bool PlanetMgr::CreatePin(UUNCommand& nc)
 
     if (cost < 1) {
         // error here....
-        m_client->SendErrorMsg("Internal Server Error.");
+        m_client->SendErrorMsg("Internal Server Error while processing cost to Create New Facility.");
         return true;
     }
 
@@ -222,7 +223,7 @@ bool PlanetMgr::CreatePin(UUNCommand& nc)
     if (!uuncsp.Decode(nc.command_data)) {
         _log(SERVICE__ERROR, "Failed to decode args for UUNCStandardPin");
         nc.command_data->Dump(PLANET__WARNING, "      ");
-        m_client->SendErrorMsg("Internal Server Error.");
+        m_client->SendErrorMsg("Internal Server Error while processing command data to Create New Facility.");
         return true;
     }
 
@@ -257,7 +258,7 @@ void PlanetMgr::CreateLink(UUNCommand& nc)
             if (!uuncle.Decode(nc.command_data)) {
                 _log(SERVICE__ERROR, "Failed to decode args for UUNCLinkExist");
                 nc.command_data->Dump(PLANET__WARNING, "      ");
-                m_client->SendErrorMsg("Internal Server Error.");
+                m_client->SendErrorMsg("Internal Server Error while processing command to Create Facility Link.");
                 return;
             }
             src = uuncle.src;
@@ -268,7 +269,7 @@ void PlanetMgr::CreateLink(UUNCommand& nc)
             if (!uunclc.Decode(nc.command_data)) {
                 _log(SERVICE__ERROR, "Failed to decode args for UUNCLinkCommand");
                 nc.command_data->Dump(PLANET__WARNING, "      ");
-                m_client->SendErrorMsg("Internal Server Error.");
+                m_client->SendErrorMsg("Internal Server Error while processing command to Create New Facility Link.");
                 return;
             }
             src = uunclc.src;
@@ -280,7 +281,7 @@ void PlanetMgr::CreateLink(UUNCommand& nc)
         if (!uuncls.Decode(nc.command_data)) {
             _log(SERVICE__ERROR, "Failed to decode args for UUNCLinkStandard");
             nc.command_data->Dump(PLANET__WARNING, "      ");
-            m_client->SendErrorMsg("Internal Server Error.");
+            m_client->SendErrorMsg("Internal Server Error while processing command to Create Standard Facility Link.");
             return;
         }
         src = uuncls.src2;
@@ -289,7 +290,7 @@ void PlanetMgr::CreateLink(UUNCommand& nc)
     } else {
         //Invalid...
         _log(PLANET__ERROR, "PlanetMgr::UserUpdateNetwork::CreateLink() command_data type unrecognized: %s", nc.command_data->GetItem(0)->TypeString());
-        m_client->SendErrorMsg("Internal Server Error.");
+        m_client->SendErrorMsg("Internal Server Error.<br> Invalid command send to Create Link.");
         return;
     }
     m_colony->CreateLink(src, dest, level);
@@ -301,7 +302,7 @@ void PlanetMgr::CreateRoute(UUNCommand& nc)
     if (!args.Decode(nc.command_data)) {
         _log(SERVICE__ERROR, "Failed to decode args for Call_CreateRoute");
         nc.command_data->Dump(PLANET__WARNING, "      ");
-        m_client->SendErrorMsg("Internal Server Error.");
+        m_client->SendErrorMsg("Internal Server Error while processing command to Create Route.");
         return;
     }
 
@@ -320,7 +321,7 @@ void PlanetMgr::RemovePin(UUNCommand& nc)
         //Invalid...
         _log(PLANET__ERROR, "PlanetMgr::UserUpdateNetwork::RemovePin() command_data type unrecognized: %s", nc.command_data->GetItem(0)->TypeString());
         nc.command_data->Dump(PLANET__WARNING, "      ");
-        m_client->SendErrorMsg("Internal Server Error.");
+        m_client->SendErrorMsg("Internal Server Error while processing command to Delete Facility.");
         return;
     }
     m_colony->RemovePin(pinID);
@@ -345,7 +346,7 @@ void PlanetMgr::RemoveRoute(UUNCommand& nc)
         //Invalid...
         _log(PLANET__ERROR, "PlanetMgr::UserUpdateNetwork::RemoveRoute() command_data type unrecognized: %s", nc.command_data->GetItem(0)->TypeString());
         nc.command_data->Dump(PLANET__WARNING, "      ");
-        m_client->SendErrorMsg("Internal Server Error.");
+        m_client->SendErrorMsg("Internal Server Error while processing command to Remove Route.");
         return;
     }
     m_colony->RemoveRoute(routeID);
@@ -375,7 +376,7 @@ void PlanetMgr::AddExtractorHead(UUNCommand& nc)
     if (!args.Decode(nc.command_data)) {
         _log(SERVICE__ERROR, "Failed to decode args for Call_AddMoveExtractorHead");
         nc.command_data->Dump(PLANET__WARNING, "      ");
-        m_client->SendErrorMsg("Internal Server Error.");
+        m_client->SendErrorMsg("Internal Server Error while processing command to Add Extractor Head.");
         return;
     }
 
@@ -388,7 +389,7 @@ void PlanetMgr::MoveExtractorHead(UUNCommand& nc)
     if (!args.Decode(nc.command_data)) {
         _log(SERVICE__ERROR, "Failed to decode args for Call_AddMoveExtractorHead");
         nc.command_data->Dump(PLANET__WARNING, "      ");
-        m_client->SendErrorMsg("Internal Server Error.");
+        m_client->SendErrorMsg("Internal Server Error while processing command to Move Extractor Head.");
         return;
     }
 
@@ -401,7 +402,7 @@ void PlanetMgr::InstallProgram(UUNCommand& nc) {
     if (!args.Decode(nc.command_data)) {
         _log(SERVICE__ERROR, "Failed to decode args for Call_InstallProgram");
         nc.command_data->Dump(PLANET__WARNING, "      ");
-        m_client->SendErrorMsg("Internal Server Error.");
+        m_client->SendErrorMsg("Internal Server Error while processing command to Install Extraction Program");
         return;
     }
 
@@ -422,7 +423,7 @@ void PlanetMgr::PrioritizeRoute(UUNCommand& nc)
     if (!args.Decode(nc.command_data)) {
         _log(SERVICE__ERROR, "Failed to decode args for Call_PrioritizeRoute");
         nc.command_data->Dump(PLANET__WARNING, "      ");
-        m_client->SendErrorMsg("Internal Server Error.");
+        m_client->SendErrorMsg("Internal Server Error while processing command to Prioritize Route.");
         return;
     }
 

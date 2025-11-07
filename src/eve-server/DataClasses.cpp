@@ -38,17 +38,17 @@ void ReactorData::Init()
 }
 
 /*
-PI_CCPin::PI_CCPin()
+PI_CCData::PI_CCData()
 {
     Init();
 }
 
-PI_CCPin::~PI_CCPin()
+PI_CCData::~PI_CCData()
 {
     Clear();
 }
 
-void PI_CCPin::Clear()
+void PI_CCData::Clear()
 {
     pins.clear();
     links.clear();
@@ -56,7 +56,7 @@ void PI_CCPin::Clear()
     routes.clear();
 }
 
-void PI_CCPin::Init()
+void PI_CCData::Init()
 {
     Clear();
     m_level = 0;

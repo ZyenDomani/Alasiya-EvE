@@ -260,35 +260,9 @@ PyResult PlanetMgrBound::Handle_GetProgramResultInfo(PyCallArgs &call) {
 }
 
 PyResult PlanetMgrBound::Handle_GetResourceData(PyCallArgs &call) {
-    //_log(PLANET__DEBUG, "PlanetMgrBound::Handle_GetResourceData() size=%lu", call.tuple->size() );
-    //call.Dump(PLANET__DUMP);
-
-    //        shData = self.remoteHandler.GetResourceData(info)
-            /*  this is called by planet view page, by "resource filter" for given typeID
-             *     this is dump before dict decoding below  (passed as 'info' in above call)
-             * 12:23:45 [PlanetCallDump]    Dictionary: 8 entries
-             * 12:23:45 [PlanetCallDump]      [ 0] Key: String: 'proximity'
-             * 12:23:45 [PlanetCallDump]      [ 0] Value: Integer field: 4
-             * 12:23:45 [PlanetCallDump]      [ 1] Key: String: 'updateTime'
-             * 12:23:45 [PlanetCallDump]      [ 1] Value: Integer field: 0
-             * 12:23:45 [PlanetCallDump]      [ 2] Key: String: 'advancedPlanetology'
-             * 12:23:45 [PlanetCallDump]      [ 2] Value: Integer field: 0
-             * 12:23:45 [PlanetCallDump]      [ 3] Key: String: 'remoteSensing'
-             * 12:23:45 [PlanetCallDump]      [ 3] Value: Integer field: 3
-             * 12:23:45 [PlanetCallDump]      [ 4] Key: String: 'newBand'
-             * 12:23:45 [PlanetCallDump]      [ 4] Value: Integer field: 15
-             * 12:23:45 [PlanetCallDump]      [ 5] Key: String: 'planetology'
-             * 12:23:45 [PlanetCallDump]      [ 5] Value: Integer field: 0
-             * 12:23:45 [PlanetCallDump]      [ 6] Key: String: 'oldBand'
-             * 12:23:45 [PlanetCallDump]      [ 6] Value: Integer field: 0
-             * 12:23:45 [PlanetCallDump]      [ 7] Key: String: 'resourceTypeID'
-             * 12:23:45 [PlanetCallDump]      [ 7] Value: Integer field: 2268
-             */
-
-
-    Call_ResourceDataDict dict;
     PyDict* input = call.tuple->AsTuple()->GetItem(0)->AsObject()->arguments()->AsDict();
     //input->Dump(PLANET__DUMP, "   ");
+    Call_ResourceDataDict dict;
     if (!dict.Decode(&input)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;

@@ -345,8 +345,8 @@ void Agent::MakeOffer(Character* pChar, MissionOffer& offer) {
     */
     if (offer.destinationID == 0) {
         // make error here and reset...client should never be null
-        pChar->GetClient()->SendErrorMsg("Internal Server Error.");
-        //return;
+        pChar->GetClient()->SendErrorMsg("Internal Server Error while searching for Mission Destination.");
+        return;
     }
 
     offer.stateID            = Mission::State::Offered;

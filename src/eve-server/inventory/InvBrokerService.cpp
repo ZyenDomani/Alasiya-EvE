@@ -203,7 +203,7 @@ PyResult InvBrokerBound::Handle_GetInventoryFromId(PyCallArgs &call) {
      *   ...
         inv = self.invCache.GetInventoryFromId(const.containerHangar)
      */
-    EVEItemFlags flag = flagAutoFit;
+    EVEItemFlags flag(flagAutoFit);
     switch (iRef->categoryID()) {
         case EVEDB::invCategories::Owner: {
             switch (iRef->groupID()) {

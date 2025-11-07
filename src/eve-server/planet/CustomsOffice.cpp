@@ -258,8 +258,6 @@ PyRep* CustomsSE::GetTaxRate(Client* pClient) {
     return new PyFloat(m_cData.taxRateValues[rate]);
 }
 
-// IB::Add()->IB::MoveItems()->StructureItem::AddItem()->COSE::VerifyAddItem()
-// upon return, structure calls II::Move()  (was previsouly Inv::AddItem() which didnt update anything)
 void CustomsSE::VerifyAddItem(InventoryItemRef iRef) {
     // test for planetary resources here
     if ((iRef->categoryID() != EVEDB::invCategories::PlanetaryResources)

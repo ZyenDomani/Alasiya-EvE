@@ -561,8 +561,7 @@ InventoryItemRef InventoryItem::Spawn(ItemData &data)
 }
 
 // item manipulation methods
-void InventoryItem::AddItem(InventoryItemRef iRef)
-{
+void InventoryItem::AddItem(InventoryItemRef iRef) {
     // make error for invalid inventory?
     // only happens on char creation, when system isnt loaded yet, so we really dont need it.
     if (pInventory != nullptr)
@@ -600,20 +599,22 @@ void InventoryItem::Delete() {
 
 void InventoryItem::ToVirtual(uint32 locationID) {
     InventoryItemRef iRef = sItemFactory.GetItemContainerRef(m_itemID, false);
-    if (iRef.get() != nullptr) {
+    if ((iRef.get() != nullptr) and IsValidLocationID(m_data.locationID)) {
         // verify this gets inventory containing item before trying to manipulate
-        //Inventory* pInv = iRef->GetMyInventory();
-        if (pInventory != nullptr)  // this isnt right...this item wont be in it's own inventory
-            pInventory->RemoveItem(InventoryItemRef(this));
+        iRef->GetMyInventory()->RemoveItem(InventoryItemRef(this));
     }
     if (pAttributeMap != nullptr)   // should never be null, but just in case
         pAttributeMap->Delete();
 
+    uint32 old_location(m_data.locationID);
+    //EVEItemFlags old_flag(m_data.flag);
+
+    m_data.locationID = locationID;
+
     //notify about the changes.
     std::map<int32, PyRep *> changes;
-    changes[Inv::Update::Location] = new PyInt(m_data.locationID);
+    changes[Inv::Update::Location] = new PyInt(old_location);
     SendItemChange(m_data.ownerID, changes);   //changes is consumed
-    m_data.locationID = locationID;
 
     //take ourself out of the DB
     ItemDB::DeleteItem(m_itemID);
@@ -740,7 +741,7 @@ void InventoryItem::Donate(uint32 new_owner/*ownerSystem*/, uint32 new_location/
         }
     }
 }
-
+//TODO: NOTE:  <itemRef>::RemoveItem() and <itemRef>::AddItem() CANNOT use Move()!!!
 void InventoryItem::Move(uint32 new_location/*locTemp*/, EVEItemFlags new_flag/*flagAutoFit*/, bool notify/*false*/) {
     if ((new_location == m_data.locationID) and (new_flag == m_data.flag) and !notify)
         return; //nothing to do...
@@ -774,23 +775,23 @@ void InventoryItem::Move(uint32 new_location/*locTemp*/, EVEItemFlags new_flag/*
     m_data.flag = new_flag;
     m_data.locationID = new_location;
 
-    if ((old_location != m_data.locationID) // diff container
-    or ((old_location == m_data.locationID) // or same container
-      and (old_flag != m_data.flag))) {   //  but different flag
+    if ((old_location != new_location) // diff container
+    or ((old_location == new_location) // or same container
+      and (old_flag != new_flag))) {   //  but different flag
         // add to new location
         // check for temp locations to avoid sending errors
-        if ((m_data.locationID == locTemp) or (m_data.locationID == locJunkyard)) {
+        if ((new_location == locTemp) or (new_location == locJunkyard)) {
             // temp locations have no itemRef.
-        } else if (IsValidLocationID(m_data.locationID)) {
+        } else if (IsValidLocationID(new_location)) {
             // add to new location
-            iRef = sItemFactory.GetItemRef(m_data.locationID);
+            iRef = sItemFactory.GetItemRef(new_location);
             if (iRef.get() != nullptr) {
                 iRef->AddItem(InventoryItemRef(this));
             } else {
-                _log(ITEM__ERROR, "II::Move() - Cant find location %u to add %s.", m_data.locationID, m_data.name.c_str());
+                _log(ITEM__ERROR, "II::Move() - Cant find location %u to add %s.", new_location, m_data.name.c_str());
             }
         } else {
-            _log(ITEM__WARNING, "II::Move()::Add() - %u is invalid location.", m_data.locationID);
+            _log(ITEM__WARNING, "II::Move()::Add() - %u is invalid location.", new_location);
         }
     } else {
         _log(ITEM__TRACE, "II::Move()::Add() - same same same.");
@@ -801,7 +802,7 @@ void InventoryItem::Move(uint32 new_location/*locTemp*/, EVEItemFlags new_flag/*
 
     // update location unless we're deleting this object
     if (!m_delete)
-        ItemDB::UpdateLocation(m_itemID, m_data.locationID, m_data.flag);
+        ItemDB::UpdateLocation(m_itemID, new_location, new_flag);
 
     // set position to null for scooped space objects (dont need coords in db)
     if (!IsSolarSystemID(new_location))
@@ -810,9 +811,9 @@ void InventoryItem::Move(uint32 new_location/*locTemp*/, EVEItemFlags new_flag/*
     //notify about the changes.
     if (notify) {
         std::map<int32, PyRep *> changes;
-        if (m_data.locationID != old_location)
+        if (new_location != old_location)
             changes[Inv::Update::Location] = new PyInt(old_location);
-        if (m_data.flag != old_flag)
+        if (new_flag != old_flag)
             changes[Inv::Update::Flag] = new PyInt(old_flag);
         SendItemChange(m_data.ownerID, changes);   //changes is consumed
     }
@@ -1037,8 +1038,8 @@ bool InventoryItem::SetFlag(EVEItemFlags flag, bool notify/*false*/) {
     return true;
 }
 
-// singleton defines how item quantites (and other things) are displayed
-// singleton=true refers to the unpackaged state of items, and does not show quantites
+// singleton defines how item quantities (and other things) are displayed
+// singleton=true refers to the unpackaged state of items, and does not show quantities (but should be -1)
 bool InventoryItem::ChangeSingleton(bool singleton, bool notify/*false*/) {
     if (singleton == m_data.singleton)
         return true;    //nothing to do...
@@ -1051,13 +1052,13 @@ bool InventoryItem::ChangeSingleton(bool singleton, bool notify/*false*/) {
         if (m_data.quantity > 1) {
             _log(ITEM__WARNING, "%s(%u) is changing singleton to %s and qty is currently %u", \
                     m_data.name.c_str(), m_itemID, singleton?"On":"Off", m_data.quantity);
-        } else {
-            m_data.quantity = -1;
         }
-    } else {
-        // must update volume when singleton=false (packaged state) changes for (mostly) ship items.
-        SetAttribute(AttrVolume, GetPackagedVolume(), notify);
+
+        m_data.quantity = -1;
     }
+
+    // must update volume when singleton (packaged state) changes for (mostly) ship items.
+    SetAttribute(AttrVolume, GetPackagedVolume(), notify);
 
     if (sConfig.world.saveOnUpdate)
         SaveItem();
@@ -1340,6 +1341,9 @@ void InventoryItem::SetCustomInfo(const char *ci) {
 }
 
 void InventoryItem::SetPosition(const GPoint& pos) {
+    if (m_data.position == pos)
+        return;
+
     m_data.position = pos;
     _log(ITEM__RELOCATE, "%s(%u) Relocating to %.2f, %.2f, %.2f.", m_data.name.c_str(), \
             m_itemID, m_data.position.x, m_data.position.y, m_data.position.z);

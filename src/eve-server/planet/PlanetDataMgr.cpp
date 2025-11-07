@@ -383,8 +383,10 @@ uint32 PIDataMgr::GetMaxOutput(InventoryItemRef iRef, uint32 qtyPerCycle/*0*/, i
     return (scalar * qtyPerCycle) * cycleTime / EvE::Time::Second / 900.0;
 }
 
-uint16 PIDataMgr::GetHeadType(uint16 ecuTypeID, uint16 programType)
-{
+uint16 PIDataMgr::GetHeadType(uint16 ecuTypeID, uint16 programType) {
+    if (programType == 0)
+        return 0;
+
     switch (ecuTypeID) {
         case 2848: {  //Barren ECU
             switch (programType) {
@@ -460,7 +462,7 @@ uint16 PIDataMgr::GetHeadType(uint16 ecuTypeID, uint16 programType)
         } break;
     }
     _log(PLANET__ERROR, "PIDataMgr::GetHeadType() - Extractor typeID not found using ECU typeID: %u and Resource typeID: %u", ecuTypeID, programType);
-    return 2412; //Temperate Aqueous Liquid Extractor  <<< as good a default as any...
+    return 0;
 }
 
 uint8 PIDataMgr::GetProductLevel(uint16 typeID)

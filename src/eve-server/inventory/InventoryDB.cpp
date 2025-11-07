@@ -87,8 +87,8 @@ bool InventoryDB::GetItemContents(OwnerData &od, std::vector<uint32> &into) {
 
     _log(DATABASE__RESULTS, "GetItemContents: '%s' returned %lu items", query.str().c_str(), res.GetRowCount());
     DBResultRow row;
-    while( res.GetRow( row ) )
-        into.push_back( row.GetUInt( 0 ) );
+    while( res.GetRow(row))
+        into.push_back(row.GetUInt(0));
 
     return true;
 }

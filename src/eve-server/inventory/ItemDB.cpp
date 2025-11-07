@@ -41,7 +41,7 @@ bool ItemDB::GetItem(uint32 itemID, ItemData &into) {
         if (!sDatabase.RunQuery(res,
             "SELECT"
             "  regionName, 3 AS typeID, factionID, 1 AS locationID, 0 AS flag, 0 AS contraband,"
-            "  1 AS singleton, 1 AS quantity, x, y, z, '' AS customInfo"
+            "  1 AS singleton, -1 AS quantity, x, y, z, '' AS customInfo"
             " FROM mapRegions"
             " WHERE regionID=%u", itemID))
         {
@@ -53,7 +53,7 @@ bool ItemDB::GetItem(uint32 itemID, ItemData &into) {
         if (!sDatabase.RunQuery(res,
             "SELECT"
             "  constellationName, 4 AS typeID, factionID, regionID, 0 AS flag, 0 AS contraband,"
-            "  1 AS singleton, 1 AS quantity, x, y, z, '' AS customInfo"
+            "  1 AS singleton, -1 AS quantity, x, y, z, '' AS customInfo"
             " FROM mapConstellations"
             " WHERE constellationID=%u", itemID))
         {
@@ -65,7 +65,7 @@ bool ItemDB::GetItem(uint32 itemID, ItemData &into) {
         if (!sDatabase.RunQuery(res,
             "SELECT"
             "  solarSystemName, 5 AS typeID, factionID, constellationID, 0 AS flag, 0 AS contraband,"
-            "  1 AS singleton, 1 AS quantity, x, y, z, '' AS customInfo"
+            "  1 AS singleton, -1 AS quantity, x, y, z, '' AS customInfo"
             " FROM mapSolarSystems"
             " WHERE solarSystemID=%u", itemID))
         {
@@ -77,7 +77,7 @@ bool ItemDB::GetItem(uint32 itemID, ItemData &into) {
         if (!sDatabase.RunQuery(res,
             "SELECT"
             "  itemName, typeID, factionID, solarSystemID, 0 AS flag, 0 AS contraband,"
-            "  1 AS singleton, 1 AS quantity, mapDenormalize.x, mapDenormalize.y, mapDenormalize.z, '' AS customInfo"
+            "  1 AS singleton, -1 AS quantity, mapDenormalize.x, mapDenormalize.y, mapDenormalize.z, '' AS customInfo"
             " FROM mapDenormalize"
             " LEFT JOIN mapSolarSystems USING (solarSystemID)"
             " WHERE itemID=%u", itemID))
@@ -90,7 +90,7 @@ bool ItemDB::GetItem(uint32 itemID, ItemData &into) {
         if (!sDatabase.RunQuery(res,
             "SELECT"
             "  stationName, stationTypeID, corporationID, solarSystemID, 0 AS flag, 0 AS contraband,"
-            "  1 AS singleton, 1 AS quantity, x, y, z, '' AS customInfo"
+            "  1 AS singleton, -1 AS quantity, x, y, z, '' AS customInfo"
             " FROM staStations"
             " WHERE stationID=%u", itemID))
         {
@@ -102,7 +102,7 @@ bool ItemDB::GetItem(uint32 itemID, ItemData &into) {
         if (!sDatabase.RunQuery(res,
             "SELECT"
             "  itemName, typeID, 1 AS ownerID, solarSystemID, 0 AS flag, 0 AS contraband,"
-            "  1 AS singleton, 1 AS quantity, x, y, z, '' AS customInfo"
+            "  1 AS singleton, -1 AS quantity, x, y, z, '' AS customInfo"
             " FROM mapDenormalize"
             " WHERE itemID=%u", itemID))
         {
@@ -114,7 +114,7 @@ bool ItemDB::GetItem(uint32 itemID, ItemData &into) {
         if (!sDatabase.RunQuery(res,
             "SELECT"
             "  itemName, typeID, 1 AS ownerID, systemID, 0 AS flag, 0 AS contraband,"
-            "  1 AS singleton, quantity, x, y, z, '' AS customInfo"
+            "  0 AS singleton, quantity, x, y, z, '' AS customInfo"
             " FROM sysAsteroids"
             " WHERE itemID=%u", itemID))
         {
@@ -126,7 +126,7 @@ bool ItemDB::GetItem(uint32 itemID, ItemData &into) {
         if (!sDatabase.RunQuery(res,
             "SELECT"
             "  characterName, typeID, 1 AS ownerID, solarSystemID, flag, 0 AS contraband,"
-            "  1 AS singleton, 1 AS quantity, 0 AS x, 0 AS y, 0 AS z, '' AS customInfo"
+            "  1 AS singleton, -1 AS quantity, 0 AS x, 0 AS y, 0 AS z, '' AS customInfo"
             " FROM chrCharacters"
             " WHERE characterID=%u", itemID))
         {
@@ -138,7 +138,7 @@ bool ItemDB::GetItem(uint32 itemID, ItemData &into) {
         if (!sDatabase.RunQuery(res,
             "SELECT"
             "  name, typeID, corporationID, solarSystemID, flag, 0 AS contraband,"
-            "  1 AS singleton, 1 AS quantity, 0 AS x, 0 AS y, 0 AS z, '' AS customInfo"
+            "  1 AS singleton, -1 AS quantity, 0 AS x, 0 AS y, 0 AS z, '' AS customInfo"
             " FROM staOffices"
             " WHERE itemID=%u", itemID))
         {
@@ -165,10 +165,10 @@ bool ItemDB::GetItem(uint32 itemID, ItemData &into) {
     }
 
     into.name = row.GetText(0);
-    into.typeID = row.GetUInt(1);
+    into.typeID = row.GetUInt16(1);
     into.ownerID = (row.IsNull(2) ? 1 : row.GetUInt(2));
     into.locationID = (row.IsNull(3) ? 0 : row.GetUInt(3));
-    into.flag = (EVEItemFlags)row.GetUInt(4);
+    into.flag = (EVEItemFlags)row.GetUInt16(4);
     into.contraband = row.GetBool(5);
     into.singleton = row.GetBool(6);
     into.quantity = row.GetInt(7);
@@ -195,13 +195,13 @@ uint32 ItemDB::NewItem(const ItemData &data) {
     sDatabase.DoEscapeString(customInfoEsc, data.customInfo);
 
     if (!sDatabase.RunQueryLID(err, uid,
-        "INSERT INTO entity ("
-        "   itemName, typeID, ownerID, locationID, flag, contraband,"
-        "   singleton, quantity, x, y, z, customInfo) "
-        "VALUES('%s', %u, %u, %u, %u, %u,"
+        "INSERT INTO entity"
+        " (itemName, typeID, ownerID, locationID, flag, contraband,"
+        " singleton, quantity, x, y, z, customInfo)"
+        " VALUES ('%s', %u, %u, %u, %u, %u,"
         "        %u, %i, %lli, %lli, %lli, '%s' )",
         nameEsc.c_str(), data.typeID, data.ownerID, data.locationID, data.flag, data.contraband?1:0,
-                               data.singleton?1:0, data.singleton?1:data.quantity, llrint(data.position.x), llrint(data.position.y), llrint(data.position.z), customInfoEsc.c_str()
+                               data.singleton?1:0, data.singleton?-1:data.quantity, llrint(data.position.x), llrint(data.position.y), llrint(data.position.z), customInfoEsc.c_str()
     )) {
         codelog(DATABASE__ERROR, "Failed to insert new entity: %s", err.c_str());
         return 0;
@@ -285,8 +285,8 @@ void ItemDB::SaveItems(std::vector<Inv::SaveData>& data)
             save = true;
         }
         Inserts << "(" << cur.itemID << ", " << cur.typeID << ", " << cur.ownerID << ", " << cur.locationID << ", ";
-        Inserts << cur.flag << ", " << cur.contraband << ", " << (cur.singleton ? 1 : 0) << ", ";
-        Inserts << std::to_string(cur.quantity) << ", " << std::to_string(llrint(cur.position.x)) << ", " << std::to_string(llrint(cur.position.y));
+        Inserts << (uint16)cur.flag << ", " << cur.contraband << ", " << (cur.singleton ? 1 : 0) << ", ";
+        Inserts << cur.quantity << ", " << std::to_string(llrint(cur.position.x)) << ", " << std::to_string(llrint(cur.position.y));
         Inserts << ", " << std::to_string(llrint(cur.position.z)) << ", '" << cur.customInfo << "')";
     }
 
