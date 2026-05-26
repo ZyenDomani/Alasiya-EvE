@@ -19,7 +19,7 @@
 #include "PyBoundObject.h"
 #include "fleet/FleetBound.h"
 #include "system/SystemBubble.h"
-#include <system/SystemManager.h>
+#include "system/SystemManager.h"
 
 /*
 FLEET__ERROR
