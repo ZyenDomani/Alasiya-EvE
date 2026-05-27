@@ -24,7 +24,9 @@
  *    Rewrite:    Allan
  */
 
+#include <atomic>
 #include <chrono>
+#include <unistd.h>
 
 #include "eve-server.h"
 // version
@@ -188,8 +190,10 @@ static const char* const SRV_CONFIG_FILE = EVEMU_ROOT "/etc/eve-server.xml";
 
 static void SetupSignals();
 static void CatchSignal( int sig_num );
+static void CleanUp();
 
-static volatile bool m_run = true;
+// FIX: Swapped from volatile to atomic
+static std::atomic<bool> m_run(true);
 
 int main( int argc, char* argv[] )
 {
@@ -999,8 +1003,9 @@ int main( int argc, char* argv[] )
 
         sEntityMgr.Process();
 
-        /*  process console commands, if any, and check for 'exit' command */
-        m_run = sConsole.Process();
+        /* Process console commands without overwriting an active signal */
+        if (!sConsole.Process())
+            m_run = false;
 
         /* do the stuff for thread sleeping */
         start = GetTickCount() - start;
@@ -1013,9 +1018,19 @@ int main( int argc, char* argv[] )
      *  at this point, server has been killed, and these are cleanup methods below here
      */
 
-    /** @todo  update this to have a ShutDown() method, with these items.
-     * also look into calling it when a signal is caught, for cleanup.
-     * @note  these are order-dependent...
+    // Check if we dropped out because of a system signal
+    int sig = m_caught_signal.load();
+    if (sig > 0) {
+        sLog.Error("     SignalSystem", "Caught signal: %d (%s). Initializing emergency shutdown...", 
+                   sig, strsignal(sig));
+        sLog.Error("     SignalSystem", "Alasiya EvEmu Server is Offline." );
+        CleanUp();
+        return EXIT_SUCCESS;
+    } else {
+        sLog.Info("Signal System", "Normal application exit initiated.");
+    }
+
+    /** @note  these are order-dependent...
      */
     sLog.Warning("   ServerShutdown", "Main loop has stopped." );
     sLog.Error("   ServerShutdown", "Alasiya EvEmu Server is Offline." );
@@ -1076,57 +1091,35 @@ int main( int argc, char* argv[] )
 
 static void SetupSignals()
 {
-    /* setup sigaction to prevent zombies and catch other non-fatal signals */
     struct sigaction sa;
-    sa.sa_handler = SIG_IGN;
-    sa.sa_flags = SA_NOCLDWAIT;
-    if (sigemptyset(&sa.sa_mask) == -1 ) {  /* MT safe */
-        perror("SigEmptySet Failure");
-        exit(EXIT_FAILURE);     /* NOT MT safe */
-    }
-    if (sigaction(SIGCHLD, &sa, nullptr) == -1) {  /* MT safe */
-        perror("SigAction Failure");
-        exit(EXIT_FAILURE);     /* NOT MT safe */
-    }
-    if (sigaction(SIGPIPE, &sa, nullptr) == -1) {  /* MT safe */
-        // ignore broken pipe signal.  db code will auto-recover.
-        perror("SigPipe Failure");
-        return;
-    }
+    // Clear the struct and assign modern catch handler
+    sa.sa_handler = CatchSignal;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
 
-    //::signal( SIGPIPE, SIG_IGN );
-    //::signal( SIGCHLD, SIG_IGN );
-    ::signal( SIGINT, CatchSignal );
-    ::signal( SIGTERM, CatchSignal );
-    ::signal( SIGABRT, CatchSignal );
-    //::signal( SIGSEGV, CatchSignal );
+    // Direct kernel mappings for shutdown and termination signals
+    sigaction(SIGINT, &sa, nullptr);
+    sigaction(SIGTERM, &sa, nullptr);
+    sigaction(SIGABRT, &sa, nullptr);
+#ifdef SIGHUP
+    sigaction(SIGHUP, &sa, nullptr);
+#endif
 
-    #ifdef SIGABRT_COMPAT
-    ::signal( SIGABRT_COMPAT, CatchSignal );
-    #endif /* SIGABRT_COMPAT */
-
-    #ifdef SIGBREAK
-    ::signal( SIGBREAK, CatchSignal );
-    #endif /* SIGBREAK */
-
-    #ifdef SIGHUP
-    ::signal( SIGHUP, CatchSignal );
-    #endif /* SIGHUP */
+    // zombie prevention and database pipe protection blocks
+    struct sigaction sa_ign;
+    sa_ign.sa_handler = SIG_IGN;
+    sa_ign.sa_flags = SA_NOCLDWAIT;
+    sigemptyset(&sa_ign.sa_mask);
+    sigaction(SIGCHLD, &sa_ign, nullptr);
+    sigaction(SIGPIPE, &sa_ign, nullptr);
 }
 
-static void CatchSignal( int sig_num )
-{
-    sLog.Error( "    Signal System", "Caught signal: %d", sig_num );
-    if (sConfig.debug.StackTrace)
-        EvE::traceStack();
-    //SafeSave();
+static void CatchSignal(int sig_num) {
+    m_caught_signal = sig_num; // Save the signal ID
     m_run = false;
-    //CleanUp();
 }
 
 static void CleanUp() {
-    sLog.Warning("   ServerShutdown", "Main loop has stopped." );
-    sLog.Error("   ServerShutdown", "Alasiya EvEmu Server is Offline." );
     if (!sConsole.IsDbError())
         ServiceDB::SetServerOnlineStatus(false);
     /* stop TCP listener */
