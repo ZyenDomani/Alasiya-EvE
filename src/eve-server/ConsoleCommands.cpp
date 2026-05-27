@@ -275,9 +275,9 @@ bool ConsoleCommand::Process() {
             } else if (strncmp(buf, "t", 1) == 0) {
                 Test();
             } else if (strncmp(buf, "f", 1) == 0) {
-                std::string args(buf);
-                char& num(args.at(1));
-                FxProc(atoi(&num));
+				std::string args(buf);
+				if (args.length() > 1)
+    				FxProc(atoi(buf + 1));
             } else if (strncmp(buf, "d", 1) == 0) {
                 uint8 maxCount = sConfig.server.MaxThreadReport;
                 uint8 count = sThread.Count();
