@@ -1075,13 +1075,13 @@ int main( int argc, char* argv[] )
     command_dispatcher.Close();
     /* Stop Console Command Interpreter */
     //sConsole.Stop();
-    /* close the db handler */
-    sLog.Warning("   ServerShutdown", "Closing DataBase Connection." );
-    sDatabase.Close();
     /** @todo  the thread system is only implemented for tcp connections at this time. */
     sLog.Warning("   ServerShutdown", "Shutting down Thread Manager." );
     /* join open threads */
     sThread.EndThreads();
+    /* close the db handler */
+    sLog.Warning("   ServerShutdown", "Closing DataBase Connection." );
+    sDatabase.Close();
     sLog.Warning("   ServerShutdown", "Alasiya EvEmu is Offline.");
     /* close logfile */
     //log_close_logfile();
@@ -1160,13 +1160,13 @@ static void CleanUp() {
     //command_dispatcher.Close();
     /* Stop Console Command Interpreter */
     //sConsole.Stop();
-    /* close the db handler */
-    sLog.Warning("   ServerShutdown", "Closing DataBase Connection." );
-    sDatabase.Close();
     /** @todo  the thread system is only implemented for tcp connections at this time. */
     sLog.Warning("   ServerShutdown", "Shutting down Thread Manager." );
     /* join open threads */
     sThread.EndThreads();
+    /* close the db handler */
+    sLog.Warning("   ServerShutdown", "Closing DataBase Connection." );
+    sDatabase.Close();
     sLog.Warning("   ServerShutdown", "Alasiya EvEmu is Offline.");
     /* close logfile */
     log_close_logfile();
