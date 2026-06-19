@@ -23,6 +23,7 @@
   * PLANET__DB_WARNING
   */
 
+#include <iomanip>
 
 #include "Client.h"
 #include "EVEServerConfig.h"
@@ -64,6 +65,7 @@ bool PlanetSE::LoadExtras() {
     if (!StaticSystemEntity::LoadExtras())
         return false;
 
+    // has this planet been created/populated already?
     if (!PlanetDB::LoadPlanetResourceData(m_self->itemID(), m_data)) {
         std::vector<uint16> typeIDs;
         sPlanetDataMgr.GetPlanetData(m_self->typeID(), typeIDs);
@@ -73,52 +75,27 @@ bool PlanetSE::LoadExtras() {
         m_data.type_4 = typeIDs.at(3);
         m_data.type_5 = typeIDs.at(4);
 
-    /*  quality: (min=1.0, max=154.275)  */
-    /*
-     * [PyDict 5 kvp]
-     *  [PyInt 2288]
-     *  [PyFloat 100.11311298535]
-     *  [PyInt 2073]
-     *  [PyFloat 93.8896871755585]
-     *  [PyInt 2267]
-     *  [PyFloat 88.2820365560074]
-     *  [PyInt 2268]
-     *  [PyFloat 50.6448014279542]
-     *  [PyInt 2270]
-     *  [PyFloat 66.0059005883846]
-     */
+        float sysSec(m_system->GetSecValue()); // 0.1 - 2.0
+        float baseScarcityMultiplier = (1.1f - sysSec);
+        float baseMin = sysSec * 10.0f;
+        float abundanceMod = sPlanetDataMgr.GetAbundanceMod(m_self->typeID());
 
-        // these are relative indicators of material quantity.  makes no difference to ecu or extraction amount
-        // as system matures, we will begin adjusting these (from extractor data) and saving per planet
-        float sysSec(m_system->GetSecValue());    // 0.1 - 2.0
-        float min = sysSec * 10; //1.0 - 20.0
-        m_data.dist_1 = MakeRandomFloat(min, 75.0f) * sysSec + MakeRandomFloat(0.0f, 4.0f);
-        m_data.dist_2 = MakeRandomFloat(min, 75.0f) * sysSec + MakeRandomFloat(0.0f, 4.0f);
-        m_data.dist_3 = MakeRandomFloat(min, 75.0f) * sysSec + MakeRandomFloat(0.0f, 4.0f);
-        m_data.dist_4 = MakeRandomFloat(min, 75.0f) * sysSec + MakeRandomFloat(0.0f, 4.0f);
-        m_data.dist_5 = MakeRandomFloat(min, 75.0f) * sysSec + MakeRandomFloat(0.0f, 4.0f);
+        // Set overall quantity tracking floats
+        m_data.dist_1 = (MakeRandomFloat(baseMin, 75.0f) * sysSec + MakeRandomFloat(0.0f, 4.0f)) * abundanceMod;
+        m_data.dist_2 = (MakeRandomFloat(baseMin, 75.0f) * sysSec + MakeRandomFloat(0.0f, 4.0f)) * abundanceMod;
+        m_data.dist_3 = (MakeRandomFloat(baseMin, 75.0f) * sysSec + MakeRandomFloat(0.0f, 4.0f)) * abundanceMod;
+        m_data.dist_4 = (MakeRandomFloat(baseMin, 75.0f) * sysSec + MakeRandomFloat(0.0f, 4.0f)) * abundanceMod;
+        m_data.dist_5 = (MakeRandomFloat(baseMin, 75.0f) * sysSec + MakeRandomFloat(0.0f, 4.0f)) * abundanceMod;
 
-        // these work rather well...graphing the results compare similarly to data from live.
-        uint16 i(0);
-        for (i=0; i<3600; ++i)  //this cannot use numList
-            m_data.buffer_1 += hexList[MakeRandomInt(0,15)];   // random fill buffer to capacity, 1k8 bytes.
-        for (i=0; i<3600; ++i)
-            m_data.buffer_2 += hexList[MakeRandomInt(0,15)];   // random fill buffer to capacity, 1k8 bytes.
-        for (i=0; i<3600; ++i)
-            m_data.buffer_3 += hexList[MakeRandomInt(0,15)];   // random fill buffer to capacity, 1k8 bytes.
-        for (i=0; i<3600; ++i)
-            m_data.buffer_4 += hexList[MakeRandomInt(0,15)];   // random fill buffer to capacity, 1k8 bytes.
-        for (i=0; i<3600; ++i)
-            m_data.buffer_5 += hexList[MakeRandomInt(0,15)];   // random fill buffer to capacity, 1k8 bytes.
+        // Populate every database buffer string with up to 25 layered hotspots
+        m_data.buffer_1 = GenerateResourceBuffer(baseScarcityMultiplier, abundanceMod);
+        m_data.buffer_2 = GenerateResourceBuffer(baseScarcityMultiplier, abundanceMod);
+        m_data.buffer_3 = GenerateResourceBuffer(baseScarcityMultiplier, abundanceMod);
+        m_data.buffer_4 = GenerateResourceBuffer(baseScarcityMultiplier, abundanceMod);
+        m_data.buffer_5 = GenerateResourceBuffer(baseScarcityMultiplier, abundanceMod);
 
         PlanetDB::SavePlanetResourceData(m_self->itemID(), m_data);
     }
-
-    m_typeBuffers[m_data.type_1] = m_data.buffer_1;
-    m_typeBuffers[m_data.type_2] = m_data.buffer_2;
-    m_typeBuffers[m_data.type_3] = m_data.buffer_3;
-    m_typeBuffers[m_data.type_4] = m_data.buffer_4;
-    m_typeBuffers[m_data.type_5] = m_data.buffer_5;
 
     return true;
 }
@@ -309,3 +286,43 @@ void PlanetSE::CreateCustomsOffice() {
     m_system->AddEntity(pCO);
 }
 
+
+// Procedural array builder generating up to 25 layered SH hotspots per material type
+std::string PlanetSE::GenerateResourceBuffer(float baseScarcityMultiplier, float abundanceMod) {
+    // 225 continuous floats storing our 25 discrete nodes
+    std::vector<float> resourceFloatArray(225, 0.0f);
+
+    // Determine how many active hot spots this planet has (e.g., 8 to 15 nodes for rich distribution)
+    int activeHotspots = MakeRandomInt(8, 15);
+
+    for (int nodeIdx = 0; nodeIdx < activeHotspots; ++nodeIdx) {
+        // Find a distinct random coordinate direction vector over the spherical planet surface
+        float theta = MakeRandomFloat(0.0f, 2.0f * M_PI);
+        float phi = acos(MakeRandomFloat(-1.0f, 1.0f));
+
+        // Project onto Cartesian space matching EVE Online's Y-Up transformation matrix rules
+        float x = sin(phi) * cos(theta);
+        float y = cos(phi);
+        float z = sin(phi) * sin(theta);
+
+        // Balance intensity using security status and localized type abundance
+        float intensity = MakeRandomFloat(10.0f, 95.0f) * baseScarcityMultiplier * abundanceMod;
+
+        // Calculate the starting array pointer offset for this specific node block
+        size_t offset = nodeIdx * 9;
+
+        // Generate and assign the unique 9 basis functions for this hotspot position
+        resourceFloatArray[offset + 0] = intensity * 0.2820948f;               // l=0, m=0
+        resourceFloatArray[offset + 1] = intensity * 0.4886025f * y;           // l=1, m=-1
+        resourceFloatArray[offset + 2] = intensity * 0.4886025f * z;           // l=1, m=0
+        resourceFloatArray[offset + 3] = intensity * 0.4886025f * x;           // l=1, m=1
+        resourceFloatArray[offset + 4] = intensity * 1.0925484f * x * y;       // l=2, m=-2
+        resourceFloatArray[offset + 5] = intensity * 1.0925484f * y * z;       // l=2, m=-1
+        resourceFloatArray[offset + 6] = intensity * 0.3153916f * (3.0f * z * z - 1.0f); // l=2, m=0
+        resourceFloatArray[offset + 7] = intensity * 1.0925484f * x * z;       // l=2, m=1
+        resourceFloatArray[offset + 8] = intensity * 0.5462742f * (x * x - y * y);       // l=2, m=2
+    }
+
+    // Remaining node blocks default to 0.0f, acting as clean padding
+    return sPlanetDataMgr.EncodeMultiNodeHexBuffer(resourceFloatArray);
+}

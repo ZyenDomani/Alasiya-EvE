@@ -4,7 +4,8 @@
     ------------------------------------------------------------------------------------
     This file is part of EVEmu: EVE Online Server Emulator
     Copyright 2006 - 2016 The EVEmu Team
-    For the latest information visit http://evemu.org
+    Copyright 2016 - 2026 Alasiya-EvE by Allan
+    For the latest implementation status visit http://eve.alasiya.net/?p=op_status
     ------------------------------------------------------------------------------------
     This program is free software; you can redistribute it and/or modify it under
     the terms of the GNU Lesser General Public License as published by the Free Software
@@ -21,16 +22,13 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
-    Updates:        Allan
+    Updates:    Allan
 */
 
 #include "eve-xmlpktgen.h"
 
 #include "EncodeGenerator.h"
 
-/** @todo  i think this whole class uses copy but doesnt track/handle temp lifetimes.
- *   this is one of the worst offenders of mem mgmt we have  (update/tracking in progress)
- */
 
 ClassEncodeGenerator::ClassEncodeGenerator( FILE* outputFile )
 : Generator( outputFile ),
@@ -64,9 +62,8 @@ bool ClassEncodeGenerator::ProcessElementDef( const TiXmlElement* field )
 
     const char* encode_type = GetEncodeType( main );
     fprintf( mOutputFile,
-        "%s* %s::Encode() const\n"
-        "{\n"
-        "    %s* res(nullptr);\n\n",
+        "%s* %s::Encode() const {\n"
+        "    %s* res = nullptr;\n\n",
         encode_type, mName,
             encode_type
     );
@@ -86,78 +83,96 @@ bool ClassEncodeGenerator::ProcessElementDef( const TiXmlElement* field )
     return true;
 }
 
-bool ClassEncodeGenerator::ProcessElement( const TiXmlElement* field )
-{
+bool ClassEncodeGenerator::ProcessElement( const TiXmlElement* field ) {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassEncodeGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl << "ClassEncodeGenerator::ProcessElement field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
-    fprintf( mOutputFile,
-        "    %s = %s.Encode();\n\n",
-        top(), name
-    );
-
+    // 1. Fetch the parent layout mask from your string stack
+    std::string currentMask = top();
     pop();
+
+    // 2. Pre-format the C++ output expression for encoding the sub-object
+    char valueBuffer[64];
+    snprintf(valueBuffer, sizeof(valueBuffer), "%s.Encode()", name);
+
+    // 3. Merge the sub-object expression into the parent layout format mask
+    char finalizedLine[256];
+    snprintf(finalizedLine, sizeof(finalizedLine), currentMask.c_str(), valueBuffer);
+
+    // 4. Output the completed statement
+    fprintf( mOutputFile, "    %s;\n\n", finalizedLine );
     return true;
 }
 
-bool ClassEncodeGenerator::ProcessElementPtr( const TiXmlElement* field )
-{
+bool ClassEncodeGenerator::ProcessElementPtr( const TiXmlElement* field ) {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassEncodeGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl << "ClassEncodeGenerator::ProcessElementPtr field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
-    const char* v = top();
-    fprintf( mOutputFile,
-        "    if (%s != nullptr) {\n"
-        "        %s = %s->Encode();\n"
-        "    } else {\n"
-        "        // this should NEVER be null.  hack something.\n"
-        "	 sLog.Error(\"EncodeObject()\",\"%s.%s is null.  hacking some weird shit here, so be aware.\");\n"
-        "        EvE::traceStack();\n"
-        "        %s = PyStatic.NewNone();\n"
-        "    }\n\n",
-        name,
-		v, name,
-        mName, name,
-        v
-    );
-
+    // 1. Fetch the parent layout mask from your string stack
+    std::string currentMask = top();
     pop();
+
+    // 2. Format separate buffers for the valid encoding block and the null fallback block
+    char validBuffer[64];
+    snprintf(validBuffer, sizeof(validBuffer), "%s->Encode()", name);
+    char validLine[256];
+    snprintf(validLine, sizeof(validLine), currentMask.c_str(), validBuffer);
+
+    char nullLine[256];
+    snprintf(nullLine, sizeof(nullLine), currentMask.c_str(), "PyStatic.NewNone()");
+
+    // 3. Write out the conditional logic to the output file
+    fprintf( mOutputFile, "    if (%s != nullptr) {\n", name );
+    fprintf( mOutputFile, "        %s;\n", validLine );
+    fprintf( mOutputFile, "    } else {\n" );
+    fprintf( mOutputFile, "        sLog.Error(\"EncodeObject()\",\"%s.%s is null. hacking some weird shit here, so be aware.\");\n", mName, name );
+    fprintf( mOutputFile, "        EvE::traceStack();\n" );
+    fprintf( mOutputFile, "        %s;\n", nullLine );
+    fprintf( mOutputFile, "    }\n\n" );
+
     return true;
 }
-
-bool ClassEncodeGenerator::ProcessRaw( const TiXmlElement* field )
-{
+bool ClassEncodeGenerator::ProcessRaw( const TiXmlElement* field ) {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassEncodeGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl << "ClassEncodeGenerator::ProcessRaw() field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
-    const char* v = top();
-    fprintf( mOutputFile,
-        "    if (%s == nullptr) {\n"
-        "        // this should NEVER be null.  hack something.\n"
-        "	 sLog.Error(\"EncodeObject()\",\"%s.%s is null.  hacking some weird shit here, so be aware.\");\n"
-        "        EvE::traceStack();\n"
-        "        %s = PyStatic.NewNone();\n"
-        "    } else {\n"
-        "        PyIncRef(%s);\n"
-        "        %s = %s;\n"
-        "    }\n\n",
-        name,
-        mName, name,
-		v,
-        name,
-        v, name
-    );
-
+    // Grab the layout mask string directly from your native stack
+    std::string currentMask = top();
     pop();
+
+    char noneBuffer[256];
+    char validBuffer[256];
+
+    // CASE A: The parent is an inline collection layout mask (contains "%s")
+    if (currentMask.find("%s") != std::string::npos) {
+        snprintf(noneBuffer, sizeof(noneBuffer), currentMask.c_str(), "PyStatic.NewNone()");
+        snprintf(validBuffer, sizeof(validBuffer), currentMask.c_str(), name);
+    }
+    // CASE B: The parent is a flat temporary destination variable (e.g. dict3_2)
+    else {
+        snprintf(noneBuffer, sizeof(noneBuffer), "%s = PyStatic.NewNone()", currentMask.c_str());
+        snprintf(validBuffer, sizeof(validBuffer), "%s = %s", currentMask.c_str(), name);
+    }
+
+    // Generate code that safely increments the borrowed reference if it is valid
+    fprintf( mOutputFile, "    if (%s == nullptr) {\n", name );
+    fprintf( mOutputFile, "        %s;\n", noneBuffer );
+    fprintf( mOutputFile, "    } else {\n" );
+
+    // Safely borrow ownership before the sink claims it
+    fprintf( mOutputFile, "        PyIncRef( %s );\n", name );
+    fprintf( mOutputFile, "        %s;\n", validBuffer );
+    fprintf( mOutputFile, "    }\n" );
+
     return true;
 }
 
@@ -165,18 +180,30 @@ bool ClassEncodeGenerator::ProcessInt( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassEncodeGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "ClassEncodeGenerator::ProcessInt() field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
-    const char* v = top();
+    // 1. Create the clean object allocation string
+    char valueBuffer[256];
+    snprintf(valueBuffer, sizeof(valueBuffer), "new PyInt( %s )", name);
 
-    fprintf(mOutputFile,
-        "    %s = new PyInt(%s);\n",
-             v, name
-    );
-
+    // 2. Fetch the target destination string from your stack
+    std::string currentTarget = top();
     pop();
+
+    char finalizedLine[512];
+    // CASE A: The parent is an inline collection layout mask (contains "%s")
+    if (currentTarget.find("%s") != std::string::npos) {
+        snprintf(finalizedLine, sizeof(finalizedLine), currentTarget.c_str(), valueBuffer);
+    }
+    // CASE B: The parent is a flat temporary variable (like ss_2 or dict1_0)
+    else {
+        snprintf(finalizedLine, sizeof(finalizedLine), "%s = %s", currentTarget.c_str(), valueBuffer);
+    }
+
+    // 3. Output the perfectly formed C++ statement
+    fprintf(mOutputFile, "    %s;\n", finalizedLine);
     return true;
 }
 
@@ -184,18 +211,30 @@ bool ClassEncodeGenerator::ProcessLong( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassEncodeGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "ClassEncodeGenerator::ProcessLong() field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
-    const char* v = top();
+    // 1. Create the clean C++ initialization text fragment
+    char valueBuffer[256];
+    snprintf(valueBuffer, sizeof(valueBuffer), "new PyLong( %s )", name);
 
-    fprintf(mOutputFile,
-        "    %s = new PyLong(%s);\n",
-             v, name
-        );
-
+    // 2. Fetch the target destination string from your stack
+    std::string currentTarget = top();
     pop();
+
+    char finalizedLine[512];
+    // CASE A: The parent is an inline collection layout mask (contains "%s")
+    if (currentTarget.find("%s") != std::string::npos) {
+        snprintf(finalizedLine, sizeof(finalizedLine), currentTarget.c_str(), valueBuffer);
+    }
+    // CASE B: The parent is a flat temporary variable (like ss_2 or dict1_0)
+    else {
+        snprintf(finalizedLine, sizeof(finalizedLine), "%s = %s", currentTarget.c_str(), valueBuffer);
+    }
+
+    // 3. Output the perfectly formed C++ statement
+    fprintf(mOutputFile, "    %s;\n", finalizedLine);
     return true;
 }
 
@@ -203,18 +242,30 @@ bool ClassEncodeGenerator::ProcessReal( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassEncodeGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "ClassEncodeGenerator::ProcessReal() field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
-    const char* v = top();
+    // 1. Create the clean C++ initialization text fragment
+    char valueBuffer[256];
+    snprintf(valueBuffer, sizeof(valueBuffer), "new PyFloat( %s )", name);
 
-    fprintf(mOutputFile,
-            "    %s = new PyFloat(%s);\n",
-        v, name
-    );
-
+    // 2. Fetch the target destination string from your stack
+    std::string currentTarget = top();
     pop();
+
+    char finalizedLine[512];
+    // CASE A: The parent is an inline collection layout mask (contains "%s")
+    if (currentTarget.find("%s") != std::string::npos) {
+        snprintf(finalizedLine, sizeof(finalizedLine), currentTarget.c_str(), valueBuffer);
+    }
+    // CASE B: The parent is a flat temporary variable (like ss_2 or dict1_0)
+    else {
+        snprintf(finalizedLine, sizeof(finalizedLine), "%s = %s", currentTarget.c_str(), valueBuffer);
+    }
+
+    // 3. Output the perfectly formed C++ statement
+    fprintf(mOutputFile, "    %s;\n", finalizedLine);
     return true;
 }
 
@@ -222,229 +273,389 @@ bool ClassEncodeGenerator::ProcessBool( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassEncodeGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "ClassEncodeGenerator::ProcessBool() field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
-    fprintf(mOutputFile,
-            "    %s = new PyBool(%s);\n",
-        top(), name
-    );
+    // 1. Create the clean C++ initialization text fragment
+    char valueBuffer[256];
+    snprintf(valueBuffer, sizeof(valueBuffer), "new PyBool( %s )", name);
 
+    // 2. Fetch the target destination string from your stack
+    std::string currentTarget = top();
     pop();
+
+    char finalizedLine[512];
+    // CASE A: The parent is an inline collection layout mask (contains "%s")
+    if (currentTarget.find("%s") != std::string::npos) {
+        snprintf(finalizedLine, sizeof(finalizedLine), currentTarget.c_str(), valueBuffer);
+    }
+    // CASE B: The parent is a flat temporary variable (like ss_2 or dict1_0)
+    else {
+        snprintf(finalizedLine, sizeof(finalizedLine), "%s = %s", currentTarget.c_str(), valueBuffer);
+    }
+
+    // 3. Output the perfectly formed C++ statement
+    fprintf(mOutputFile, "    %s;\n", finalizedLine);
     return true;
 }
 
 bool ClassEncodeGenerator::ProcessNone( const TiXmlElement* field )
 {
-    fprintf( mOutputFile,
-        "    %s = PyStatic.NewNone();\n",
-        top()
-    );
+    // 1. Create the clean C++ initialization text fragment
+    char valueBuffer[256];
+    snprintf(valueBuffer, sizeof(valueBuffer), "PyStatic.NewNone()");
 
+    // 2. Fetch the target destination string from your stack
+    std::string currentTarget = top();
     pop();
+
+    char finalizedLine[512];
+    // CASE A: The parent is an inline collection layout mask (contains "%s")
+    if (currentTarget.find("%s") != std::string::npos) {
+        snprintf(finalizedLine, sizeof(finalizedLine), currentTarget.c_str(), valueBuffer);
+    }
+    // CASE B: The parent is a flat temporary variable (like ss_2 or dict1_0)
+    else {
+        snprintf(finalizedLine, sizeof(finalizedLine), "%s = %s", currentTarget.c_str(), valueBuffer);
+    }
+
+    // 3. Output the perfectly formed C++ statement
+    fprintf(mOutputFile, "    %s;\n", finalizedLine);
     return true;
 }
 
-bool ClassEncodeGenerator::ProcessBuffer( const TiXmlElement* field )
-{
+bool ClassEncodeGenerator::ProcessBuffer( const TiXmlElement* field ) {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassEncodeGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl << "ClassEncodeGenerator::ProcessBuffer() field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
-    const char* v = top();
-    fprintf( mOutputFile,
-        "    if (%s != nullptr) {\n"
-        "        PyIncRef(%s);\n"
-        "        %s = %s;\n"
-        "    } else {\n"
-        "        // this should NEVER be null.  hack something.\n"
-        "	 sLog.Error(\"EncodeObject()\",\"%s.%s is null.  hacking some weird shit here, so be aware.\");\n"
-        "        EvE::traceStack();\n"
-        "        %s = new PyBuffer( 0 );\n"
-        "    }\n\n",
-        name,
-            name,
-            v, name,
-            mName, name,
-            v
-    );
-
+    std::string currentMask = top();
     pop();
+
+    char nullLine[256];
+    char validLine[256];
+
+    // CASE A: The parent is an inline collection layout mask (contains "%s")
+    if (currentMask.find("%s") != std::string::npos) {
+        snprintf(nullLine, sizeof(nullLine), currentMask.c_str(), "new PyBuffer(0)");
+        snprintf(validLine, sizeof(validLine), currentMask.c_str(), name);
+    }
+    // CASE B: The parent is a flat temporary destination variable (e.g. dict1_0)
+    else {
+        snprintf(nullLine, sizeof(nullLine), "%s = new PyToken(\"\")", currentMask.c_str());
+        snprintf(validLine, sizeof(validLine), "%s = %s", currentMask.c_str(), name);
+    }
+
+    // Output the structural code block cleanly
+    fprintf( mOutputFile, "    if (%s == nullptr) {\n", name );
+    fprintf( mOutputFile, "        sLog.Error(\"EncodeObject()\",\"%s.%s is null. hacking some weird shit here, so be aware.\");\n", mName, name );
+    fprintf( mOutputFile, "        EvE::traceStack();\n" );
+    fprintf( mOutputFile, "        %s;\n", nullLine );
+    fprintf( mOutputFile, "    } else {\n" );
+
+    // Borrowing protection (Only run this if it's a valid pointer we are capturing)
+    fprintf( mOutputFile, "        PyIncRef( %s );\n", name );
+    fprintf( mOutputFile, "        %s;\n", validLine );
+    fprintf( mOutputFile, "    }\n\n" );
+
     return true;
 }
 
 bool ClassEncodeGenerator::ProcessString( const TiXmlElement* field )
 {
+    const char* value = field->Attribute("value");
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassEncodeGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "ClassEncodeGenerator::ProcessString() field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
-    const char* v = top();
+    char valueBuffer[256];
+    memset(valueBuffer, 0, sizeof(valueBuffer));
 
-    fprintf( mOutputFile,
-        "    %s = new PyString(%s);\n",
-            v, name
-	);
+    // CASE 1: It is a hardcoded string literal constant (<stringInline value="xxx" />)
+    if (value != nullptr) {
+        // Enclose it in explicit quotes so it compiles as a raw C++ string literal
+        snprintf(valueBuffer, sizeof(valueBuffer), "new PyString( \"%s\" )", value);
+    }
+    // CASE 2: It is a standard class member variable (<string name="xxx" />)
+    else if (name != nullptr) {
+        snprintf(valueBuffer, sizeof(valueBuffer), "new PyString( %s )", name);
+    }
+    // FALLBACK: Security safety check if both attributes are totally missing
+    else {
+        snprintf(valueBuffer, sizeof(valueBuffer), "new PyString( \"\" )");
+    }
 
+    // 2. Fetch the target destination string from your stack
+    std::string currentTarget = top();
     pop();
+
+    char finalizedLine[512];
+    // CASE A: The parent is an inline collection layout mask (contains "%s")
+    if (currentTarget.find("%s") != std::string::npos) {
+        snprintf(finalizedLine, sizeof(finalizedLine), currentTarget.c_str(), valueBuffer);
+    }
+    // CASE B: The parent is a flat temporary variable (like ss_2 or dict1_0)
+    else {
+        snprintf(finalizedLine, sizeof(finalizedLine), "%s = %s", currentTarget.c_str(), valueBuffer);
+    }
+
+    // 3. Output the perfectly formed C++ statement
+    fprintf(mOutputFile, "    %s;\n", finalizedLine);
     return true;
 }
 
 bool ClassEncodeGenerator::ProcessStringInline( const TiXmlElement* field )
 {
-    const char* value = field->Attribute( "value" );
+    const char* name = field->Attribute( "name" );
+    const char* value = field->Attribute("value");
     if (value == nullptr) {
-        std::cout << std::endl <<  "ClassEncodeGenerator:: String element at line " << field->Row() << " has no value attribute, skipping.";
+        std::cout << std::endl <<  "ClassEncodeGenerator::ProcessStringInline() field at line " << field->Row() << " is missing the value attribute, skipping.";
         return false;
     }
 
-    const char* v = top();
-    fprintf( mOutputFile,
-        "    %s = new PyString( \"%s\" );\n",
-        v, value
-    );
+    char valueBuffer[256];
+    memset(valueBuffer, 0, sizeof(valueBuffer));
 
+    // CASE 1: It is a hardcoded string literal constant (<string value="xxx" />)
+    if (value != nullptr) {
+        // Enclose it in explicit quotes so it compiles as a raw C++ string literal
+        snprintf(valueBuffer, sizeof(valueBuffer), "new PyString( \"%s\" )", value);
+    }
+    // CASE 2: It is a standard class member variable (<string name="xxx" />)
+    else if (name != nullptr) {
+        snprintf(valueBuffer, sizeof(valueBuffer), "new PyString( %s )", name);
+    }
+    // FALLBACK: Security safety check if both attributes are totally missing
+    else {
+        snprintf(valueBuffer, sizeof(valueBuffer), "new PyString( \"\" )");
+    }
+
+    // 2. Fetch the target destination string from your stack
+    std::string currentTarget = top();
     pop();
+
+    char finalizedLine[512];
+    // CASE A: The parent is an inline collection layout mask (contains "%s")
+    if (currentTarget.find("%s") != std::string::npos) {
+        snprintf(finalizedLine, sizeof(finalizedLine), currentTarget.c_str(), valueBuffer);
+    }
+    // CASE B: The parent is a flat temporary variable (like ss_2 or dict1_0)
+    else {
+        snprintf(finalizedLine, sizeof(finalizedLine), "%s = %s", currentTarget.c_str(), valueBuffer);
+    }
+
+    // 3. Output the perfectly formed C++ statement
+    fprintf(mOutputFile, "    %s;\n", finalizedLine);
     return true;
 }
 
 bool ClassEncodeGenerator::ProcessWString( const TiXmlElement* field )
 {
+    const char* value = field->Attribute("value");
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassEncodeGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "ClassEncodeGenerator::ProcessWString() field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
-    const char* v = top();
+    // 1. Create the clean C++ initialization text fragment
+    char valueBuffer[256];
+    memset(valueBuffer, 0, sizeof(valueBuffer));
 
-    fprintf( mOutputFile,
-        "    %s = new PyWString(%s);\n",
-            v, name
-	);
+    // CASE 1: It is a hardcoded string literal constant (<wstring value="xxx" />)
+    if (value != nullptr) {
+        // Enclose it in explicit quotes so it compiles as a raw C++ string literal
+        snprintf(valueBuffer, sizeof(valueBuffer), "new PyWString( \"%s\" )", value);
+    }
+    // CASE 2: It is a standard class member variable (<string name="xxx" />)
+    else if (name != nullptr) {
+        snprintf(valueBuffer, sizeof(valueBuffer), "new PyWString( %s )", name);
+    }
+    // FALLBACK: Security safety check if both attributes are totally missing
+    else {
+        snprintf(valueBuffer, sizeof(valueBuffer), "new PyWString( \"\" )");
+    }
 
+    // 2. Fetch the target destination string from your stack
+    std::string currentTarget = top();
     pop();
+
+    char finalizedLine[512];
+    // CASE A: The parent is an inline collection layout mask (contains "%s")
+    if (currentTarget.find("%s") != std::string::npos) {
+        snprintf(finalizedLine, sizeof(finalizedLine), currentTarget.c_str(), valueBuffer);
+    }
+    // CASE B: The parent is a flat temporary variable (like ss_2 or dict1_0)
+    else {
+        snprintf(finalizedLine, sizeof(finalizedLine), "%s = %s", currentTarget.c_str(), valueBuffer);
+    }
+
+    // 3. Output the perfectly formed C++ statement
+    fprintf(mOutputFile, "    %s;\n", finalizedLine);
     return true;
 }
 
 bool ClassEncodeGenerator::ProcessWStringInline( const TiXmlElement* field )
 {
-    const char* value = field->Attribute( "value" );
-    if (value == nullptr) {
-        std::cout << std::endl <<  "ClassEncodeGenerator:: WString element at line " << field->Row() << " has no value attribute, skipping.";
-        return false;
-    }
-
-    const char* v = top();
-    fprintf( mOutputFile,
-            "    %s = new PyWString( \"%s\", %zu );\n",
-            v, value, strlen( value )
-    );
-
-    pop();
-    return true;
-}
-
-bool ClassEncodeGenerator::ProcessToken( const TiXmlElement* field )
-{
+    const char* value = field->Attribute("value");
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassEncodeGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
-        return false;
+        std::cout << std::endl <<  "ClassEncodeGenerator::ProcessWStringInline() field at line " << field->Row() << " is missing the name attribute, skipping.";
     }
 
-    const char* v = top();
-    fprintf( mOutputFile,
-        "    if (%s == nullptr) {\n"
-        "        // this should NEVER be null.  hack something.\n"
-        "	 sLog.Error(\"EncodeObject()\",\"%s.%s is null.  hacking some weird shit here, so be aware.\");\n"
-        "        EvE::traceStack();\n"
-        "        %s = new PyToken(\"\");\n"
-        "    } else {\n"
-        "        PyIncRef(%s);\n"
-        "        %s = %s;\n"
-        "    }\n\n",
-        name,
-        mName, name,
-        v,
-        name,
-        v, name
-    );
+    // 1. Create the clean C++ initialization text fragment
+    char valueBuffer[256];
+    memset(valueBuffer, 0, sizeof(valueBuffer));
 
-    pop();
-    return true;
-}
-
-bool ClassEncodeGenerator::ProcessTokenInline( const TiXmlElement* field )
-{
-    const char* value = field->Attribute( "value" );
-    if (value == nullptr) {
-        std::cout << std::endl <<  "ClassEncodeGenerator:: Token element at line " << field->Row() << " has no type attribute, skipping.";
-        return false;
+    // CASE 1: It is a hardcoded string literal constant (<wstring value="xxx" />)
+    if (value != nullptr) {
+        // Enclose it in explicit quotes so it compiles as a raw C++ string literal
+        snprintf(valueBuffer, sizeof(valueBuffer), "new PyWString( \"%s\" )", value);
+    }
+    // CASE 2: It is a standard class member variable (<string name="xxx" />)
+    else if (name != nullptr) {
+        snprintf(valueBuffer, sizeof(valueBuffer), "new PyWString( %s )", name);
+    }
+    // FALLBACK: Security safety check if both attributes are totally missing
+    else {
+        snprintf(valueBuffer, sizeof(valueBuffer), "new PyWString( \"\" )");
     }
 
-    const char* v = top();
-    fprintf( mOutputFile,
-        "    %s = new PyToken( \"%s\" );\n",
-        v, value
-    );
-
+    // 2. Fetch the target destination string from your stack
+    std::string currentTarget = top();
     pop();
+
+    char finalizedLine[512];
+    // CASE A: The parent is an inline collection layout mask (contains "%s")
+    if (currentTarget.find("%s") != std::string::npos) {
+        snprintf(finalizedLine, sizeof(finalizedLine), currentTarget.c_str(), valueBuffer);
+    }
+    // CASE B: The parent is a flat temporary variable (like ss_2 or dict1_0)
+    else {
+        snprintf(finalizedLine, sizeof(finalizedLine), "%s = %s", currentTarget.c_str(), valueBuffer);
+    }
+
+    // 3. Output the perfectly formed C++ statement
+    fprintf(mOutputFile, "    %s;\n", finalizedLine);
     return true;
 }
-
-bool ClassEncodeGenerator::ProcessObject( const TiXmlElement* field )
-{
+bool ClassEncodeGenerator::ProcessToken( const TiXmlElement* field ) {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassEncodeGenerator::ProcessObject field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl << "ClassEncodeGenerator::ProcessToken field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
-    const char* v = top();
-
-    fprintf( mOutputFile,
-        "    if (%s == nullptr) {\n"
-        "        // this should NEVER be null.  no clue what the object type is, so hack something.\n"
-        "	 sLog.Error(\"EncodeObject()\",\"%s.%s is null.  hacking some weird shit here, so be aware.\");\n"
-        "        EvE::traceStack();\n"
-        "        %s = new PyObject(\"unknown\", PyStatic.NewNone());\n"
-        "    } else {\n"
-        "        PyIncRef(%s);\n"
-        "        %s = %s;\n"
-        "    }\n",
-        name,
-        mName, name,
-            v,
-            name,
-            v, name
-    );
-
+    std::string currentMask = top();
     pop();
+
+    char nullLine[256];
+    char validLine[256];
+
+    // CASE A: The parent is an inline collection layout mask (contains "%s")
+    if (currentMask.find("%s") != std::string::npos) {
+        snprintf(nullLine, sizeof(nullLine), currentMask.c_str(), "new PyToken(\"\")");
+        snprintf(validLine, sizeof(validLine), currentMask.c_str(), name);
+    }
+    // CASE B: The parent is a flat temporary destination variable (e.g. dict1_0)
+    else {
+        snprintf(nullLine, sizeof(nullLine), "%s = new PyToken(\"\")", currentMask.c_str());
+        snprintf(validLine, sizeof(validLine), "%s = %s", currentMask.c_str(), name);
+    }
+
+    // Output the structural code block cleanly
+    fprintf( mOutputFile, "    if (%s == nullptr) {\n", name );
+    fprintf( mOutputFile, "        sLog.Error(\"EncodeObject()\",\"%s.%s is null. hacking some weird shit here, so be aware.\");\n", mName, name );
+    fprintf( mOutputFile, "        EvE::traceStack();\n" );
+    fprintf( mOutputFile, "        %s;\n", nullLine );
+    fprintf( mOutputFile, "    } else {\n" );
+
+    // Borrowing protection (Only run this if it's a valid pointer we are capturing)
+    fprintf( mOutputFile, "        PyIncRef( %s );\n", name );
+    fprintf( mOutputFile, "        %s;\n", validLine );
+    fprintf( mOutputFile, "    }\n\n" );
+
+    return true;
+}
+bool ClassEncodeGenerator::ProcessTokenInline( const TiXmlElement* field ) {
+    const char* value = field->Attribute( "value" );
+    if (value == nullptr) {
+        std::cout << std::endl << "ClassEncodeGenerator:: Token element at line " << field->Row() << " has no value attribute, skipping.";
+        return false;
+    }
+
+    // 1. FIXED: Enclose the value in explicit double quotes so it outputs as a proper C++ string literal
+    char valueBuffer[256];
+    snprintf(valueBuffer, sizeof(valueBuffer), "new PyToken( \"%s\" )", value);
+
+    // 2. Fetch the parent layout target string safely from your stack
+    std::string currentTarget = top();
+    pop();
+
+    // 3. FIXED: Apply the target block switch check to handle both masks and flat variables
+    char finalizedLine[256];
+    if (currentTarget.find("%s") != std::string::npos) {
+        snprintf(finalizedLine, sizeof(finalizedLine), currentTarget.c_str(), valueBuffer);
+    } else {
+        snprintf(finalizedLine, sizeof(finalizedLine), "%s = %s", currentTarget.c_str(), valueBuffer);
+    }
+
+    // 4. Print the pristine, completed C++ statement
+    fprintf(mOutputFile, "  %s;\n", finalizedLine);
     return true;
 }
 
-bool ClassEncodeGenerator::ProcessObjectInline( const TiXmlElement* field )
-{
+
+bool ClassEncodeGenerator::ProcessObject( const TiXmlElement* field ) {
+    const char* name = field->Attribute( "name" );
+    if (name == nullptr) {
+        std::cout << std::endl << "ClassEncodeGenerator::ProcessObject field at line " << field->Row() << " is missing the name attribute, skipping.";
+        return false;
+    }
+
+    std::string currentMask = top();
+    pop();
+
+    char nullLine[256];
+    char validLine[256];
+
+    // CASE A: The parent is an inline collection layout mask (contains "%s")
+    if (currentMask.find("%s") != std::string::npos) {
+        snprintf(nullLine, sizeof(nullLine), currentMask.c_str(), "new PyObject(\"unknown\", PyStatic.NewNone())");
+        snprintf(validLine, sizeof(validLine), currentMask.c_str(), name);
+    }
+    // CASE B: The parent is a flat temporary destination variable (e.g. dict1_0)
+    else {
+        snprintf(nullLine, sizeof(nullLine), "%s = new PyObject(\"\")", currentMask.c_str());
+        snprintf(validLine, sizeof(validLine), "%s = %s", currentMask.c_str(), name);
+    }
+
+    fprintf( mOutputFile, "    if (%s == nullptr) {\n", name );
+    fprintf( mOutputFile, "        sLog.Error(\"EncodeObject()\",\"%s.%s is null. hacking some weird shit here, so be aware.\");\n", mName, name );
+    fprintf( mOutputFile, "        EvE::traceStack();\n" );
+    fprintf( mOutputFile, "        %s;\n", nullLine );
+    fprintf( mOutputFile, "    } else {\n" );
+    fprintf( mOutputFile, "        PyIncRef( %s );\n", name ); // Borrowing protection
+    fprintf( mOutputFile, "        %s;\n", validLine );
+    fprintf( mOutputFile, "    }\n");
+
+    return true;
+}
+
+bool ClassEncodeGenerator::ProcessObjectInline( const TiXmlElement* field ) {
     const uint32 num = mItemNumber++;
-
     char tname[32];
     snprintf( tname, sizeof( tname ), "obj%u_type", num );
-
     char aname[32];
     snprintf( aname, sizeof( aname ), "obj%u_args", num );
 
-    fprintf( mOutputFile,
-        "    PyString* %s(nullptr);\n"
-        "    PyRep* %s(nullptr);\n\n",
-        tname,
-        aname
-    );
+    fprintf( mOutputFile, "    PyString* %s = nullptr;\n"
+    "    PyRep* %s = nullptr;\n\n", tname, aname );
 
     push( aname );
     push( tname );
@@ -452,39 +663,47 @@ bool ClassEncodeGenerator::ProcessObjectInline( const TiXmlElement* field )
     if (!ParseElementChildren( field, 2 ) )
         return false;
 
-    fprintf( mOutputFile,
-             "    %s = new PyObject(%s, %s);\n",
-             top(), tname, aname
-    );
+    char valueBuffer[256];
+    snprintf(valueBuffer, sizeof(valueBuffer), "new PyObject(%s, %s)", tname, aname);
 
+    std::string currentMask = top();
     pop();
+
+    char finalizedLine[256]; // Uniform size bump to 256 for safety
+    // CASE A: The tuple is nested inside another array layer layout (contains "%s")
+    if (currentMask.find("%s") != std::string::npos) {
+        snprintf(finalizedLine, sizeof(finalizedLine), currentMask.c_str(), valueBuffer);
+    }
+    // CASE B: The tuple is being saved straight into a flat sub-stream variable (like ss_2)
+    else {
+        snprintf(finalizedLine, sizeof(finalizedLine), "%s = %s", currentMask.c_str(), valueBuffer);
+    }
+
+    fprintf(mOutputFile, "    %s;\n", finalizedLine);
     return true;
 }
 
-bool ClassEncodeGenerator::ProcessObjectEx( const TiXmlElement* field )
-{
+bool ClassEncodeGenerator::ProcessObjectEx( const TiXmlElement* field ) {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassEncodeGenerator::ProcessObjectEx field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl << "ClassEncodeGenerator::ProcessObjectEx field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
     const char* type = field->Attribute( "type" );
     if (type == nullptr) {
-        std::cout << std::endl <<  "ClassEncodeGenerator::ProcessObjectEx field at line " << field->Row() << " is missing the type attribute, skipping.";
+        std::cout << std::endl << "ClassEncodeGenerator::ProcessObjectEx field at line " << field->Row() << " is missing the type attribute, skipping.";
         return false;
     }
 
-    const char *v = top();
-
-    fprintf( mOutputFile,
-        "    PyIncRef(%s);\n"
-        "    %s = %s;\n",
-        name,
-        v, name
-    );
-
-
+    std::string currentMask = top();
     pop();
+
+    char finalizedLine[256];
+    snprintf(finalizedLine, sizeof(finalizedLine), currentMask.c_str(), name);
+
+    fprintf( mOutputFile, "    PyIncRef( %s );\n", name ); // Borrowing protection
+    fprintf( mOutputFile, "    %s;\n", finalizedLine );
+
     return true;
 }
 
@@ -496,61 +715,77 @@ bool ClassEncodeGenerator::ProcessTuple( const TiXmlElement* field )
         return false;
     }
 
-    const char* v = top();
-    fprintf( mOutputFile,
-        "    if (%s == nullptr) {\n"
-        "        %s = PyStatic.mtTuple();\n"
-        "    } else {\n"
-        "        PyIncRef(%s);\n"
-        "        %s = %s;\n"
-        "    }\n\n",
-        name,
-            v,
-            name,
-            v, name
-    );
-
+    std::string currentMask = top();
     pop();
+
+    char nullLine[256];
+    char validLine[256];
+
+    // CASE A: The parent is an inline collection layout mask (contains "%s")
+    if (currentMask.find("%s") != std::string::npos) {
+        snprintf(nullLine, sizeof(nullLine), currentMask.c_str(), "PyStatic.mtTuple()");
+        snprintf(validLine, sizeof(validLine), currentMask.c_str(), name);
+    }
+    // CASE B: The parent is a flat temporary destination variable (e.g. dict1_0)
+    else {
+        snprintf(nullLine, sizeof(nullLine), "%s = new PyTuple(\"\")", currentMask.c_str());
+        snprintf(validLine, sizeof(validLine), "%s = %s", currentMask.c_str(), name);
+    }
+
+    // Output the structural code block cleanly
+    fprintf( mOutputFile, "    if (%s == nullptr) {\n", name );
+    fprintf( mOutputFile, "        sLog.Error(\"EncodeObject()\",\"%s.%s is null. hacking some weird shit here, so be aware.\");\n", mName, name );
+    fprintf( mOutputFile, "        EvE::traceStack();\n" );
+    fprintf( mOutputFile, "        %s;\n", nullLine );
+    fprintf( mOutputFile, "    } else {\n" );
+
+    // Borrowing protection (Only run this if it's a valid pointer we are capturing)
+    fprintf( mOutputFile, "        PyIncRef( %s );\n", name );
+    fprintf( mOutputFile, "        %s;\n", validLine );
+    fprintf( mOutputFile, "    }\n\n" );
+
     return true;
 }
 
-bool ClassEncodeGenerator::ProcessTupleInline( const TiXmlElement* field )
-{
-    //first, we need to know how many elements this tuple has:
+bool ClassEncodeGenerator::ProcessTupleInline( const TiXmlElement* field ) {
     const TiXmlNode* i = nullptr;
-
     uint32 count = 0;
     while( ( i = field->IterateChildren( i ) ) ) {
-        if (i->Type() == TiXmlNode::TINYXML_ELEMENT )
-            ++count;
+        if (i->Type() == TiXmlNode::TINYXML_ELEMENT ) ++count;
     }
 
     char iname[16];
     snprintf( iname, sizeof( iname ), "tuple%u", mItemNumber++ );
 
-    //now we can generate the tuple decl
-    fprintf( mOutputFile,
-             "    PyTuple* %s = new PyTuple( %u );\n",
-        iname, count
-    );
+    // Output standard initialization
+    fprintf( mOutputFile, "    PyTuple* %s = new PyTuple( %u );\n", iname, count );
 
-    //now we need to queue up all the storage locations for the fields
-    //need to be backward
+    // Queue up the destination strings onto your native const char* stack
     char varname[64];
     while( count-- > 0 ) {
-        snprintf( varname, sizeof( varname ), "%s->items[ %u ]", iname, count );
-        push( varname );
+        // Enforce Rule 1: SetItem claims ownership of the slot item cleanly
+        snprintf( varname, sizeof( varname ), "%s->SetItem( %u, %%s )", iname, count );
+        push( varname ); // Compiles perfectly with your native void push(const char *v)
     }
 
     if (!ParseElementChildren( field ) )
         return false;
 
-    fprintf(mOutputFile,
-            "    %s = %s;\n",
-        top(), iname
-    );
-
+    // --- UPDATED EXCLUSIVE TARGET CHECK ---
+    std::string currentTarget = top();
     pop();
+
+    char finalizedLine[256]; // Uniform size bump to 256 for safety
+    // CASE A: The tuple is nested inside another array layer layout (contains "%s")
+    if (currentTarget.find("%s") != std::string::npos) {
+        snprintf(finalizedLine, sizeof(finalizedLine), currentTarget.c_str(), iname);
+    }
+    // CASE B: The tuple is being saved straight into a flat sub-stream variable (like ss_2)
+    else {
+        snprintf(finalizedLine, sizeof(finalizedLine), "%s = %s", currentTarget.c_str(), iname);
+    }
+
+    fprintf(mOutputFile, "    %s;\n", finalizedLine);
     return true;
 }
 
@@ -562,136 +797,183 @@ bool ClassEncodeGenerator::ProcessList( const TiXmlElement* field )
         return false;
     }
 
-    const char* v = top();
-    fprintf( mOutputFile,
-        "    if (%s == nullptr) {\n"
-        "        %s = PyStatic.mtList();\n"
-        "    } else {\n"
-        "        PyIncRef(%s);\n"
-        "        %s = %s;\n"
-        "    }\n\n",
-        name,
-            v,
-             name,
-            v, name
-    );
-
+    // 1. Fetch the parent layout mask string safely from your string stack
+    std::string currentMask = top();
     pop();
+
+    // 2. Pre-format the C++ output strings for BOTH the null and valid branches
+    char nullLine[256];
+    snprintf(nullLine, sizeof(nullLine), currentMask.c_str(), "PyStatic.mtList()");
+
+    char validLine[256];
+    snprintf(validLine, sizeof(validLine), currentMask.c_str(), name);
+
+    // CASE A: The parent is an inline collection layout mask (contains "%s")
+    if (currentMask.find("%s") != std::string::npos) {
+        snprintf(nullLine, sizeof(nullLine), currentMask.c_str(), "new PyToken(\"\")");
+        snprintf(validLine, sizeof(validLine), currentMask.c_str(), name);
+    }
+    // CASE B: The parent is a flat temporary destination variable (e.g. dict1_0)
+    else {
+        snprintf(nullLine, sizeof(nullLine), "%s = new PyToken(\"\")", currentMask.c_str());
+        snprintf(validLine, sizeof(validLine), "%s = %s", currentMask.c_str(), name);
+    }
+
+    // 3. Write out the conditional logic to the output file
+    fprintf( mOutputFile, "    if (%s == nullptr) {\n", name );
+    fprintf( mOutputFile, "        %s;\n", nullLine );
+    fprintf( mOutputFile, "    } else {\n" );
+
+    // CRITICAL MEMORY COMPLIANCE: Because this represents a long-lived shared
+    // dictionary, increment it before the parent layout sink claims ownership!
+    fprintf( mOutputFile, "        PyIncRef( %s );\n", name );
+    fprintf( mOutputFile, "        %s;\n", validLine );
+    fprintf( mOutputFile, "    }\n\n" );
+
     return true;
 }
 
 bool ClassEncodeGenerator::ProcessListInline( const TiXmlElement* field )
 {
-    //first, we need to know how many elements this tuple has:
     const TiXmlNode* i = nullptr;
-
     uint32 count = 0;
     while( ( i = field->IterateChildren( i ) ) ) {
-        if (i->Type() == TiXmlNode::TINYXML_ELEMENT )
-            ++count;
+        if (i->Type() == TiXmlNode::TINYXML_ELEMENT ) ++count;
     }
 
     char iname[16];
     snprintf( iname, sizeof( iname ), "list%u", mItemNumber++ );
 
-    //now we can generate the list decl
-    fprintf( mOutputFile,
-             "    PyList* %s = new PyList( %u );\n",
-        iname, count
-    );
+    // Output standard initialization
+    fprintf( mOutputFile, "    PyList* %s = new PyList( %u );\n", iname, count );
 
-    //now we need to queue up all the storage locations for the fields
-    //need to be backward
+    // Queue up the destination strings onto your native const char* stack
     char varname[64];
     while( count-- > 0 ) {
-        snprintf( varname, sizeof( varname ), "%s->items[ %u ]", iname, count );
-        push( varname );
+        // Enforce Rule 1: SetItem claims ownership of the slot item cleanly
+        snprintf( varname, sizeof( varname ), "%s->SetItem( %u, %%s )", iname, count );
+        push( varname ); // Compiles perfectly with your native void push(const char *v)
     }
 
-    if (!ParseElementChildren( field ))
+    if (!ParseElementChildren( field ) )
         return false;
 
-    fprintf(mOutputFile,
-            "    %s = %s;\n\n",
-        top(), iname
-    );
-
+    // --- UPDATED EXCLUSIVE TARGET CHECK ---
+    std::string currentTarget = top();
     pop();
+
+    char finalizedLine[256]; // Uniform size bump to 256 for safety
+
+    // CASE A: The tuple is nested inside another array layer layout (contains "%s")
+    if (currentTarget.find("%s") != std::string::npos) {
+        snprintf(finalizedLine, sizeof(finalizedLine), currentTarget.c_str(), iname);
+    }
+    // CASE B: The tuple is being saved straight into a flat sub-stream variable (like ss_2)
+    else {
+        snprintf(finalizedLine, sizeof(finalizedLine), "%s = %s", currentTarget.c_str(), iname);
+    }
+
+    fprintf(mOutputFile, "    %s;\n", finalizedLine);
     return true;
 }
 
-bool ClassEncodeGenerator::ProcessListInt( const TiXmlElement* field )
-{
+bool ClassEncodeGenerator::ProcessListInt( const TiXmlElement* field ) {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassEncodeGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl << "ClassEncodeGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
     char rname[16];
     snprintf( rname, sizeof( rname ), "list%u", mItemNumber++ );
 
-    fprintf( mOutputFile,
-             "    PyList* %s = new PyList();\n"
-        "    for (auto &cur : %s)\n"
-        "        %s->AddItemInt(cur);\n"
-        "    %s = %s;\n",
-        rname, name, rname,
-        top(), rname
-    );
+    // 1. Output the initialization and population loops
+    fprintf( mOutputFile, "    PyList* %s = new PyList();\n"
+    "    for (auto &cur : %s)\n"
+    "        %s->AddItemInt(cur);\n", rname, name, rname );
 
+    // --- THE FIXED LOGIC CHECK (MATCHING INLINE) ---
+    std::string currentTarget = top();
     pop();
+
+    char finalizedLine[256]; // Uniform size bump to 256 for safety
+
+    // CASE A: The target is a string format mask (contains "%s")
+    if (currentTarget.find("%s") != std::string::npos) {
+        snprintf(finalizedLine, sizeof(finalizedLine), currentTarget.c_str(), rname);
+    }
+    // CASE B: The target is a flat temporary tracking variable (like dict0_2)
+    else {
+        snprintf(finalizedLine, sizeof(finalizedLine), "%s = %s", currentTarget.c_str(), rname);
+    }
+
+    fprintf( mOutputFile, "  %s;\n", finalizedLine );
     return true;
 }
 
-bool ClassEncodeGenerator::ProcessListLong( const TiXmlElement* field )
-{
+bool ClassEncodeGenerator::ProcessListLong( const TiXmlElement* field ) {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassEncodeGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl << "ClassEncodeGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
     char rname[16];
     snprintf( rname, sizeof( rname ), "list%u", mItemNumber++ );
 
-    fprintf( mOutputFile,
-             "    PyList *%s = new PyList();\n"
-        "    for (auto &cur : %s)\n"
-        "        %s->AddItemLong(cur);\n"
-        "    %s = %s;\n",
-        rname,
-        name,
-        rname,
-        top(), rname
-    );
+    fprintf( mOutputFile, "    PyList* %s = new PyList();\n"
+    "    for (auto &cur : %s)\n"
+    "        %s->AddItemLong(cur);\n", rname, name, rname );
 
+    // --- THE FIXED LOGIC CHECK (MATCHING INLINE) ---
+    std::string currentTarget = top();
     pop();
+
+    char finalizedLine[256]; // Uniform size bump to 256 for safety
+
+    // CASE A: The target is a string format mask (contains "%s")
+    if (currentTarget.find("%s") != std::string::npos) {
+        snprintf(finalizedLine, sizeof(finalizedLine), currentTarget.c_str(), rname);
+    }
+    // CASE B: The target is a flat temporary tracking variable (like dict0_2)
+    else {
+        snprintf(finalizedLine, sizeof(finalizedLine), "%s = %s", currentTarget.c_str(), rname);
+    }
+
+    fprintf( mOutputFile, "  %s;\n", finalizedLine );
     return true;
 }
 
-bool ClassEncodeGenerator::ProcessListStr( const TiXmlElement* field )
-{
+bool ClassEncodeGenerator::ProcessListStr( const TiXmlElement* field ) {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassEncodeGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl << "ClassEncodeGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
     char rname[16];
     snprintf( rname, sizeof( rname ), "list%u", mItemNumber++ );
 
-    fprintf( mOutputFile,
-             "    PyList *%s = new PyList();\n"
-        "    for (auto &cur : %s)\n"
-        "        %s->AddItemString(cur.c_str());\n"
-        "    %s = %s;\n",
-        rname, name,
-        rname,
-        top(), rname
-    );
+    fprintf( mOutputFile, "    PyList* %s = new PyList();\n"
+    "    for (auto &cur : %s)\n"
+    "        %s->AddItemString(cur.c_str());\n", rname, name, rname );
 
+    // --- THE FIXED LOGIC CHECK (MATCHING INLINE) ---
+    std::string currentTarget = top();
     pop();
+
+    char finalizedLine[256]; // Uniform size bump to 256 for safety
+
+    // CASE A: The target is a string format mask (contains "%s")
+    if (currentTarget.find("%s") != std::string::npos) {
+        snprintf(finalizedLine, sizeof(finalizedLine), currentTarget.c_str(), rname);
+    }
+    // CASE B: The target is a flat temporary tracking variable (like dict0_2)
+    else {
+        snprintf(finalizedLine, sizeof(finalizedLine), "%s = %s", currentTarget.c_str(), rname);
+    }
+
+    fprintf( mOutputFile, "  %s;\n", finalizedLine );
     return true;
 }
 
@@ -699,25 +981,38 @@ bool ClassEncodeGenerator::ProcessDict( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassEncodeGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "ClassEncodeGenerator::ProcessDict field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
-    const char* v = top();
-    fprintf( mOutputFile,
-        "    if (%s == nullptr) {\n"
-        "        %s = PyStatic.mtDict();\n"
-        "    } else {\n"
-        "        PyIncRef(%s);\n"
-        "        %s = %s;\n"
-        "    }\n\n",
-        name,
-            v,
-            name,
-            v, name
-    );
-
+    // Grab the layout mask string directly from your native stack
+    std::string currentMask = top();
     pop();
+
+    char noneBuffer[256];
+    char validBuffer[256];
+
+    // CASE A: The parent is an inline collection layout mask (contains "%s")
+    if (currentMask.find("%s") != std::string::npos) {
+        snprintf(noneBuffer, sizeof(noneBuffer), currentMask.c_str(), "PyStatic.mtDict()");
+        snprintf(validBuffer, sizeof(validBuffer), currentMask.c_str(), name);
+    }
+    // CASE B: The parent is a flat temporary destination variable (e.g. dict3_2)
+    else {
+        snprintf(noneBuffer, sizeof(noneBuffer), "%s = PyStatic.mtDict()", currentMask.c_str());
+        snprintf(validBuffer, sizeof(validBuffer), "%s = %s", currentMask.c_str(), name);
+    }
+
+    // Generate code that safely increments the borrowed reference if it is valid
+    fprintf( mOutputFile, "    if (%s == nullptr) {\n", name );
+    fprintf( mOutputFile, "        %s;\n", noneBuffer );
+    fprintf( mOutputFile, "    } else {\n" );
+
+    // Safely borrow ownership before the sink claims it
+    fprintf( mOutputFile, "        PyIncRef( %s );\n", name );
+    fprintf( mOutputFile, "        %s;\n", validBuffer );
+    fprintf( mOutputFile, "    }\n" );
+
     return true;
 }
 
@@ -728,7 +1023,7 @@ bool ClassEncodeGenerator::ProcessDictInline( const TiXmlElement* field )
     snprintf( iname, sizeof( iname ), "dict%u", mItemNumber++ );
 
     fprintf( mOutputFile,
-             "    PyDict* %s = new PyDict();\n",
+             "      PyDict* %s = new PyDict();\n",
         iname
     );
 
@@ -762,7 +1057,7 @@ bool ClassEncodeGenerator::ProcessDictInline( const TiXmlElement* field )
             snprintf( vname, sizeof( vname ), "%s_%u", iname, count++ );
 
             fprintf( mOutputFile,
-                "    PyRep* %s(nullptr);\n",
+                "      PyRep* %s = nullptr;\n",
                 vname
             );
             push( vname );
@@ -775,35 +1070,39 @@ bool ClassEncodeGenerator::ProcessDictInline( const TiXmlElement* field )
             //taking the keyType into account
             if (keyTypeInt ) {
                 fprintf( mOutputFile,
-                    "    %s->SetItem(new PyInt( %s ), %s);\n"
-                    "    PyIncRef(%s);\n",
-                    iname, key, vname,
-                    vname
+                    "      %s->SetItem(new PyInt( %s ), %s);\n",
+                    iname, key, vname
                 );
             } else if (keyTypeLong ) {
                 fprintf( mOutputFile,
-                    "    %s->SetItem(new PyLong( %s ), %s);\n"
-                    "    PyIncRef(%s);\n",
-                    iname, key, vname,
-                    vname
+                    "      %s->SetItem(new PyLong( %s ), %s);\n",
+                    iname, key, vname
                 );
             } else {
                 fprintf( mOutputFile,
-                    "    %s->SetItemString(\"%s\", %s);\n"
-                    "    PyIncRef(%s);\n",
-                    iname, key, vname,
-                    vname
+                    "      %s->SetItemString(\"%s\", %s);\n",
+                    iname, key, vname
                 );
             }
         }
     }
 
-    fprintf( mOutputFile,
-             "    %s = %s;\n\n",
-        top(), iname
-    );
-
+    // --- UPDATED EXCLUSIVE TARGET CHECK ---
+    std::string currentTarget = top();
     pop();
+
+    char finalizedLine[256]; // Uniform size bump to 256 for safety
+
+    // CASE A: The tuple is nested inside another array layer layout (contains "%s")
+    if (currentTarget.find("%s") != std::string::npos) {
+        snprintf(finalizedLine, sizeof(finalizedLine), currentTarget.c_str(), iname);
+    }
+    // CASE B: The tuple is being saved straight into a flat sub-stream variable (like ss_2)
+    else {
+        snprintf(finalizedLine, sizeof(finalizedLine), "%s = %s", currentTarget.c_str(), iname);
+    }
+
+    fprintf(mOutputFile, "    %s;\n", finalizedLine);
     return true;
 }
 
@@ -835,25 +1134,70 @@ bool ClassEncodeGenerator::ProcessDictRaw( const TiXmlElement* field )
         return false;
     }
 
-    char rname[16];
-    snprintf( rname, sizeof( rname ), "dict%u", mItemNumber++ );
+    char dname[16];
+    snprintf( dname, sizeof( dname ), "dict%u", mItemNumber++ );
 
-    fprintf( mOutputFile,
-        "    PyDict* %s = new PyDict();\n"
-        "    for (auto &cur : %s) \n"
-        "        %s->SetItem(new Py%s(cur.first), new Py%s(cur.second));\n"
-        "    %s = %s;\n",
-        rname,
-        name,
-            rname, pykey, pyvalue,
-        top(), rname
-    );
+    fprintf( mOutputFile, "    PyDict* %s = new PyDict();\n", dname );
+    fprintf( mOutputFile, "    for (auto &cur : %s) {\n", name );
+    fprintf( mOutputFile, "        %s->SetItem( new Py%s( cur.first ), new Py%s( cur.second ) );\n", dname, pykey, pyvalue );
+    fprintf( mOutputFile, "    }\n" );
 
+    // --- THE FIXED LOGIC CHECK (MATCHING INLINE) ---
+    std::string currentTarget = top();
     pop();
+
+    char finalizedLine[256]; // Uniform size bump to 256 for safety
+
+    // CASE A: The target is a string format mask (contains "%s")
+    if (currentTarget.find("%s") != std::string::npos) {
+        snprintf(finalizedLine, sizeof(finalizedLine), currentTarget.c_str(), dname);
+    }
+    // CASE B: The target is a flat temporary tracking variable (like dict0_2)
+    else {
+        snprintf(finalizedLine, sizeof(finalizedLine), "%s = %s", currentTarget.c_str(), dname);
+    }
+
+    fprintf( mOutputFile, "  %s;\n", finalizedLine );
     return true;
 }
 
-bool ClassEncodeGenerator::ProcessDictInt( const TiXmlElement* field )
+bool ClassEncodeGenerator::ProcessDictInt( const TiXmlElement* field ) {
+    const char* name = field->Attribute("name");
+    if (name == nullptr) {
+        std::cout << std::endl <<  "ClassEncodeGenerator::ProcessDictInt field at line " << field->Row() << " is missing the name attribute, skipping.";
+        return false;
+    }
+
+    char dname[16];
+    snprintf( dname, sizeof( dname ), "dict%u", mItemNumber++ );
+
+    fprintf( mOutputFile, "  PyDict* %s = new PyDict();\n", dname );
+    fprintf( mOutputFile, "  for (auto &cur : %s) {\n", name );
+    fprintf( mOutputFile, "    PyIncRef( cur.second );\n" );
+    fprintf( mOutputFile, "    %s->SetItem( new PyInt( cur.first ), cur.second );\n", dname );
+    fprintf( mOutputFile, "  }\n" );
+
+    // --- THE FIXED LOGIC CHECK (MATCHING INLINE) ---
+    std::string currentTarget = top();
+    pop();
+
+    char finalizedLine[256]; // Uniform size bump to 256 for safety
+
+    // CASE A: The target is a string format mask (contains "%s")
+    if (currentTarget.find("%s") != std::string::npos) {
+        snprintf(finalizedLine, sizeof(finalizedLine), currentTarget.c_str(), dname);
+    }
+    // CASE B: The target is a flat temporary tracking variable (like dict0_2)
+    else {
+        snprintf(finalizedLine, sizeof(finalizedLine), "%s = %s", currentTarget.c_str(), dname);
+    }
+
+    fprintf( mOutputFile, "  %s;\n", finalizedLine );
+    return true;
+}
+
+
+bool ClassEncodeGenerator::ProcessDictStr( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
@@ -861,102 +1205,96 @@ bool ClassEncodeGenerator::ProcessDictInt( const TiXmlElement* field )
         return false;
     }
 
-    char iname[16];
-    snprintf( iname, sizeof( iname ), "dict%u", mItemNumber++ );
+    char dname[16];
+    snprintf( dname, sizeof( dname ), "dict%u", mItemNumber++ );
 
-    fprintf( mOutputFile,
-        "    PyDict* %s = new PyDict();\n"
-        "    for (auto &cur : %s) {\n"
-        "        PyIncRef(cur.second);\n"
-        "        %s->SetItem(new PyInt(cur.first ), cur.second);\n"
-        "    }\n\n"
-        "    %s = %s;\n",
-        iname,
-        name,
-            iname,
+    fprintf( mOutputFile, "    PyDict* %s = new PyDict();\n", dname );
+    fprintf( mOutputFile, "    for (auto &cur : %s) {\n", name );
 
-        top(), iname
-    );
+    // Protect the persistent internal collection from being stolen and deleted
+    fprintf( mOutputFile, "        PyIncRef( cur.second );\n" );
+    fprintf( mOutputFile, "        %s->SetItemString( cur.first.c_str(), cur.second );\n", dname );
+    fprintf( mOutputFile, "    }\n" );
 
+    // --- THE FIXED LOGIC CHECK (MATCHING INLINE) ---
+    std::string currentTarget = top();
     pop();
-    return true;
-}
 
-bool ClassEncodeGenerator::ProcessDictStr( const TiXmlElement* field )
-{
-    const char* name = field->Attribute( "name" );
-    if (name == nullptr) {
-        std::cout << std::endl <<  "ClassEncodeGenerator::ProcessDictStr field at line " << field->Row() << " is missing the name attribute, skipping.";
-        return false;
+    char finalizedLine[256]; // Uniform size bump to 256 for safety
+
+    // CASE A: The target is a string format mask (contains "%s")
+    if (currentTarget.find("%s") != std::string::npos) {
+        snprintf(finalizedLine, sizeof(finalizedLine), currentTarget.c_str(), dname);
+    }
+    // CASE B: The target is a flat temporary tracking variable (like dict0_2)
+    else {
+        snprintf(finalizedLine, sizeof(finalizedLine), "%s = %s", currentTarget.c_str(), dname);
     }
 
-    char iname[16];
-    snprintf( iname, sizeof( iname ), "dict%u", mItemNumber++ );
-
-    fprintf( mOutputFile,
-        "    PyDict* %s = new PyDict();\n"
-        "    for (auto &cur : %s) {\n"
-        "        PyIncRef(cur.second);\n"
-        "        %s->SetItemString(cur.first.c_str(), cur.second);\n"
-        "    }\n\n"
-        "    %s = %s;\n",
-        iname,
-        name,
-            iname,
-
-        top(), iname
-    );
-
-    pop();
+    fprintf( mOutputFile, "  %s;\n", finalizedLine );
     return true;
 }
 
-bool ClassEncodeGenerator::ProcessSubStreamInline( const TiXmlElement* field )
-{
+bool ClassEncodeGenerator::ProcessSubStreamInline( const TiXmlElement* field ) {
     char varname[16];
     snprintf( varname, sizeof( varname ), "ss_%u", mItemNumber++ );
 
-    //encode the sub-element into a temp
-    fprintf( mOutputFile,
-        "    PyRep* %s(nullptr);\n",
-        varname
-    );
+    // Initialize temporary pointer
+    fprintf( mOutputFile, "    PyRep* %s = nullptr;\n", varname );
 
+    // Push the raw variable target to the stack for children to assign themselves directly to it!
     push( varname );
-    if (!ParseElementChildren( field, 1 ) )
-        return false;
 
-    //now make a substream from the temp at store it where it is needed
-    fprintf( mOutputFile,
-        "    %s = new PySubStream( %s );\n",
-        top(), varname
-    );
+    // Process the children (this will now output: ss_2 = tuple3;)
+    if (!ParseElementChildren( field, 1 ) ) return false;
 
+    // Capture the parent format mask (e.g. tuple0->SetItem(3, %s))
+    std::string currentMask = top();
     pop();
+
+    char valueBuffer[256];
+    snprintf(valueBuffer, sizeof(valueBuffer), "new PySubStream( %s )", varname);
+
+    char finalizedLine[512];
+    if (currentMask.find("%s") != std::string::npos) {
+        snprintf(finalizedLine, sizeof(finalizedLine), currentMask.c_str(), valueBuffer);
+    } else {
+        snprintf(finalizedLine, sizeof(finalizedLine), "%s = %s", currentMask.c_str(), valueBuffer);
+    }
+
+    fprintf( mOutputFile, "    %s;\n", finalizedLine );
     return true;
 }
 
-bool ClassEncodeGenerator::ProcessSubStructInline( const TiXmlElement* field )
-{
+bool ClassEncodeGenerator::ProcessSubStructInline( const TiXmlElement* field ) {
     char varname[16];
     snprintf( varname, sizeof( varname ), "ss_%u", mItemNumber++ );
 
-    //encode the sub-element into a temp
-    fprintf( mOutputFile,
-        "    PyRep* %s(nullptr);\n",
-        varname
-    );
+    // 1. Initialize the temporary pointer container
+    fprintf( mOutputFile, "    PyRep* %s = nullptr;\n", varname );
 
+    // 2. Queue up the temporary variable name for child processing
     push( varname );
-    if (!ParseElementChildren( field, 1 ) )
-        return false;
 
-    //now make a substream from the temp at store it where it is needed
-    fprintf( mOutputFile,
-        "    %s = new PySubStruct( %s );\n",
-        top(), varname
-    );
+    if (!ParseElementChildren( field, 1 ) ) return false;
 
+    // 3. Construct the clean heap initialization fragment
+    char valueBuffer[256];
+    snprintf(valueBuffer, sizeof(valueBuffer), "new PySubStruct( %s )", varname);
+
+    // 4. Safely extract the parent layout mask from your stack
+    std::string currentMask = top();
     pop();
+
+    char finalizedLine[512];
+    if (currentMask.find("%s") != std::string::npos) {
+        snprintf(finalizedLine, sizeof(finalizedLine), currentMask.c_str(), valueBuffer);
+    } else {
+        snprintf(finalizedLine, sizeof(finalizedLine), "%s = %s", currentMask.c_str(), valueBuffer);
+    }
+
+    // 6. Output the completed statement
+    fprintf( mOutputFile, "    %s;\n", finalizedLine );
+
     return true;
 }

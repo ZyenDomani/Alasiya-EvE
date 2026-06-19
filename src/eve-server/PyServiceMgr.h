@@ -54,7 +54,7 @@ public:
     };
 
     PyServiceMgr( uint32 nodeID, EntityMgr& elist);
-    ~PyServiceMgr();
+    ~PyServiceMgr() {}
 
     void Initalize(double startTime);
 

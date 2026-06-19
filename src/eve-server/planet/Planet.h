@@ -75,6 +75,14 @@ protected:
     CustomsSE*                  pCO;  // our Customs Office SE  - we dont own this
     PlanetResourceData          m_data;
 
+    // Procedural array builder generating up to 25 layered SH hotspots per material type
+    std::string GenerateResourceBuffer(float baseScarcityMultiplier, float abundanceMod);
+
+    struct PlanetResourceProfile {
+        uint32 types[5];        // array holding the typeIDs for this planet
+        float abundanceMod;
+    };
+
 private:
     std::map<uint16, std::string> m_typeBuffers;
 

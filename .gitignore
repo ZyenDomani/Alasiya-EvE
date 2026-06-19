@@ -81,6 +81,7 @@ Generated_Code #added for RIA/Silverlight projects
 *.old
 *.orig
 *.original
+updates/
 
 # Reports
 *.log

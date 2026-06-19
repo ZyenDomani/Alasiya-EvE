@@ -40,12 +40,12 @@ class MarketDB
 {
 public:
     PyRep* GetMarketGroups();
-    PyRep* GetOrders( uint32 regionID, int32 typeID );
+    PyRep* GetOrders(uint32 regionID, int32 typeID);
     PyRep* GetOrderRow(int32 orderID);
     PyRep* GetRegionBest(uint32 regionID);
     PyRep* GetSystemAsks(uint32 solarSystemID);
     PyRep* GetStationAsks(int32 stationID);
-    PyRep* GetOrdersForOwner( int32 ownerID );
+    PyRep* GetOrdersForOwner(int32 ownerID);
 
     PyRep* GetTransactions(uint32 ownerID, Market::TxData &data);
 

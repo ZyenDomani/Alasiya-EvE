@@ -41,6 +41,7 @@ public:
     PyObject*           GetBillTypes()                  { PyIncRef(m_billTypes); return m_billTypes; }
     PyObject*           GetEntryTypes()                 { PyIncRef(m_entryTypes); return m_entryTypes; }
     PyObjectEx*         GetFactionIDs()                 { PyIncRef(m_factionIDs); return m_factionIDs; }
+    PyTuple*            GetFormations()                 { PyIncRef(m_formations); return m_formations; }
     PyTuple*            GetFactionInfo()                { PyIncRef(m_factionInfo); return m_factionInfo; }
     PyObject*           GetNPCDivisions()               { PyIncRef(m_npcDivisions); return m_npcDivisions; }
 
@@ -174,7 +175,9 @@ public:
 
     // common place for *FULL* DBRowDescriptor Header creation.
     //  this way all users have the exact same data
-    DBRowDescriptor*    CreateHeader();
+    DBRowDescriptor*    CreateHeader()                  { return m_itemHeader; }
+    DBRowDescriptor*    CreateItemHeader();
+    PyTuple*            CreateFormationTuple();
 
     void                AddOutpost(StationData &stData);
 
@@ -190,6 +193,7 @@ protected:
 
 private:
     PyTuple*                                            m_factionInfo;
+    PyTuple*                                            m_formations;
     PyObject*                                           m_keyMap;
     PyObject*                                           m_entryTypes;
     PyObject*                                           m_billTypes;
@@ -197,6 +201,9 @@ private:
     PyObjectEx*                                         m_agents;
     PyObjectEx*                                         m_operands;
     PyObjectEx*                                         m_factionIDs;
+    DBRowDescriptor*                                    m_itemHeader;
+    DBRowDescriptor*                                    m_bpMatlHeader;
+    GetFactionInfoRsp*                                  m_pFactionInfo;
 
     std::map<uint16, Inv::CatData>                      m_catData;
     std::map<uint16, Inv::GrpData>                      m_grpData;

@@ -142,27 +142,7 @@ PyResult BeyonceService::Handle_GetFormations(PyCallArgs &call) {
     if (!call.client->IsSetStateSent())
         call.client->CheckBallparkTimer();
 
-    PyTuple* res = new PyTuple( 2 );
-    Beyonce_Formation f;
-    //Diamond formation
-    f.name = "Diamond";
-    f.pos1.x = 100;
-    f.pos2.y = 100;
-    f.pos3.x = -100;
-    f.pos4.y = -100;
-    res->SetItem( 0, f.Encode() );
-    //Arrow formation
-    f.name = "Arrow";
-    f.pos1.x = 100;
-    f.pos1.z = -50;
-    f.pos2.x = 50;
-    f.pos2.y = 0;
-    f.pos3.x = -100;
-    f.pos3.z = -50;
-    f.pos4.x = -50;
-    f.pos4.y = 0;
-    res->SetItem( 1, f.Encode() );
-    return res;
+    return sDataMgr.GetFormations();
 }
 
 PyResult BeyonceBound::Handle_CmdStop(PyCallArgs &call) {

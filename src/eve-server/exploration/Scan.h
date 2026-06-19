@@ -40,7 +40,7 @@ public:
 
     uint8 GetProbeCount()                               { return (uint8)m_probeMap.size(); }
 
-    PyRep* ConeScan(Call_ConeScan args);
+    PyRep* ConeScan(Call_ConeScan& args);
     void RequestScans(PyDict* dict);
     void ShipScanResult();
     void ProbeScanResult();

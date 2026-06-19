@@ -98,9 +98,8 @@ protected:
     void DecRef() const
     {
         assert( mDeleted == false );
-        --mRefCount;
 
-        if (mRefCount < 1)
+        if (--mRefCount < 1)
             delete this;
     }
 

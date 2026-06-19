@@ -43,7 +43,7 @@
  * it is optimized for specific calling objects, to avoid multiple db hits while loading,
  * and to load only things needed for this object at the time of the call.
  */
-bool InventoryDB::GetItemContents(OwnerData &od, std::vector<uint32> &into) {
+bool InventoryDB::GetItemIDs(OwnerData &od, std::vector<uint32> &into) {
     std::stringstream query;
     query << "SELECT itemID FROM entity WHERE locationID = ";
     query << od.locID;
@@ -81,11 +81,11 @@ bool InventoryDB::GetItemContents(OwnerData &od, std::vector<uint32> &into) {
 
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,query.str().c_str() )) {
-        codelog(DATABASE__ERROR, "Error in GetItemContents query for locationID %u: %s", od.locID, res.error.c_str());
+        codelog(DATABASE__ERROR, "Error in GetItemID query for locationID %u: %s", od.locID, res.error.c_str());
         return false;
     }
 
-    _log(DATABASE__RESULTS, "GetItemContents: '%s' returned %lu items", query.str().c_str(), res.GetRowCount());
+    _log(DATABASE__RESULTS, "GetItemID: '%s' returned %lu items", query.str().c_str(), res.GetRowCount());
     DBResultRow row;
     while( res.GetRow(row))
         into.push_back(row.GetUInt(0));

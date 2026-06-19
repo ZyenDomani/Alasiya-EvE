@@ -28,6 +28,10 @@ m_paletteGroups(nullptr)
 {
 }
 
+DungeonDataMgr::~DungeonDataMgr() {
+    PyDecRef(m_paletteGroups);
+}
+
 int DungeonDataMgr::Initialize()
 {
     // for now, we are deleting all saved dungeons on startup.  will fix this later as system matures.

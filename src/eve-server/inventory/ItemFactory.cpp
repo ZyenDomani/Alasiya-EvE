@@ -71,10 +71,18 @@ int ItemFactory::Initialize()
     return 1;
 }
 
-void ItemFactory::Close()
-{
-    sLog.Warning("      ItemFactory", "%lu Items, %lu Types still in list", \
+void ItemFactory::Close() {
+    if (m_items.size() and m_types.size()) {
+        sLog.Error("      ItemFactory", "%lu Items, %lu Types still in list", \
                 m_items.size(), m_types.size());
+    } else if (m_items.empty() and m_types.empty()) {
+        sLog.Green("      ItemFactory", "%lu Items, %lu Types still in list", \
+                m_items.size(), m_types.size());
+    } else {
+        sLog.Warning("      ItemFactory", "%lu Items, %lu Types still in list", \
+                m_items.size(), m_types.size());
+    }
+
     // types
     for (auto &cur : m_types)
         SafeDelete(cur.second);
@@ -291,86 +299,71 @@ RefPtr<_Ty> ItemFactory::_GetItem(uint32 itemID)
             return RefPtr<_Ty>(nullptr);
 
         //we keep the original ref.
-        itr = m_items.insert(std::make_pair(itemID, iRef )).first;
+        itr = m_items.insert(std::make_pair(itemID, iRef)).first;
     }
     // return to the user.
     return RefPtr<_Ty>::StaticCast(itr->second);
 }
 
-InventoryItemRef ItemFactory::GetItemRef(uint32 itemID)
-{
+InventoryItemRef ItemFactory::GetItemRef(uint32 itemID) {
     return _GetItem<InventoryItem>(itemID);
 }
 
-BlueprintRef ItemFactory::GetBlueprintRef(uint32 blueprintID)
-{
+BlueprintRef ItemFactory::GetBlueprintRef(uint32 blueprintID) {
     return _GetItem<Blueprint>(blueprintID);
 }
 
-CharacterRef ItemFactory::GetCharacterRef(uint32 characterID)
-{
+CharacterRef ItemFactory::GetCharacterRef(uint32 characterID) {
     return _GetItem<Character>(characterID);
 }
 
-ShipItemRef ItemFactory::GetShipRef(uint32 shipID)
-{
+ShipItemRef ItemFactory::GetShipRef(uint32 shipID) {
     return _GetItem<ShipItem>(shipID);
 }
 
-CelestialObjectRef ItemFactory::GetCelestialRef(uint32 celestialID)
-{
+CelestialObjectRef ItemFactory::GetCelestialRef(uint32 celestialID) {
     return _GetItem<CelestialObject>(celestialID);
 }
 
-SolarSystemRef ItemFactory::GetSolarSystemRef(uint32 solarSystemID)
-{
+SolarSystemRef ItemFactory::GetSolarSystemRef(uint32 solarSystemID) {
     return _GetItem<SolarSystem>(solarSystemID);
 }
 
-StationItemRef ItemFactory::GetStationRef(uint32 stationID)
-{
+StationItemRef ItemFactory::GetStationRef(uint32 stationID) {
     return _GetItem<StationItem>(stationID);
 }
 
-SkillRef ItemFactory::GetSkillRef(uint32 skillID)
-{
+SkillRef ItemFactory::GetSkillRef(uint32 skillID) {
     return _GetItem<Skill>(skillID);
 }
 
-AsteroidItemRef ItemFactory::GetAsteroidRef(uint32 asteroidID)
-{
+AsteroidItemRef ItemFactory::GetAsteroidRef(uint32 asteroidID) {
     return _GetItem<AsteroidItem>(asteroidID);
 }
 
-StationOfficeRef ItemFactory::GetOfficeRef(uint32 officeID)
-{
+StationOfficeRef ItemFactory::GetOfficeRef(uint32 officeID) {
     return _GetItem<StationOffice>(officeID);
 }
 
-StructureItemRef ItemFactory::GetStructureRef(uint32 structureID)
-{
+StructureItemRef ItemFactory::GetStructureRef(uint32 structureID) {
     return _GetItem<StructureItem>(structureID);
 }
 
-CargoContainerRef ItemFactory::GetCargoRef(uint32 containerID)
-{
+CargoContainerRef ItemFactory::GetCargoRef(uint32 containerID) {
     return _GetItem<CargoContainer>(containerID);
 }
 
-WreckContainerRef ItemFactory::GetWreckContainer(uint32 containerID)
-{
+WreckContainerRef ItemFactory::GetWreckContainer(uint32 containerID) {
     return _GetItem<WreckContainer>(containerID);
 }
 
-ModuleItemRef ItemFactory::GetModuleRef(uint32 moduleID)
-{
+ModuleItemRef ItemFactory::GetModuleRef(uint32 moduleID) {
     return _GetItem<ModuleItem>(moduleID);
 }
 
 ProbeItemRef ItemFactory::GetProbeRef(uint32 probeID) {
     return _GetItem<ProbeItem>(probeID);
 }
-
 
 
 InventoryItemRef ItemFactory::SpawnItem(ItemData &data) {
@@ -399,8 +392,7 @@ ShipItemRef ItemFactory::SpawnShip(ItemData &data) {
     return iRef;
 }
 
-SkillRef ItemFactory::SpawnSkill(ItemData &data)
-{
+SkillRef ItemFactory::SpawnSkill(ItemData &data) {
     SkillRef iRef = Skill::Spawn(data);
     if (iRef.get() != nullptr)
         AddItem(iRef);
@@ -408,8 +400,7 @@ SkillRef ItemFactory::SpawnSkill(ItemData &data)
     return iRef;
 }
 
-StructureItemRef ItemFactory::SpawnStructure(ItemData &data)
-{
+StructureItemRef ItemFactory::SpawnStructure(ItemData &data) {
     StructureItemRef iRef = StructureItem::Spawn(data);
     if (iRef.get() != nullptr)
         AddItem(iRef);
@@ -417,8 +408,7 @@ StructureItemRef ItemFactory::SpawnStructure(ItemData &data)
     return iRef;
 }
 
-AsteroidItemRef ItemFactory::SpawnAsteroid(ItemData &idata, AsteroidData& adata)
-{
+AsteroidItemRef ItemFactory::SpawnAsteroid(ItemData &idata, AsteroidData& adata) {
     AsteroidItemRef iRef = AsteroidItem::Spawn(idata, adata);
     if (iRef.get() != nullptr)
         AddItem(iRef);
@@ -426,8 +416,7 @@ AsteroidItemRef ItemFactory::SpawnAsteroid(ItemData &idata, AsteroidData& adata)
     return iRef;
 }
 
-StationItemRef ItemFactory::SpawnOutpost(ItemData &idata)
-{
+StationItemRef ItemFactory::SpawnOutpost(ItemData &idata) {
     StationItemRef iRef = StationItem::Spawn(idata);
     if (iRef.get() != nullptr)
         AddItem(iRef);
@@ -435,8 +424,7 @@ StationItemRef ItemFactory::SpawnOutpost(ItemData &idata)
     return iRef;
 }
 
-CelestialObjectRef ItemFactory::SpawnWormhole(ItemData &idata)
-{
+CelestialObjectRef ItemFactory::SpawnWormhole(ItemData &idata) {
     CelestialObjectRef iRef = CelestialObject::Spawn(idata);
     if (iRef.get() != nullptr)
         AddItem(iRef);
@@ -444,8 +432,7 @@ CelestialObjectRef ItemFactory::SpawnWormhole(ItemData &idata)
     return iRef;
 }
 
-StationOfficeRef ItemFactory::SpawnOffice(ItemData &idata, OfficeData& odata)
-{
+StationOfficeRef ItemFactory::SpawnOffice(ItemData &idata, OfficeData& odata) {
     StationOfficeRef iRef = StationOffice::Spawn(idata, odata);
     if (iRef.get() != nullptr)
         AddItem(iRef);
@@ -453,8 +440,7 @@ StationOfficeRef ItemFactory::SpawnOffice(ItemData &idata, OfficeData& odata)
     return iRef;
 }
 
-CargoContainerRef ItemFactory::SpawnCargoContainer(ItemData &data)
-{
+CargoContainerRef ItemFactory::SpawnCargoContainer(ItemData &data) {
     CargoContainerRef iRef = CargoContainer::Spawn(data);
     if (iRef.get() != nullptr)
         AddItem(iRef);
@@ -462,8 +448,7 @@ CargoContainerRef ItemFactory::SpawnCargoContainer(ItemData &data)
     return iRef;
 }
 
-WreckContainerRef ItemFactory::SpawnWreckContainer(ItemData &data)
-{
+WreckContainerRef ItemFactory::SpawnWreckContainer(ItemData &data) {
     WreckContainerRef iRef = WreckContainer::Spawn(data);
     if (iRef.get() != nullptr)
         AddItem(iRef);
@@ -471,8 +456,7 @@ WreckContainerRef ItemFactory::SpawnWreckContainer(ItemData &data)
     return iRef;
 }
 
-ModuleItemRef ItemFactory::SpawnModule(ItemData& data)
-{
+ModuleItemRef ItemFactory::SpawnModule(ItemData& data) {
     ModuleItemRef iRef = ModuleItem::Spawn(data);
     if (iRef.get() != nullptr)
         AddItem(iRef);
@@ -480,8 +464,7 @@ ModuleItemRef ItemFactory::SpawnModule(ItemData& data)
     return iRef;
 }
 
-ProbeItemRef ItemFactory::SpawnProbe(ItemData& data)
-{
+ProbeItemRef ItemFactory::SpawnProbe(ItemData& data) {
     ProbeItemRef iRef = ProbeItem::Spawn(data);
     if (iRef.get() != nullptr)
         AddItem(iRef);

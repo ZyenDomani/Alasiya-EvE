@@ -29,15 +29,26 @@ MissionDataMgr::MissionDataMgr()
 }
 
 MissionDataMgr::~MissionDataMgr() {
-    SafeDelete(KillPNG);
-    SafeDelete(TalkPNG);
-    SafeDelete(SmashPNG);
-    SafeDelete(MiningPNG);
-    SafeDelete(CourierPNG);
-    SafeDelete(InteractPNG);
+    PyDecRef(KillPNG);
+    PyDecRef(TalkPNG);
+    PyDecRef(SmashPNG);
+    PyDecRef(MiningPNG);
+    PyDecRef(CourierPNG);
+    PyDecRef(InteractPNG);
 }
 
 void MissionDataMgr::Clear() {
+    for (auto &cur : m_offers) {
+        PyRep* pbmk = cur.second.bookmarks;
+        cur.second.bookmarks = nullptr;
+        PySafeDecRef(pbmk);
+    }
+    for (auto &cur : m_xoffers) {
+        PyRep* pbmk = cur.second.bookmarks;
+        cur.second.bookmarks = nullptr;
+        PySafeDecRef(pbmk);
+    }
+    
     m_names.clear();
     m_offers.clear();
     m_mining.clear();

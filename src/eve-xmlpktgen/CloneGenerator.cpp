@@ -23,8 +23,6 @@
     Author:        Zhur
 */
 
-/** @todo  does this need move semantics?  */
-
 
 #include "eve-xmlpktgen.h"
 #include "CloneGenerator.h"
@@ -44,26 +42,6 @@ void ClassCloneGenerator::RegisterProcessors()
 
 bool ClassCloneGenerator::ProcessElementDef( const TiXmlElement* field )
 {
-    const char* name = field->Attribute( "name" );
-    if (name == nullptr) {
-        std::cout << std::endl <<  "ClassCloneGenerator::  <element> at line " << field->Row() << " is missing the name attribute, skipping.";
-        return false;
-    }
-
-    fprintf( mOutputFile,
-        "%s& %s::operator=( const %s& oth )\n"
-        "{\n",
-        name, name, name
-    );
-
-    if ( !ParseElementChildren( field ) )
-        return false;
-
-    fprintf( mOutputFile,
-        "    return *this;\n"
-        "}\n\n"
-    );
-
     return true;
 }
 

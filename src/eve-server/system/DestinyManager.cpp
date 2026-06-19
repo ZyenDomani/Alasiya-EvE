@@ -3204,7 +3204,15 @@ void DestinyManager::SendGFX14(int32 entityID, int32 moduleID, int32 moduleTypeI
         effect.moduleTypeID = moduleTypeID;     // npc typeID for npc's
         effect.targetID = (targetID == 0 ? PyStatic.NewNone() : new PyInt(targetID));
         effect.otherTypeID = (chargeTypeID == 0 ? PyStatic.NewNone() : new PyInt(chargeTypeID));
-        effect.area = PyStatic.mtList();        // no data.  not used in client
+        effect.area = PyStatic.mtList();
+        /** --- POPULATING THE AREA FIELD ---
+        PyList* areaBounds = new PyList();
+        // Element 0: Primitive Type (1.0 = Sphere, 2.0 = Cylinder, 3.0 = Cone, 4.0 = Box/Cube)
+        areaBounds->AddItem(new PyFloat(1.0f));
+        // Element 1: Spatial Radius Constraint (e.g., 50000.0f meters)
+        areaBounds->AddItem(new PyFloat(effectRadius));
+        effect.area = areaBounds;
+        */
         effect.guid = std::move(guid);
         effect.isOffensive = isOffensive;       // bool
         effect.start = start;                   // int bool

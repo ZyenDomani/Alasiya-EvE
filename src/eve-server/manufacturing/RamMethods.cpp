@@ -492,40 +492,55 @@ bool RamMethods::Calculate(const Call_InstallJob &args, BlueprintRef bpRef, Char
     return true;
 }
 
-void RamMethods::EncodeBillOfMaterials(const std::vector<EvERam::RequiredItem> &reqItems, float materialMultiplier, float charMaterialMultiplier, uint32 runs, BillOfMaterials &into)
+void RamMethods::EncodeBillOfMaterials(const std::vector<EvERam::RequiredItem> &reqItems,
+                                       float materialMultiplier,
+                                       float charMaterialMultiplier,
+                                       uint32 runs,
+                                       BillOfMaterials &into)
 {
+    // Initialize the list components
     into.extras.lines = new PyList();
     into.wasteMaterials.lines = new PyList();
     into.rawMaterials.lines = new PyList();
 
     for (auto &cur : reqItems) {
         if (cur.isSkill) {
+            // Map insertion: New PyInt is handed directly to the map
             into.skills[cur.typeID] = new PyInt(cur.quantity);
             continue;
         }
-     
-int qtyNeeded = (uint32)round(cur.quantity * materialMultiplier + (cur.quantity * charMaterialMultiplier - cur.quantity)) * runs;
-        // otherwise, make line for material list
+
+        // Cleaned up the arithmetic clustering for readability
+        int qtyNeeded = (uint32)round(cur.quantity * materialMultiplier +
+                        (cur.quantity * charMaterialMultiplier - cur.quantity))
+                        * runs;
+
+        // Populate the base material line explicitly
         MaterialList_Line line;
         line.requiredTypeID = cur.typeID;
-        line.quantity = (int32)round (cur.quantity * materialMultiplier) * runs;
+        line.quantity = (int32)round(cur.quantity * materialMultiplier) * runs;
         line.damagePerJob = cur.damagePerJob;
-        line.isSkillCheck = false;  // no idea what is this for
-        line.requiresHP = false;    // no idea what is this for
+        line.isSkillCheck = false;
+        line.requiresHP = false;
 
-        /** @todo update this shit.....  */
-        // "Extra material" is not affected by skills, and return upon completion
-        // "Raw material" is fully consumed and affected by skills/efficiency
-        // "Waste Material" is amount of material wasted ...
         if (cur.extra) {
+            // Encode creates a PyRep* (refCount=1). AddItem steals and owns it.
             into.extras.lines->AddItem( line.Encode() );
         } else {
-            // if there are losses, make line for waste material list
             if (charMaterialMultiplier > 1.0) {
-                MaterialList_Line wastage( line );  // simply copy original line ...
-                wastage.quantity =  qtyNeeded - line.quantity;; // ... and calculate proper quantity
+                // FIX: Instantiate wastage cleanly and map the primitives explicitly.
+                MaterialList_Line wastage;
+                wastage.requiredTypeID = line.requiredTypeID;
+                wastage.damagePerJob = line.damagePerJob;
+                wastage.isSkillCheck = line.isSkillCheck;
+                wastage.requiresHP = line.requiresHP;
+
+                // Calculate the true waste delta explicitly
+                wastage.quantity = qtyNeeded - line.quantity;
+
                 into.wasteMaterials.lines->AddItem( wastage.Encode() );
             }
+
             into.rawMaterials.lines->AddItem( line.Encode() );
         }
     }

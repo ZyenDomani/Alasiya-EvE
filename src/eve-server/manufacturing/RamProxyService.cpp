@@ -318,7 +318,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
     }
 
     // at this point, it is a real job installation.  check everything else
-    
+
     // verify installer has skills and all needed materials are present in proper location
     sRamMthd.MaterialSkillsCheck(call.client, args.runs, bomLocPath, rsp, reqItems);
     // check production times
@@ -719,17 +719,19 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
                     eve.Message('RamInventionJobFailed', {'info': inventionResultLabel})
         */
                 PyDict* dict = new PyDict();
+                //  NOTE:  all of these values sent to SetItemString will need objects to call PyDecRef on.
+
                 if (1) {
                     dict->SetItemString("messageLabel", new PyString("UI/ScienceAndIndustry/ScienceAndIndustryWindow/RamInventionJobSucceeded"));
-                    dict->SetItemString("jobCompletedSuccessfully", new PyBool(true));
-                    dict->SetItemString("outputME", new PyInt(0));
-                    dict->SetItemString("outputPE", new PyInt(0));
-                    dict->SetItemString("outputRuns", new PyInt(0));
-                    dict->SetItemString("outputTypeID", new PyInt(0));
-                    dict->SetItemString("outputItemID", new PyInt(0));
+                    dict->SetItemString("jobCompletedSuccessfully", PyStatic.NewTrue());
+                    dict->SetItemString("outputME", PyStatic.NewZero());
+                    dict->SetItemString("outputPE", PyStatic.NewZero());
+                    dict->SetItemString("outputRuns", PyStatic.NewZero());
+                    dict->SetItemString("outputTypeID", PyStatic.NewZero());
+                    dict->SetItemString("outputItemID", PyStatic.NewZero());
                 } else {
                     dict->SetItemString("messageLabel", new PyString("UI/ScienceAndIndustry/ScienceAndIndustryWindow/RamInventionJobFailed"));
-                    dict->SetItemString("jobCompletedSuccessfully", new PyBool(false));
+                    dict->SetItemString("jobCompletedSuccessfully", PyStatic.NewFalse());
                 }
 
                 /* invention result outcomes:  (proposed in phoebe)
@@ -795,8 +797,8 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
                 eve.Message(result.message.msg, result.message.args)
                 */
                 PyDict* msg = new PyDict();
-                    msg->SetItemString("msg", new PyInt(0));
-                    msg->SetItemString("args", new PyInt(0));
+                    msg->SetItemString("msg", PyStatic.NewZero());
+                    msg->SetItemString("args", PyStatic.NewZero());
                 dict->SetItemString("message", msg);
                 return dict;
             } break;

@@ -239,30 +239,6 @@ uint32 ServiceDB::GetStationOwner(uint32 stationID)
     }
 }
 
-// not used...not sure what this was for...
-bool ServiceDB::GetConstant(const char *name, uint32 &into)
-{
-    DBQueryResult res;
-
-    std::string escaped;
-    sDatabase.DoEscapeString(escaped, name);
-
-    if (!sDatabase.RunQuery(res, "SELECT constantValue FROM eveConstants WHERE constantID='%s'", escaped.c_str() ))
-    {
-        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return false;
-    }
-
-    DBResultRow row;
-    if (!res.GetRow(row)) {
-        _log(DATABASE__MESSAGE, "Unable to find constant %s", name);
-        return false;
-    }
-
-    into = row.GetUInt(0);
-
-    return true;
-}
 
 void ServiceDB::ProcessStringChange(const char* key, const std::string& oldValue, std::string newValue, PyDict* notif, std::vector< std::string >& dbQ)
 {
@@ -273,6 +249,7 @@ void ServiceDB::ProcessStringChange(const char* key, const std::string& oldValue
     val->items[0] = new PyString(oldValue);
     val->items[1] = new PyString(newValue);
     notif->SetItemString(key, val);
+    PyDecRef(val);
 
     std::string newEscValue;
     sDatabase.DoEscapeString(newEscValue, newValue);
@@ -294,6 +271,7 @@ void ServiceDB::ProcessRealChange(const char * key, double oldValue, double newV
     val->items[0] = new PyFloat(oldValue);
     val->items[1] = new PyFloat(newValue);
     notif->SetItemString(key, val);
+    PyDecRef(val);
 
     int* nullInt(nullptr);
     std::string qValue(key);
@@ -311,6 +289,7 @@ void ServiceDB::ProcessIntChange(const char * key, uint32 oldValue, uint32 newVa
     val->items[0] = new PyInt(oldValue);
     val->items[1] = new PyInt(newValue);
     notif->SetItemString(key, val);
+    PyDecRef(val);
 
     std::string qValue(key);
     qValue += " = ";
@@ -327,6 +306,7 @@ void ServiceDB::ProcessLongChange(const char* key, int64 oldValue, int64 newValu
     val->items[0] = new PyLong(oldValue);
     val->items[1] = new PyLong(newValue);
     notif->SetItemString(key, val);
+    PyDecRef(val);
 
     std::string qValue(key);
     qValue += " = ";
@@ -537,32 +517,82 @@ PyRep* ServiceDB::LookupKnownLocationsByGroup(const std::string & search, uint32
     return DBResultToRowset(res);
 }
 
-/** @todo look into this...may be wrong */
-PyRep* ServiceDB::PrimeOwners(std::vector< int32 >& itemIDs)
-{
-    DBQueryResult res;
-    DBResultRow row;
-    PyDict* dict = new PyDict();
-    for (auto &cur : itemIDs) {
-        if (IsCharacterID(cur)) {
-            sDatabase.RunQuery(res, "SELECT characterID, characterName, typeID FROM chrCharacters WHERE characterID = %u", cur);
-        } else if (IsPlayerCorp(cur)) {
-            sDatabase.RunQuery(res, "SELECT corporationID, corporationName, typeID FROM crpCorporation WHERE corporationID = %u", cur);
-        } else if (IsAllianceID(cur)) {
-            sDatabase.RunQuery(res, "SELECT allianceID, allianceName, typeID FROM alnAlliance WHERE allianceID = %u", cur);
-        } else {
-            ; // make error
+std::string ServiceDB::BuildInClause(std::vector<int32>& ids)  {
+    if (ids.empty()) {
+        return "0"; // Safety fallback to prevent a fatal SQL syntax error "IN ()"
+    }
+
+    std::ostringstream oss;
+    for (size_t i = 0; i < ids.size(); ++i) {
+        oss << ids[i];
+        if (i < ids.size() - 1) {
+            oss << ",";
         }
-        if (res.GetRow(row)) {
-            PyList* list = new PyList();
-                list->AddItem(new PyInt(row.GetInt(0)));
-                list->AddItem(new PyString(row.GetText(1)));
-                list->AddItem(new PyInt(row.GetInt(2)));
-            dict->SetItem(new PyInt(row.GetInt(0)), list);
+    }
+    return oss.str();
+}
+
+PyRep* ServiceDB::PrimeOwners(std::vector<int32>& itemIDs) {
+    // 1. Deduplicate inputs to prevent redundant database lookups
+    std::sort(itemIDs.begin(), itemIDs.end());
+    itemIDs.erase(std::unique(itemIDs.begin(), itemIDs.end()), itemIDs.end());
+
+    // 2. Separate IDs into unsigned buckets to match your BuildInClause signature
+    std::vector<int32> charIDs;
+    std::vector<int32> corpIDs;
+    std::vector<int32> allianceIDs;
+
+    for (int32 id : itemIDs) {
+        if (IsCharacterID(id)) {
+            charIDs.push_back(id);
+        } else if (IsPlayerCorp(id)) {
+            corpIDs.push_back(id);
+        } else if (IsAllianceID(id)) {
+            allianceIDs.push_back(id);
+        } else {
+            sLog.Error("ServiceDB::PrimeOwners", "Unknown owner ID type: %i", id);
         }
     }
 
-    return dict;
+    PyDict* dict = new PyDict(); // Factory returns implicit refCount = 1
+
+    // 3. Centralized processing helper lambda (C++11 safe)
+    auto ProcessBatchQuery = [&](const std::string& query) {
+        DBQueryResult res;
+        if (sDatabase.RunQuery(res, query.c_str()) && res.GetRowCount() > 0) {
+            DBResultRow row;
+            while (res.GetRow(row)) {
+                int32 ownerID = row.GetInt(0);
+
+                // Recreate your exact original PyList payload structure: [id, name, typeID]
+                PyList* list = new PyList();
+                list->AddItem(new PyInt(ownerID));
+                list->AddItem(new PyString(row.GetText(1)));
+                list->AddItem(new PyInt(row.GetInt(2)));
+
+                // SetItem strictly claims ownership of both keys and value-lists (Rule 1)
+                dict->SetItem(new PyInt(ownerID), list);
+            }
+        }
+    };
+
+    // 4. Execute a maximum of 3 highly-efficient batched queries
+    if (!charIDs.empty()) {
+        std::string query = "SELECT characterID, characterName, typeID FROM chrCharacters WHERE characterID IN (" + BuildInClause(charIDs) + ")";
+        ProcessBatchQuery(query);
+    }
+
+    if (!corpIDs.empty()) {
+        std::string query = "SELECT corporationID, corporationName, typeID FROM crpCorporation WHERE corporationID IN (" + BuildInClause(corpIDs) + ")";
+        ProcessBatchQuery(query);
+    }
+
+    if (!allianceIDs.empty()) {
+        std::string query = "SELECT allianceID, allianceName, typeID FROM alnAlliance WHERE allianceID IN (" + BuildInClause(allianceIDs) + ")";
+        ProcessBatchQuery(query);
+    }
+
+    return dict; // Hands off with an implicit reference count of 1
 }
 
 void ServiceDB::GetCorpHangarNames(uint32 corpID, std::map<uint8, std::string> &hangarNames) {

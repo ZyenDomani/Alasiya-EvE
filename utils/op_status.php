@@ -23,9 +23,9 @@ Items listed as "<font color=orange>Skeleton Code Only</font>" has a basic outli
 The server may not respond or only partially respond to these requests. You may get an error from these requests, and the server may crash.<BR><BR>
 Items listed as "<font color=yellow>Preliminary Implementation</font>" have a first draft of their specific code, possibably a step or two above skeleton code, and may not function properly or completely. <BR>
 There will be some response, like opening windows, but *should not* generate an error or crash the server.</font><BR><BR><BR>
-<font color=magenta>Server Version:</font>&nbsp;&nbsp;&nbsp;<font color=orange>0.75.61</font><BR>
-<font color=magenta>Latest Update:</font>&nbsp;&nbsp;&nbsp;<font color=green>07 March 2025</font><BR>
-<font color=magenta>Page Status:</font>&nbsp;&nbsp;&nbsp;<font color=green>Current</font><BR>
+<font color=magenta>Server Version:</font>&nbsp;&nbsp;&nbsp;<font color=orange>0.85.37</font><BR>
+<font color=magenta>Latest Update:</font>&nbsp;&nbsp;&nbsp;<font color=green>17 June 2026</font><BR>
+<font color=magenta>Page Status:</font>&nbsp;&nbsp;&nbsp;<font color=yellow>WIP</font><BR>
 <font color=magenta>Incomplete Data:</font>&nbsp;&nbsp;&nbsp;<font color=brown>Anything not listed as (<font color=green>Current</font>) is pending review.</font><BR><BR>
 <a href="https://scan.coverity.com/projects/zyendomani-alasiyaeve">
   <img alt="Coverity Scan Build Status"
@@ -58,12 +58,12 @@ This led to much faster runtime than I expected, and will be updating all system
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>Constantly in Progress - monitoring & adjusting code for faster runtime. most segfaults eliminated<BR>Been working this code for >10y<BR>15Feb25</td></tr>
 <tr><td> - Memory Management<BR>
-<font color=green>InventoryItem and PhotoService are only classes with accurate MemMgmt</font></td><td class="working">35%
+<font color=green>Major MemMgmt upgrade/update</font></td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 35%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=green>Progress Restarted - Ongoing</font><BR><font color=orange>Rewrote Py* Object ref counting code. Working better, but still incomplete</font><BR>7Jan25</td></tr>
-<tr><td> - Efficient, Accurate Packet Deciphering<BR><font color=yellow>NOTE: at this point, "Efficient" is a misnomer.</font></td><td class="working">80%
+<td><font color=green>Final Testing</font><BR>17Jun26</td></tr>
+<tr><td> - Efficient, Accurate Packet Deciphering<BR><font color=yellow>NOTE: work restarted.</font></td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>

@@ -259,7 +259,7 @@ PyResult CharMgrService::Handle_GetPrivateInfo( PyCallArgs& call )
         return nullptr;
     }
 
-    PyRep* args(m_db.GetCharPrivateInfo(arg.arg));
+    PyRep* args = m_db.GetCharPrivateInfo(arg.arg);
     if (is_log_enabled(CLIENT__RSP_DUMP))
         args->Dump(CLIENT__RSP_DUMP, "");
     return args;

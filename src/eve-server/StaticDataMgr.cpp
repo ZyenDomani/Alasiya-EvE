@@ -34,37 +34,32 @@
  */
 
 
-void StaticDataMgr::Close()
-{
-    /*
-    delete m_keyMap;
-    delete m_agents;
-    delete m_operands;
-    delete m_billTypes;
-    delete m_entryTypes;
-    delete m_factionInfo;
-    delete m_npcDivisions;
-    */
-
-    //m_agents->DecRef();
-    //m_operands->DecRef();
-    //m_billTypes->DecRef();
-
-    //for (auto &cur : m_bpMatlData)
-    //    (cur.second)->DecRef();
-
+void StaticDataMgr::Close() {
+    Clear();
     sLog.Warning("    StaticDataMgr", "Static Data Manager has been closed.");
 }
 
-int StaticDataMgr::Initialize()
-{
+int StaticDataMgr::Initialize() {
     sLog.Blue("    StaticDataMgr", "Static Data Manager Initialized.");
+
+    m_bpMatlHeader = new DBRowDescriptor();
+    m_bpMatlHeader->AddColumn("quantity",          DBTYPE_I4);
+    m_bpMatlHeader->AddColumn("requiredTypeID",    DBTYPE_I4);
+    m_bpMatlHeader->AddColumn("damagePerJob",      DBTYPE_R4);
+
     Populate();
     return 1;
 }
 
-void StaticDataMgr::Clear()
-{
+void StaticDataMgr::Clear() {
+    // order dependent!!
+    for (auto &cur : m_bpMatlData)
+        PyDecRef(cur.second);
+    m_bpMatlData.clear();
+    PyDecRef(m_bpMatlHeader);
+    
+    SafeDelete(m_pFactionInfo);
+
     m_ramReq.clear();
     m_moonGoo.clear();
     m_ramMatl.clear();
@@ -86,23 +81,28 @@ void StaticDataMgr::Clear()
     m_LootTypeMap.clear();
     m_WrecksToTypesMap.clear();
 
-    SafeDelete(m_agents);
-    SafeDelete(m_operands);
-    SafeDelete(m_billTypes);
-    SafeDelete(m_entryTypes);
-    SafeDelete(m_factionInfo);
-    SafeDelete(m_npcDivisions);
-
-    for (auto &cur : m_bpMatlData)
-        SafeDelete(cur.second);
-
-    m_bpMatlData.clear();
+    PyDecRef(m_keyMap);
+    PyDecRef(m_agents);
+    PyDecRef(m_operands);
+    PyDecRef(m_billTypes);
+    PyDecRef(m_entryTypes);
+    PyDecRef(m_factionIDs);
+    PyDecRef(m_formations);
+    PyDecRef(m_itemHeader);
+    PyDecRef(m_npcDivisions);
 }
 
-void StaticDataMgr::Populate()
-{
+void StaticDataMgr::Populate() {
     double beginTime(GetTimeMSeconds());
     double startTime(GetTimeMSeconds());
+
+    m_itemHeader = CreateItemHeader();
+    if (m_itemHeader == nullptr)
+        sLog.Error("    StaticDataMgr", "m_itemHeader is null");
+
+    m_formations = CreateFormationTuple();
+    if (m_formations == nullptr)
+        sLog.Error("    StaticDataMgr", "m_formations is null");
 
     m_keyMap = ManagerDB::GetKeyMap();
     if (m_keyMap == nullptr)
@@ -135,16 +135,17 @@ void StaticDataMgr::Populate()
     sLog.Cyan("    StaticDataMgr", "Base Static data sets loaded in %.3fms.", (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
-    GetFactionInfoRsp rsp;
-    ManagerDB::LoadCorpFactions(rsp.factionIDbyNPCCorpID);
-    ManagerDB::LoadFactionStationCounts(rsp.factionStationCount);
-    ManagerDB::LoadFactionSystemCounts(rsp.factionSolarSystemCount);
-    ManagerDB::LoadFactionRegions(rsp.factionRegions);
-    ManagerDB::LoadFactionConstellations(rsp.factionConstellations);
-    ManagerDB::LoadFactionSolarSystems(rsp.factionSolarSystems);
-    ManagerDB::LoadFactionRaces(rsp.factionRaces);
-    rsp.npcCorpInfo = ManagerDB::LoadNPCCorpInfo();
-    m_factionInfo = rsp.Encode();
+
+    m_pFactionInfo = new GetFactionInfoRsp();
+    ManagerDB::LoadCorpFactions(m_pFactionInfo->factionIDbyNPCCorpID);
+    ManagerDB::LoadFactionRegions(m_pFactionInfo->factionRegions);
+    ManagerDB::LoadFactionConstellations(m_pFactionInfo->factionConstellations);
+    ManagerDB::LoadFactionSolarSystems(m_pFactionInfo->factionSolarSystems);
+    ManagerDB::LoadFactionRaces(m_pFactionInfo->factionRaces);
+    ManagerDB::LoadFactionStationCounts(m_pFactionInfo->factionStationCount);
+    ManagerDB::LoadFactionSystemCounts(m_pFactionInfo->factionSolarSystemCount);
+    m_pFactionInfo->npcCorpInfo = ManagerDB::LoadNPCCorpInfo();
+    m_factionInfo = m_pFactionInfo->Encode();
     if (m_factionInfo == nullptr) {
         sLog.Error("    StaticDataMgr", "m_factionInfo is null");
     } else {
@@ -1463,7 +1464,7 @@ bool StaticDataMgr::IsStation(uint32 stationID/*0*/)
     return (itr != m_stationRegion.end());
 }
 
-DBRowDescriptor* StaticDataMgr::CreateHeader() {
+DBRowDescriptor* StaticDataMgr::CreateItemHeader() {
     // this is correct data for crucible.  dont alter
     PyList *keywords(new PyList());
         keywords->AddItem(new_tuple(new PyString("stacksize"), new PyToken("util.StackSize")));
@@ -1481,6 +1482,110 @@ DBRowDescriptor* StaticDataMgr::CreateHeader() {
     return header;
 }
 
+PyTuple* StaticDataMgr::CreateFormationTuple() {
+    // added missing formations and move here.  -allan
+    PyTuple* res = new PyTuple(4);
+
+    // ============================================================================
+    // 1. THE DIAMOND LAYOUT (formationID = 0)
+    // ============================================================================
+    Beyonce_Formation diamond;
+    diamond.name = "Diamond";
+    // Slot 1: Starboard / Right Wing Anchor
+    diamond.pos1.x =  150.0;
+    diamond.pos1.x =    0.0;
+    diamond.pos1.x =    0.0;
+    // Slot 2: Vanguard Nose Anchor (Leads ahead)
+    diamond.pos2.x =    0.0;
+    diamond.pos2.x =    0.0;
+    diamond.pos2.x =  150.0;
+    // Slot 3: Port / Left Wing Anchor
+    diamond.pos3.x = -150.0;
+    diamond.pos3.x =    0.0;
+    diamond.pos3.x =    0.0;
+    // Slot 4: Rear Guard Tail Anchor (Trails behind)
+    diamond.pos4.x =    0.0;
+    diamond.pos4.x =    0.0;
+    diamond.pos4.x = -150.0;
+    res->SetItem(0, diamond.Encode());
+
+    // ============================================================================
+    // 2. THE ARROW / V-ECHELON LAYOUT (formationID = 1)
+    // ============================================================================
+    Beyonce_Formation arrow;
+    arrow.name = "Arrow";
+    // Slot 1: Inner Starboard Echelon
+    arrow.pos1.x =  100.0;
+    arrow.pos1.x =    0.0;
+    arrow.pos1.x =  -50.0;
+    // Slot 2: Outer Starboard Echelon
+    arrow.pos2.x =  200.0;
+    arrow.pos2.x =    0.0;
+    arrow.pos2.x = -100.0;
+    // Slot 3: Inner Port Echelon
+    arrow.pos3.x = -100.0;
+    arrow.pos3.x =    0.0;
+    arrow.pos3.x =  -50.0;
+    // Slot 4: Outer Port Echelon
+    arrow.pos4.x = -200.0;
+    arrow.pos4.x =    0.0;
+    arrow.pos4.x = -100.0;
+    res->SetItem(1, arrow.Encode());
+
+    // ============================================================================
+    // 3. THE WALL LAYOUT (formationID = 2)
+    // ============================================================================
+    // Ships line up rigidly shoulder-to-shoulder perpendicular to the flight path.
+    // Exceptional for showing broadsides or massive capital grid displays.  (is 60m enough?)
+    Beyonce_Formation wall;
+    wall.name = "Wall";
+    // Slot 1: Tight Inner Starboard Step
+    wall.pos1.x =   60.0;
+    wall.pos1.x =    0.0;
+    wall.pos1.x =    0.0;
+    // Slot 2: Outer Starboard Wing Tip
+    wall.pos2.x =  120.0;
+    wall.pos2.x =    0.0;
+    wall.pos2.x =    0.0;
+    // Slot 3: Tight Inner Port Step
+    wall.pos3.x =  -60.0;
+    wall.pos3.x =    0.0;
+    wall.pos3.x =    0.0;
+    // Slot 4: Outer Port Wing Tip
+    wall.pos4.x = -120.0;
+    wall.pos4.x =    0.0;
+    wall.pos4.x =    0.0;
+    res->SetItem(2, wall.Encode());
+
+    // ============================================================================
+    // 4. THE LINE / COLUMN LAYOUT (formationID = 3)
+    // ============================================================================
+    // Ships align single-file rigidly behind the leader's exhaust trail.
+    // Classic convoy/highway style layout spacing. (is 80m enough?)
+    Beyonce_Formation line;
+    line.name = "Line";
+    // Slot 1: Immediately behind Leader
+    line.pos1.x =    0.0;
+    line.pos1.x =    0.0;
+    line.pos1.x =  -80.0;
+    // Slot 2: Second in Column tail
+    line.pos2.x =    0.0;
+    line.pos2.x =    0.0;
+    line.pos2.x = -160.0;
+    // Slot 3: Third in Column tail
+    line.pos3.x =    0.0;
+    line.pos3.x =    0.0;
+    line.pos3.x = -240.0;
+    // Slot 4: Rear Anchor point caboose
+    line.pos4.x =    0.0;
+    line.pos4.x =    0.0;
+    line.pos4.x = -320.0;
+    res->SetItem(3, line.Encode());
+
+    /** @todo  add 'new' npc formations here and method to get formation by id */
+    return res;
+}
+
 PyDict* StaticDataMgr::GetBPMatlData(uint16 typeID)
 {
     auto itr = m_bpMatlData.find(typeID);
@@ -1495,7 +1600,6 @@ PyDict* StaticDataMgr::GetBPMatlData(uint16 typeID)
 
 PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
 {
-    // dunno how to do this part better...
     PyList* matlListManuf(new PyList());
     PyList* skillListManuf(new PyList());
     PyList* extraListManuf(new PyList());
@@ -1513,12 +1617,7 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
     PyList* matlListInvent(new PyList());
     PyList* skillListInvent(new PyList());
 
-    DBRowDescriptor* header = new DBRowDescriptor();
-        header->AddColumn("quantity",          DBTYPE_I4);
-        header->AddColumn("requiredTypeID",    DBTYPE_I4);
-        header->AddColumn("damagePerJob",      DBTYPE_R4);
-
-    // NOTE: this is for BLUEPRINTS ONLY and is always populated (ancient relic error fix)
+    // NOTE: manuf is always populated for blueprints but not ancient relics
     if (catID == EVEDB::invCategories::Blueprint) {
         // ramMaterials is only for manufacturing the bp product
         std::vector<EvERam::RamMaterials> ramMatls;
@@ -1526,7 +1625,7 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
         for (auto &cur : ramMatls) {
             if (!IsPublished(cur.materialTypeID))
                 continue;
-            PyPackedRow* row = new PyPackedRow(header);
+            PyPackedRow* row = new PyPackedRow(m_bpMatlHeader);
                 row->SetFieldC("quantity",        new PyInt(cur.quantity));
                 row->SetFieldC("requiredTypeID",  new PyInt(cur.materialTypeID));
                 row->SetFieldC("damagePerJob",    new PyFloat(1.0f));
@@ -1535,7 +1634,6 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
     }
 
     // booleans to only set items that are populated
-    // NOTE: manuf is always populated for blueprints but not ancient relics
     bool manuf(false), copy(false), invent(false), dup(false), me(false), re(false), te(false), tech(false);
     // the ramRequirements table holds ALL skill/item data for all aspects of RAM per BlueprintTypeID.
     std::vector<EvERam::RamRequirements> ramReqs;
@@ -1545,7 +1643,7 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
         if (!IsPublished(cur.requiredTypeID))
             continue;
 
-        PyPackedRow* row = new PyPackedRow(header);
+        PyPackedRow* row = new PyPackedRow(m_bpMatlHeader);
             row->SetFieldC("quantity",        new PyInt(cur.quantity));
             row->SetFieldC("requiredTypeID",  new PyInt(cur.requiredTypeID));
             row->SetFieldC("damagePerJob",    new PyFloat(cur.damagePerJob));
@@ -1629,78 +1727,110 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
         PyDict* Manufacturing = new PyDict();
             Manufacturing->SetItemString("skills", skillListManuf);
             Manufacturing->SetItemString("rawMaterials", matlListManuf);
-        CRowSet *rowset = new CRowSet(&header);
+        CRowSet *rowset = new CRowSet(m_bpMatlHeader);
         PyList::const_iterator itr = extraListManuf->begin();
         for (; itr != extraListManuf->end();++itr) {
             PyPackedRow* from = (*itr)->AsPackedRow();
             PyPackedRow* into = rowset->NewRow();
-                into->SetField(0, from->GetField(0));
-                into->SetField(1, from->GetField(1));
-                into->SetField(2, from->GetField(2));
+            PyRep* f0 = from->GetField(0); PyIncRef(f0); into->SetField(0,f0);
+            PyRep* f1 = from->GetField(1); PyIncRef(f1); into->SetField(1,f1);
+            PyRep* f2 = from->GetField(2); PyIncRef(f2); into->SetField(2,f2);
         }
         Manufacturing->SetItemString("extras", rowset);     // have to build a crowset for this
-        rsp->SetItem(new PyInt(1), new PyObject("util.KeyVal", Manufacturing));
+        PyObject* valObj = new PyObject("util.KeyVal", Manufacturing);
+        rsp->SetItem(new PyInt(1), valObj);
+    } else {
+        PyDecRef(skillListManuf);
+        PyDecRef(matlListManuf);
     }
     if (tech) {        //activityResearchingTechnology = 2
         // not used.  not defined in client.  no data for this activity
     }
     if (te) {        //activityResearchingTimeProductivity = 3
+        PyIncRef(mtCRowSet);
         PyDict* ResearchTime = new PyDict();
             ResearchTime->SetItemString("skills", skillListTE);
             ResearchTime->SetItemString("rawMaterials", matlListTE);
-            PyIncRef(mtCRowSet);
-        ResearchTime->SetItemString("extras", mtCRowSet);
-        rsp->SetItem(new PyInt(3), new PyObject("util.KeyVal", ResearchTime));
+            ResearchTime->SetItemString("extras", mtCRowSet);
+        PyObject* valObj = new PyObject("util.KeyVal", ResearchTime);
+        rsp->SetItem(new PyInt(3), valObj);
+    } else {
+        PyDecRef(skillListTE);
+        PyDecRef(matlListTE);
     }
     if (me) {        //activityResearchingMaterialProductivity = 4
+        PyIncRef(mtCRowSet);
         PyDict* ResearchMaterial = new PyDict();
             ResearchMaterial->SetItemString("skills", skillListME);
             ResearchMaterial->SetItemString("rawMaterials", matlListME);
-            PyIncRef(mtCRowSet);
-        ResearchMaterial->SetItemString("extras", mtCRowSet);
-        rsp->SetItem(new PyInt(4), new PyObject("util.KeyVal", ResearchMaterial));
+            ResearchMaterial->SetItemString("extras", mtCRowSet);
+        PyObject* valObj = new PyObject("util.KeyVal", ResearchMaterial);
+        rsp->SetItem(new PyInt(4), valObj);
+    } else {
+        PyDecRef(skillListME);
+        PyDecRef(matlListME);
     }
     if (copy) {        //activityCopying = 5
+        PyIncRef(mtCRowSet);
         PyDict* Copying = new PyDict();
             Copying->SetItemString("skills", skillListCopy);
             Copying->SetItemString("rawMaterials", matlListCopy);
-            PyIncRef(mtCRowSet);
-        Copying->SetItemString("extras", mtCRowSet);
-        rsp->SetItem(new PyInt(5), new PyObject("util.KeyVal", Copying));
+            Copying->SetItemString("extras", mtCRowSet);
+        PyObject* valObj = new PyObject("util.KeyVal", Copying);
+        rsp->SetItem(new PyInt(5), valObj);
+    } else {
+        PyDecRef(skillListCopy);
+        PyDecRef(matlListCopy);
     }
     if (dup) {       //activityDuplicating = 6
         // no longer used...updated to "copying" after RMR
         PyDict* Duplicating = new PyDict();
             Duplicating->SetItemString("skills", skillListDup);
             Duplicating->SetItemString("rawMaterials", matlListDup);
-        CRowSet *rowset = new CRowSet(&header);
+        CRowSet *rowset = new CRowSet(m_bpMatlHeader);
         PyList::const_iterator itr = extraListDup->begin();
         for (; itr != extraListDup->end();++itr) {
             PyPackedRow* from = (*itr)->AsPackedRow();
             PyPackedRow* into = rowset->NewRow();
-                into->SetField(0, from->GetField(0));
-                into->SetField(1, from->GetField(1));
-                into->SetField(2, from->GetField(2));
+            PyRep* f0 = from->GetField(0); PyIncRef(f0); into->SetField(0,f0);
+            PyRep* f1 = from->GetField(1); PyIncRef(f1); into->SetField(1,f1);
+            PyRep* f2 = from->GetField(2); PyIncRef(f2); into->SetField(2,f2);
         }
         Duplicating->SetItemString("extras", rowset);    // have to build a crowset for this
-        rsp->SetItem(new PyInt(6), new PyObject("util.KeyVal", Duplicating));
+        PyObject* valObj = new PyObject("util.KeyVal", Duplicating);
+        rsp->SetItem(new PyInt(6), valObj);
+    } else {
+        PyDecRef(skillListDup);
+        PyDecRef(matlListDup);
     }
     if (re) {        //activityReverseEngineering = 7
+        PyIncRef(mtCRowSet);
         PyDict* ReverseEngineering = new PyDict();
             ReverseEngineering->SetItemString("skills", skillListRE);
             ReverseEngineering->SetItemString("rawMaterials", matlListRE);
-            PyIncRef(mtCRowSet);
-        ReverseEngineering->SetItemString("extras", mtCRowSet);
-        rsp->SetItem(new PyInt(7), new PyObject("util.KeyVal", ReverseEngineering));
+            ReverseEngineering->SetItemString("extras", mtCRowSet);
+        PyObject* valObj = new PyObject("util.KeyVal", ReverseEngineering);
+        rsp->SetItem(new PyInt(7), valObj);
+    } else {
+        PyDecRef(skillListRE);
+        PyDecRef(matlListRE);
     }
     if (invent) {     //activityInvention = 8
+        PyIncRef(mtCRowSet);
         PyDict* Invention = new PyDict();
             Invention->SetItemString("skills", skillListInvent);
             Invention->SetItemString("rawMaterials", matlListInvent);
-            PyIncRef(mtCRowSet);
-        Invention->SetItemString("extras", mtCRowSet);
-        rsp->SetItem(new PyInt(8), new PyObject("util.KeyVal", Invention));
+            Invention->SetItemString("extras", mtCRowSet);
+        PyObject* valObj = new PyObject("util.KeyVal", Invention);
+        rsp->SetItem(new PyInt(8), valObj);
+    } else {
+        PyDecRef(skillListInvent);
+        PyDecRef(matlListInvent);
     }
+
+    PyDecRef(mtCRowSet);
+    PyDecRef(extraListDup);
+    PyDecRef(extraListManuf);
 
     return rsp;
 }
@@ -1714,7 +1844,6 @@ std::string StaticDataMgr::GetOwnerName(int32 ownerID) {
 
     return "Unknown - WIP";
 }
-
 
 const char* StaticDataMgr::GetDmgRptName(uint8 type) {
     switch (type) {

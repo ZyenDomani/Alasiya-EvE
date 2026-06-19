@@ -153,6 +153,7 @@ PyResult BulkMgrService::Handle_UpdateBulk(PyCallArgs &call)
 
     PyDict* res = new PyDict();
     // bulkDataChangeID found in eve-common/EVE_Defines.h and defines the serverVersion of this set of bulkdata
+    //  NOTE:  all of these values sent to SetItem/SetItemString will need objects to call PyDecRef on.
     if (args.changeID != bulkDataChangeID) {
         res->SetItemString("type", new PyInt(updateBulkStatusTooManyRevisions));
     } else if (args.branch != bulkDataBranch) {

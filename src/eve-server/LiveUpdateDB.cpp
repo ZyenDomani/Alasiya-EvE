@@ -67,7 +67,7 @@ void LiveUpdateDB::Init()
     DBResultRow row;
     while (res.GetRow(row)) {
         PyPackedRow* packedRow = new PyPackedRow(header);
-        for (uint32 i(0); i < 7; i++)
+        for (uint32 i(0); i < 7; ++i)
             packedRow->SetField(i, DBColumnToPyRep(row, i));
 
         LiveUpdateInner inner;
@@ -81,15 +81,16 @@ void LiveUpdateDB::Init()
         m_updateList->SetItem(listIndex++, packedRow);
     }
 
+    PyDecRef(header);
     m_updateList->Dump(NET__PRES_DEBUG, "    ");
 }
 
-void LiveUpdateDB::Close() {  
+void LiveUpdateDB::Close() {
+    PyDecRef(m_updateList);
     sLog.Yellow("  Alasiya's EvEMu", "LiveUpdateDB Closed." );
 }
 
-void LiveUpdateDB::Reload()
-{
+void LiveUpdateDB::Reload() {
     PyDecRef(m_updateList);
     m_updateList = nullptr;
     Init();

@@ -301,7 +301,7 @@ void ObjCacheService::PrimeCache()
     for(; cur != m_cacheKeys.end(); cur++) {
         PyString* str = new PyString( cur->first );
         _LoadCachableObject( str );
-        //PySafeDecRef(str);
+        PySafeDecRef(str);
     }
 }
 
@@ -457,7 +457,7 @@ ObjectCachedMethodID::ObjectCachedMethodID(const char *service, const char *meth
 
 ObjectCachedMethodID::~ObjectCachedMethodID()
 {
-    SafeDelete(objectID);
+    PyDecRef(objectID);
 }
 
 ObjectCachedSessionMethodID::ObjectCachedSessionMethodID(const char *service, const char *method, int32 sessionValue)
@@ -476,5 +476,5 @@ ObjectCachedSessionMethodID::ObjectCachedSessionMethodID(const char *service, co
 
 ObjectCachedSessionMethodID::~ObjectCachedSessionMethodID()
 {
-    SafeDelete(objectID);
+    PyDecRef(objectID);
 }

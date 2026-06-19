@@ -150,7 +150,7 @@ PyList* ContractUtils::GetContractEntries(std::vector<int> contractIDList) {
 
             auto pos = itemsMap.find(contractID);
             if (pos == itemsMap.end()) {
-                CRowSet* rowset = new CRowSet(&itemsHeader);
+                CRowSet* rowset = new CRowSet(itemsHeader);
                 PyPackedRow* into = rowset->NewRow();
                 FillItemData(&itemRow, into);
 
@@ -170,7 +170,7 @@ PyList* ContractUtils::GetContractEntries(std::vector<int> contractIDList) {
 
             auto pos = bidsMap.find(contractID);
             if (pos == bidsMap.end()) {
-                CRowSet* rowset = new CRowSet(&itemsHeader);
+                CRowSet* rowset = new CRowSet(itemsHeader);
                 PyPackedRow* into = rowset->NewRow();
                 FillBidData(&bidRow, into);
 
@@ -188,8 +188,8 @@ PyList* ContractUtils::GetContractEntries(std::vector<int> contractIDList) {
 
             PyDict* contract = new PyDict;
             contract->SetItemString("contract", DBRowToPackedRow(contractRow));
-            contract->SetItemString("items", itemsMap.find(contractID) == itemsMap.end() ? new CRowSet(&itemsHeader) : itemsMap.find(contractID)->second);
-            contract->SetItemString("bids", bidsMap.find(contractID) == bidsMap.end() ? new CRowSet(&bidsHeader) : bidsMap.find(contractID)->second);
+            contract->SetItemString("items", itemsMap.find(contractID) == itemsMap.end() ? new CRowSet(itemsHeader) : itemsMap.find(contractID)->second);
+            contract->SetItemString("bids", bidsMap.find(contractID) == bidsMap.end() ? new CRowSet(bidsHeader) : bidsMap.find(contractID)->second);
 
             contractsList->AddItem(new PyObject("util.KeyVal", contract));
         }
@@ -265,7 +265,7 @@ PyResult ContractUtils::GetContractListForOwner(PyInt* ownerID, PyInt* contractS
             auto pos = itemsByContractID.find(row.GetInt(0));
             if(pos == itemsByContractID.end()) {
                 DBRowDescriptor *header = new DBRowDescriptor(res);
-                CRowSet *rowset = new CRowSet(&header);
+                CRowSet *rowset = new CRowSet(header);
 
                 PyPackedRow* packedRow = rowset->NewRow();
                 packedRow->SetField("contractId", new PyInt(row.GetInt(0)));

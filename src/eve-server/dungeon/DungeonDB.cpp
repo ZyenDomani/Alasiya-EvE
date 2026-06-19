@@ -44,34 +44,40 @@ PyDict* DungeonDB::GetPaletteGroups() {
     DBQueryResult res, res2, res3;
     PyDict* dict = new PyDict();
     // get categories first... celestial, entity, asteroid, relic
-    sDatabase.RunQuery(res, "SELECT `categoryID`,`categoryName` FROM `invCategories` WHERE categoryID IN (2, 11, 25, 34) ORDER BY categoryID");
+    sDatabase.RunQuery(res, "SELECT categoryID,categoryName"
+                            " FROM invCategories WHERE categoryID IN (2, 11, 25, 34)"
+                            " ORDER BY categoryID");
     while (res.GetRow(row)) {
         // put cats in tuple for dict.key
         PyTuple* key = new PyTuple(2);
-        key->items[0] = new PyInt(row.GetInt(0));
-        key->items[1] = new PyString(row.GetText(1));
+        key->SetItem(0, new PyInt(row.GetInt(0)));
+        key->SetItem(1, new PyString(row.GetText(1)));
 
-        sDatabase.RunQuery(res2, "SELECT groupID, groupName FROM invGroups WHERE categoryID = %u AND groupID > 12 ORDER BY groupID", row.GetUInt(0));
+        // get group names and ids for this cat and set as dict.key
+        sDatabase.RunQuery(res2, "SELECT groupID, groupName "
+                                 " FROM invGroups WHERE categoryID = %i AND groupID > 12"
+                                 " ORDER BY groupID", row.GetInt(0));
         PyDict* value = new PyDict();
         while (res2.GetRow(row2)) {
-            // put groups in tuple for dict2.key
             PyTuple* groups = new PyTuple(2);
-            groups->items[0] = new PyInt(row2.GetInt(0));
-            groups->items[1] = new PyString(row2.GetText(1));
+            groups->SetItem(0, new PyInt(row2.GetInt(0)));
+            groups->SetItem(1, new PyString(row2.GetText(1)));
 
-            // get list of tuples of items in this group and put in dict.value
-            sDatabase.RunQuery(res3, "SELECT typeID, typeName FROM invTypes WHERE groupID = %u ORDER BY typeID", row2.GetUInt(0));
+            // get [list of tuples] of items in this group and set as dict.value
+            sDatabase.RunQuery(res3, "SELECT typeID, typeName "
+                                     " FROM invTypes WHERE groupID = %i "
+                                     " ORDER BY typeID", row2.GetInt(0));
             PyList* list = new PyList();
             while (res3.GetRow(row3)) {
                 PyTuple* items = new PyTuple(2);
-                items->items[0] = new PyInt(row3.GetInt(0));
-                items->items[1] = new PyString(row3.GetText(1));
+                items->SetItem(0, new PyInt(row3.GetInt(0)));
+                items->SetItem(1, new PyString(row3.GetText(1)));
                 list->AddItem(items);
             }
 
-            if (!list->empty())
-                value->SetItem(groups, list);
+            value->SetItem(groups, list);
         }
+
         //put above group/item dict in main dict as value
         dict->SetItem(key, value);
     }

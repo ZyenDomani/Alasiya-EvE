@@ -34,7 +34,7 @@
 #include "PyServiceMgr.h"
 #include "PyBoundObject.h"
 
-PyServiceMgr::PyServiceMgr( uint32 nodeID, EntityMgr& elist )
+PyServiceMgr::PyServiceMgr(uint32 nodeID, EntityMgr& elist)
 : lsc_service(nullptr),
   cache_service(nullptr),
   m_nextBindID(100),
@@ -43,36 +43,33 @@ PyServiceMgr::PyServiceMgr( uint32 nodeID, EntityMgr& elist )
     elist.SetService(this);
 }
 
-PyServiceMgr::~PyServiceMgr() {
-    // these crash (segfault) on exit, and i dont know why (but not sure if it's needed...)
-    //SafeDelete(lsc_service);
-
-    Close();
-}
-
 void PyServiceMgr::Close() {
     for (auto &cur : m_svcList)
         SafeDelete(cur.second);
+    m_svcList.clear();
 
     PyBoundObject* bo(nullptr);
-    for (auto &cur : m_boundObjects) {
-        bo = cur.second.object;
-        if (is_log_enabled(SERVICE__MESSAGE))
-            _log(SERVICE__MESSAGE, "Service Mgr Destructor:  Deleting %s at node %u:%u", \
+    auto it = m_boundObjects.begin();
+    while (it != m_boundObjects.end()) {
+        bo = it->second.object;
+        if (bo != nullptr) {
+            if (is_log_enabled(SERVICE__MESSAGE))
+                _log(SERVICE__MESSAGE, "Service Mgr Destructor:  Deleting %s at node %u:%u", \
                     bo->GetName(), bo->m_nodeID, bo->m_bindID);
-        SafeDelete(bo);
+                it->second.object = nullptr;
+            SafeDelete(bo);
+        }
+        ++it;
     }
+    m_boundObjects.clear();
 
-    /** @todo this is already deleted here... */
-    //SafeDelete(cache_service);
     sLog.Warning("     PyServiceMgr", "Services Manager has been closed." );
 }
 
-void PyServiceMgr::Initalize(double startTime)
-{
+void PyServiceMgr::Initalize(double startTime) {
     //  look into this.  what's it for?  are we using it right?  missing anything?
     // client calls this, then loads cached data upon return.  not sure how this is used yet
-    PyString* str(new PyString("machoNet.serviceInfo"));
+    PyString* str = new PyString("machoNet.serviceInfo");
     if (!cache_service->IsCacheLoaded(str)) {
         PyDict *dict = new PyDict();
         /* ServiceCallGPCS.py:197
@@ -83,23 +80,36 @@ void PyServiceMgr::Initalize(double startTime)
          *                    nodeID = self.services.get(k, None)
          *                    break
          */
-        PyString* station(new PyString("station"));
-        PyString* location(new PyString("location"));
-        PyString* locationPreferred(new PyString("locationPreferred"));
-        PyString* solarsystem(new PyString("solarsystem"));
+        PyString* station = new PyString("station");
         dict->SetItemString("account", station);
+        PyIncRef(station);
         dict->SetItemString("bookmark", station);
+        PyIncRef(station);
         dict->SetItemString("contractMgr", station);
+        PyIncRef(station);
         dict->SetItemString("gangSvc", station);
+        PyIncRef(station);
         dict->SetItemString("trademgr", station);
+        PyIncRef(station);
         dict->SetItemString("tutorialSvc", station);
+        PyIncRef(station);
         dict->SetItemString("slash", station);
+
+        PyString* location = new PyString("location");
         dict->SetItemString("wormholeMgr", location);
+        PyIncRef(location);
         dict->SetItemString("LSC", location);
+        PyIncRef(location);
         dict->SetItemString("station", location);
+
+        PyString* locationPreferred = new PyString("locationPreferred");
         dict->SetItemString("config", locationPreferred);
+
+        PyString* solarsystem = new PyString("solarsystem");
         dict->SetItemString("scanMgr", solarsystem);
+        PyIncRef(solarsystem);
         dict->SetItemString("keeper", solarsystem);
+
         dict->SetItemString("agentMgr", PyStatic.NewNone());
         dict->SetItemString("aggressionMgr", PyStatic.NewNone());
         dict->SetItemString("alert", PyStatic.NewNone());
@@ -188,7 +198,8 @@ void PyServiceMgr::Initalize(double startTime)
         dict->SetItemString("zActionServer", PyStatic.NewNone());
 
         //register it
-        cache_service->GiveCache(str, (PyRep **)&dict);
+        PyRep* pDictPayload = dict;
+        cache_service->GiveCache(str, (PyRep **)&pDictPayload);
     }
 
     sLog.Cyan("     PyServiceMgr", "%lu services registered in %.3fms", m_svcList.size(),(GetTimeMSeconds() - startTime));
@@ -198,8 +209,7 @@ void PyServiceMgr::Process() {
     //well... we used to have something to do, but not right now...
 }
 
-void PyServiceMgr::RegisterService(const std::string &name, PyService* svc)
-{
+void PyServiceMgr::RegisterService(const std::string &name, PyService* svc) {
     m_svcList[name] = svc;
 }
 
@@ -253,6 +263,7 @@ PySubStruct* PyServiceMgr::BindObject(Client* pClient, PyBoundObject* pObj, PyDi
 
     if (oid != nullptr) {
         PyDict *oidDict = new PyDict();
+        PyIncRef(time);
         oidDict->SetItemString(bindStr.c_str(), time);
         oid->SetItemString("OID+", oidDict);
     }
@@ -275,7 +286,7 @@ void PyServiceMgr::ClearBoundObject(uint32 bindID)
         return;
     }
 
-    PyBoundObject *bo(itr->second.object);
+    PyBoundObject* bo = itr->second.object;
 
     _log(SERVICE__MESSAGE, "Service Mgr Clearing bound object %s at %s", bo->GetName(), bo->GetBindStr().c_str());
 

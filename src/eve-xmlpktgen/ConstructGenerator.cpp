@@ -60,12 +60,6 @@ bool ClassConstructGenerator::ProcessElementDef( const TiXmlElement* field )
     fprintf( mOutputFile,
         "}\n"
         "\n"
-        "%s::%s( const %s& oth )\n"
-        "{\n"
-        "    *this = oth;\n"
-        "}\n"
-        "\n",
-        name, name, name
     );
 
     return true;

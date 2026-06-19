@@ -54,7 +54,7 @@ public:
     // cached
     PyRep* GetNewPriceHistory(uint32 regionID, int32 typeID);
     // cached
-    PyRep* GetOldPriceHistory( uint32 regionID, int32 typeID );
+    PyRep* GetOldPriceHistory(uint32 regionID, int32 typeID);
 
 
     // base price update method

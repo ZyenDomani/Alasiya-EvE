@@ -443,6 +443,7 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
         } break;
         // all of these are being put into a PyTuple(2)
         // segfault if the tuple is missing
+        //  NOTE:  all of these `new PyString` need objects call to PyDecRef on
         case Continue: {    //8
             // not sure what to do here.
             response = "Continue has been chosen.";
@@ -576,6 +577,7 @@ PyResult AgentBound::Handle_GetMissionBriefingInfo(PyCallArgs &call) {
 
     // these are found in the client data by MessageIDs ....  i.e.  {[location]objectiveDestinationID.name}
     // contentID is the key for the keywords data  (we are using charID here.  live seems to use incrementing integers)
+    //  NOTE:  all of these values sent to SetItemString will need objects to call PyDecRef on.
     PyDict* keywords(new PyDict());
         keywords->SetItemString("objectiveLocationID", new PyInt(offer.originID));
         keywords->SetItemString("objectiveLocationSystemID", new PyInt(offer.originSystemID));

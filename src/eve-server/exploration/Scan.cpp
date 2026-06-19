@@ -95,7 +95,7 @@ void Scan::ProcessScan(bool useProbe/*false*/)
 }
 
 
-PyRep* Scan::ConeScan(Call_ConeScan args) {
+PyRep* Scan::ConeScan(Call_ConeScan& args) {
     //  WORKING CODE...DONT FUCK WITH THIS!!  -allan 7Dec15
 
     // NOTE:  max distance is 14.4AU or maxInt (2417482647 in km)

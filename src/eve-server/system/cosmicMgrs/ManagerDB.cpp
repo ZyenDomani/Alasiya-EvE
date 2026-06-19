@@ -283,8 +283,8 @@ PyDict* ManagerDB::LoadNPCCorpInfo() {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         "SELECT"
-        "   crp.corporationName,"
         "   ncrp.corporationID,"
+        "   crp.corporationName,"
         "   ncrp.size, ncrp.extent, ncrp.solarSystemID,"
         "   ncrp.factionID, ncrp.sizeFactor, ncrp.stationCount, ncrp.stationSystemCount,"
         "   crp.stationID, crp.ceoID, chr.characterName AS ceoName"
@@ -296,7 +296,7 @@ PyDict* ManagerDB::LoadNPCCorpInfo() {
         return nullptr;
     }
 
-    return DBResultToIntRowDict(res, 1);
+    return DBResultToIntRowDict(res, 0);
 }
 
 PyObject* ManagerDB::GetNPCDivisions() {

@@ -525,9 +525,12 @@ bool MarshalStream::SaveRLE(const Buffer& in )
     //                       for those interested, the function lives in .text:10082D10 of that DLL.
     //                       "hopefully" this brings our marshaller closer to fully featured.
 
+    // UD: -allan  7June26
+
     // reserve double the buffer size just in case
     // we do not want to run out of space or else the iterators will start to complain
     Buffer out(in.size() * 2, 0);
+    size_t out_max_size = out.size();
 
     // this code has been used and ported through different projects
     // both ntt's reverence and Captnoord's re-implementation of evemu core have the exact same code
@@ -539,24 +542,35 @@ bool MarshalStream::SaveRLE(const Buffer& in )
 
     while (in_ix < in_size) {
         if(!nibble) {
+            // bounds check - verify we have enough room for ctrl nibble
+            if ((size_t)out_ix >= out_max_size) {
+                sLog.Error("MarshalStream", "SaveRLE overflow");
+                return false;
+            }
             nibble_ix = out_ix++;
             out[nibble_ix] = 0;
         }
 
         start = in_ix;
         end = in_ix + 8;
-        if(end > in_size)
+        if (end > in_size)
             end = in_size;
 
         if (in[in_ix]) {
             zerochains = 0;
             do {
+                // hard bounds check. guard active byti stream array
+                if ((size_t)out_ix >= out_max_size) {
+                    sLog.Error("MarshalStream", "SaveRLE buffer overflow");
+                    return false;
+                }
+
                 out[out_ix++] = in[in_ix++];
-            } while (in_ix<end && in[in_ix]);
+            } while (in_ix < end and in[in_ix]);
             count = (start - in_ix) + 8;
         } else {
             zerochains++;
-            while (in_ix < end && !in[in_ix])
+            while (in_ix < end and !in[in_ix])
                 ++in_ix;
             count = (in_ix - start) + 7;
         }
@@ -572,9 +586,17 @@ bool MarshalStream::SaveRLE(const Buffer& in )
     if (nibble && zerochains)
         ++zerochains;
 
-    while (zerochains > 1) {
-        zerochains -= 2;
-        out_ix -= 1;
+    // bounds check - ensure out_ix is within bounds before sub loop runs
+    if (out_ix > 0) {
+        while (zerochains > 1) {
+            zerochains -= 2;
+            out_ix -= 1;
+        }
+    }
+    // final check...
+    if ((out_ix < 0) or ((size_t)out_ix > out_max_size)) {
+        sLog.Error("MarshalStream", "SaveRLE final index invalid");
+        return false;
     }
 
     // Write the packed in

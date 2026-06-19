@@ -22,6 +22,8 @@
   * PLANET__DB_WARNING
   */
 
+#include <iomanip>
+
 #include "../eve-server.h"
 
 #include "EVEServerConfig.h"
@@ -64,6 +66,26 @@ void PlanetDataMgr::GetPlanetData(uint32 planetID, std::vector<uint16> &typeIDs)
     auto itr = m_planetData.equal_range(planetID);
     for (auto it = itr.first; it != itr.second; ++it)
         typeIDs.push_back(it->second);
+}
+
+// Encodes exactly 225 floats (representing 25 unique Order-2 SH Nodes) into a 1800-byte hex string
+std::string PlanetDataMgr::EncodeMultiNodeHexBuffer(const std::vector<float>& fullFloatArray) {
+    std::stringstream ss;
+    ss << std::hex << std::setfill('0') << std::uppercase;
+
+    // Ensure the array measures exactly 225 floats to prevent database clipping or memory leaks
+    std::vector<float> verifiedArray = fullFloatArray;
+    verifiedArray.resize(225, 0.0f);
+
+    for (float val : verifiedArray) {
+        uint32_t binaryPattern = *reinterpret_cast<const uint32_t*>(&val);
+        ss << std::setw(2) << ((binaryPattern >> 0) & 0xFF)
+        << std::setw(2) << ((binaryPattern >> 8) & 0xFF)
+        << std::setw(2) << ((binaryPattern >> 16) & 0xFF)
+        << std::setw(2) << ((binaryPattern >> 24) & 0xFF);
+    }
+
+    return ss.str();
 }
 
 const char* PlanetDataMgr::GetCommandName(int8 commandID)
@@ -139,6 +161,33 @@ float PlanetDataMgr::GetScanningRange(uint8 level) {
         default:        return 0.0f;
     }
 }
+
+float PlanetDataMgr::GetAbundanceMod(uint16 typeID) {
+    switch (typeID) {
+        case 12:      //Ice
+            return 1.35f;
+        case 13:      //Gas
+            return 1.5f;
+        case 2014:    //Oceanic
+            return 1.15f;
+        case 2015:    //Lava
+            return 0.85f;
+        case 2016:    //Barren
+            return 0.9f;
+        case 2017:    //Storm
+            return 1.2f;
+        case 2063:    //Plasma
+            return 1.1f;
+        default:
+        case 11:      //Temperate
+        case 30889:   //Shattered
+            return 1.0f;
+    }
+
+    // catchall
+    return 1.0f;
+}
+
 
 
 PIDataMgr::PIDataMgr()
@@ -381,6 +430,81 @@ uint32 PIDataMgr::GetMaxOutput(InventoryItemRef iRef, uint32 qtyPerCycle/*0*/, i
         cycleTime = iRef->GetAttribute(AttrPinCycleTime).get_long() * EvE::Time::Second; // base time is 300s
     float scalar = iRef->GetAttribute(AttrECUNoiseFactor).get_float() + 1;
     return (scalar * qtyPerCycle) * cycleTime / EvE::Time::Second / 900.0;
+}
+
+// Evaluates a single 9-float Order-2 Real SH block at a target vector location
+float PIDataMgr::EvaluateSingleNodeSH(const float* c, float x, float y, float z) {
+    // Basis functions matching the generator
+    float Y_0_0  = 0.2820948f;
+    float Y_1_m1 = 0.4886025f * y;
+    float Y_1_0  = 0.4886025f * z;
+    float Y_1_1  = 0.4886025f * x;
+    float Y_2_m2 = 1.0925484f * x * y;
+    float Y_2_m1 = 1.0925484f * y * z;
+    float Y_2_0  = 0.3153916f * (3.0f * z * z - 1.0f);
+    float Y_2_1  = 1.0925484f * x * z;
+    float Y_2_2  = 0.5462742f * (x * x - y * y);
+
+    float density = (c[0]*Y_0_0) + (c[1]*Y_1_m1) + (c[2]*Y_1_0) + (c[3]*Y_1_1) +
+    (c[4]*Y_2_m2) + (c[5]*Y_2_m1) + (c[6]*Y_2_0) + (c[7]*Y_2_1) + (c[8]*Y_2_2);
+
+    return density;
+}
+
+// Converts your database string back into raw float data for evaluation
+std::vector<float> PIDataMgr::DecodeHexBufferToFloats(const std::string& hexBuffer) {
+    std::vector<float> floats(225, 0.0f);
+    if (hexBuffer.length() < 3600) return floats;
+
+    for (size_t i = 0; i < 225; ++i) {
+        uint32_t pattern = 0;
+        for (int b = 0; b < 4; ++b) {
+            std::string byteString = hexBuffer.substr((i * 8) + (b * 2), 2);
+            uint8_t byteVal = (uint8_t)strtol(byteString.c_str(), nullptr, 16);
+            pattern |= ((uint32_t)byteVal << (b * 8));
+        }
+        std::memcpy(&floats[i], &pattern, 4);
+    }
+    return floats;
+}
+
+// Core Execution: Calculates raw output yield and reduces the local heatmap intensity
+float PIDataMgr::ExtractAndDepletePlanetResource(std::string& io_dbBuffer, const PI_Heads& headPin,
+                                                 float durationFactor/*1.0f*/, float headRadius/*1.0f*/) {
+    std::vector<float> floatArray = DecodeHexBufferToFloats(io_dbBuffer);
+    float totalExtractedYield(0.0f);
+
+    float pinX = cosf(headPin.latitude) * cosf(headPin.longitude);
+    float pinY = cosf(headPin.latitude) * sinf(headPin.longitude);
+    float pinZ = sinf(headPin.latitude);
+
+    // 1. Loop through all 25 structural nodes to compile total local density
+    for (int nodeIdx = 0; nodeIdx < 25; ++nodeIdx) {
+        float* nodeCoeffs = &floatArray[nodeIdx * 9];
+
+        // Skip uninitialized or dead structural cells
+        if (nodeCoeffs[0] <= 0.001f) continue;
+
+        // Evaluate baseline yield contributed specifically by this node mesh
+        float localNodeDensity = EvaluateSingleNodeSH(nodeCoeffs, pinX, pinY, pinZ);
+
+        // Clean out negative valleys so they don't break the calculator
+        if (localNodeDensity <= 0.0f) continue;
+
+        totalExtractedYield += localNodeDensity * headRadius;
+
+        // 2. Dynamic Depletion Rule: Reduce the local node amplitude (c0) based on extraction
+        // Nodes directly under or close to the pin deplete significantly faster
+        float depletionAmount = localNodeDensity * 0.02f * durationFactor;
+
+        nodeCoeffs[0] -= depletionAmount; // Reduce base amplitude height
+        if (nodeCoeffs[0] < 0.0f) nodeCoeffs[0] = 0.0f; // Prevent flipping to negative resources
+    }
+
+    // 3. Re-encode the newly depleted map back into hex code for your database update
+    io_dbBuffer = sPlanetDataMgr.EncodeMultiNodeHexBuffer(floatArray);
+
+    return totalExtractedYield;
 }
 
 uint16 PIDataMgr::GetHeadType(uint16 ecuTypeID, uint16 programType) {

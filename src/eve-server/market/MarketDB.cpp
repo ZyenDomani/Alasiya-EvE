@@ -403,10 +403,7 @@ PyRep *MarketDB::GetMarketGroups() {
     }
 
     DBRowDescriptor *header = new DBRowDescriptor(res);
-
-    _log(MARKET__DB_TRACE, "GetMarketGroups header has %u columns.", header->ColumnCount());
-
-    CFilterRowSet *filterRowset = new CFilterRowSet(&header);
+    CFilterRowSet *filterRowset = new CFilterRowSet(header);
 
     /*  i dont think this is used....
     PyDict *keywords = filterRowset->GetKeywords();
@@ -419,15 +416,21 @@ PyRep *MarketDB::GetMarketGroups() {
     std::map< int, PyRep* > tt;
     while( res.GetRow(row) ) {
         int parentGroupID(row.IsNull(0) ? -1 : row.GetUInt(0));
-        PyRep* pid(nullptr);
-        CRowSet*rowset(nullptr);
+        PyRep* pid = nullptr;
+        CRowSet*rowset = nullptr;
         if (tt.count(parentGroupID)) {
             pid = tt[parentGroupID];
             rowset = filterRowset->GetRowset(pid);
+            PyIncRef(pid);
         } else {
-            pid = ((parentGroupID != -1) ? (PyRep*)new PyInt(parentGroupID) : PyStatic.NewNone());
+            if (parentGroupID != -1) {
+                pid = (PyRep*)new PyInt(parentGroupID);
+            } else {
+                pid = PyStatic.NewNone();
+            }
             tt[parentGroupID] = pid;
             rowset = filterRowset->NewRowset(pid);
+            PyDecRef(pid);
         }
 
         PyPackedRow* pyrow = rowset->NewRow();
@@ -440,13 +443,15 @@ PyRep *MarketDB::GetMarketGroups() {
         pyrow->SetField(6, row.IsNull(6) ? PyStatic.NewNone() : new PyInt(row.GetUInt(6))); // iconID
         pyrow->SetField(7, new PyInt(row.GetUInt(7))); //dataID
         pyrow->SetField(8, new PyInt(row.GetUInt(8))); //marketGroupNameID
-        pyrow->SetField(9,   new PyInt(row.GetUInt(9))); //descriptionID
+        pyrow->SetField(9, new PyInt(row.GetUInt(9))); //descriptionID
     }
 
     _log(MARKET__DB_TRACE, "GetMarketGroups returned %lli keys.", filterRowset->GetKeyCount());
     if (is_log_enabled(MARKET__DB_TRACE))
         filterRowset->Dump(MARKET__DB_TRACE, "    ");
 
+    tt.clear();
+    PyDecRef(header);
     return filterRowset;
 }
 

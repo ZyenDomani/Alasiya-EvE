@@ -33,7 +33,10 @@ public:
     float GetScanningRange(uint8 level);
     // gets min/max bands based on proximity
     void GetProximityLimits(uint8 level, uint8 &minBand, uint8 &maxBand);
+    // multipliers from baseline scanner dist rules
+    float GetAbundanceMod(uint16 typeID);
 
+    std::string EncodeMultiNodeHexBuffer(const std::vector<float>& fullFloatArray);
 
 protected:
     void Populate();
@@ -78,6 +81,14 @@ public:
 
 protected:
     void Populate();
+
+    // Evaluates a single 9-float Order-2 Real SH block at a target vector location
+    float EvaluateSingleNodeSH(const float* c, float x, float y, float z);
+    // Converts your database string back into raw float data for evaluation
+    std::vector<float> DecodeHexBufferToFloats(const std::string& hexBuffer);
+    // Core Execution: Calculates raw output yield and reduces the local heatmap intensity
+    float ExtractAndDepletePlanetResource( std::string& io_dbBuffer, const PI_Heads& headPin,
+                                           float durationFactor=1.0f, float headRadius=1.0f );
 
 private:
     PlanetDB m_db;

@@ -83,11 +83,11 @@ PyPacket *PyPacket::Clone() const
         res->source = source;
         res->dest = dest;
         res->userid = userid;
-        res->payload = payload->Clone()->AsTuple();
+        res->payload = payload->Clone();
     if (named_payload == nullptr) {
         res->named_payload = nullptr;
     } else {
-        res->named_payload = named_payload->Clone()->AsDict();
+        res->named_payload = named_payload->Clone();
     }
     return res;
 }
@@ -221,12 +221,14 @@ bool PyPacket::Decode(PyRep **in_packet)
         return false;
     }
     payload = tuple->items[4]->AsTuple();
+    PyIncRef(payload);
 
     //options dict
     if (tuple->items[5]->IsNone()) {
         named_payload = nullptr;
     } else if (tuple->items[5]->IsDict()) {
         named_payload = tuple->items[5]->AsDict();
+        PyIncRef(named_payload);
     } else {
         codelog(NET__PACKET_ERROR, "PyPacket::Decode() - Sixth main tuple element is neither dict or none.");
         PyDecRef( pRep );
@@ -249,9 +251,9 @@ PyRep *PyPacket::Encode() {
     arg_tuple->items[3] = (userid == 0 ? PyStatic.NewZero() : new PyInt(userid));
     //payload
     arg_tuple->items[4] = payload;     // dont clone here.  set actual rep in item, and it will be cleaned up by d'tor later
-    //named arguments (OID+ or sn) 
+    //named arguments (OID+ or sn)
     // dont clone here.  set actual rep in item, and it will be cleaned up by d'tor later
-    arg_tuple->items[5] = (named_payload == nullptr ? PyStatic.NewNone() : named_payload); 
+    arg_tuple->items[5] = (named_payload == nullptr ? PyStatic.NewNone() : named_payload);
     //TODO: Not sure what this is, On packets so far they always have as PyNone
     arg_tuple->items[6] = PyStatic.NewNone();
     return new PyObject(type_string.c_str(), arg_tuple);
@@ -501,11 +503,11 @@ PyCallStream *PyCallStream::Clone() const {
     res->remoteObject = remoteObject;
     res->remoteObjectStr = remoteObjectStr;
     res->method = method;
-    res->arg_tuple = arg_tuple->Clone()->AsTuple();
+    res->arg_tuple = arg_tuple->Clone();
     if (arg_dict == nullptr) {
         res->arg_dict = nullptr;
     } else {
-        res->arg_dict = arg_dict->Clone()->AsDict();
+        res->arg_dict = arg_dict->Clone();
     }
 
     return res;
@@ -703,7 +705,7 @@ EVENotificationStream::~EVENotificationStream() {
 
 EVENotificationStream *EVENotificationStream::Clone() const {
     EVENotificationStream *res(new EVENotificationStream());
-    res->args = std::move(args->Clone()->AsTuple());
+    res->args = std::move(args->Clone());
     return res;
 }
 

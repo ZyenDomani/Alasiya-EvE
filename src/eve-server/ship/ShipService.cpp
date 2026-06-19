@@ -394,7 +394,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
     }
 
     // TODO: update this to use this list for iteration
-    PyList* PyToDropList(args.toDrop);
+    PyList* PyToDropList = args.toDrop;
     uint32 ownerID(args.ownerID);  // not sent for LaunchDrone() command  (not needed)
     //used for LaunchUpgradePlatformWarning
     // args.ignoreWarning
@@ -675,7 +675,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
             dict->SetItem(new PyInt(iRef->itemID()), list);
         } else {
             PyTuple* err = new PyTuple(3);
-            err->SetItem(0, new PyInt(1));
+            err->SetItem(0, PyStatic.NewOne());
             err->SetItem(1, new PyString("unsure"));
             err->SetItem(2, new PyString("misc error"));
             dict->SetItem(new PyInt(iRef->itemID()), err);
@@ -1054,7 +1054,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
             if (!pClient->IsJetcanAvalible())
                 throw UserError("ShpJettisonPending")
                     .AddTimeShort("eta", pClient->JetcanTime() * EvE::Time::Second);
-				
+
             // Spawn jetcan then continue loop
             location.MakeRandomPointOnSphere(500.0);
             ItemData p_idata(
@@ -1237,7 +1237,7 @@ PyResult ShipBound::Handle_GetShipConfiguration(PyCallArgs &call)
 
 PyResult ShipBound::Handle_ConfigureShip(PyCallArgs &call)
 {
-    PyDict* dict(call.tuple->GetItem(0)->AsDict());
+    PyDict* dict = call.tuple->GetItem(0)->AsDict();
     call.client->GetShipSE()->SetFleetSMBUsage(dict->GetItemString("allowFleetSMBUsage")->AsBool());
 
     return nullptr;

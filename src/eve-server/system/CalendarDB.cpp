@@ -71,7 +71,7 @@ PyRep* CalendarDB::SaveNewEvent(uint32 ownerID, Call_CreateEventWithInvites& arg
     if (!args.invitees->empty()) {
         bool comma(false);
         std::ostringstream str;
-        PyList* list(args.invitees->AsList());
+        PyList* list = args.invitees->AsList();
         PyList::const_iterator itr = list->begin(), end = list->end();
         while (itr != end) {
             if (comma) {

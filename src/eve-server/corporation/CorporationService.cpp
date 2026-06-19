@@ -188,7 +188,7 @@ PyResult CorporationService::Handle_CreateMedal(PyCallArgs &call)
     Call_CreateMedal args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return nullptr;
+        return PyStatic.NewTrue();
     }
 
     if (args.title.size() > 30)
@@ -205,7 +205,7 @@ PyResult CorporationService::Handle_CreateMedal(PyCallArgs &call)
     if (medalID == 0) {
         // error on save.
         call.client->SendErrorMsg("Error when saving Medal Data.");
-        return nullptr;
+        return PyStatic.NewTrue();
     }
 
     PyList* list(nullptr);
@@ -224,7 +224,7 @@ PyResult CorporationService::Handle_CreateMedal(PyCallArgs &call)
         dataList.push_back( data );
     }
 
-    // this will either save data or it wont...
+    // this will either save data or it wont...fix it to return boolean
     m_db.SaveMedalData(medalID, dataList);
 
     return PyStatic.NewFalse();

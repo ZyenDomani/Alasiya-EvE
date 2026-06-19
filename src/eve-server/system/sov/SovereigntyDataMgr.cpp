@@ -215,7 +215,7 @@ PyRep *SovereigntyDataMgr::GetCurrentSovData(uint32 locationID)
     header->AddColumn("militaryPoints", DBTYPE_I2);
     header->AddColumn("industrialPoints", DBTYPE_I2);
     header->AddColumn("claimedFor", DBTYPE_I4);
-    CRowSet *rowset = new CRowSet(&header);
+    CRowSet *rowset = new CRowSet(header);
 
     if (IsConstellationID(locationID)) {
         for (SovereigntyData const &sData : boost::make_iterator_range(

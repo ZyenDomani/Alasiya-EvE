@@ -94,7 +94,7 @@ PyResult OnlineStatusService::Handle_GetInitialState(PyCallArgs &call) {
     DBRowDescriptor *header = new DBRowDescriptor();
     header->AddColumn("contactID", DBTYPE_I4);
     header->AddColumn("online", DBTYPE_BOOL);
-    CRowSet *rowset = new CRowSet( &header );
+    CRowSet *rowset = new CRowSet(header);
     /** @todo loop thru contact list and fill following row accordingly */
     //PyPackedRow* row = rowset->NewRow();
     //row->SetField(*charID*, sEntityMgr.PyIsOnline(PyRep::IntegerValue(charID)))); // charID/online

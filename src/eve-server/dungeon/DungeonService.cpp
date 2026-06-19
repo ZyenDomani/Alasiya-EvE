@@ -211,7 +211,7 @@ PyResult DungeonService::Handle_AddObject( PyCallArgs& call )
     // Return objectID and revisionID
     PyTuple *result = new PyTuple(2);
     result->SetItem(0, new PyInt(newObject.objectID));
-    result->SetItem(1, new PyInt(1));    //revisionID   arbitrary for now...
+    result->SetItem(1, PyStatic.NewOne());    //revisionID   arbitrary for now...
 
     return result;
 }

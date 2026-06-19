@@ -100,6 +100,7 @@ public:
     void AddColumn( const char* name, DBTYPE type );
 
     virtual ~DBRowDescriptor()    { /* do we need to do anything here? */ }
+
 protected:
     // Helper functions:
     PyTuple* _GetColumnList() const;
@@ -128,7 +129,7 @@ public:
     /**
      * @param[in] rowDesc DBRowDescriptor header to be used.
      */
-    CRowSet( DBRowDescriptor** rowDesc );
+    CRowSet( DBRowDescriptor* rowDesc );
 
     /**
      * @return Row count.
@@ -148,6 +149,7 @@ public:
     PyPackedRow* NewRow();
 
     virtual ~CRowSet()    { /* do we need to do anything here? */ }
+
 protected:
     DBRowDescriptor* _GetRowDesc() const;
     //PyList* _GetColumnList() const;
@@ -176,7 +178,7 @@ public:
     /**
      * @param[in] rowDesc DBRowDescriptor header to be used.
      */
-    CIndexedRowSet( DBRowDescriptor** rowDesc );
+    CIndexedRowSet( DBRowDescriptor* rowDesc );
 
     /**
      * @return Row count.
@@ -192,10 +194,12 @@ public:
 
     /**
      * @return New row which user may fill.
+     * shares ownership of key
      */
     PyPackedRow* NewRow( PyRep* key );
 
     virtual ~CIndexedRowSet()    { /* do we need to do anything here? */ }
+
 protected:
     DBRowDescriptor* _GetRowDesc() const;
     //PyList* _GetColumnList() const;
@@ -220,7 +224,7 @@ public:
     /**
      * @param[in] rowDesc DBRowDescriptor header to be used.
      */
-    CFilterRowSet( DBRowDescriptor** rowDesc );
+    CFilterRowSet( DBRowDescriptor* rowDesc );
 
     /**
      * @return Row count.
@@ -239,10 +243,12 @@ public:
 
     /**
      * @return New rowset which user may fill.
+     * shares ownership of key
      */
     CRowSet* NewRowset( PyRep* key );
 
-    virtual ~CFilterRowSet()    { /* do we need to do anything here? */ }
+    virtual ~CFilterRowSet();
+
 protected:
     DBRowDescriptor* _GetRowDesc() const;
     //PyList* _GetColumnList() const;

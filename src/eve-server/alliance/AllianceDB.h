@@ -45,7 +45,7 @@ public:
     PyRep *GetAlliance(uint32 allyID);
 
     PyRep* GetContacts(uint32 allyID);
-    void AddContact(uint32 ownerID, Call_CorporateContactData contactData);
+    void AddContact(uint32 ownerID, Call_CorporateContactData& contactData);
     void UpdateContact(int32 relationshipID, uint32 contactID, uint32 ownerID);
     void RemoveContact(uint32 contactID, uint32 ownerID);
 

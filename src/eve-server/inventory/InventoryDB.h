@@ -47,7 +47,7 @@ public:
      */
     bool GetShipType(uint16 shipTypeID, ShipTypeData &into);
 
-    bool GetItemContents(OwnerData &od, std::vector<uint32> &into);
+    bool GetItemIDs(OwnerData &od, std::vector<uint32> &into);
     bool GetItemContents(uint32 itemID, EVEItemFlags flag, std::vector<uint32> &into);
     bool GetItemContents(uint32 itemID, EVEItemFlags flag, uint32 ownerID, std::vector<uint32> &into);
 

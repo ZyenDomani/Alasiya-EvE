@@ -973,7 +973,6 @@ void SystemBubble::BubblecastDestinyUpdate(PyTuple** payload, const char* desc) 
         (*payload)->Dump(BUBBLE__CAST_DUMP, "    ");
     for (auto &cur : m_players) {
         _log(BUBBLE__CAST, "Bubblecast %s update to %s(%u)", desc, cur.second->GetName(), cur.first);
-        //PyIncRef(*payload);
         cur.second->QueueDestinyUpdate(payload);
     }
 }
@@ -985,7 +984,6 @@ void SystemBubble::BubblecastDestinyUpdateExclusive(PyTuple** payload, const cha
         // (this is an update to all client objects in the bubble EXCLUDING 'pSE')
         if (cur.second->GetShipSE() != pSE) {
             _log(BUBBLE__CAST, "Exclusive Bubblecast %s update to %s(%u)", desc, cur.second->GetName(), cur.first);
-            PyIncRef(*payload);
             cur.second->QueueDestinyUpdate(payload);
         }
     }
@@ -997,7 +995,6 @@ void SystemBubble::BubblecastDestinyEvent(PyTuple** payload, const char* desc) c
         (*payload)->Dump(BUBBLE__CAST_DUMP, "    ");
     for (auto &cur : m_players) {
         _log(BUBBLE__CAST, "Bubblecast %s event to %s(%u)", desc, cur.second->GetName(), cur.first);
-        PyIncRef(*payload);
         cur.second->QueueDestinyEvent(payload);
     }
 }
@@ -1006,7 +1003,6 @@ void SystemBubble::BubblecastSendNotification(const char* notifyType, const char
 {
     for (auto &cur : m_players) {
         _log(BUBBLE__CAST, "BubblecastNotify %s to %s(%u)", notifyType, cur.second->GetName(), cur.first);
-        PyIncRef(*payload);
         cur.second->SendNotification(notifyType, idType, payload, seq);
     }
 }

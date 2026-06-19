@@ -625,7 +625,7 @@ PyObject* Agent::GetInfoServiceDetails(Client* pClient)
             skillList->AddItem(skill1);
             skillList->AddItem(skill2);
         PyDict* researchData = new PyDict();
-            researchData->SetItemString("rpMultiplier", new PyInt(2));
+            researchData->SetItemString("rpMultiplier", PyStatic.NewTwo());
             researchData->SetItemString("skillTypeID", new PyInt(11452));   // this is player research field with this agent.  not sure how to make "none" yet
             researchData->SetItemString("points", new PyInt(150));
             researchData->SetItemString("pointsPerDay", new PyInt(30));
@@ -681,7 +681,7 @@ PyObject* Agent::GetInfoServiceDetails(Client* pClient)
     PyDict* locate = new PyDict();
     if (m_agentData.locator) {
         PyTuple* sameSystem = new PyTuple(3);
-            sameSystem->SetItem(0, new PyInt(0));
+            sameSystem->SetItem(0, PyStatic.NewZero());
             sameSystem->SetItem(1, new PyInt(10));
             sameSystem->SetItem(2, new PyInt(20000));
         PyTuple* sameConst = new PyTuple(3);
@@ -689,11 +689,11 @@ PyObject* Agent::GetInfoServiceDetails(Client* pClient)
             sameConst->SetItem(1, new PyInt(30));
             sameConst->SetItem(2, new PyInt(200000));
         PyTuple* sameRegion = new PyTuple(3);
-            sameRegion->SetItem(0, new PyInt(2));
+            sameRegion->SetItem(0, PyStatic.NewTwo());
             sameRegion->SetItem(1, new PyInt(60));
             sameRegion->SetItem(2, new PyInt(2000000));
         PyTuple* otherRegion = new PyTuple(3);
-            otherRegion->SetItem(0, new PyInt(3));
+            otherRegion->SetItem(0, PyStatic.NewThree());
             otherRegion->SetItem(1, new PyInt(120));
             otherRegion->SetItem(2, new PyInt(20000000));
         PyTuple* delays = new PyTuple(4);
@@ -705,8 +705,8 @@ PyObject* Agent::GetInfoServiceDetails(Client* pClient)
         locate->SetItemString("agentServiceType", new PyString("locate"));
         locate->SetItemString("frequency", new PyInt(1200));  // if this is PyNone (or 0?) agent location isnt avalible (client parsed msg)
         locate->SetItemString("delays", delays);
-        locate->SetItemString("callbackID", new PyInt(2));
-        locate->SetItemString("lastUsed", new PyInt(0));
+        locate->SetItemString("callbackID", PyStatic.NewTwo());
+        locate->SetItemString("lastUsed", PyStatic.NewZero());
     } else {
         locate->SetItemString("agentServiceType", PyStatic.NewNone());
     }

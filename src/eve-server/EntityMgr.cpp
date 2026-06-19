@@ -223,16 +223,6 @@ void EntityMgr::Process() {
     if (m_stampTimer.Check()) {
         m_profileTime = GetTimeUSeconds();
 
-        if (!m_deleteLater.empty()) {
-            sLog.Warning(" EntityMgr::Proc", "deleting %u later objects.", (uint32)m_deleteLater.size());
-            for (auto &cur : m_deleteLater) {
-                if ((*cur).IsDeleted())
-                    continue;
-                SafeDelete(cur);
-            }
-            m_deleteLater.clear();
-        }
-
         ++m_stamp;
 
         for (auto &cur : m_players)

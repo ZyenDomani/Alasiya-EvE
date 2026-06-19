@@ -1182,9 +1182,9 @@ PyResult ContractProxy::Handle_GetLoginInfo(PyCallArgs &call)
         assignedToMeHeader->AddColumn( "contractID",    DBTYPE_I4);
         assignedToMeHeader->AddColumn( "issuerID",      DBTYPE_I4);
 
-    CRowSet *needsAttention_rowset = new CRowSet( &needsAttentionHeader );
-    CRowSet *inProgress_rowset = new CRowSet( &inProgressHeader );
-    CRowSet *assignedToMe_rowset = new CRowSet( &assignedToMeHeader );
+    CRowSet *needsAttention_rowset = new CRowSet(needsAttentionHeader );
+    CRowSet *inProgress_rowset = new CRowSet(inProgressHeader );
+    CRowSet *assignedToMe_rowset = new CRowSet(assignedToMeHeader );
 
     PyDict* args = new PyDict;
         args->SetItemString( "needsAttention",          needsAttention_rowset );

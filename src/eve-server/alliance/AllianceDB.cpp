@@ -237,7 +237,7 @@ PyRep *AllianceDB::GetContacts(uint32 allyID)
     return obj;
 }
 
-void AllianceDB::AddContact(uint32 ownerID, Call_CorporateContactData contactData)
+void AllianceDB::AddContact(uint32 ownerID, Call_CorporateContactData& contactData)
 {
     DBerror err;
     sDatabase.RunQuery(err,

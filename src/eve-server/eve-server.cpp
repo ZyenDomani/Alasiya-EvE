@@ -194,6 +194,8 @@ static void CleanUp();
 
 // FIX: Swapped from volatile to atomic
 static std::atomic<bool> m_run(true);
+// signal flag
+std::atomic<bool> m_caught_signal;
 
 int main( int argc, char* argv[] )
 {
@@ -682,7 +684,7 @@ int main( int argc, char* argv[] )
     /* Config loaded, Start thread server and add our main thread. */
     sLog.Green( "        Threading", "Starting Main Loop threadID 0x%X", pthread_self() );
     sThread.Initialize();
-    sThread.AddThread(pthread_self());
+    //sThread.AddThread(pthread_self());
     std::printf("\n");     // spacer
 
     /* Start up the TCP server */
@@ -1021,71 +1023,70 @@ int main( int argc, char* argv[] )
     // Check if we dropped out because of a system signal
     int sig = m_caught_signal.load();
     if (sig > 0) {
-        sLog.Error("     SignalSystem", "Caught signal: %d (%s). Initializing emergency shutdown...", 
+        sLog.Error("   ServerShutdown", "Caught signal: %i (%s). Initializing emergency shutdown...",
                    sig, strsignal(sig));
-        sLog.Error("     SignalSystem", "Alasiya EvEmu Server is Offline." );
-        CleanUp();
-        return EXIT_SUCCESS;
     } else {
-        sLog.Info("Signal System", "Normal application exit initiated.");
+        sLog.Green("   ServerShutdown", "Normal application exit initiated.");
     }
 
     /** @note  these are order-dependent...
      */
     sLog.Warning("   ServerShutdown", "Main loop has stopped." );
-    sLog.Error("   ServerShutdown", "Alasiya EvEmu Server is Offline." );
+    sLog.Warning("   ServerShutdown", "Saving Items." );
     if (!sConsole.IsDbError())
-        ServiceDB::SetServerOnlineStatus(false);
+        sItemFactory.SaveItems();
     /* stop TCP listener */
     tcps.Close();
     sLog.Warning("   ServerShutdown", "TCP listener stopped." );
     /* stop Image Server */
     sImageServer.Stop();
     sLog.Warning("   ServerShutdown", "Image Server stopped." );
-    /* Close the MarketMgr */
-    sMktMgr.Close();
-    /* Close the LiveUpdateDB service */
-    sLiveUpdateDB.Close();
-    /* Close the bulk data manager */
-    sBulkDB.Close();
-    /* Close the station data manager */
-    stDataMgr.Close();
-    /* Close the map data manager */
-    sMapData.Close();
-    /* Close the static data manager */
-    //sDataMgr.Clear();
-    sDataMgr.Close();
     /* Close the statistics manager */
     sStatMgr.Close();
     /* Close the standings manager */
     sStandingMgr.Close();
-    sLog.Warning("   ServerShutdown", "Saving Items." );
-    if (!sConsole.IsDbError())
-        sItemFactory.SaveItems();
-    /* Close the entity list */
-    sEntityMgr.Close();
+    /* delete services */
+    //SafeDelete(pyServMgr.lsc_service);
+    //SafeDelete(pyServMgr.cache_service);
     /* Close the service manager */
     pyServMgr.Close();
-    /* Shut down the Item system */
-    sLog.Warning("   ServerShutdown", "Shutting down Item Factory." );
-    sItemFactory.Close();
+    /* Close the MarketMgr */
+    sMktMgr.Close();
+    /* Close the LiveUpdateDB service */
+    sLiveUpdateDB.Close();
+    /* Close the station data manager */
+    stDataMgr.Close();
+    /* Close the map data manager */
+    sMapData.Close();
+    sMissionDataMgr.Clear();
+    /* Close the bulk data manager */
+    sBulkDB.Close();
     /* Close the bubble manager */
     sBubbleMgr.clear();
     /* Close the command dispatcher */
     command_dispatcher.Close();
     /* Stop Console Command Interpreter */
     //sConsole.Stop();
+    /* Close the entity list */
+    sEntityMgr.Close();
+    /* Shut down the Item system */
+    sLog.Warning("   ServerShutdown", "Shutting down Item Factory." );
+    sItemFactory.Close();
+    if (!sConsole.IsDbError())
+        ServiceDB::SetServerOnlineStatus(false);
+    /* Close the static data manager */
+    sDataMgr.Close();
+    /* close the db handler */
+    sLog.Warning("   ServerShutdown", "Closing DataBase Connection." );
+    sDatabase.Close();
     /** @todo  the thread system is only implemented for tcp connections at this time. */
     sLog.Warning("   ServerShutdown", "Shutting down Thread Manager." );
     /* join open threads */
     sThread.EndThreads();
-    /* close the db handler */
-    sLog.Warning("   ServerShutdown", "Closing DataBase Connection." );
-    sDatabase.Close();
     sLog.Warning("   ServerShutdown", "Alasiya EvEmu is Offline.");
+    pthread_exit(nullptr);
     /* close logfile */
     //log_close_logfile();
-    pthread_exit(nullptr);
     return EXIT_SUCCESS;
 }
 
@@ -1120,54 +1121,57 @@ static void CatchSignal(int sig_num) {
 }
 
 static void CleanUp() {
+    /** @note  these are order-dependent...
+     */
+    sLog.Warning("   ServerShutdown", "Main loop has stopped." );
+    sLog.Warning("   ServerShutdown", "Saving Items." );
     if (!sConsole.IsDbError())
-        ServiceDB::SetServerOnlineStatus(false);
+        sItemFactory.SaveItems();
     /* stop TCP listener */
     //tcps.Close();
     sLog.Warning("   ServerShutdown", "TCP listener stopped." );
     /* stop Image Server */
     sImageServer.Stop();
     sLog.Warning("   ServerShutdown", "Image Server stopped." );
+    /* Close the statistics manager */
+    sStatMgr.Close();
+    /* Close the standings manager */
+    sStandingMgr.Close();
+    /* Close the service manager */
+    //pyServMgr.Close();
     /* Close the MarketMgr */
-    sLog.Warning("   ServerShutdown", "Shutting down Market Manager." );
     sMktMgr.Close();
+    /* Close the LiveUpdateDB service */
+    sLiveUpdateDB.Close();
     /* Close the bulk data manager */
-    sLog.Warning("   ServerShutdown", "Closing the BulkData Manager." );
     sBulkDB.Close();
     /* Close the station data manager */
-    sLog.Warning("   ServerShutdown", "Closing the StationData Manager." );
     stDataMgr.Close();
-    /* Close the static data manager */
-    sLog.Warning("   ServerShutdown", "Closing the StaticData Manager." );
-    sDataMgr.Close();
-    sStatMgr.Close();
-    sStandingMgr.Close();
-    sLog.Warning("   ServerShutdown", "Saving Items." );
-    if (!sConsole.IsDbError())
-        sItemFactory.SaveItems();
-    /* Close the entity list */
-    sLog.Warning("   ServerShutdown", "Closing the Entity List." );
-    sEntityMgr.Close();
-    /* Close the service manager */
-    sLog.Warning("   ServerShutdown", "Closing the Services Manager." );
-    //pyServMgr.Close();
-    /* Shut down the Item system */
-    sLog.Warning("   ServerShutdown", "Shutting down Item Factory." );
-    sItemFactory.Close();
-    sLog.Warning("   ServerShutdown", "Closing the Bubble Manager." );
+    /* Close the map data manager */
+    sMapData.Close();
+    /* Close the bubble manager */
     sBubbleMgr.clear();
     /* Close the command dispatcher */
     //command_dispatcher.Close();
     /* Stop Console Command Interpreter */
     //sConsole.Stop();
+    /* Close the entity list */
+    sEntityMgr.Close();
+    /* Shut down the Item system */
+    sLog.Warning("   ServerShutdown", "Shutting down Item Factory." );
+    sItemFactory.Close();
+    if (!sConsole.IsDbError())
+        ServiceDB::SetServerOnlineStatus(false);
+    /* close the db handler */
+    sLog.Warning("   ServerShutdown", "Closing DataBase Connection." );
+    sDatabase.Close();
+    /* Close the static data manager */
+    sDataMgr.Close();
     /** @todo  the thread system is only implemented for tcp connections at this time. */
     sLog.Warning("   ServerShutdown", "Shutting down Thread Manager." );
     /* join open threads */
     sThread.EndThreads();
-    /* close the db handler */
-    sLog.Warning("   ServerShutdown", "Closing DataBase Connection." );
-    sDatabase.Close();
     sLog.Warning("   ServerShutdown", "Alasiya EvEmu is Offline.");
     /* close logfile */
-    log_close_logfile();
+    //log_close_logfile();
 }

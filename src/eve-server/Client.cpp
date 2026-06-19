@@ -2113,8 +2113,10 @@ void Client::QueueDestinyEvent(PyTuple** event) {
 void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool IsSetState /*false*/) {
     if ((update == nullptr) or ((*update) == nullptr))
         return;
-    if (sDataMgr.IsStation(m_locationID))
+    if (sDataMgr.IsStation(m_locationID)) {
+        PySafeDecRef(*update);
         return;
+    }
     if (is_log_enabled(CLIENT__QUEUE_DUMP))
         (*update)->Dump(CLIENT__QUEUE_DUMP, "");
     DoDestinyAction act;
@@ -2145,7 +2147,7 @@ void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool
             }
         PyTuple* t = dum.Encode();
         SendNotification("DoDestinyUpdate", "clientID", &t, false);
-        PyDecRef(t);
+        //PyDecRef(t);
     } else {
         act.update = *update;
         //m_packaged = true;
@@ -2216,6 +2218,7 @@ void Client::SendNotification(const char *notifyType, const char *idType, PyTupl
         notify.notifyType = notifyType;
         notify.remoteObject = 1;
         notify.args = (*payload);
+        PyIncRef(*payload);
 
     PyAddress dest;
     // are all of these 'Broadcast'?
@@ -2337,7 +2340,7 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     // this doesnt work as i want it to.  it may be in the wrong place.  needs testing
     //  sending '2' will have client use hashed pass.
     //  sending '1' will have client send hashed pass first, then a second authentication packet using plain pass
-    PyRep* res = new PyInt(2);
+    PyRep* res = PyStatic.NewTwo();
     mNet->QueueRep(res);
 
     std::string failMsg = "Login Authorization Invalid.";

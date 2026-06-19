@@ -57,7 +57,6 @@ void StandingMgr::Populate() {
     m_factionStandings = StandingDB::GetFactionStandings();
     if (m_factionStandings == nullptr)
         sLog.Error("      StandingMgr", "m_factionStandings is null");
-    PySafeIncRef(m_factionStandings);
 
     DBResultRow row;
     DBQueryResult res;
@@ -175,7 +174,7 @@ void StandingMgr::UpdateDerivedStandings(uint32 fromID, uint32 toID, uint16 even
 }
 
 void StandingMgr::UpdateStandings(Character* pChar, Agent* pAgent, uint8 eventID, std::string missionName, bool important/*false*/) {
-    uint32 charID(pChar->itemID());
+    uint32 charID(0);
     float charStanding = GetEffectiveStanding(pAgent->GetID(), pChar);
     float quality = EvEMath::Agent::EffectiveQuality(pAgent->GetQuality(), pChar->GetSkillLevel(EvESkill::Negotiation), charStanding);
     float pctChange = EvEMath::Agent::StandingChange(pAgent->GetLevel(), quality);
@@ -230,7 +229,8 @@ void StandingMgr::UpdateStandings(Character* pChar, Agent* pAgent, uint8 eventID
         std::vector<Client*> clientVec;
         sFltSvc.GetFleetClientsInSystem(pChar->GetClient(), clientVec);
         for (auto &cur : clientVec) {
-            UpdateStandings(pAgent->GetID(), cur->GetCharacterID(), eventID, pctChange, msg);
+            charID = cur->GetCharacterID();
+            UpdateStandings(pAgent->GetID(), charID, eventID, pctChange, msg);
             float change = pctChange * sConfig.standings.ACorp2CharMissionMultiplier;
             UpdateStandings(pAgent->GetCorpID(), charID, eventID, change, msg);
             if (important) {
@@ -241,22 +241,22 @@ void StandingMgr::UpdateStandings(Character* pChar, Agent* pAgent, uint8 eventID
                 UpdateDerivedStandings(pAgent->GetFactionID(), charID, eventID, change, msg);
             }
 
-            if (IsPlayerCorp(pChar->GetClient()->GetCorporationID())) {
+            if (IsPlayerCorp(cur->GetCorporationID())) {
                 change = pctChange * sConfig.standings.Agent2PCorpMissionMultiplier;
-                UpdateStandings(pAgent->GetID(), pChar->GetClient()->GetCorporationID(), eventID, change, msg);
+                UpdateStandings(pAgent->GetID(), cur->GetCorporationID(), eventID, change, msg);
                 change = pctChange * sConfig.standings.ACorp2PCorpMissionMultiplier;
-                UpdateStandings(pAgent->GetCorpID(), pChar->GetClient()->GetCorporationID(), eventID, change, msg);
+                UpdateStandings(pAgent->GetCorpID(), cur->GetCorporationID(), eventID, change, msg);
                 if (important) {
                     change = pctChange * sConfig.standings.AFaction2PCorpMissionMultiplier;
-                    UpdateStandings(pAgent->GetFactionID(), pChar->GetClient()->GetCorporationID(), eventID, change, msg);
+                    UpdateStandings(pAgent->GetFactionID(), cur->GetCorporationID(), eventID, change, msg);
                     // do derived standings
                     change = pctChange * sConfig.standings.FactionDerivedMultiplier;
-                    UpdateDerivedStandings(pAgent->GetFactionID(), pChar->GetClient()->GetCorporationID(), eventID, change, std::move(msg));
+                    UpdateDerivedStandings(pAgent->GetFactionID(), cur->GetCorporationID(), eventID, change, std::move(msg));
                 }
             }
             PyTuple* agent = new PyTuple(5);
                 agent->SetItem(0, new PyInt(pAgent->GetID()));
-                agent->SetItem(1, new PyInt(cur->GetCharacterID()));
+                agent->SetItem(1, new PyInt(charID));
                 agent->SetItem(2, new PyFloat(pctChange));
                 agent->SetItem(3, PyStatic.NewNegOne());
                 agent->SetItem(4, PyStatic.NewOne());
@@ -286,6 +286,7 @@ void StandingMgr::UpdateStandings(Character* pChar, Agent* pAgent, uint8 eventID
         }
     }
 
+    charID = pChar->itemID();
     UpdateStandings(pAgent->GetID(), charID, eventID, pctChange, msg);
     float change = pctChange * sConfig.standings.ACorp2CharMissionMultiplier;
     UpdateStandings(pAgent->GetCorpID(), charID, eventID, change, msg);
@@ -297,17 +298,17 @@ void StandingMgr::UpdateStandings(Character* pChar, Agent* pAgent, uint8 eventID
         UpdateDerivedStandings(pAgent->GetFactionID(), charID, eventID, change, msg);
     }
 
-    if (IsPlayerCorp(pChar->GetClient()->GetCorporationID())) {
+    if (IsPlayerCorp(pChar->corporationID())) {
         change = pctChange * sConfig.standings.Agent2PCorpMissionMultiplier;
-        UpdateStandings(pAgent->GetID(), pChar->GetClient()->GetCorporationID(), eventID, change, msg);
+        UpdateStandings(pAgent->GetID(), pChar->corporationID(), eventID, change, msg);
         change = pctChange * sConfig.standings.ACorp2PCorpMissionMultiplier;
-        UpdateStandings(pAgent->GetCorpID(), pChar->GetClient()->GetCorporationID(), eventID, change, msg);
+        UpdateStandings(pAgent->GetCorpID(), pChar->corporationID(), eventID, change, msg);
         if (important) {
             change = pctChange * sConfig.standings.AFaction2PCorpMissionMultiplier;
-            UpdateStandings(pAgent->GetFactionID(), pChar->GetClient()->GetCorporationID(), eventID, change, msg);
+            UpdateStandings(pAgent->GetFactionID(), pChar->corporationID(), eventID, change, msg);
             // do derived standings
             change = pctChange * sConfig.standings.FactionDerivedMultiplier;
-            UpdateDerivedStandings(pAgent->GetFactionID(), pChar->GetClient()->GetCorporationID(), eventID, change, std::move(msg));
+            UpdateDerivedStandings(pAgent->GetFactionID(), pChar->corporationID(), eventID, change, std::move(msg));
         }
     }
 

@@ -990,13 +990,13 @@ void SystemManager::MakeSetState(const SystemBubble* pBubble,  SetState& into) c
     /* SolarSystem info.  this avoids the old way of a DB hit for every call.  */
     PyPackedRow* row = new PyPackedRow(sDataMgr.CreateHeader());
         row->SetFieldC("itemID",        new PyLong(m_data.systemID));
-        row->SetFieldC("typeID",        new PyInt(5));
+        row->SetFieldC("typeID",        PyStatic.NewFive());
         row->SetFieldC("ownerID",       PyStatic.NewOne());  // should this be owning factionID?  yes
         row->SetFieldC("locationID",    new PyInt(m_data.constellationID));
         row->SetFieldC("flagID",        PyStatic.NewZero());
         row->SetFieldC("quantity",      PyStatic.NewNegOne());
-        row->SetFieldC("groupID",       new PyInt(5));
-        row->SetFieldC("categoryID",    new PyInt(2));
+        row->SetFieldC("groupID",       PyStatic.NewFive());
+        row->SetFieldC("categoryID",    PyStatic.NewTwo());
         row->SetFieldC("customInfo",    new PyString(""));
     into.solItem = row;
 

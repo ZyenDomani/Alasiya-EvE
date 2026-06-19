@@ -46,7 +46,7 @@ BaseTCPServer::~BaseTCPServer() {
     // Wait until worker thread terminates
     WaitLoop();
     /*  delete thread here and remove from list */
-    sThread.RemoveThread(pthread_self());
+    //sThread.RemoveThread(pthread_self());
 }
 
 bool BaseTCPServer::IsOpen() const{

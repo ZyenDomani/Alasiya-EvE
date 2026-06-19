@@ -159,8 +159,8 @@ void ClientSession::EncodeChanges(PyDict* into)
     if (!mDirty)
         return;
 
-    PyDict::const_iterator cur = mSession->begin(), end = mSession->end();
-    for (; cur != end; ++cur)
+    PyDict::const_iterator cur = mSession->begin();
+    for (; cur != mSession->end(); ++cur)
         if (cur->second->AsTuple()->GetItem(2)->AsBool()->value()) {    // if this value hasnt changed, dont send it.
             _GetValueTuple(PyRep::StringContent(cur->first).c_str())->SetItem(2, PyStatic.NewFalse());
             into->SetItem(cur->first->AsString(), new_tuple(cur->second->AsTuple()->GetItem(0), cur->second->AsTuple()->GetItem(1)));
@@ -172,7 +172,7 @@ void ClientSession::EncodeChanges(PyDict* into)
 // none of these should ever be null...  havent had any msgs because of this, but do i want to leave them here?
 PyTuple* ClientSession::_GetValueTuple(const char* name) const
 {
-    PyRep* value(mSession->GetItemString(name)); // copy c'tor
+    PyRep* value = mSession->GetItemString(name);
     if (value == nullptr) {
         _log(CLIENT__SESSION_NOTFOUND, "ClientSession::_GetValueTuple - value not found with name '%s'", name);
         return nullptr;
@@ -182,7 +182,7 @@ PyTuple* ClientSession::_GetValueTuple(const char* name) const
 
 PyRep* ClientSession::_GetLast(const char* name) const
 {
-    PyTuple* tuple(_GetValueTuple(name)); // copy c'tor
+    PyTuple* tuple = _GetValueTuple(name);
     if (tuple == nullptr) {
         _log(CLIENT__SESSION_NOTFOUND, "ClientSession::_GetLast - value not found with name '%s'", name);
         return nullptr;
@@ -192,7 +192,7 @@ PyRep* ClientSession::_GetLast(const char* name) const
 
 PyRep* ClientSession::_GetCurrent(const char* name) const
 {
-    PyTuple* tuple(_GetValueTuple(name)); // copy c'tor
+    PyTuple* tuple = _GetValueTuple(name);
     if (tuple == nullptr) {
         if (is_log_enabled(CLIENT__SESSION_NOTFOUND)) {
             _log(CLIENT__SESSION_NOTFOUND, "ClientSession::_GetCurrent - value not found with name '%s'", name);
@@ -205,7 +205,7 @@ PyRep* ClientSession::_GetCurrent(const char* name) const
 
 void ClientSession::_Set(const char* name, PyRep* value)
 {
-    PyTuple* tuple(_GetValueTuple(name)); // copy c'tor
+    PyTuple* tuple = _GetValueTuple(name);
     if (tuple == nullptr) {
         // this may no longer be needed
         tuple = new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse());
@@ -215,13 +215,11 @@ void ClientSession::_Set(const char* name, PyRep* value)
         PyDecRef(tuple->GetItem(0));
     }
 
-    PyRep* current(tuple->GetItem(1)); // copy c'tor
+    PyRep* current = tuple->GetItem(1);
     if (value->hash() != current->hash()) {
         tuple->SetItem(0, current);
         tuple->SetItem(1, value);
         tuple->SetItem(2, PyStatic.NewTrue());
         mDirty = true;
-    } //else {
-      //  PyDecRef(value);
-    //}
+    }
 }

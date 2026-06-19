@@ -4,7 +4,9 @@
     ------------------------------------------------------------------------------------
     This file is part of EVEmu: EVE Online Server Emulator
     Copyright 2006 - 2016 The EVEmu Team
-    For the latest information visit http://evemu.org
+    Copyright 2016 - 2026 Alasiya-EvE by Allan
+    For the latest implementation status visit http://eve.alasiya.net/?p=op_status
+
     ------------------------------------------------------------------------------------
     This program is free software; you can redistribute it and/or modify it under
     the terms of the GNU Lesser General Public License as published by the Free Software
@@ -21,7 +23,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
-	Updates:	Allan
+    Updates:	Allan
 */
 
 #include "eve-xmlpktgen.h"
@@ -85,24 +87,30 @@ bool ClassHeaderGenerator::ProcessElementDef( const TiXmlElement* field )
         std::cout << std::endl <<  "HeaderGen::ProcessElementDef: <element> at line " << field->Row() << " contains more than one root element, skipping.";
         return false;
     }
-
     const char* encode_type = GetEncodeType( main );
 
     fprintf( mOutputFile,
-        "class %s\n"
-        "{\n"
-        "public:\n"
-        "    %s();\n"
-        "    %s(const %s& oth);\n"
-        "    ~%s();\n"
-        "\n"
-        "    void Dump(LogType type, const char* pfx = \" \") const;\n"
-        "\n",
-        name,
-        name,
-        name, name,
-        name
+             "class %s\n"
+             "{\n"
+             "public:\n"
+             "  %s();\n"
+             "  ~%s();\n"
+             "\n"
+             "  // --- Rule of 5: Block compiler-generated c'tors  -allan June2026 ---\n"
+             "  %s(const %s&) = delete;\n"
+             "  %s& operator=(const %s&) = delete;\n"
+             "  %s(%s&&) = delete;\n"
+             "  %s& operator=(%s&&) = delete;\n"
+             "\n"
+             "  void Dump(LogType type, const char* pfx = \"  \") const;\n"
+             "\n",
+             name, name, name,
+             name, name,     // for copy constructor
+             name, name,     // for copy assignment
+             name, name,     // for move constructor
+             name, name      // for move assignment
     );
+
 
     if (decode) {
         fprintf( mOutputFile,
@@ -120,12 +128,6 @@ bool ClassHeaderGenerator::ProcessElementDef( const TiXmlElement* field )
             encode_type
         );
     }
-
-    fprintf( mOutputFile,
-        "    %s& operator=(const %s& oth);\n"
-        "\n",
-        name, name
-    );
 
     if (!ParseElement(main))
         return false;
@@ -482,7 +484,6 @@ bool ClassHeaderGenerator::ProcessListInt( const TiXmlElement* field )
 
 	// is this actually a vector, or should it be a list?
     fprintf( mOutputFile,
-        "    // not sure how to member-initalize this\n"
         "    std::vector<int32>\t%s;\n",
         name
     );
@@ -503,7 +504,6 @@ bool ClassHeaderGenerator::ProcessListLong( const TiXmlElement* field )
 
 	// is this actually a vector, or should it be a list?
     fprintf( mOutputFile,
-        "    // not sure how to member-initalize this\n"
         "    std::vector<int64>\t%s;\n",
         name
     );
@@ -523,7 +523,6 @@ bool ClassHeaderGenerator::ProcessListStr( const TiXmlElement* field )
         return false;
 
     fprintf( mOutputFile,
-        "    // not sure how to member-initalize this\n"
         "    std::vector<std::string>\t%s;\n",
         name
     );
@@ -600,7 +599,6 @@ bool ClassHeaderGenerator::ProcessDictRaw( const TiXmlElement* field )
         return false;
 
     fprintf( mOutputFile,
-        "    // not sure how to member-initalize this\n"
         "    std::map<%s, %s>\t%s;\n",
         key, value, name
     );
@@ -620,7 +618,6 @@ bool ClassHeaderGenerator::ProcessDictInt( const TiXmlElement* field )
         return false;
 
     fprintf( mOutputFile,
-        "    // not sure how to member-initalize this\n"
         "    std::map<int32, PyRep*>\t%s;\n",
         name
     );
@@ -640,7 +637,6 @@ bool ClassHeaderGenerator::ProcessDictStr( const TiXmlElement* field )
         return false;
 
     fprintf( mOutputFile,
-        "    // not sure how to member-initalize this\n"
         "    std::map<std::string, PyRep*>\t%s;\n",
         name
     );

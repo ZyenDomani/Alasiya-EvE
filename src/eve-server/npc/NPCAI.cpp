@@ -514,70 +514,82 @@ void NPCAIMgr::WarpOutComplete() {
     m_warpOutTimer.Disable();
     m_state = NPCAI::State::Idle;
 }
-
 void NPCAIMgr::SetWander() {
-	// non-spawned npcs dont wander
     if (myNPC->GetSpawnMgr() == nullptr)
         return;
-    if (m_action == NPCAI::Action::Wandering) {
-        // called while wandering?  shouldnt happen
+    if (m_action == NPCAI::Action::Wandering)
+        return;
+
+    _log(NPC__AI_TRACE, "%s(%u): Wandering - Active sight range threshold: %um",
+         myNPC->GetName(), myNPC->GetID(), m_sightRange);
+
+    m_action = NPCAI::Action::Wandering;
+    SystemBubble* pBubble = myNPC->SysBubble();
+
+    if (pBubble == nullptr) {
+        if (m_destiny->IsMoving()) m_destiny->Stop();
         return;
     }
 
-    //_log(NPC__AI_LOGIC, "SetWander(); ");
-    _log(NPC__AI_TRACE, "%s(%u): Wandering:  No Targets within my sight range of %um", \
-            myNPC->GetName(), myNPC->GetID(), m_sightRange);
+    // =====================================================================
+    // DEADSPACE ENCOUNTER CONTAINMENT PATTERN
+    // =====================================================================
+    if (pBubble->IsAnomaly() || pBubble->IsIncursion() || pBubble->IsMission()) {
+        // Combat rats in pockets do not roam. They halt at their spawn nodes
+        // and scan for incoming warp arrivals.
+        if (m_destiny->IsMoving()) {
+            m_destiny->Stop();
+        }
+        return; // Safe exit point after enforcing action update state!
+    }
 
-    m_action = NPCAI::Action::Wandering;
-
-    //Heal();
-
-    SystemBubble* pBubble = myNPC->SysBubble();
-    // wandering.  nothing to shoot.  look for target.
-    if (pBubble->IsAnomaly() or pBubble->IsIncursion() or pBubble->IsMission() or pBubble->IsNormal())
-        return;
-
+    // =====================================================================
+    // ASTEROID BELT LOOSE ORBIT SEEDING
+    // =====================================================================
     if (pBubble->IsBelt()) {
         if (pBubble->HasDynamics()) {
-            // pick random entity and loosely orbit it.  if no entity found, orbit center of belt
             m_actionTarget = pBubble->GetRandomEntity();
-            if (m_actionTarget == nullptr)
+            if (m_actionTarget == nullptr) {
                 m_actionTarget = myNPC->SystemMgr()->GetSE(sBubbleMgr.GetBeltID(pBubble->GetID()));
-            if (!pBubble->HasPlayers() and (m_actionTarget == nullptr)) {  //  <--  this will never hit (or shouldnt)
-                _log(NPC__WARNING, "%s(%u): Wandering:  No Players, Target or beltSE found.", myNPC->GetName(), myNPC->GetID());
-                // nothing here...leave bubble
+            }
+
+            if (!pBubble->HasPlayers() && m_actionTarget == nullptr) {
+                _log(NPC__WARNING, "%s(%u): Wandering - Structural fallback warp required.", myNPC->GetName(), myNPC->GetID());
                 WarpOut();
                 return;
             }
         } else {
-            // nothing here...leave bubble
-            _log(NPC__AI_TRACE, "%s(%u):  Nothing here.  Warping out.", myNPC->GetName(), myNPC->GetID());
+            _log(NPC__AI_TRACE, "%s(%u): Bubble devoid of life assets. Warping out.", myNPC->GetName(), myNPC->GetID());
             WarpOut();
             return;
         }
 
-        if (m_actionTarget == nullptr)
-            return;
+        if (m_actionTarget == nullptr) return;
 
         ChangeSpeed(false);
         uint16 orbitDistance = MakeRandomUInt(5000, 15000);
+
+        // FIX: The Destiny engine should track targeted anchors via entityID
+        // rather than storing raw C++ memory pointers to protect against segregation faults!
         if (sConfig.npc.UseOrbit) {
             m_destiny->InitOrbit(m_actionTarget, orbitDistance);
-            _log(NPC__AI_TRACE, "%s(%u):  Just for shits-n-giggles, I\'m gonna orbit %s(%u) at %um.", \
-                    myNPC->GetName(), myNPC->GetID(), m_actionTarget->GetName(), m_actionTarget->GetID(), orbitDistance);
+            _log(NPC__AI_TRACE, "%s(%u): Initializing ambient orbit ring around %s(%u) at %um.",
+                 myNPC->GetName(), myNPC->GetID(), m_actionTarget->GetName(), m_actionTarget->GetID(), orbitDistance);
         } else {
             m_destiny->Follow(m_actionTarget, orbitDistance);
-            _log(NPC__AI_TRACE, "%s(%u):  Just for shits-n-giggles, I\'m gonna follow %s(%u) at %um.", \
-                    myNPC->GetName(), myNPC->GetID(), m_actionTarget->GetName(), m_actionTarget->GetID(), orbitDistance);
+            _log(NPC__AI_TRACE, "%s(%u): Initializing passive path tracking behind %s(%u) at %um.",
+                 myNPC->GetName(), myNPC->GetID(), m_actionTarget->GetName(), m_actionTarget->GetID(), orbitDistance);
         }
 
-        m_actionTarget = nullptr;
+        m_actionTarget = nullptr; // Clean tracking map isolation flush
         return;
     }
 
-    if (m_destiny->IsMoving())
+    if (m_destiny->IsMoving()) {
         m_destiny->Stop();
+    }
 }
+
 
 void NPCAIMgr::SetIdle() {
     // should we check passive here?
@@ -1017,19 +1029,7 @@ bool NPCAIMgr::VerifyTarget() {
     return true;
 }
 
-void NPCAIMgr::PickTarget() {
-    // check for existing targets first.
     /*  this will need more thought to finish
-    if (myNPC->TargetMgr()->GetTargetCount() > 1) {
-        // we have multiples to choose from
-        std::map<SystemEntity*, TargetEntry*> targets;
-        myNPC->TargetMgr()->GetAllTargets(targets);
-        // loop thru targets to pick most appropriate one
-        std::multimap<float, ShipSE*> targVec;
-        for (auto &cur : targets) {
-            // sort according to size
-            targVec.emplace(cur.first->GetRadius(), cur.first);
-        }
         // pick size based on npc size
 
         Swarm       = 35,
@@ -1038,61 +1038,75 @@ void NPCAIMgr::PickTarget() {
         Cruiser     = 200,
         BCruiser    = 300,
         BShip       = 350
-    } else { */
-        // nope...get first on the list
-    if (myNPC->TargetMgr()->HasNoTargets()) {
-        m_attackTarget = nullptr;
-    } else {
+*/
+void NPCAIMgr::PickTarget() {
+    // 1. If we already have targets recorded on our tracker manager, grab the first one
+    if (!myNPC->TargetMgr()->HasNoTargets()) {
         m_attackTarget = myNPC->TargetMgr()->GetFirstTarget();
+        m_beginFindTarget.Disable();
+        return;
     }
 
-    // is target valid?
-    if (m_attackTarget == nullptr) {
-        // nope.  see whats around and go from there
-        std::multimap<float, ShipSE*> targVec;
-        std::vector<Client*> clientVec;
-        DestinyManager* pDestiny(nullptr);
-        myNPC->SysBubble()->GetPlayers(clientVec); // what about player drones?  yes...later
-        for (auto &cur : clientVec) {
-            if (cur->IsInvul())
-                continue;
-            if (cur->GetShipSE() == nullptr)   // this shouldnt be needed, but whatever...
-                continue;
-            if (!InSightRange(cur->GetShipSE()))
-                continue;
-            if (cur->InPod() and sConfig.npc.TargetPod) {
-                if (myNPC->SystemMgr()->GetSecurityRating() > sConfig.npc.TargetPodSec) {
-                    continue;
-                }
-            }
+    m_attackTarget = nullptr;
 
-            pDestiny = cur->GetShipSE()->DestinyMgr();
-            if (pDestiny == nullptr)   // this shouldnt be needed, but whatever...
-                continue;
-            if (pDestiny->IsCloaked() or pDestiny->IsWarping())
-                continue;
+    // 2. Fetch active players currently residing inside our local grid bubble
+    std::vector<Client*> clientVec;
+    myNPC->SysBubble()->GetPlayers(clientVec);
+    if (clientVec.empty()) {
+        m_beginFindTarget.Disable();
+        return;
+    }
 
-            // sort according to size, based on size of npc
-            // NOTE:  this will get complicated...
-            targVec.emplace(cur->GetShipSE()->GetRadius(), cur->GetShipSE());
-        }
+    ShipSE* bestCandidate = nullptr;
+    float highestThreatScore = -1.0f;
 
-        // pick based on size
-        for (auto &cur : targVec) {
-            if (cur.first < m_size) {
-                Target(cur.second);
-                break;
+    // 3. Single high-speed processing loop (No heavy intermediate maps required)
+    for (Client* client : clientVec) {
+        if (!client || client->IsInvul()) continue;
+
+        ShipSE* targetShip = client->GetShipSE();
+        if (!targetShip || !InSightRange(targetShip)) continue;
+
+        // Pod protection gating matching your original config rules
+        if (client->InPod() && sConfig.npc.TargetPod) {
+            if (myNPC->SystemMgr()->GetSecurityRating() > sConfig.npc.TargetPodSec) {
+                continue;
             }
         }
 
-        // if this fails to get target, just pick first in list (if there is one)
-        if (m_attackTarget == nullptr)
-            if (!targVec.empty())
-                Target(targVec.begin()->second);
+        DestinyManager* pDestiny = targetShip->DestinyMgr();
+        if (!pDestiny || pDestiny->IsCloaked() || pDestiny->IsWarping()) continue;
+
+        // =====================================================================
+        // ADVANCED MECHANIC: HIGH-PERFORMANCE THREAT SELECTION
+        // =====================================================================
+        float targetRadius = targetShip->GetRadius();
+        float distance = myNPC->GetPosition().distance(targetShip->GetPosition()); // Calculate range in meters
+        if (distance <= 0.0f) distance = 1.0f;
+
+        // Scoring Blueprint:
+        // Larger ships are easier to lock onto (Higher Score)
+        // Closer ships are immediate threats (Inverse Distance Modifier)
+        float currentScore = (targetRadius * 1000.0f) / distance;
+
+        // OPTIMIZATION GATING: Match hull scales cleanly
+        // If a Frigate rat matches a Frigate player, give it a 50% threat multiplier boost!
+        if (std::abs(targetRadius - m_size) < 50.0f) {
+            currentScore *= 1.5f;
+        }
+
+        if (currentScore > highestThreatScore) {
+            highestThreatScore = currentScore;
+            bestCandidate = targetShip;
+        }
     }
 
-    //if (m_attackTarget != nullptr)
-    	m_beginFindTarget.Disable();
+    // 4. Commit target lock acquisition to the engine components
+    if (bestCandidate != nullptr) {
+        Target(bestCandidate); // Initiates your clean TargetManager locking pipeline
+    }
+
+    m_beginFindTarget.Disable();
 }
 
 void NPCAIMgr::ClearTarget(SystemEntity* pTargetSE) {

@@ -72,7 +72,7 @@ public:
     //bool IsObjectFresh(const std::string &objectID, uint32 version, int64 timestamp);
     void UpdateCacheFromSS(const std::string &objectID, PySubStream **in_cached_data);
     void UpdateCache(const std::string &objectID, PyRep **in_cached_data);
-    void UpdateCache(const PyRep *objectID, PyRep **in_cached_data);
+    void UpdateCache( const PyRep* objectID, PyRep** in_cached_data );
 
     PyObject *MakeCacheHint(const PyRep *objectID);
     PyObject *MakeCacheHint(const std::string &objectID);
@@ -100,7 +100,7 @@ protected:
     //static bool AddCachedFileContents(const char *filename, const char *oname, PySubStream *into);
     void GetCacheFileName(PyRep *key, std::string &into);
 
-    void _UpdateCache(const PyRep *objectID, PyBuffer **buffer);
+    void _UpdateCache(const PyRep* objectID, PyBuffer* pbuf);
 
     class CacheRecord {
     public:

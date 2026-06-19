@@ -89,3 +89,64 @@ again, no client, with delete this disabled
 ==20611==
 ==20611== ERROR SUMMARY: 189 errors from 189 contexts (suppressed: 0 from 0)
 ==20611== ERROR SUMMARY: 189 errors from 189 contexts (suppressed: 0 from 0)
+
+mt server after mem optimizations   3June26
+==7992== LEAK SUMMARY:
+==7992==    definitely lost: 4,440 bytes in 140 blocks
+==7992==    indirectly lost: 62,308 bytes in 371 blocks
+==7992==      possibly lost: 0 bytes in 0 blocks
+==7992==    still reachable: 568 bytes in 1 blocks
+==7992==         suppressed: 0 bytes in 0 blocks
+==7992==
+
+==11528== LEAK SUMMARY:
+==11528==    definitely lost: 2,640 bytes in 65 blocks
+==11528==    indirectly lost: 62,308 bytes in 371 blocks
+==11528==      possibly lost: 0 bytes in 0 blocks
+==11528==    still reachable: 568 bytes in 1 blocks
+==11528==         suppressed: 0 bytes in 0 blocks
+==11528==
+6June26
+
+==32137==
+==32137== HEAP SUMMARY:
+==32137==     in use at exit: 568 bytes in 1 blocks
+==32137==   total heap usage: 2,896,125 allocs, 2,896,124 frees, 342,893,660 bytes allocated
+==32137==
+==32137== Searching for pointers to 1 not-freed blocks
+==32137== Checked 1,050,456 bytes
+==32137==
+==32137== 568 bytes in 1 blocks are still reachable in loss record 1 of 1
+==32137==    at 0x4C27F7F: malloc (in /usr/lib64/valgrind/vgpreload_memcheck-amd64-linux.so)
+==32137==    by 0x6482D6C: __fopen_internal (in /usr/lib64/libc-2.20.so)
+==32137==    by 0x1199903: log_open_logfile(char const*) (logsys.cpp:150)
+==32137==    by 0xAA2E9A: main (eve-server.cpp:250)
+==32137==
+==32137== LEAK SUMMARY:
+==32137==    definitely lost: 0 bytes in 0 blocks
+==32137==    indirectly lost: 0 bytes in 0 blocks
+==32137==      possibly lost: 0 bytes in 0 blocks
+==32137==    still reachable: 568 bytes in 1 blocks
+==32137==         suppressed: 0 bytes in 0 blocks
+==32137==
+
+7June26
+
+==18275==
+==18275== HEAP SUMMARY:
+==18275==     in use at exit: 0 bytes in 0 blocks
+==18275==   total heap usage: 2,896,198 allocs, 2,896,198 frees, 342,990,966 bytes allocated
+==18275==
+==18275== All heap blocks were freed -- no leaks are possible
+==18275==
+
+14June26
+==23514== LEAK SUMMARY:
+==23514==    definitely lost: 104 bytes in 2 blocks
+==23514==    indirectly lost: 26,152 bytes in 847 blocks
+==23514==      possibly lost: 0 bytes in 0 blocks
+==23514==    still reachable: 568 bytes in 1 blocks
+==23514==         suppressed: 0 bytes in 0 blocks
+==23514==
+==23514== ERROR SUMMARY: 2 errors from 2 contexts (suppressed: 0 from 0)
+==23514== ERROR SUMMARY: 2 errors from 2 contexts (suppressed: 0 from 0)

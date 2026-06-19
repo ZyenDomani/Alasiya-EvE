@@ -107,7 +107,7 @@ void Inventory::Unload() {
 }
 
 bool Inventory::GetItems(OwnerData &od, std::vector< uint32 >& into ) {
-    return m_db.GetItemContents(od, into);
+    return m_db.GetItemIDs(od, into);
 }
 
 bool Inventory::LoadContents() {
@@ -194,9 +194,7 @@ bool Inventory::LoadContents() {
     if (sConfig.debug.UseProfiling)
         sProfiler.AddTime(Profile::itemload, GetTimeUSeconds() - m_profileStartTime);
 
-    mContentsLoaded = true;
-
-    return mContentsLoaded;
+    return (mContentsLoaded = true);
 }
 
 void Inventory::AddItem(InventoryItemRef iRef) {
@@ -290,7 +288,7 @@ void Inventory::DeleteContents()
 CRowSet* Inventory::List(EVEItemFlags flag, uint32 ownerID/*0*/) const
 {
     DBRowDescriptor* header = sDataMgr.CreateHeader();
-    CRowSet* rowset = new CRowSet(&header);
+    CRowSet* rowset = new CRowSet(header);
     List(rowset, flag, ownerID);
 
     if (is_log_enabled(INV__LIST))

@@ -51,9 +51,6 @@ public:
 
     uint32 GetStationOwner(uint32 stationID);
 
-    // not used cause eveConstants table doesnt exist...omitted from ccp dump
-    static bool GetConstant(const char *name, uint32 &into);
-
     static void SetServerOnlineStatus(bool online=false);
     static void SetCharacterOnlineStatus(uint32 char_id, bool online=false);
     static void SetAccountOnlineStatus(uint32 accountID, bool online=false);
@@ -77,6 +74,8 @@ public:
 
     // get corp hangar names for `.cargo` command
     static void GetCorpHangarNames(uint32 corpID, std::map<uint8, std::string> &hangarNames);
+
+    static std::string BuildInClause( std::vector<int32>& ids );
 
 
 protected:
