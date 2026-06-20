@@ -172,13 +172,44 @@ void DestinyManager::Process() {
 
             MoveObject();
         } break;
+        case Ball::Mode::FORMATION: {
+            /*
+            // If this specific entity already processed early this frame, exit instantly!
+            if (m_frameProcessed) return;
+
+            if (m_isSquadLeader) {
+                // Master World Space calculations (Orbit, Follow, Warp, etc.)
+                ExecuteLeaderAbsoluteMovement();
+                m_frameProcessed = true;
+            } else {
+                NPC* pLeader = myNPC->GetSquad()->GetLeader();
+                DestinyManager* pLeaderDestiny = pLeader->DestinyMgr();
+
+                // ─────────────────────────────────────────────────────────────
+                // YOUR IN-LINE CPU PERFORMANCE SOLVER
+                // ─────────────────────────────────────────────────────────────
+                // If the master loop hasn't reached the leader's high UID yet,
+                // force its destiny layer to execute its movement RIGHT NOW!
+                if (!pLeaderDestiny->IsFrameProcessed()) {
+                    pLeaderDestiny->ProcessMovementFrame(); // Computes leader position early
+                }
+                // ─────────────────────────────────────────────────────────────
+
+                // The leader position is now mathematically guaranteed to be current!
+                GPoint leaderPos = pLeader->GetPosition();
+                GPoint myOffset = myNPC->GetSquad()->GetSlotOffset(myNPC);
+
+                // Superimpose the formation local-space coordinates cleanly
+                SetPosition(leaderPos + myOffset);
+                m_frameProcessed = true;
+            } */
+        } break;
         // i dont think any of these actually move...
         case Ball::Mode::MUSHROOM:      // aoe?
         case Ball::Mode::BOID:          // this will turn RIGID after a set time
         case Ball::Mode::TROLL:         // seen for wrecks
         case Ball::Mode::MINIBALL:      // used for sentrys around RIGID object
         case Ball::Mode::FIELD:         // dunno
-        case Ball::Mode::FORMATION:     // dunno
         case Ball::Mode::RIGID: {       // item that never moves
             //no default on purpose
         } break;

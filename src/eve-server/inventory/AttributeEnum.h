@@ -796,7 +796,7 @@ enum EveAttrEnum {
     AttrJumpDriveDuration = 869,
     AttrJumpDriveRangeBonus = 870,
     AttrJumpDriveDurationBonus = 871,
-    AttrDisallowOffensiveModifiers = 872,
+    AttrDisallowOffensiveModifiers = 872,               //If this module is in use and this attribute is 1, then offensive modules cannot be used on the ship if they apply modifiers for the duration of their effect. If this is put on a ship or NPC with value of 1, then the ship or NPC are immune to offensive modifiers (target jamming, tracking disruption etc.)
     AttrAdvancedCapitalAgility = 874,                   //Attribute on ship to make advanced command affect only ships that we want.
     AttrDreadnoughtShipBonusA1 = 875,
     AttrDreadnoughtShipBonusA2 = 876,
@@ -1658,7 +1658,7 @@ enum EveAttrEnum {
     AttrskillBonusBooster = 1794,
     AttrReloadTime = 1795,
     AttrclothingAlsoCoversCategory = 1797,
-    AttrdisallowAgainstEwImmuneTarget = 1798,
+    AttrEwImmuneTarget = 1798,
     AttrimplantSetChristmas = 1799,
     AttrtriageRemoteModuleCapNeed = 1802,
     AttrMWDSignatureRadiusBonus = 1803,

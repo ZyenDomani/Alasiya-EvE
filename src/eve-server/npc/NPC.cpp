@@ -47,8 +47,11 @@ NPC::NPC(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, c
 : DynamicSystemEntity(self, services, system),
 m_AI(new NPCAIMgr(this)),
 m_spawnMgr(spawnMgr),
+m_squad(nullptr),
 m_hauler(false),
+m_squadLeader(false),
 m_moduleCount(0),
+m_rank(0),
 m_orbitingID(0)
 {
     m_allyID = data.allianceID;
@@ -103,6 +106,8 @@ void NPC::Process() {
 
     /*   Base call to Process Movement  */
     SystemEntity::Process();
+
+    // make random chance to reset buffs (wip)
 
     if (sConfig.debug.UseProfiling)
         sProfiler.AddTime(Profile::npc, GetTimeUSeconds() - profileStartTime);
@@ -399,4 +404,76 @@ void NPC::CmdDropLoot()
     m_destiny->SendJettisonPacket();
     /** @todo finish this */
     //DropLoot(wreckItemRef, m_self->groupID());
+}
+
+void NPC::ApplyTrackingBoost(float mod/*1.0f*/) {
+
+}
+
+
+void NPCSquad::RegisterMember(NPC* pNPC) {
+    if (!pNPC)
+        return;
+    m_members.push_back(pNPC);
+
+    pNPC->SetSquad(this);
+
+    // Dynamic Promotion Engine
+    uint8 newRank = pNPC->GetCommandRank();
+
+    if (m_squadLeader == nullptr) {
+        // First ship on grid is leader by default
+        m_squadLeader = pNPC;
+        pNPC->SetSquadLeader(true);
+    } else if (newRank > m_squadLeader->GetCommandRank()) {
+        // A heavier tactical hull just dropped out of warp! Demote the old leader cleanly
+        m_squadLeader->SetSquadLeader(false);
+        // Promote the heavy reinforcement hull
+        m_squadLeader = pNPC;
+        pNPC->SetSquadLeader(true);
+
+        _log(NPC__AI_MESSAGE, "Squad ID %u Hierarchy Shift: Heavy hull %u has assumed tactical fleet command.",
+             m_squadID, pNPC->GetID());
+    }
+}
+
+void NPCSquad::UnregisterMember(NPC* pNPC) {
+    if (!pNPC)
+        return;
+
+    // 1. Linearly scan our vector stack to find and erase the dead pointer
+    auto it = std::find(m_members.begin(), m_members.end(), pNPC);
+    if (it != m_members.end()) {
+        m_members.erase(it);
+    }
+
+    // 2. SQUAD LEADER RE-ALLOCATION
+    if (m_squadLeader == pNPC) {
+        m_squadLeader = nullptr;
+        if (!m_members.empty()) {
+            m_squadLeader = m_members.front();
+            _log(NPC__AI_MESSAGE, "Squad Leader was killed! NPC %u is stepping up to take tactical command.",
+                 m_squadLeader->GetID());
+        }
+    }
+
+    // 3. SECURE STATE DETACHMENT
+    if (m_members.empty()) {
+        _log(NPC__AI_MESSAGE, "Squad ID %u has been completely wiped out from grid partition.", m_squadID);
+        m_squadTarget = nullptr;
+        m_squadLeader = nullptr;
+    }
+}
+
+void NPCSquad::OnAllMembersArrived() {
+    // this should be a switch
+    if (m_tacticalTier == 1) {
+        _log(NPC__AI_MESSAGE, "Squad ID %u fully landed. Assembling into formation for 5 seconds.", m_squadID);
+
+        // Broadcast the formation ID to the client: watch them glide into position!
+        //BroadcastFormationToGrid(EVEDB::Formations::Wedge);
+
+        // Start a 5-second combat delay countdown timer
+        m_formationBreakTimer.Start(5000);
+    }
 }

@@ -468,15 +468,40 @@ std::vector<float> PIDataMgr::DecodeHexBufferToFloats(const std::string& hexBuff
     return floats;
 }
 
+// Evaluates a single 9-float Order-2 Real SH block at a target vector location
+float EvaluateSingleNodeSH(const float* c, float x, float y, float z) {
+    // Basis functions matching the generator
+    float Y_0_0  = 0.2820948f;
+    float Y_1_m1 = 0.4886025f * y;
+    float Y_1_0  = 0.4886025f * z;
+    float Y_1_1  = 0.4886025f * x;
+    float Y_2_m2 = 1.0925484f * x * y;
+    float Y_2_m1 = 1.0925484f * y * z;
+    float Y_2_0  = 0.3153916f * (3.0f * z * z - 1.0f);
+    float Y_2_1  = 1.0925484f * x * z;
+    float Y_2_2  = 0.5462742f * (x * x - y * y);
+
+    float density = (c[0]*Y_0_0) + (c[1]*Y_1_m1) + (c[2]*Y_1_0) + (c[3]*Y_1_1) +
+                    (c[4]*Y_2_m2) + (c[5]*Y_2_m1) + (c[6]*Y_2_0) + (c[7]*Y_2_1) + (c[8]*Y_2_2);
+
+        // CRITICAL MATCH UNCOVERED TODAY: Clamp negative wave valleys to zero
+    // This stops negative interference from breaking your extraction totals.
+    if (density < 0.0f) {
+        return 0.0f;
+    }
+
+    return density;
+}
+
 // Core Execution: Calculates raw output yield and reduces the local heatmap intensity
 float PIDataMgr::ExtractAndDepletePlanetResource(std::string& io_dbBuffer, const PI_Heads& headPin,
                                                  float durationFactor/*1.0f*/, float headRadius/*1.0f*/) {
     std::vector<float> floatArray = DecodeHexBufferToFloats(io_dbBuffer);
     float totalExtractedYield(0.0f);
 
-    float pinX = cosf(headPin.latitude) * cosf(headPin.longitude);
-    float pinY = cosf(headPin.latitude) * sinf(headPin.longitude);
-    float pinZ = sinf(headPin.latitude);
+    float pinX = cos(headPin.latitude) * cos(headPin.longitude);
+    float pinY = cos(headPin.latitude) * sin(headPin.longitude);
+    float pinZ = sin(headPin.latitude);
 
     // 1. Loop through all 25 structural nodes to compile total local density
     for (int nodeIdx = 0; nodeIdx < 25; ++nodeIdx) {

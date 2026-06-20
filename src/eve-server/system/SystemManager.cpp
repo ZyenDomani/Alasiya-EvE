@@ -32,6 +32,7 @@
 #include "exploration/Probes.h"
 #include "map/MapData.h"
 #include "map/MapDB.h"
+#include "npc/Civilian.h"
 #include "npc/Drone.h"
 #include "npc/NPC.h"
 #include "npc/Sentry.h"
@@ -59,6 +60,7 @@
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/AnomalyMgr.h"
 #include "system/cosmicMgrs/BeltMgr.h"
+#include "system/cosmicMgrs/CivilianMgr.h"
 #include "system/cosmicMgrs/DungeonMgr.h"
 #include "system/cosmicMgrs/SpawnMgr.h"
 

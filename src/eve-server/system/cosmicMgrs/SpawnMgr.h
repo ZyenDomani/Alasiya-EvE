@@ -61,6 +61,8 @@ public:
     // info call from sysbubble about new ship in bubble
     void PlayerEnteredBubble(uint8 bubbleID, Client* pClient);
 
+    void NPCArrivedOnGrid(NPC* pNPC);
+
 protected:
     bool FindSpawnForBubble(uint16 bubbleID);
     bool PrepSpawn(SystemBubble* pBubble, uint8 sClass = Spawn::Class::None, uint8 level = 0);
@@ -85,6 +87,8 @@ private:
     Timer m_deadspaceTimer;
 
     bool m_initalized;      //allow spawning?
+
+    uint16 m_squadID;
 
     uint16 m_groupTimerSetTime;     //ms - this is for hard-coding the respawn timer time.
 

@@ -239,13 +239,6 @@ bool MapData::GetSystemJumps(uint8 step, uint32 sysID, std::multimap<uint8, uint
     return true;
 }
 
-/**  @TODO
- * this has errors
- *
- * (not actual msg)
- * MapData::GetMissionDestination(run) - no station found within 1 jump of systemID
- */
-
 void MapData::GetMissionDestination(Agent* pAgent, MissionOffer& offer) {
     uint8 destRange(pAgent->GetLevel());
     if (pAgent->GetTypeID() != Agents::Type::Tutorial)
@@ -293,8 +286,8 @@ void MapData::GetMissionDestination(Agent* pAgent, MissionOffer& offer) {
      *  1109 constellations
      *  7929 systems
      */
-    uint32 systemID(pAgent->GetSystemID());
-    SystemManager* pSysMgr = sEntityMgr.FindOrBootSystem(systemID);
+    uint32 agentSystemID = pAgent->GetSystemID();
+    SystemManager* pSysMgr = sEntityMgr.FindOrBootSystem(agentSystemID);
     if (pSysMgr == nullptr) {
         // should never hit, but whatever
         StationData data = StationData();
@@ -302,166 +295,90 @@ void MapData::GetMissionDestination(Agent* pAgent, MissionOffer& offer) {
         offer.destinationOwnerID    = data.corporationID;
         offer.destinationSystemID   = data.systemID;
         offer.destinationTypeID     = data.typeID;
-        sLog.Error("MapData::GetMissionDestination()", "pSysMgr = null for systemID %u", systemID);
+        sLog.Error("MapData::GetMissionDestination()", "pSysMgr = null for systemID %u", agentSystemID);
         return;
     }
 
-    //TODO: once i get this working, check security  (does it matter?)
     bool run(true);
     std::vector<uint32> sysList;
     switch(destRange) {
         case 0:
-        case Agents::Range::SameSystem: { //1
-            if (station or deadspace) {
-                if (sDataMgr.GetStationCount(systemID) < 2) {
-                    // no other station here; get gates out of this system for single jump
-                    auto JumpItr = m_systemJumps.equal_range(systemID);
+        case Agents::Range::SameSystem: {
+            if (station || deadspace) {
+                // If we need a station but this system has no other stations, look 1 jump out
+                if (station && sDataMgr.GetStationCount(agentSystemID) < 2) {
+                    auto JumpItr = m_systemJumps.equal_range(agentSystemID);
                     for (auto it = JumpItr.first; it != JumpItr.second; ++it) {
-                        // make sure this is not border jump
-                        if ((sDataMgr.GetSystemConstellation(it->second) == sDataMgr.GetSystemConstellation(systemID))
-                        and (sDataMgr.GetSystemRegion(it->second) == sDataMgr.GetSystemRegion(systemID)))
+                        if ((sDataMgr.GetSystemConstellation(it->second) == sDataMgr.GetSystemConstellation(agentSystemID))
+                            && (sDataMgr.GetSystemRegion(it->second) == sDataMgr.GetSystemRegion(agentSystemID))) {
                             sysList.push_back(it->second);
+                            }
                     }
+                } else {
+                    sysList.push_back(agentSystemID);
                 }
-            } else if (ship) {
-                // not sure how this is gonna work yet
-            } else {
-                // what other checks should we make here?
-                sLog.Error("MapData::GetMissionDestination(1)", "check is 'else' for systemID %u", systemID);
             }
         } break;
 
-        case Agents::Range::SameOrNeighboringSystem: { //2
-            if (station or deadspace) {
-                if (IsEven(MakeRandomUInt())) {
-                    // neighboring system...get gates out of this system...single jump
-                    auto JumpItr = m_systemJumps.equal_range(systemID);
-                    for (auto it = JumpItr.first; it != JumpItr.second; ++it) {
-                        // make sure this is not border jump
-                        if ((sDataMgr.GetSystemConstellation(it->second) == sDataMgr.GetSystemConstellation(systemID))
-                        and (sDataMgr.GetSystemRegion(it->second) == sDataMgr.GetSystemRegion(systemID)))
-                            sysList.push_back(it->second);
+        case Agents::Range::SameOrNeighboringSystem:
+        case Agents::Range::NeighboringSystem: {
+            // Get all neighboring systems exactly 1 jump out
+            auto JumpItr = m_systemJumps.equal_range(agentSystemID);
+            for (auto it = JumpItr.first; it != JumpItr.second; ++it) {
+                if ((sDataMgr.GetSystemConstellation(it->second) == sDataMgr.GetSystemConstellation(agentSystemID))
+                    && (sDataMgr.GetSystemRegion(it->second) == sDataMgr.GetSystemRegion(agentSystemID))) {
+                    sysList.push_back(it->second);
                     }
-                }
-                // else same system...do nothing here.  sysList.empty() check will set needed variables
-            } else if (ship) {
-                // not sure how this is gonna work yet
-            } else {
-                // what other checks should we make here?
-                sLog.Error("MapData::GetMissionDestination(2)", "check is 'else' for systemID %u", systemID);
             }
-        } break;
-
-        case Agents::Range::NeighboringSystem: {  //3
-            if (station or deadspace) {
-                // get gates out of this system...single jump
-                auto JumpItr = m_systemJumps.equal_range(systemID);
-                for (auto it = JumpItr.first; it != JumpItr.second; ++it) {
-                    // make sure this is not border jump
-                    if ((sDataMgr.GetSystemConstellation(it->second) == sDataMgr.GetSystemConstellation(systemID))
-                    and (sDataMgr.GetSystemRegion(it->second) == sDataMgr.GetSystemRegion(systemID)))
-                        sysList.push_back(it->second);
-                }
-            } else if (ship) {
-                // not sure how this is gonna work yet
-            } else {
-                // what other checks should we make here?
-                sLog.Error("MapData::GetMissionDestination(3)", "check is 'else' for systemID %u", systemID);
+            // For SameOrNeighboring, occasionally allow picking the home system
+            if (destRange == Agents::Range::SameOrNeighboringSystem && MakeRandomInt() > 70) {
+                sysList.push_back(agentSystemID);
             }
         } break;
 
         // dont know how to get route/jumps from start to constellation edges...yet
-        case Agents::Range::SameConstellation:  {  //4
-            if (station or deadspace) {
-                // get all systems in this constellation
-                uint32 constellationID(sDataMgr.GetSystemConstellation(systemID));
-                std::vector<uint32> systemVec;
-                sDataMgr.GetConstellationSystems(constellationID, systemVec);
-                for (auto &cur : systemVec) {
-                    // get systems that are not borders
-                    if (!sDataMgr.IsConSystem(cur) and !sDataMgr.IsRegionSystem(cur))
-                        sysList.push_back(cur);
+        case Agents::Range::SameConstellation: {
+            uint32 constellationID = sDataMgr.GetSystemConstellation(agentSystemID);
+            std::vector<uint32> systemVec;
+            sDataMgr.GetConstellationSystems(constellationID, systemVec);
+            for (auto &cur : systemVec) {
+                if (!sDataMgr.IsConSystem(cur) && !sDataMgr.IsRegionSystem(cur)) {
+                    sysList.push_back(cur);
                 }
-                // now, run these systems for next jump
-                systemVec.clear();
-                for (auto &cur : sysList) {
-                    // loop thru systems in this constellation
-                    auto JumpItr = m_systemJumps.equal_range(cur);  // get their jumps
-                        // loop thru jumps from systems in this constellation
+            }
+        } break;
+
+        case Agents::Range::NeighboringConstellation: {
+            uint32 constellationID = sDataMgr.GetSystemConstellation(agentSystemID);
+            std::vector<uint32> systemVec;
+            // FIX: Pass the correct constellation ID array tracker, not Region!
+            sDataMgr.GetConstellationSystems(constellationID, systemVec);
+            for (auto &cur : systemVec) {
+                if (sDataMgr.IsConSystem(cur)) {
+                    auto JumpItr = m_systemJumps.equal_range(cur);
                     for (auto it = JumpItr.first; it != JumpItr.second; ++it) {
-                        // may not need to test this...we checked for borders already
-                        if (sDataMgr.GetSystemConstellation(it->second) == sDataMgr.GetSystemConstellation(systemID)){
-                            // if the jump is not to another constellation, add to list
-                            systemVec.push_back(it->second);
+                        if (sDataMgr.GetSystemConstellation(it->second) != constellationID) {
+                            sysList.push_back(it->second);
                         }
                     }
                 }
-                // systemVec should now have all jumps out of this constellation and into neighboring constellation
-                //   clear out sysList and copy systemVec to it for further processing
-                sysList.clear();
-                sysList = systemVec;
-            } else if (ship) {
-                // not sure how this is gonna work yet
-            } else {
-                sLog.Error("MapData::GetMissionDestination(4)", "check is 'else' for systemID %u", systemID);
-
             }
         } break;
 
-        case Agents::Range::NeighboringConstellation: {    //5
-            // this will be a border jump.
-            uint32 regionID(sDataMgr.GetSystemRegion(systemID));
-            std::vector<uint32> systemVec;
-            // get all systems in this constellation
-            sDataMgr.GetConstellationSystems(regionID, systemVec);
-            for (auto &cur : systemVec) {
-                // get all constellation borders in this constellation
-                if (sDataMgr.IsConSystem(cur))
-                    sysList.push_back(cur);
-            }
-            systemVec.clear();
-            for (auto &cur : sysList) {
-                // loop thru systems in this constellation
-                auto JumpItr = m_systemJumps.equal_range(cur);  // get their jumps
-                for (auto it = JumpItr.first; it != JumpItr.second; ++it) {
-                    // loop thru jumps from systems in this constellation
-                    if (sDataMgr.GetSystemConstellation(it->second) != sDataMgr.GetSystemConstellation(systemID)){
-                        // if the jump is to another constellation, add to list
-                        systemVec.push_back(it->second);
-                    }
-                }
-            }
-            // systemVec should now have all jumps out of this constellation and into neighboring constellation
-            //   clear out sysList and copy systemVec to it for further processing
-            sysList.clear();
-            sysList = systemVec;
-        } break;
-
-        case Agents::Range::NeighboringRegion: {    //6
-            // this will be a border jump.
-            uint32 regionID = sDataMgr.GetStationRegion(pAgent->GetStationID());
+        case Agents::Range::NeighboringRegion: {
+            uint32 regionID = sDataMgr.GetSystemRegion(agentSystemID);
             std::vector<uint32> systemVec;
             sDataMgr.GetRegionSystems(regionID, systemVec);
             for (auto &cur : systemVec) {
-                if (sDataMgr.IsRegionSystem(cur))
-                    sysList.push_back(cur);     // systems in this region
-            }
-            systemVec.clear();
-            for (auto &cur : sysList) {
-                // loop thru systems in this region
-                auto JumpItr = m_systemJumps.equal_range(cur);  // get their jumps
-                for (auto it = JumpItr.first; it != JumpItr.second; ++it) {
-                    // loop thru jumps from systems in this region
-                    if (sDataMgr.GetSystemRegion(it->second) != sDataMgr.GetSystemRegion(systemID)){
-                        // if the jump is to another region, add to list
-                        systemVec.push_back(it->second);
+                if (sDataMgr.IsRegionSystem(cur)) {
+                    auto JumpItr = m_systemJumps.equal_range(cur);
+                    for (auto it = JumpItr.first; it != JumpItr.second; ++it) {
+                        if (sDataMgr.GetSystemRegion(it->second) != regionID) {
+                            sysList.push_back(it->second);
+                        }
                     }
                 }
             }
-            // systemVec should now have all jumps out of this region and into neighboring region
-            //   clear out sysList and copy systemVec to it for further processing
-            sysList.clear();
-            sysList = systemVec;
         } break;
 
         // not sure how to do these two yet...
@@ -469,69 +386,93 @@ void MapData::GetMissionDestination(Agent* pAgent, MissionOffer& offer) {
         } break;
         case Agents::Range::NearestCareerHub: {    //11
         } break;
+        default:
+            sysList.push_back(agentSystemID); // Safe fallback
+            break;
     }
 
     if (sysList.empty()) {
-        run = false;
         offer.destinationID = pAgent->GetStationID();
-        sLog.Error("MapData::GetMissionDestination(sysList)", "sysList empty for systemID %u.", systemID);
+        sLog.Error("MapData::GetMissionDestination", "sysList completely empty for systemID %u", agentSystemID);
+        return;
     }
 
-    uint8 idx(0);
-    uint8 count(0);
-    while (run) {
-        run = false;
-        idx = MakeRandomUInt(0, (sysList.size() - 1));
-        systemID = sysList.at(idx);
-        if (station and (sDataMgr.GetStationCount(systemID) < 1)) {
-            run = true;
-            ++count;
+    // --- SAFE SELECTION VALVE ---
+    uint32 selectedSystemID = 0;
+    bool foundValidSystem = false;
+
+    // Determine the security profile of the agent's home system
+    float agentSecurity = pSysMgr->GetSecurityRating();
+    bool isAgentInHighsec = (agentSecurity >= 0.5f);
+
+    // Shuffle or randomly sample candidate systems until one passes your criteria
+    while (!sysList.empty()) {
+        uint32 randIdx = MakeRandomUInt(0, sysList.size() - 1);
+        uint32 candidateSystemID = sysList.at(randIdx);
+
+        if (station && sDataMgr.GetStationCount(candidateSystemID) < 1) {
+            // Fails station check, strip it out and try a different system
+            sysList.erase(sysList.begin() + randIdx);
+            continue;
         }
-        if (run and (count > sysList.size())) {
-            // problem....no station found within one jump
-            offer.destinationID = pAgent->GetStationID();
-            sLog.Error("MapData::GetMissionDestination(run)", "no station found within 1 jump of systemID %u.", systemID);
-            run = false;
-        } else {
-            // If we have searched a system already then do not try it again
-            sysList.erase(sysList.begin() + idx);
-        }
+
+        // 2. CRITICAL MATCH: Security Status Boundaries Check
+        /*  dont have a 'good' way of testing this yet without booting solsystem
+        float candidateSecurity = sDataMgr.GetSystemSecurityRating(candidateSystemID);
+
+        if (isAgentInHighsec && candidateSecurity < 0.5f) {
+            // Highsec agents are forbidden from forcing couriers into Lowsec/Nullsec!
+            // Strip the system out of the options and keep looking.
+            sysList.erase(sysList.begin() + randIdx);
+            continue;
+        } */
+
+        // Found a winner!
+        selectedSystemID = candidateSystemID;
+        foundValidSystem = true;
+        break;
     }
 
+    if (!foundValidSystem) {
+        // Absolute safety fallback to avoid freezing or empty items
+        selectedSystemID = agentSystemID;
+        offer.destinationID = pAgent->GetStationID();
+        sLog.Error("MapData::GetMissionDestination", "No system passed station constraints. Falling back to home.");
+    }
+
+    // --- STATION RESOLUTION ---
     if (station) {
-        // get random station in given system
-        std::vector<uint32> list;
-        sDataMgr.GetStationList(systemID, list);
-        if (list.size() < 2) {
-            offer.destinationID = list[0];
+        std::vector<uint32> stationList;
+        sDataMgr.GetStationList(selectedSystemID, stationList);
+
+        if (stationList.empty()) {
+            offer.destinationID = pAgent->GetStationID();
         } else {
-            bool run(true);
-            while (run) {
-                offer.destinationID = list.at(MakeRandomUInt(0, (list.size() - 1)));
-                if (offer.destinationID != pAgent->GetStationID())
-                    run = false;
+            // Filter out the agent's own station if multiple options exist
+            std::vector<uint32> filteredStations;
+            for (uint32 stID : stationList) {
+                if (stID != pAgent->GetStationID()) {
+                    filteredStations.push_back(stID);
+                }
+            }
+
+            if (!filteredStations.empty()) {
+                offer.destinationID = filteredStations.at(MakeRandomUInt(0, filteredStations.size() - 1));
+            } else {
+                offer.destinationID = stationList[0]; // Fallback if it's the only station
             }
         }
-    } else if (deadspace) {
-        offer.destinationID = systemID;
-    } else if (ship) {
-        // not sure how this is gonna work yet
+    } else {
+        offer.destinationID = selectedSystemID;
     }
 
-
+    // --- FINAL DATA PACKING ---
     if (sDataMgr.IsStation(offer.destinationID)) {
         StationData data = StationData();
         stDataMgr.GetStationData(offer.destinationID, data);
         offer.destinationOwnerID    = data.corporationID;
         offer.destinationSystemID   = data.systemID;
         offer.destinationTypeID     = data.typeID;
-        if (offer.destinationID == pAgent->GetStationID())
-            sLog.Error("MapData::GetMissionDestination(last)", "destination=agentStation for systemID %u.", systemID);
-    } else if (ship) {
-        offer.destinationSystemID   = offer.destinationID;
-        offer.destinationTypeID     = sDataMgr.GetStaticType(offer.destinationID);
-        offer.dungeonLocationID     = offer.destinationID;
-        offer.dungeonSolarSystemID  = offer.destinationID;
     } else {
         offer.destinationSystemID   = offer.destinationID;
         offer.destinationTypeID     = sDataMgr.GetStaticType(offer.destinationID);

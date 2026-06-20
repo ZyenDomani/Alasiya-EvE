@@ -370,7 +370,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
 
     if (m_targetSE != nullptr) {
         /*
-         * AttrdisallowAgainstEwImmuneTarget
+         * AttrEwImmuneTarget
          * AttrDisallowOffensiveModifiers
          * AttrDisallowOffensiveModifierBonus
          */

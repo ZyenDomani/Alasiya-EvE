@@ -49,6 +49,7 @@ m_missionTimer(0),
 m_incursionTimer(0),
 m_deadspaceTimer(0),
 m_initalized(false),
+m_squadID(1),
 m_groupTimerSetTime(0),
 m_spawnID(1)    // gotta start somewhere
 {
@@ -244,6 +245,22 @@ void SpawnMgr::SpawnKilled(SystemBubble* pBubble, uint32 itemID) {
         cItr = m_liveCount.find(pBubble->GetID());
         _log(SPAWN__WARNING, "SpawnKilled() - bubble %u has no liveCount.  Hacking to %u", \
                 pBubble->GetID(), cItr->second);
+    }
+
+    // this should be map to track squads here...what about multiple squads per bubble?
+    NPCSquad* pSquad = nullptr; //GetSquad(pBubble->GetID());
+
+    if (pSquad != nullptr) {
+        // If the squad array has fallen completely silent, execute clean memory deletion
+        if (pSquad->GetMembers().empty()) {
+            _log(NPC__INFO, "SpawnManager: Reclaiming empty NPCSquad heap memory for bubble %u.", pBubble->GetID());
+
+            // Remove the squad pointer from the manager's master index tracker list
+            //UnlinkSquadIndex(pSquad);
+
+            // The single point of clean, safe heap destruction!
+            delete pSquad;
+        }
     }
 
     if (pBubble->IsBelt()) {
@@ -771,6 +788,17 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
         _log(SPAWN__POP, "SpawnMgr::MakeSpawn - NPC starting bubbleID %u", bubbleID);
     }
 
+    // ─────────────────────────────────────────────────────────────────
+    // NEW SQUAD CONTEXT INITIALIZATION
+    // ─────────────────────────────────────────────────────────────────
+    NPCSquad* pCurrentSquad = nullptr;
+    if (sClass <= Spawn::Class::BeltSpawn) {
+        pCurrentSquad = new NPCSquad(m_squadID++);
+
+        // Track the pointer under the Spawn Manager's absolute ownership map
+        //m_activeSquads[pBubble->GetID()].push_back(pCurrentSquad);
+    }
+
     uint32 corpID = sDataMgr.GetFactionCorp(factionID);
     FactionData data = FactionData();
         data.allianceID = factionID;    // this is to set wreck salvage correctly (tests for faction)
@@ -834,14 +862,57 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
 
             m_system->AddNPC(pNPC);
 
+            // ─────────────────────────────────────────────────────────────────
+            // NEW SQUAD REGISTRATION LAYER
+            // ─────────────────────────────────────────────────────────────────
+            if (pCurrentSquad != nullptr) {
+                // Register raw pointer to squad vector.
+                // This invokes our Rank Hierarchy checks to assign/promote leaders!
+                pCurrentSquad->RegisterMember(pNPC);
+            }
+            // ─────────────────────────────────────────────────────────────────
+            // NEW HOOK: AUTOMATED SQUAD TACTICAL TIERING
+            // ─────────────────────────────────────────────────────────────────
+            uint8 tacticalTier = 0; // 0 = Rookie (No Formations), 1 = Coordinated (Assemble Post-Warp), 2 = Elite (Warp In Formation)
+            float systemSec = m_system->GetSecurityRating();
+
+            if (pCurrentSquad != nullptr) {
+                // Determine tier based on security space and spawn difficulty class
+                if (systemSec <= -0.5f || sClass == Spawn::Class::Insane || sClass == Spawn::Class::Hell || sClass == Spawn::Class::Sanctum) {
+                    // Star Pilots: Fully coordinated null-sec squads or end-game anomalies
+                    tacticalTier = 2;
+                }
+                else if (systemSec <= 0.3f || (sClass >= Spawn::Class::Medium && sClass <= Spawn::Class::Crazy)) {
+                    // Tactical Pilots: Low-sec, mid-sec, or moderate anomaly/belt groups
+                    tacticalTier = 1;
+                }
+                else {
+                    // Rookies: High-Sec space or low-tier belt rats
+                    tacticalTier = 0;
+                }
+
+                // Assign the tracking parameters right onto the squad manager instance
+              //  pCurrentSquad->SetTacticalTier(tacticalTier);
+              //  pCurrentSquad->SetExpectsFormation(tacticalTier > 0);
+            }
+
             //  begin warp.  this may have to be looked into later for timing of large spawns (>6)
             //  actually looks kinda cool when larger ships come in later...
-            if (sClass <= Spawn::Class::BeltSpawn) {   // ratspawn will warp in, others will not.
-                //pNPC->DestinyMgr()->SetPosition(startPos);
-                // adjust warpIn point so show some variation instead of a straight line.
+            if (sClass <= Spawn::Class::BeltSpawn /*|| isFormation*/) {
                 GPoint warpTo(warpToPoint);
-                warpTo.MakeRandomPointOnSphere(sClass * 1000);  // random point <class (1-12)> x 1k from center
-                pNPC->DestinyMgr()->WarpTo(warpTo, (MakeRandomInt(-5, 10) * 1000));
+/*
+                // If Elite Tier (Null-Sec / High End Anomaly), they warp directly in formation!
+                if (sConfig.npc.enableFormation and tacticalTier == 2 and x < formationOffsets.size()) {
+                    warpTo.x += formationOffsets[x].x;
+                    warpTo.y += formationOffsets[x].y;
+                    warpTo.z += formationOffsets[x].z;
+
+                    _log(SPAWN__TRACE, "NPC %u assigned to formation slot %u offset: (%.0f, %.0f, %.0f)",
+                         pNPC->GetID(), x, formationOffsets[x].x, formationOffsets[x].y, formationOffsets[x].z);
+                } else {*/
+                    // Otherwise: Rookies and Mid-Tier squads use your beautiful staggered individual warp arrivals!
+                    warpTo.MakeRandomPointOnSphere(sClass * 1000);
+                //}
             }
 
             // increment live counter for this bubble
@@ -961,6 +1032,33 @@ void SpawnMgr::RemoveSpawn(uint16 bubbleID, uint32 itemID) {
 
     _log(SPAWN__TRACE, "RemoveSpawn() did not find item %u in bubble %u, out of %lu total spawns in the map.", itemID, bubbleID, m_spawns.size());
     return;
+}
+
+void SpawnMgr::NPCArrivedOnGrid(NPC* pNPC) {
+    NPCSquad* pSquad = pNPC->GetSquad();
+    if (pSquad == nullptr)
+        return;
+/*
+    // Track arrivals against our expected wave size
+    pSquad->DecrementArrivalsExpected();
+
+    if (pSquad->AllMembersArrived()) {
+        _log(SPAWN__TRACE, "Squad ID %u fully assembled on grid. Initiating tactical assembly broadcast.", pSquad->GetID());
+
+        // 1. Assign the formation ID to the squad manager state
+        pSquad->SetFormationID(EVEDB::Formations::Wedge);
+
+        // 2. Build the exact addballs/formation notification package
+        // that your Beyonce layer uses to tell the client: "We are a fleet now!"
+        PyTuple* formationBcastPacket = pSquad->BuildClientFormationPacket();
+
+        // 3. Broadcast it to all players currently residing in this bubble
+        pNPC->SysBubble()->BubblecastDestinyUpdate(&formationBcastPacket, "NPC Formation Assembly");
+        PySafeDecRef(formationBcastPacket);
+
+        // 4. Wake up the AI: Command the squad members to begin their grouped combat orbits!
+        pSquad->ExecuteGroupCombatDeployment();
+    }*/
 }
 
 uint8 SpawnMgr::GetSpawnGroup(uint8 sClass) {

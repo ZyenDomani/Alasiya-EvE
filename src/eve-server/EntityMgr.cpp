@@ -229,10 +229,6 @@ void EntityMgr::Process() {
             if (cur.second->IsValidSession())   // verify client is constructed before calling ProcessClient() on it
                 cur.second->ProcessClient();
 
-    /** @todo test for adding OpenMP here to enable MP per system. */
-    // this wont work....possibility of removing systems, therefore invalidating the iterator.
-    // bad things can happen if this is running parallel on MP
-    //#pragma omp parallel  // starts a new team
         std::map<uint32, SystemManager*>::iterator itr = m_systems.begin();
         while (itr != m_systems.end()) {
             if (itr->second == nullptr) { /* this shouldnt happen.  log error to make note */
@@ -267,6 +263,9 @@ void EntityMgr::Process() {
                 sMktBotMgr.Process();  // 15m to 30m
                 sConsole.UpdateStatus();
                 sMissionDataMgr.Process();
+            }
+            if (m_minutes % 30 == 0) { // ~30m
+                sMktBotMgr.Process();  // 15m to 30m
             }
             if (m_minutes % 60 == 0) { // ~1h
                 MapDB::ManipulateTimeData();    // not used - does nothing at this time

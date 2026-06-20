@@ -2147,7 +2147,6 @@ void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool
             }
         PyTuple* t = dum.Encode();
         SendNotification("DoDestinyUpdate", "clientID", &t, false);
-        //PyDecRef(t);
     } else {
         act.update = *update;
         //m_packaged = true;

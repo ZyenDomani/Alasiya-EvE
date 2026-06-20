@@ -163,6 +163,9 @@ public:
     void GetAllEntities(std::map< uint32, SystemEntity* >& into) const; // this one gets all entities regardless of visibility
     /* for targeting purposes */
     void GetPlayers(std::vector<Client*> &into) const;
+    /* for advanced npcai */
+    void GetNPCs(std::vector<NPC*> &into) const;
+    void GetDrones(std::vector<DroneSE*> &into) const;
     /* for scanning */
     void GetEntityVec(std::vector<SystemEntity*> &into) const;
     SystemEntity* GetRandomEntity();
