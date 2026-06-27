@@ -498,9 +498,9 @@ float PIDataMgr::ExtractAndDepletePlanetResource(std::string& io_dbBuffer, const
     std::vector<float> floatArray = DecodeHexBufferToFloats(io_dbBuffer);
     float totalExtractedYield(0.0f);
 
-    float pinX = std::cos(headPin.latitude) * std::cos(headPin.longitude);
-    float pinY = std::cos(headPin.latitude) * std::sin(headPin.longitude);
-    float pinZ = std::sin(headPin.latitude);
+    float pinX = cos(headPin.latitude) * cos(headPin.longitude);
+    float pinY = cos(headPin.latitude) * sin(headPin.longitude);
+    float pinZ = sin(headPin.latitude);
 
     // 1. Loop through all 25 structural nodes to compile total local density
     for (int nodeIdx = 0; nodeIdx < 25; ++nodeIdx) {

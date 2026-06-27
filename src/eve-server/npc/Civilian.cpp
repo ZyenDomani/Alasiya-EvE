@@ -97,9 +97,9 @@ void Civilian::Process() {
         } break;
         case Civ::State::Completed: {
             // If dest is a stargate: trigger the activation animation packet.
-            if (m_destSE->IsGateSE())
-                SendGFX10(m_destSE->GetID(), "effects.GateActivity");
-            if (m_destSE->IsStationSE())
+            if (m_destSE->IsGate())
+                SendGFX10(m_destSE->itemID(), "effects.GateActivity");
+            if (m_destSE->isStation())
                 sTraderJoe.ExecuteCargoDrop(m_destSE); // Update marketbot with 'special, limited-time items'
             // run complete.  remove ship(s)
             Remove(m_destSE->SysBubble());
@@ -152,7 +152,7 @@ void Civilian::SetVectors() {
             m_state = Civ::State::Completed;
             m_timeLeft = 5;
             // error?
-            _log(CIV__ERROR, "Civilian::Init() - %u (%u) hit 'else' in origin check", m_type->id(), m_itemID);
+            _log(CIV__ERROR, "Civilian::Init() - %u (%u) hit 'else' in origin check", cur.typeID, iRef->itemID());
             return;
         }
         Add(m_origSE->SysBubble());
@@ -165,7 +165,7 @@ void Civilian::SetVectors() {
     	float mass = m_type->mass();
     	double inertiaMod = m_type->GetAttribute(AttrInertiaMod).get_double();
         double agility = mass * inertiaMod / 1000000.0;
-        double speed = (1 - std::exp(-20 / agility));
+        double speed = (1 - exp(-20 / agility));
         m_velocity = m_heading * speed;
         Add(m_destSE->SysBubble());
     } else {
@@ -173,7 +173,7 @@ void Civilian::SetVectors() {
         m_state = Civ::State::Completed;
         m_timeLeft = 2;
         // error?
-        _log(CIV__ERROR, "Civilian::Init() - %u (%u) hit 'else' in origin check", m_type->id(), m_itemID);
+        _log(CIV__ERROR, "Civilian::Init() - %u (%u) hit 'else' in origin check", cur.typeID, iRef->itemID());
     }
 }
 
@@ -318,16 +318,16 @@ void Civilian::EncodeDestiny( Buffer& into) {
     into.Append(data);
     switch (m_state) {
         case Civ::State::Departing: {
-            GPoint target = m_destSE->GetPosition();
+            GPoint target = m_destSE->position();
             WARP_Struct warp;
                 warp.formationID = 0xFF;
                 warp.targX = target.x;
                 warp.targY = target.y;
                 warp.targZ = target.z;
-                warp.speed = 150;       //ship warp speed x10
+                warp.speed = GetWarpSpeed();       //ship warp speed x10
                 warp.effectStamp = -1;
-                warp.distance = -1;
-                warp.trackingFlags = 0;
+                //warp.distance = -1;
+                //warp.trackingFlags = 0;
             into.Append(warp);
         }  break;
         case Civ::State::Undocking: {
@@ -340,7 +340,7 @@ void Civilian::EncodeDestiny( Buffer& into) {
             into.Append(go);
         }  break;
         case Civ::State::Arriving: {
-            GPoint target = m_destSE->GetPosition();
+            GPoint target = m_destSE->position();
             GOTO_Struct go;
                 go.formationID = 0xFF;
                 go.x = target.x;
@@ -351,9 +351,9 @@ void Civilian::EncodeDestiny( Buffer& into) {
         case Civ::State::Formation: {
             FORMATION_Struct form;
                 form.formationID = m_formID;
-                form.leaderID = m_pLeader->GetID();
-                form.spacing = 800.0f;
-                form.syncIndex = 3;
+                //form.leaderID = m_pLeader->GetID();
+                //form.spacing = 800.0f;
+                //form.syncIndex = 3;
             into.Append(form);
         }  break;
         default: {
