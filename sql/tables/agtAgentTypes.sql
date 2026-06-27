@@ -1,6 +1,6 @@
 -- MySQL dump 10.15  Distrib 10.0.36-MariaDB, for Linux (x86_64)
 --
--- Host: localhost    Database: EVE_Crucible
+-- Host: localhost    Database: EvE_AlasiyaDev
 -- ------------------------------------------------------
 -- Server version	10.0.36-MariaDB
 
@@ -26,7 +26,7 @@ CREATE TABLE `agtAgentTypes` (
   `agentTypeID` int(11) NOT NULL,
   `agentType` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`agentTypeID`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=Aria DEFAULT CHARSET=utf8 PAGE_CHECKSUM=1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -48,4 +48,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-07-10 18:28:45
+-- Dump completed on 2026-06-27  0:42:21

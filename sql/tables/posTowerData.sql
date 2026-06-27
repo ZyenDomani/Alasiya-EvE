@@ -1,6 +1,6 @@
 -- MySQL dump 10.15  Distrib 10.0.36-MariaDB, for Linux (x86_64)
 --
--- Host: localhost    Database: EVE_Crucible
+-- Host: localhost    Database: EvE_AlasiyaDev
 -- ------------------------------------------------------
 -- Server version	10.0.36-MariaDB
 
@@ -26,32 +26,24 @@ CREATE TABLE `posTowerData` (
   `itemID` int(10) NOT NULL DEFAULT '0',
   `harmonic` int(10) NOT NULL DEFAULT '0',
   `password` varchar(50) NOT NULL DEFAULT '''''',
-  `status` FLOAT NOT NULL DEFAULT '0',
+  `status` float NOT NULL DEFAULT '0',
   `standing` float NOT NULL DEFAULT '0',
   `standingOwnerID` int(10) NOT NULL DEFAULT '0',
-  `corpWar` bit(1) NOT NULL DEFAULT b'0',
-  `statusDrop` bit(1) NOT NULL DEFAULT b'0',
-  `allyStandings` bit(1) NOT NULL DEFAULT b'0',
-  `showInCalendar` bit(1) NOT NULL DEFAULT b'0',
-  `sendFuelNotifications` bit(1) NOT NULL DEFAULT b'0',
-  `allowCorp` bit(1) NOT NULL DEFAULT b'0',
-  `allowAlliance` bit(1) NOT NULL DEFAULT b'0',
-  `anchor` bit(1) NOT NULL DEFAULT b'0',
-  `unanchor` bit(1) NOT NULL DEFAULT b'0',
-  `online` bit(1) NOT NULL DEFAULT b'0',
-  `offline` bit(1) NOT NULL DEFAULT b'0',
-  PRIMARY KEY (`itemID`)
+  `corpWar` tinyint(1) NOT NULL DEFAULT '0',
+  `statusDrop` tinyint(1) NOT NULL DEFAULT '0',
+  `allyStandings` tinyint(1) NOT NULL DEFAULT '0',
+  `showInCalendar` tinyint(1) NOT NULL DEFAULT '0',
+  `sendFuelNotifications` tinyint(1) NOT NULL DEFAULT '0',
+  `allowCorp` tinyint(1) NOT NULL DEFAULT '0',
+  `allowAlliance` tinyint(1) NOT NULL DEFAULT '0',
+  `anchor` tinyint(1) NOT NULL DEFAULT '0',
+  `unanchor` tinyint(1) NOT NULL DEFAULT '0',
+  `online` tinyint(1) NOT NULL DEFAULT '0',
+  `offline` tinyint(1) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`itemID`),
+  KEY `itemID` (`itemID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='POS Tower Data';
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `posTowerData`
---
-
-LOCK TABLES `posTowerData` WRITE;
-/*!40000 ALTER TABLE `posTowerData` DISABLE KEYS */;
-/*!40000 ALTER TABLE `posTowerData` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -62,4 +54,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-07-10 18:29:48
+-- Dump completed on 2026-06-27  0:42:47

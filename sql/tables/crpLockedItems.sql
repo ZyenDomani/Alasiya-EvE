@@ -1,6 +1,6 @@
 -- MySQL dump 10.15  Distrib 10.0.36-MariaDB, for Linux (x86_64)
 --
--- Host: localhost    Database: EVE_Crucible
+-- Host: localhost    Database: EvE_AlasiyaDev
 -- ------------------------------------------------------
 -- Server version	10.0.36-MariaDB
 
@@ -26,19 +26,10 @@ CREATE TABLE `crpLockedItems` (
   `itemID` int(10) unsigned NOT NULL,
   `ownerID` int(10) NOT NULL,
   `locationID` int(10) NOT NULL,
-  `locked` bit(1) NOT NULL DEFAULT b'0',
+  `locked` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`itemID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Corporate Locked Items';
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `crpLockedItems`
---
-
-LOCK TABLES `crpLockedItems` WRITE;
-/*!40000 ALTER TABLE `crpLockedItems` DISABLE KEYS */;
-/*!40000 ALTER TABLE `crpLockedItems` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -49,4 +40,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-07-10 18:28:49
+-- Dump completed on 2026-06-27  0:42:23

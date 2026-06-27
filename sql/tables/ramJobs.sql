@@ -1,6 +1,6 @@
 -- MySQL dump 10.15  Distrib 10.0.36-MariaDB, for Linux (x86_64)
 --
--- Host: localhost    Database: EVE_Crucible
+-- Host: localhost    Database: EvE_AlasiyaDev
 -- ------------------------------------------------------
 -- Server version	10.0.36-MariaDB
 
@@ -24,6 +24,7 @@ DROP TABLE IF EXISTS `ramJobs`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `ramJobs` (
   `jobID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `eventID` int(10) unsigned NOT NULL DEFAULT '0',
   `ownerID` int(10) unsigned NOT NULL,
   `installerID` int(10) unsigned NOT NULL,
   `assemblyLineID` int(10) unsigned NOT NULL,
@@ -32,25 +33,14 @@ CREATE TABLE `ramJobs` (
   `beginProductionTime` bigint(20) unsigned NOT NULL,
   `pauseProductionTime` bigint(20) unsigned DEFAULT NULL,
   `endProductionTime` bigint(20) unsigned NOT NULL,
-  `description` varchar(250) NOT NULL DEFAULT 'blah',
-  `runs` int(10) NOT NULL,
-  `outputFlag` int(10) unsigned NOT NULL,
-  `completedStatusID` int(10) unsigned NOT NULL,
-  `installedInSolarSystemID` int(10) unsigned NOT NULL,
-  `licensedProductionRuns` int(10) DEFAULT NULL,
+  `runs` smallint(2) NOT NULL DEFAULT '0',
+  `outputFlag` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `completedStatusID` tinyint(2) unsigned NOT NULL DEFAULT '0',
+  `licensedProductionRuns` tinyint(4) DEFAULT NULL,
   PRIMARY KEY (`jobID`),
   KEY `RAMJOBS_ASSEMBLYLINES` (`assemblyLineID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `ramJobs`
---
-
-LOCK TABLES `ramJobs` WRITE;
-/*!40000 ALTER TABLE `ramJobs` DISABLE KEYS */;
-/*!40000 ALTER TABLE `ramJobs` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -61,4 +51,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-07-10 18:29:51
+-- Dump completed on 2026-06-27  0:42:48

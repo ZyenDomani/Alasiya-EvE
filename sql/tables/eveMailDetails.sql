@@ -1,6 +1,6 @@
 -- MySQL dump 10.15  Distrib 10.0.36-MariaDB, for Linux (x86_64)
 --
--- Host: localhost    Database: EVE_Crucible
+-- Host: localhost    Database: EvE_AlasiyaDev
 -- ------------------------------------------------------
 -- Server version	10.0.36-MariaDB
 
@@ -29,7 +29,7 @@ CREATE TABLE `eveMailDetails` (
   `attachment` longtext NOT NULL,
   PRIMARY KEY (`attachmentID`),
   KEY `messageID` (`messageID`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -38,6 +38,7 @@ CREATE TABLE `eveMailDetails` (
 
 LOCK TABLES `eveMailDetails` WRITE;
 /*!40000 ALTER TABLE `eveMailDetails` DISABLE KEYS */;
+INSERT INTO `eveMailDetails` VALUES (1,1,1,'Dear valued customer,<br>Congratulations on the insurance on your ship. A very wise choice indeed.<br>This letter is to confirm that we have issued an insurance contract for your ship, Freki, at level of 50%.<br>This contract will expire after 12 weeks.<br><br>Best,<br>The Secure Commerce Commission,<br><br>Reference ID: xxxxx <br>jav');
 /*!40000 ALTER TABLE `eveMailDetails` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -50,4 +51,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-07-10 18:28:53
+-- Dump completed on 2026-06-27  0:42:25

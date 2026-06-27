@@ -1,7 +1,7 @@
 #!/bin/bash
-MYSQL_USER=nick
+MYSQL_USER=allan
 MYSQL_PASS=none
-DB_NAME=evemu
+DB_NAME=EvE_AlasiyaDev
 
 unset blacklist
 
@@ -17,9 +17,8 @@ _ "chrShipFittings chrSkillHistory chrSkillQueue chrVisitedSystems crpAdRegistry
 _ "crpApplications crpBulletins crpContacts crpLabels crpLockedItems"
 _ "crpItemEvent crpRecruiters crpRoleHistroy crpRoleTitles crpShares"
 _ "crpVoteItems crpWalletDivisons droneState dunActive entity"
-_ "entity_attributes eveMail eveMailDetails invBlueprints jnlCharacters"
-_ "jnlCorporations mailLabel mailList mailListUsers mailMessage"
-_ "mailStatus mapDynamicData mktHistory mktOrders mktTransactions"
+_ "entity_attributes invBlueprints jnlCharacters"
+_ "jnlCorporations mapDynamicData mktHistory mktOrders mktTransactions"
 _ "piCCPin piECUHeads piLaunches piLinks piPinContents"
 _ "piPins piPlanets piRoutes posCustomOfficeData posJumpBridgeData"
 _ "posStructureData posTowerData ramJobs rentalInfo repStandingChanges"

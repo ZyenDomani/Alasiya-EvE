@@ -1,6 +1,6 @@
 -- MySQL dump 10.15  Distrib 10.0.36-MariaDB, for Linux (x86_64)
 --
--- Host: localhost    Database: EVE_Crucible
+-- Host: localhost    Database: EvE_AlasiyaDev
 -- ------------------------------------------------------
 -- Server version	10.0.36-MariaDB
 
@@ -23,14 +23,18 @@ DROP TABLE IF EXISTS `mapSystemSovInfo`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `mapSystemSovInfo` (
+  `claimID` int(11) NOT NULL AUTO_INCREMENT,
   `solarSystemID` int(10) NOT NULL,
   `corporationID` int(10) NOT NULL,
   `allianceID` int(10) NOT NULL,
   `claimStructureID` int(10) NOT NULL,
-  `claimTime` int(20) NOT NULL,
+  `claimTime` bigint(20) DEFAULT '0',
   `hubID` int(10) NOT NULL,
-  `contested` bit(1) NOT NULL DEFAULT b'0'
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='SystemSovereigntyInfo';
+  `contested` tinyint(1) DEFAULT '0',
+  `beaconID` int(10) NOT NULL DEFAULT '0',
+  `jammerID` int(10) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`claimID`)
+) ENGINE=Aria DEFAULT CHARSET=utf8 PAGE_CHECKSUM=1 COMMENT='SystemSovereigntyInfo';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -51,4 +55,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-07-10 18:29:24
+-- Dump completed on 2026-06-27  0:42:46

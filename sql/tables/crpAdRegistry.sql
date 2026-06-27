@@ -1,6 +1,6 @@
 -- MySQL dump 10.15  Distrib 10.0.36-MariaDB, for Linux (x86_64)
 --
--- Host: localhost    Database: EVE_Crucible
+-- Host: localhost    Database: EvE_AlasiyaDev
 -- ------------------------------------------------------
 -- Server version	10.0.36-MariaDB
 
@@ -37,17 +37,8 @@ CREATE TABLE `crpAdRegistry` (
   `memberCount` smallint(5) NOT NULL,
   `channelID` int(10) NOT NULL,
   PRIMARY KEY (`adID`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='Corporate Advert Data';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Corporate Advert Data';
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `crpAdRegistry`
---
-
-LOCK TABLES `crpAdRegistry` WRITE;
-/*!40000 ALTER TABLE `crpAdRegistry` DISABLE KEYS */;
-/*!40000 ALTER TABLE `crpAdRegistry` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -58,4 +49,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-07-10 18:28:49
+-- Dump completed on 2026-06-27  0:42:23

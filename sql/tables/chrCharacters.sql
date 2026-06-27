@@ -1,6 +1,6 @@
 -- MySQL dump 10.15  Distrib 10.0.36-MariaDB, for Linux (x86_64)
 --
--- Host: localhost    Database: EVE_Crucible
+-- Host: localhost    Database: EvE_AlasiyaDev
 -- ------------------------------------------------------
 -- Server version	10.0.36-MariaDB
 
@@ -39,7 +39,7 @@ CREATE TABLE `chrCharacters` (
   `logonDateTime` bigint(20) unsigned NOT NULL DEFAULT '0',
   `logoffDateTime` bigint(20) NOT NULL DEFAULT '0',
   `logonMinutes` int(10) unsigned NOT NULL DEFAULT '0',
-  `skillPoints` BIGINT(20) NOT NULL DEFAULT '0',
+  `skillPoints` bigint(20) NOT NULL DEFAULT '0',
   `skillQueueEndTime` bigint(20) unsigned NOT NULL DEFAULT '0',
   `corporationID` int(10) unsigned NOT NULL DEFAULT '0',
   `baseID` int(10) NOT NULL DEFAULT '0',
@@ -54,7 +54,7 @@ CREATE TABLE `chrCharacters` (
   `grantableRolesAtBase` bigint(20) NOT NULL DEFAULT '0',
   `grantableRolesAtOther` bigint(20) NOT NULL DEFAULT '0',
   `titleMask` bigint(20) NOT NULL DEFAULT '0',
-  `blockRoles` bit(1) NOT NULL DEFAULT b'0',
+  `blockRoles` tinyint(1) NOT NULL DEFAULT '0',
   `startDateTime` bigint(20) NOT NULL DEFAULT '0',
   `createDateTime` bigint(20) NOT NULL DEFAULT '0',
   `ancestryID` int(10) unsigned NOT NULL DEFAULT '0',
@@ -69,7 +69,7 @@ CREATE TABLE `chrCharacters` (
   `constellationID` int(10) unsigned NOT NULL DEFAULT '0',
   `regionID` int(10) unsigned NOT NULL DEFAULT '0',
   `online` tinyint(1) NOT NULL DEFAULT '0',
-  `freeRespecs` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `freeRespecs` tinyint(1) unsigned NOT NULL DEFAULT '2',
   `lastRespecDateTime` bigint(20) unsigned NOT NULL DEFAULT '0',
   `nextRespecDateTime` bigint(20) unsigned NOT NULL DEFAULT '0',
   `deletePrepareDateTime` bigint(20) unsigned DEFAULT '0',
@@ -82,19 +82,9 @@ CREATE TABLE `chrCharacters` (
   KEY `FK_CHARACTER__CHRANCESTRIES` (`ancestryID`),
   KEY `FK_CHARACTER__CHRCAREERS` (`careerID`),
   KEY `FK_CHARACTER__CHRCAREERSPECIALITIES` (`careerSpecialityID`),
-  KEY `FK_CHARACTER__CHRSCHOOLS` (`schoolID`),
-  KEY `characterID` (`characterID`,`accountID`)
-) ENGINE=InnoDB AUTO_INCREMENT=90000000 DEFAULT CHARSET=utf8;
+  KEY `FK_CHARACTER__CHRSCHOOLS` (`schoolID`)
+) ENGINE=InnoDB AUTO_INCREMENT=90000009 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `chrCharacters`
---
-
-LOCK TABLES `chrCharacters` WRITE;
-/*!40000 ALTER TABLE `chrCharacters` DISABLE KEYS */;
-/*!40000 ALTER TABLE `chrCharacters` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -105,4 +95,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-07-10 18:28:47
+-- Dump completed on 2026-06-27  0:42:23

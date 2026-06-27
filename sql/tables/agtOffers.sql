@@ -1,6 +1,6 @@
 -- MySQL dump 10.15  Distrib 10.0.36-MariaDB, for Linux (x86_64)
 --
--- Host: localhost    Database: EVE_Crucible
+-- Host: localhost    Database: EvE_AlasiyaDev
 -- ------------------------------------------------------
 -- Server version	10.0.36-MariaDB
 
@@ -49,28 +49,18 @@ CREATE TABLE `agtOffers` (
   `dateIssued` bigint(20) unsigned NOT NULL DEFAULT '0',
   `dateAccepted` bigint(20) unsigned NOT NULL DEFAULT '0',
   `dateCompleted` bigint(20) unsigned NOT NULL DEFAULT '0',
-  `important` bit(1) NOT NULL DEFAULT b'0',
+  `important` tinyint(1) NOT NULL DEFAULT '0',
   `name` text NOT NULL,
-  `remoteCompletable` bit(1) NOT NULL DEFAULT b'0',
-  `remoteOfferable` bit(1) NOT NULL DEFAULT b'0',
+  `remoteCompletable` tinyint(1) NOT NULL DEFAULT '0',
+  `remoteOfferable` tinyint(1) NOT NULL DEFAULT '0',
   `typeID` smallint(6) NOT NULL DEFAULT '0',
   `bonusISK` int(10) NOT NULL DEFAULT '0',
   `bonusTime` bigint(20) NOT NULL DEFAULT '0',
   `briefingID` int(11) NOT NULL DEFAULT '0',
-  `storyline` bit(1) NOT NULL DEFAULT b'0',
+  `storyline` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`offerID`)
-) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='char missions - current offers and history';
+) ENGINE=Aria AUTO_INCREMENT=46 DEFAULT CHARSET=utf8 PAGE_CHECKSUM=1 COMMENT='char missions - current offers and history';
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `agtOffers`
---
-
-LOCK TABLES `agtOffers` WRITE;
-/*!40000 ALTER TABLE `agtOffers` DISABLE KEYS */;
-
-/*!40000 ALTER TABLE `agtOffers` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -81,4 +71,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-07-10 18:28:45
+-- Dump completed on 2026-06-27  0:42:22

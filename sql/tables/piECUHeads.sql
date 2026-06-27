@@ -1,6 +1,6 @@
 -- MySQL dump 10.15  Distrib 10.0.36-MariaDB, for Linux (x86_64)
 --
--- Host: localhost    Database: EVE_Crucible
+-- Host: localhost    Database: EvE_AlasiyaDev
 -- ------------------------------------------------------
 -- Server version	10.0.36-MariaDB
 
@@ -23,25 +23,16 @@ DROP TABLE IF EXISTS `piECUHeads`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `piECUHeads` (
-  `ccPinID` int(10) NOT NULL DEFAULT '0',
+  `colonyID` int(10) NOT NULL DEFAULT '0',
   `ownerID` int(10) NOT NULL DEFAULT '0',
   `ecuID` int(10) NOT NULL DEFAULT '0',
   `headID` smallint(3) NOT NULL DEFAULT '0',
   `typeID` smallint(6) NOT NULL DEFAULT '0',
   `latitude` double NOT NULL DEFAULT '0',
   `longitude` double NOT NULL DEFAULT '0',
-  PRIMARY KEY (`ccPinID`,`ownerID`,`ecuID`,`headID`)
+  PRIMARY KEY (`colonyID`,`ownerID`,`ecuID`,`headID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='PI Colony ECU head data';
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `piECUHeads`
---
-
-LOCK TABLES `piECUHeads` WRITE;
-/*!40000 ALTER TABLE `piECUHeads` DISABLE KEYS */;
-/*!40000 ALTER TABLE `piECUHeads` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -52,4 +43,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-07-10 18:29:48
+-- Dump completed on 2026-06-27  0:42:46

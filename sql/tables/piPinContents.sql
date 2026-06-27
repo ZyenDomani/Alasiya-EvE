@@ -1,73 +1,45 @@
--- phpMyAdmin SQL Dump
--- version 4.4.15.10
--- https://www.phpmyadmin.net
+-- MySQL dump 10.15  Distrib 10.0.36-MariaDB, for Linux (x86_64)
 --
--- Host: localhost
--- Generation Time: Jul 19, 2019 at 09:14 PM
--- Server version: 10.0.36-MariaDB
--- PHP Version: 5.6.36
-
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET time_zone = "+00:00";
-
+-- Host: localhost    Database: EvE_AlasiyaDev
+-- ------------------------------------------------------
+-- Server version	10.0.36-MariaDB
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
-
---
--- Database: `EVE_Crucible`
---
-
--- --------------------------------------------------------
+/*!40101 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
 -- Table structure for table `piPinContents`
 --
 
-CREATE TABLE IF NOT EXISTS `piPinContents` (
-  `ccPinID` int(10) NOT NULL DEFAULT '0',
+DROP TABLE IF EXISTS `piPinContents`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `piPinContents` (
+  `colonyID` int(10) NOT NULL DEFAULT '0',
   `pinID` int(10) NOT NULL DEFAULT '0',
   `typeID` smallint(5) NOT NULL DEFAULT '0',
-  `itemQty` int(10) NOT NULL DEFAULT '0'
+  `itemQty` int(10) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`pinID`,`typeID`),
+  UNIQUE KEY `ccPinID_2` (`colonyID`,`pinID`,`typeID`),
+  KEY `ccPinID` (`colonyID`,`pinID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Colony pin contents data';
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
---
--- Dumping data for table `piPinContents`
---
-
-INSERT INTO `piPinContents` (`ccPinID`, `pinID`, `typeID`, `itemQty`) VALUES
-(140000710, 140000713, 2312, 180),
-(140000710, 140000713, 2321, 220),
-(140000710, 140000713, 2327, 140),
-(140000710, 140000713, 2329, 3300),
-(140000710, 140000713, 3697, 420),
-(140000710, 140000713, 9840, 140),
-(140000710, 140000748, 2329, 500),
-(140000710, 140000748, 2389, 2000),
-(140000710, 140000748, 2392, 1840),
-(140000710, 140000748, 2397, 135),
-(140000710, 140000748, 2401, 4080),
-(140000710, 140000748, 3697, 2020),
-(140000710, 140000748, 3779, 2000),
-(140000710, 140000748, 9828, 2840),
-(140000710, 140000787, 2329, 3220),
-(140000710, 140000787, 2389, 1960),
-(140000710, 140000787, 3683, 2620),
-(140000710, 140000787, 3779, 1520),
-(140000710, 140000787, 9828, 3920);
-
---
--- Indexes for dumped tables
---
-
---
--- Indexes for table `piPinContents`
---
-ALTER TABLE `piPinContents`
-  ADD PRIMARY KEY (`pinID`,`typeID`);
-
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2026-06-27  0:42:46

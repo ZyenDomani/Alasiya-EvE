@@ -1,33 +1,29 @@
--- phpMyAdmin SQL Dump
--- version 4.4.15.10
--- https://www.phpmyadmin.net
+-- MySQL dump 10.15  Distrib 10.0.36-MariaDB, for Linux (x86_64)
 --
--- Host: localhost
--- Generation Time: Jul 26, 2019 at 02:43 PM
--- Server version: 10.0.36-MariaDB
--- PHP Version: 5.6.36
-
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET time_zone = "+00:00";
-
+-- Host: localhost    Database: EvE_AlasiyaDev
+-- ------------------------------------------------------
+-- Server version	10.0.36-MariaDB
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
-
---
--- Database: `EVE_Crucible`
---
-
--- --------------------------------------------------------
+/*!40101 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
 -- Table structure for table `piPins`
 --
 
-CREATE TABLE IF NOT EXISTS `piPins` (
-  `ccPinID` int(10) NOT NULL DEFAULT '0',
+DROP TABLE IF EXISTS `piPins`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `piPins` (
+  `colonyID` int(10) NOT NULL DEFAULT '0',
   `pinID` int(10) NOT NULL DEFAULT '0',
   `typeID` smallint(6) NOT NULL DEFAULT '0',
   `ownerID` int(10) NOT NULL DEFAULT '0',
@@ -35,33 +31,32 @@ CREATE TABLE IF NOT EXISTS `piPins` (
   `level` smallint(3) NOT NULL DEFAULT '0',
   `latitude` float NOT NULL DEFAULT '0',
   `longitude` float NOT NULL DEFAULT '0',
-  `isCommandCenter` bit(1) NOT NULL DEFAULT b'0',
-  `isLaunchable` bit(1) NOT NULL DEFAULT b'0',
-  `isProcess` bit(1) NOT NULL DEFAULT b'0',
-  `isStorage` bit(1) NOT NULL DEFAULT b'0',
-  `isECU` bit(1) NOT NULL DEFAULT b'0',
-  `hasReceivedInputs` bit(1) NOT NULL DEFAULT b'0',
-  `receivedInputsLastCycle` bit(1) NOT NULL DEFAULT b'0',
+  `isCommandCenter` tinyint(1) NOT NULL DEFAULT '0',
+  `isLaunchable` tinyint(1) NOT NULL DEFAULT '0',
+  `isProcess` tinyint(1) NOT NULL DEFAULT '0',
+  `isStorage` tinyint(1) NOT NULL DEFAULT '0',
+  `isECU` tinyint(1) NOT NULL DEFAULT '0',
   `schematicID` smallint(3) NOT NULL DEFAULT '0',
   `programType` smallint(3) NOT NULL DEFAULT '0',
   `cycleTime` bigint(20) NOT NULL DEFAULT '0',
-  `launchTime` bigint(20) NOT NULL DEFAULT '0',
   `expiryTime` bigint(20) NOT NULL DEFAULT '0',
   `installTime` bigint(20) NOT NULL DEFAULT '0',
   `lastRunTime` bigint(20) NOT NULL DEFAULT '0',
-  `headRadius` float NOT NULL DEFAULT '0'
+  `headRadius` float NOT NULL DEFAULT '0',
+  `qtyPerCycle` int(20) NOT NULL DEFAULT '0',
+  `cycleCount` smallint(5) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`pinID`),
+  KEY `colonyID` (`colonyID`,`pinID`,`ownerID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Colony pin data';
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
---
--- Indexes for dumped tables
---
-
---
--- Indexes for table `piPins`
---
-ALTER TABLE `piPins`
-  ADD PRIMARY KEY (`pinID`);
-
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2026-06-27  0:42:46

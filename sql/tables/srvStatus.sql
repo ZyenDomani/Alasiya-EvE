@@ -1,6 +1,6 @@
 -- MySQL dump 10.15  Distrib 10.0.36-MariaDB, for Linux (x86_64)
 --
--- Host: localhost    Database: EVE_Crucible
+-- Host: localhost    Database: EvE_AlasiyaDev
 -- ------------------------------------------------------
 -- Server version	10.0.36-MariaDB
 
@@ -25,15 +25,15 @@ DROP TABLE IF EXISTS `srvStatus`;
 CREATE TABLE `srvStatus` (
   `AI` int(10) NOT NULL AUTO_INCREMENT,
   `srvName` varchar(60) NOT NULL,
-  `Online` bit(1) NOT NULL DEFAULT b'0',
+  `Online` tinyint(1) NOT NULL DEFAULT '0',
   `startTime` bigint(20) NOT NULL,
   `ClientSeed` int(10) NOT NULL,
   `Connections` smallint(6) NOT NULL,
   `threads` tinyint(4) NOT NULL,
-  `rss` decimal(6,3) NOT NULL,
-  `vm` decimal(6,3) NOT NULL,
-  `user` decimal(4,2) NOT NULL,
-  `kernel` decimal(4,2) NOT NULL,
+  `rss` float NOT NULL,
+  `vm` float NOT NULL,
+  `user` float NOT NULL,
+  `kernel` float NOT NULL,
   `items` int(10) NOT NULL,
   `systems` int(10) NOT NULL,
   `bubbles` int(10) NOT NULL,
@@ -50,7 +50,7 @@ CREATE TABLE `srvStatus` (
 
 LOCK TABLES `srvStatus` WRITE;
 /*!40000 ALTER TABLE `srvStatus` DISABLE KEYS */;
-INSERT INTO `srvStatus` VALUES (1,'Test',1,1562794810,1,1,5,195.801,18.862,5.94,8.25,123,1,16,1562800496,0);
+INSERT INTO `srvStatus` VALUES (1,'Test',1,1781837972,9,1,6,209.539,19.5233,5.54574,7.08305,804,1,11,1781884763,0);
 /*!40000 ALTER TABLE `srvStatus` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -63,4 +63,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-07-10 18:29:52
+-- Dump completed on 2026-06-27  0:42:49

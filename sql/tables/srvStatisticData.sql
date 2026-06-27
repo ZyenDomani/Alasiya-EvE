@@ -1,32 +1,28 @@
--- phpMyAdmin SQL Dump
--- version 4.4.15.10
--- https://www.phpmyadmin.net
+-- MySQL dump 10.15  Distrib 10.0.36-MariaDB, for Linux (x86_64)
 --
--- Host: localhost
--- Generation Time: Jul 10, 2019 at 09:17 PM
--- Server version: 10.0.36-MariaDB
--- PHP Version: 5.6.36
-
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET time_zone = "+00:00";
-
+-- Host: localhost    Database: EvE_AlasiyaDev
+-- ------------------------------------------------------
+-- Server version	10.0.36-MariaDB
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
-
---
--- Database: `EVE_Crucible`
---
-
--- --------------------------------------------------------
+/*!40101 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
 -- Table structure for table `srvStatisticData`
 --
 
-CREATE TABLE IF NOT EXISTS `srvStatisticData` (
+DROP TABLE IF EXISTS `srvStatisticData`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `srvStatisticData` (
   `timeStamp` bigint(20) NOT NULL DEFAULT '0' COMMENT 'filetime',
   `timeSpan` mediumint(6) unsigned NOT NULL DEFAULT '0' COMMENT 'in minutes',
   `pcShots` int(10) unsigned NOT NULL DEFAULT '0',
@@ -38,19 +34,18 @@ CREATE TABLE IF NOT EXISTS `srvStatisticData` (
   `oreMined` float NOT NULL DEFAULT '0',
   `iskMarket` float NOT NULL DEFAULT '0',
   `probesLaunched` mediumint(5) unsigned NOT NULL DEFAULT '0',
-  `sitesScanned` mediumint(5) unsigned NOT NULL DEFAULT '0'
+  `sitesScanned` mediumint(5) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`timeStamp`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Current Data for graphing player activity over period of time';
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
---
--- Indexes for dumped tables
---
-
---
--- Indexes for table `srvStatisticData`
---
-ALTER TABLE `srvStatisticData`
-  ADD PRIMARY KEY (`timeStamp`);
-
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2026-06-27  0:42:49

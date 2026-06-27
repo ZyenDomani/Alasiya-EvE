@@ -1,6 +1,6 @@
 -- MySQL dump 10.15  Distrib 10.0.36-MariaDB, for Linux (x86_64)
 --
--- Host: localhost    Database: EVE_Crucible
+-- Host: localhost    Database: EvE_AlasiyaDev
 -- ------------------------------------------------------
 -- Server version	10.0.36-MariaDB
 
@@ -25,25 +25,19 @@ DROP TABLE IF EXISTS `posStructureData`;
 CREATE TABLE `posStructureData` (
   `itemID` int(10) NOT NULL DEFAULT '0',
   `towerID` int(10) NOT NULL DEFAULT '0',
-  `moonID` int(10) NOT NULL DEFAULT '0',
+  `anchorpointID` int(10) DEFAULT NULL,
   `state` tinyint(2) NOT NULL DEFAULT '-1',
-  `canUse` bit(1) NOT NULL DEFAULT b'0',
-  `canView` bit(1) NOT NULL DEFAULT b'0',
-  `canTake` bit(1) NOT NULL DEFAULT b'0',
+  `canUse` tinyint(1) NOT NULL DEFAULT '0',
+  `canView` tinyint(1) NOT NULL DEFAULT '0',
+  `canTake` tinyint(1) NOT NULL DEFAULT '0',
   `status` tinyint(2) NOT NULL DEFAULT '0',
   `timestamp` bigint(20) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`itemID`)
+  PRIMARY KEY (`itemID`),
+  KEY `itemID` (`itemID`),
+  KEY `towerID` (`towerID`),
+  KEY `moonID` (`anchorpointID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='POS Basic Structure Data';
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `posStructureData`
---
-
-LOCK TABLES `posStructureData` WRITE;
-/*!40000 ALTER TABLE `posStructureData` DISABLE KEYS */;
-/*!40000 ALTER TABLE `posStructureData` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -54,4 +48,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-07-10 18:29:48
+-- Dump completed on 2026-06-27  0:42:47

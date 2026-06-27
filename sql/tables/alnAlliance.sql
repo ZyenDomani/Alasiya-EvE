@@ -1,6 +1,6 @@
 -- MySQL dump 10.15  Distrib 10.0.36-MariaDB, for Linux (x86_64)
 --
--- Host: localhost    Database: EVE_Crucible
+-- Host: localhost    Database: EvE_AlasiyaDev
 -- ------------------------------------------------------
 -- Server version	10.0.36-MariaDB
 
@@ -25,12 +25,13 @@ DROP TABLE IF EXISTS `alnAlliance`;
 CREATE TABLE `alnAlliance` (
   `allianceID` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `allianceName` text NOT NULL,
+  `description` varchar(400) NOT NULL DEFAULT '',
   `typeID` int(11) NOT NULL DEFAULT '32',
   `shortName` varchar(20) NOT NULL,
   `executorCorpID` int(11) NOT NULL,
   `creatorCorpID` int(11) NOT NULL,
   `creatorCharID` int(11) NOT NULL,
-  `startDate` int(20) NOT NULL,
+  `startDate` bigint(20) NOT NULL,
   `memberCount` smallint(5) NOT NULL DEFAULT '0',
   `url` text NOT NULL,
   `deleted` tinyint(1) NOT NULL DEFAULT '0',
@@ -38,15 +39,6 @@ CREATE TABLE `alnAlliance` (
   UNIQUE KEY `allianceID` (`allianceID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `alnAlliance`
---
-
-LOCK TABLES `alnAlliance` WRITE;
-/*!40000 ALTER TABLE `alnAlliance` DISABLE KEYS */;
-/*!40000 ALTER TABLE `alnAlliance` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -57,4 +49,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-07-10 18:28:45
+-- Dump completed on 2026-06-27  0:42:22

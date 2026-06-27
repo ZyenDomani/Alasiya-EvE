@@ -1,6 +1,6 @@
 -- MySQL dump 10.15  Distrib 10.0.36-MariaDB, for Linux (x86_64)
 --
--- Host: localhost    Database: EVE_Crucible
+-- Host: localhost    Database: EvE_AlasiyaDev
 -- ------------------------------------------------------
 -- Server version	10.0.36-MariaDB
 
@@ -28,8 +28,8 @@ CREATE TABLE `crpRoleGroups` (
   `roleMask` bigint(20) NOT NULL,
   `appliesTo` varchar(130) COLLATE utf8_unicode_ci NOT NULL,
   `appliesToGrantable` varchar(130) COLLATE utf8_unicode_ci NOT NULL,
-  `isLocational` bit(1) NOT NULL DEFAULT b'0',
-  `isDivisional` bit(1) NOT NULL DEFAULT b'0',
+  `isLocational` tinyint(1) NOT NULL DEFAULT '0',
+  `isDivisional` tinyint(1) NOT NULL DEFAULT '0',
   `roleGroupNameID` mediumint(6) NOT NULL,
   PRIMARY KEY (`roleGroupID`),
   UNIQUE KEY `roleGroupID` (`roleGroupID`)
@@ -42,7 +42,7 @@ CREATE TABLE `crpRoleGroups` (
 
 LOCK TABLES `crpRoleGroups` WRITE;
 /*!40000 ALTER TABLE `crpRoleGroups` DISABLE KEYS */;
-INSERT INTO `crpRoleGroups` VALUES (1,'General',1130405722673123713,'roles','grantableRoles','\0','\0',60117),(2,'Station Service',21955048183434752,'roles','grantableRoles','\0','\0',60118),(3,'Accounting (Divisional)',2181709168640,'roles','grantableRoles','\0','',60119),(4,'Hangar Access (Headquarters)',134209536,'rolesAtHQ','grantableRolesAtHQ','','',60120),(5,'Container Access (Headquarters)',558551906910208,'rolesAtHQ','grantableRolesAtHQ','','',60121),(6,'Hangar Access (Based at)',134209536,'rolesAtBase','grantableRolesAtBase','','',60122),(7,'Container Access (Based at)',558551906910208,'rolesAtBase','grantableRolesAtBase','','',60123),(8,'Hangar Access (Other)',134209536,'rolesAtOther','grantableRolesAtOther','','',60124),(9,'Container Access (Other)',558551906910208,'rolesAtOther','grantableRolesAtOther','','',60125);
+INSERT INTO `crpRoleGroups` VALUES (1,'General',1130405722673123713,'roles','grantableRoles',0,0,60117),(2,'Station Service',21955048183434752,'roles','grantableRoles',0,0,60118),(3,'Accounting (Divisional)',2181709168640,'roles','grantableRoles',0,1,60119),(4,'Hangar Access (Headquarters)',134209536,'rolesAtHQ','grantableRolesAtHQ',1,1,60120),(5,'Container Access (Headquarters)',558551906910208,'rolesAtHQ','grantableRolesAtHQ',1,1,60121),(6,'Hangar Access (Based at)',134209536,'rolesAtBase','grantableRolesAtBase',1,1,60122),(7,'Container Access (Based at)',558551906910208,'rolesAtBase','grantableRolesAtBase',1,1,60123),(8,'Hangar Access (Other)',134209536,'rolesAtOther','grantableRolesAtOther',1,1,60124),(9,'Container Access (Other)',558551906910208,'rolesAtOther','grantableRolesAtOther',1,1,60125);
 /*!40000 ALTER TABLE `crpRoleGroups` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -55,4 +55,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-07-10 18:28:50
+-- Dump completed on 2026-06-27  0:42:24

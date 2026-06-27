@@ -1,6 +1,6 @@
 -- MySQL dump 10.15  Distrib 10.0.36-MariaDB, for Linux (x86_64)
 --
--- Host: localhost    Database: EVE_Crucible
+-- Host: localhost    Database: EvE_AlasiyaDev
 -- ------------------------------------------------------
 -- Server version	10.0.36-MariaDB
 
@@ -23,27 +23,18 @@ DROP TABLE IF EXISTS `piCCPin`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `piCCPin` (
-  `pinID` int(10) NOT NULL DEFAULT '0',
+  `colonyID` int(10) NOT NULL DEFAULT '0',
   `charID` int(10) NOT NULL DEFAULT '0',
   `planetID` int(10) NOT NULL DEFAULT '0',
   `typeID` smallint(6) NOT NULL DEFAULT '0',
-  `latitude` double NOT NULL DEFAULT '0',
-  `longitude` double NOT NULL DEFAULT '0',
   `state` tinyint(2) NOT NULL DEFAULT '1',
   `level` smallint(3) NOT NULL DEFAULT '0',
-  `lastSimTime` bigint(20) NOT NULL DEFAULT '0',
-  UNIQUE KEY `pinID` (`pinID`)
+  PRIMARY KEY (`colonyID`,`charID`,`planetID`),
+  UNIQUE KEY `pinID` (`colonyID`),
+  UNIQUE KEY `pinID_3` (`colonyID`,`charID`,`planetID`),
+  KEY `pinID_2` (`colonyID`,`charID`,`planetID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='CommandCenter pin data';
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `piCCPin`
---
-
-LOCK TABLES `piCCPin` WRITE;
-/*!40000 ALTER TABLE `piCCPin` DISABLE KEYS */;
-/*!40000 ALTER TABLE `piCCPin` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -54,4 +45,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-07-10 18:29:48
+-- Dump completed on 2026-06-27  0:42:46

@@ -1,6 +1,6 @@
 -- MySQL dump 10.15  Distrib 10.0.36-MariaDB, for Linux (x86_64)
 --
--- Host: localhost    Database: EVE_Crucible
+-- Host: localhost    Database: EvE_AlasiyaDev
 -- ------------------------------------------------------
 -- Server version	10.0.36-MariaDB
 
@@ -27,9 +27,9 @@ CREATE TABLE `ramActivities` (
   `activityName` varchar(100) DEFAULT NULL,
   `iconNo` varchar(5) DEFAULT NULL,
   `description` varchar(1000) DEFAULT NULL,
-  `published` bit(1) NOT NULL DEFAULT b'0',
+  `published` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`activityID`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=Aria DEFAULT CHARSET=utf8 PAGE_CHECKSUM=1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -38,7 +38,7 @@ CREATE TABLE `ramActivities` (
 
 LOCK TABLES `ramActivities` WRITE;
 /*!40000 ALTER TABLE `ramActivities` DISABLE KEYS */;
-INSERT INTO `ramActivities` VALUES (0,'None',NULL,'No activity',''),(1,'Manufacturing','18_02','Manufacturing',''),(2,'Researching Technology','33_02','Technological research','\0'),(3,'Researching Time Productivity','33_02','Researching productivity time',''),(4,'Researching Material Productivity','33_02','Researching material productivity',''),(5,'Copying','33_02','Copying',''),(6,'Duplicating',NULL,'The process of creating an item, by studying an already existing item.','\0'),(7,'Reverse Engineering','33_02','The process of creating a blueprint from an item.',''),(8,'Invention','33_02','The process of creating a more advanced item based on an existing item','');
+INSERT INTO `ramActivities` VALUES (0,'None',NULL,'No activity',1),(1,'Manufacturing','18_02','Manufacturing',1),(2,'Researching Technology','33_02','Technological research',0),(3,'Researching Time Productivity','33_02','Researching productivity time',1),(4,'Researching Material Productivity','33_02','Researching material productivity',1),(5,'Copying','33_02','Copying',1),(6,'Duplicating',NULL,'The process of creating an item, by studying an already existing item.',0),(7,'Reverse Engineering','33_02','The process of creating a blueprint from an item.',1),(8,'Invention','33_02','The process of creating a more advanced item based on an existing item',1);
 /*!40000 ALTER TABLE `ramActivities` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -51,4 +51,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-07-10 18:29:48
+-- Dump completed on 2026-06-27  0:42:47

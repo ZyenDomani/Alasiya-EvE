@@ -1,6 +1,6 @@
 -- MySQL dump 10.15  Distrib 10.0.36-MariaDB, for Linux (x86_64)
 --
--- Host: localhost    Database: EVE_Crucible
+-- Host: localhost    Database: EvE_AlasiyaDev
 -- ------------------------------------------------------
 -- Server version	10.0.36-MariaDB
 
@@ -28,22 +28,13 @@ CREATE TABLE `channels` (
   `displayName` varchar(85) DEFAULT NULL,
   `motd` text,
   `comparisonKey` varchar(11) DEFAULT NULL,
-  `memberless` tinyint(4) NOT NULL DEFAULT '0',
+  `memberless` tinyint(1) NOT NULL DEFAULT '0',
   `password` varchar(100) DEFAULT NULL,
-  `mailingList` tinyint(4) NOT NULL DEFAULT '0',
-  `cspa` tinyint(4) NOT NULL DEFAULT '0',
+  `mailingList` tinyint(1) NOT NULL DEFAULT '0',
+  `cspa` smallint(4) NOT NULL DEFAULT '0',
   PRIMARY KEY (`channelID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2100000001 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `channels`
---
-
-LOCK TABLES `channels` WRITE;
-/*!40000 ALTER TABLE `channels` DISABLE KEYS */;
-/*!40000 ALTER TABLE `channels` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -54,4 +45,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-07-10 18:28:46
+-- Dump completed on 2026-06-27  0:42:22

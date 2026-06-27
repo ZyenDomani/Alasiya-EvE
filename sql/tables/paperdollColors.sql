@@ -1,6 +1,6 @@
 -- MySQL dump 10.15  Distrib 10.0.36-MariaDB, for Linux (x86_64)
 --
--- Host: localhost    Database: EVE_Crucible
+-- Host: localhost    Database: EvE_AlasiyaDev
 -- ------------------------------------------------------
 -- Server version	10.0.36-MariaDB
 
@@ -25,9 +25,9 @@ DROP TABLE IF EXISTS `paperdollColors`;
 CREATE TABLE `paperdollColors` (
   `colorID` int(11) NOT NULL DEFAULT '0',
   `colorKey` text COLLATE utf8_unicode_ci,
-  `hasSecondary` bit(1) NOT NULL DEFAULT b'0',
-  `hasWeight` bit(1) NOT NULL DEFAULT b'0',
-  `hasGloss` bit(1) NOT NULL DEFAULT b'0',
+  `hasSecondary` tinyint(1) NOT NULL DEFAULT '0',
+  `hasWeight` tinyint(1) NOT NULL DEFAULT '0',
+  `hasGloss` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`colorID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -38,7 +38,7 @@ CREATE TABLE `paperdollColors` (
 
 LOCK TABLES `paperdollColors` WRITE;
 /*!40000 ALTER TABLE `paperdollColors` DISABLE KEYS */;
-INSERT INTO `paperdollColors` VALUES (2,'topouter','\0','\0','\0'),(3,'makeup/implants','\0','\0','\0'),(4,'accessories/earslow','\0','\0','\0'),(5,'skintone','\0','\0','\0'),(6,'hair','','\0','\0'),(7,'makeup/eyes','\0','\0','\0'),(8,'makeup/lipstick','\0','',''),(9,'makeup/blush','\0','','\0'),(10,'makeup/eyeshadow','','','\0'),(11,'outer','\0','\0','\0'),(12,'accessories/nose','\0','\0','\0'),(13,'accessories/nostril','\0','\0','\0'),(14,'accessories/lips','\0','\0','\0'),(15,'beard','\0','\0','\0'),(16,'makeup/eyeliner','\0','','\0'),(17,'topmiddle','\0','\0','\0'),(18,'accessories/earshigh','\0','\0','\0'),(19,'makeup/eyebrows','\0','\0','\0'),(20,'accessories/glasses','\0','\0','\0'),(21,'feet','\0','\0','\0'),(22,'bottominner','\0','\0','\0'),(23,'bottomouter','\0','\0','\0'),(24,'accessories/brow','\0','\0','\0'),(25,'topinner','\0','\0','\0'),(26,'tattoo/head','\0','',''),(27,'accessories/piercings','\0','\0','\0');
+INSERT INTO `paperdollColors` VALUES (2,'topouter',0,0,0),(3,'makeup/implants',0,0,0),(4,'accessories/earslow',0,0,0),(5,'skintone',0,0,0),(6,'hair',1,0,0),(7,'makeup/eyes',0,0,0),(8,'makeup/lipstick',0,1,1),(9,'makeup/blush',0,1,0),(10,'makeup/eyeshadow',1,1,0),(11,'outer',0,0,0),(12,'accessories/nose',0,0,0),(13,'accessories/nostril',0,0,0),(14,'accessories/lips',0,0,0),(15,'beard',0,0,0),(16,'makeup/eyeliner',0,1,0),(17,'topmiddle',0,0,0),(18,'accessories/earshigh',0,0,0),(19,'makeup/eyebrows',0,0,0),(20,'accessories/glasses',0,0,0),(21,'feet',0,0,0),(22,'bottominner',0,0,0),(23,'bottomouter',0,0,0),(24,'accessories/brow',0,0,0),(25,'topinner',0,0,0),(26,'tattoo/head',0,1,1),(27,'accessories/piercings',0,0,0);
 /*!40000 ALTER TABLE `paperdollColors` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -51,4 +51,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-07-10 18:29:47
+-- Dump completed on 2026-06-27  0:42:46

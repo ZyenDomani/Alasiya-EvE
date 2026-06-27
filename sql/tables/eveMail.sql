@@ -1,6 +1,6 @@
 -- MySQL dump 10.15  Distrib 10.0.36-MariaDB, for Linux (x86_64)
 --
--- Host: localhost    Database: EVE_Crucible
+-- Host: localhost    Database: EvE_AlasiyaDev
 -- ------------------------------------------------------
 -- Server version	10.0.36-MariaDB
 
@@ -29,8 +29,10 @@ CREATE TABLE `eveMail` (
   `subject` varchar(255) NOT NULL DEFAULT '',
   `created` bigint(20) unsigned NOT NULL DEFAULT '0',
   `read` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`messageID`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+  PRIMARY KEY (`messageID`),
+  KEY `messageID` (`messageID`),
+  KEY `senderID` (`senderID`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -39,6 +41,7 @@ CREATE TABLE `eveMail` (
 
 LOCK TABLES `eveMail` WRITE;
 /*!40000 ALTER TABLE `eveMail` DISABLE KEYS */;
+INSERT INTO `eveMail` VALUES (90000000,1,1000132,'New Ship Insurance',132297468660000000,0);
 /*!40000 ALTER TABLE `eveMail` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -51,4 +54,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-07-10 18:28:53
+-- Dump completed on 2026-06-27  0:42:25
