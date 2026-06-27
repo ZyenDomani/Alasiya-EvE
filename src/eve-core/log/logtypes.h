@@ -20,7 +20,7 @@
  ------------------------------------------------------------------------------------
  Author:        Zhur
  Additions:  Allan
- Log Version: 11.4
+ Log Version: 11.5
  */
 /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -444,6 +444,7 @@ LOG_TYPE( NPC, TRACE, DISABLED, "NPC Trace" )
 LOG_TYPE( NPC, DEBUG, DISABLED, "NPC Debug" )
 LOG_TYPE( NPC, AI_TRACE, DISABLED, "NPC AI Trace" )
 LOG_TYPE( NPC, AI_LOGIC, DISABLED, "NPC AI Logic" )
+LOG_TYPE( NPC, AI_MESSAGE, DISABLED, "NPC AI Msg" )
 
 LOG_CATEGORY( PHYSICS )
 LOG_TYPE( PHYSICS, ERROR, ENABLED, "PhysicsError" )

@@ -178,7 +178,6 @@ float PlanetDataMgr::GetAbundanceMod(uint16 typeID) {
             return 1.2f;
         case 2063:    //Plasma
             return 1.1f;
-        default:
         case 11:      //Temperate
         case 30889:   //Shattered
             return 1.0f;
@@ -317,8 +316,8 @@ PyRep* PIDataMgr::GetProgramResultInfo(Colony* pColony, uint32 pinID, uint16 typ
     //float cycleTime = iRef->GetAttribute(AttrPinCycleTime).get_float()/*300*/;
     double one((headRadius - 0.01) / 0.04);
     float length(one * 335.0f + 1.0f);  //length in hours between 1 and 336  (336h = 14d)
-    double two = log(length / 25.0);  //3.584962501
-    uint8 three = static_cast<uint8>(EvE::max(floor(two) + 1.0f));    //4
+    double two = std::log(length / 25.0);  //3.584962501
+    uint8 three = static_cast<uint8>(EvE::max(std::floor(two) + 1.0f));    //4
     float cycleTime = 0.25f * (2 xor three);  // this is (float) in hours (0.25, 0.5, etc)
 
     if (cycleTime < 0.01f) {
@@ -401,15 +400,15 @@ uint32 PIDataMgr::GetProgramOutput(InventoryItemRef iRef, int64 cycleTime, int64
     float t = (cycleNum + 0.5f) * barWidth; // 0.20833
     uint32 qtyPerCycle = iRef->GetDefaultAttribute(AttrPinExtractionQuantity).get_uint32();
     float decayValue = qtyPerCycle / (1 + t * 1/*iRef->GetAttribute(AttrECUDecayFactor).get_float()*/);     // 1000
-    float phaseShift = pow(qtyPerCycle, 0.7);   // 125.89254
-    float sinA = cos(phaseShift + t * 0.08333f);      // 0.96985
-    float sinB = cos(phaseShift / 2 + t * 0.2f);  // 0.98784
-    float sinC = cos(t * 0.5f);                   // 0.99457
+    float phaseShift = std::pow(qtyPerCycle, 0.7);   // 125.89254
+    float sinA = std::cos(phaseShift + t * 0.08333f);      // 0.96985
+    float sinB = std::cos(phaseShift / 2 + t * 0.2f);  // 0.98784
+    float sinC = std::cos(t * 0.5f);                   // 0.99457
     float sinStuff = (sinA + sinB + sinC) / 3;  // 0.98408
     sinStuff = EvE::max(sinStuff);
     float barHeight = decayValue * (1 + 1/*iRef->GetAttribute(AttrECUNoiseFactor).get_float()*/ * sinStuff);     //0.8
 
-    return static_cast<uint32>(floor(barHeight * barWidth));     // 0.13888 * 1000          16
+    return static_cast<uint32>(std::floor(barHeight * barWidth));     // 0.13888 * 1000          16
 }
 
 uint32 PIDataMgr::GetProgramOutputPrediction(InventoryItemRef iRef, int64 cycleTime, uint32 numCycles/*0*/)
@@ -468,15 +467,40 @@ std::vector<float> PIDataMgr::DecodeHexBufferToFloats(const std::string& hexBuff
     return floats;
 }
 
+// Evaluates a single 9-float Order-2 Real SH block at a target vector location
+float EvaluateSingleNodeSH(const float* c, float x, float y, float z) {
+    // Basis functions matching the generator
+    float Y_0_0  = 0.2820948f;
+    float Y_1_m1 = 0.4886025f * y;
+    float Y_1_0  = 0.4886025f * z;
+    float Y_1_1  = 0.4886025f * x;
+    float Y_2_m2 = 1.0925484f * x * y;
+    float Y_2_m1 = 1.0925484f * y * z;
+    float Y_2_0  = 0.3153916f * (3.0f * z * z - 1.0f);
+    float Y_2_1  = 1.0925484f * x * z;
+    float Y_2_2  = 0.5462742f * (x * x - y * y);
+
+    float density = (c[0]*Y_0_0) + (c[1]*Y_1_m1) + (c[2]*Y_1_0) + (c[3]*Y_1_1) +
+                    (c[4]*Y_2_m2) + (c[5]*Y_2_m1) + (c[6]*Y_2_0) + (c[7]*Y_2_1) + (c[8]*Y_2_2);
+
+        // CRITICAL MATCH UNCOVERED TODAY: Clamp negative wave valleys to zero
+    // This stops negative interference from breaking your extraction totals.
+    if (density < 0.0f) {
+        return 0.0f;
+    }
+
+    return density;
+}
+
 // Core Execution: Calculates raw output yield and reduces the local heatmap intensity
 float PIDataMgr::ExtractAndDepletePlanetResource(std::string& io_dbBuffer, const PI_Heads& headPin,
                                                  float durationFactor/*1.0f*/, float headRadius/*1.0f*/) {
     std::vector<float> floatArray = DecodeHexBufferToFloats(io_dbBuffer);
     float totalExtractedYield(0.0f);
 
-    float pinX = cosf(headPin.latitude) * cosf(headPin.longitude);
-    float pinY = cosf(headPin.latitude) * sinf(headPin.longitude);
-    float pinZ = sinf(headPin.latitude);
+    float pinX = std::cos(headPin.latitude) * std::cos(headPin.longitude);
+    float pinY = std::cos(headPin.latitude) * std::sin(headPin.longitude);
+    float pinZ = std::sin(headPin.latitude);
 
     // 1. Loop through all 25 structural nodes to compile total local density
     for (int nodeIdx = 0; nodeIdx < 25; ++nodeIdx) {

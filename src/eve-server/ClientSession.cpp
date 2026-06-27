@@ -35,8 +35,9 @@ mDirty(false),
 m_sessionID(15)
 {
     //  session id is unique to each session and client
-    //random.getrandbits(63)
     m_sessionID *= GetTimeUSeconds();
+    // verify sessionID is positive
+    m_sessionID = m_sessionID & 0x7FFFFFFFFFFFFFFFLL;
     sEntityMgr.RegisterSID(m_sessionID);
 
     // set default session values

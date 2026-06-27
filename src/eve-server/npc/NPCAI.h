@@ -76,6 +76,15 @@ namespace NPCAI {
             BShip       = 350
         };
     }
+
+    enum Rank {
+        None    = 0,
+        Frigate = 1,
+        Cruiser = 2,
+        Elite   = 3,
+        BShip   = 4,
+        Commander = 5 // Specialized Overseer/Boss hulls
+    };
 }
 
 
@@ -92,38 +101,38 @@ public:
     NPCAIMgr(NPC *who);
     ~NPCAIMgr()                                         { /* do nothing here */ }
 
-    void        Init();  // initialize multiple variables after npc/se created
+    void                Init();  // initialize multiple variables after npc/se created
 
     // this is called from NPC::Process() which is called from SystemManager::Process()
-    void        Process();
+    void                Process();
 
-    void        Target(SystemEntity* pTargetSE);
-    void        Targeted(SystemEntity* pSE);
-    void        TargetLost(SystemEntity* pSE);
-    void        TargetWarping(SystemEntity* pSE);
-    void        ReportDamage(uint8 type=0, SystemEntity* pSourceSE=nullptr);
+    void                Target(SystemEntity* pTargetSE);
+    void                Targeted(SystemEntity* pSE);
+    void                TargetLost(SystemEntity* pSE);
+    void                TargetWarping(SystemEntity* pSE);
+    void                ReportDamage(uint8 type=0, SystemEntity* pSourceSE=nullptr);
 
-    void        DisableRepTimers(bool shield=true, bool armor=true);
+    void                DisableRepTimers(bool shield=true, bool armor=true);
 
     // public methods to enable calls from other classes (namely, TurretFormulas.cpp)
-    bool        IsIdle()                                { return (m_state == NPCAI::State::Idle); }
-    bool        IsFighting();
-    uint16      GetOptimalRange()                       { return m_optimalRange; }
-    //uint16      GetSigRes()                             { return m_sigResolution; }
-    uint32      GetFalloff()                            { return m_falloffDistance; }
-    double      GetTrackingSpeed()                      { return m_trackingSpeed; }
+    bool                IsIdle()                        { return (m_state == NPCAI::State::Idle); }
+    bool                IsFighting();
+    uint16              GetOptimalRange()               { return m_optimalRange; }
+    //uint16              GetSigRes()                     { return m_sigResolution; }
+    uint32              GetFalloff()                    { return m_falloffDistance; }
+    double              GetTrackingSpeed()              { return m_trackingSpeed; }
 
-    uint16      GetSize()                               { return m_size; }
+    uint16              GetSize()                       { return m_size; }
 
     // npcAI methods
-    void        SendGFX(Client* pClient=nullptr);
-    void        DisableWarpOutTimer()                   { m_warpOutTimer.Disable(); }
-    void        WarpOutComplete();
+    void                SendGFX(Client* pClient=nullptr);
+    void                DisableWarpOutTimer()           { m_warpOutTimer.Disable(); }
+    void                WarpOutComplete();
 
-    void        LaunchMissile(uint16 typeID, SystemEntity* pTargetSE);   // us to them
-    void        MissileLaunched(Missile* pMissile); // them to us
-    
-    void        ShipArrived(Client* pClient);
+    void                LaunchMissile(uint16 typeID, SystemEntity* pTargetSE);   // us to them
+    void                MissileLaunched(Missile* pMissile); // them to us
+
+    void                ShipArrived(Client* pClient);
 
 protected:
     // idle.  not doing anything
@@ -160,9 +169,9 @@ protected:
     void                EffectTarget();
 
     // for npcs that can rep
-    void Heal();
+    void                Heal();
     // for npcs that have modules
-    void UseModule();
+    void                UseModule();
 
     bool                InOptimalRange(SystemEntity* pTargetSE);        // near    - range 1
     bool                InFalloffDistance(SystemEntity* pTargetSE);     // close   - range 2
@@ -183,11 +192,14 @@ protected:
 
     const char*         GetStateName(int8 stateID);
 
-
     // advanced AI methods
-    void SwitchTarget();
-    void Guard(SystemEntity* pTargetSE); // for now, orbit? target ship at 1/2 orbit range
-    void Assist(SystemEntity* pTargetSE);        // use reppers on target
+    void                SwitchTarget();
+    void                Guard(SystemEntity* pTargetSE); // for now, orbit? target ship at 1/2 orbit range
+    void                Assist(SystemEntity* pTargetSE);// use reppers on target
+    SystemEntity*       FindSecondaryTarget();
+    float               AggroModifiers(SystemEntity* pTargetSE);
+    SystemEntity*       EvaluateThreats();
+    void                ExecuteCombatMovement(SystemEntity* pPlayerTarget);
 
 private:
     NPC*                myNPC;
@@ -198,9 +210,9 @@ private:
 
     TurretFormulas      m_formula;
 
-    bool m_useSigRadius     :1;
-    bool m_useSecondTarget  :1;
-    bool m_useTargSwitching :1;
+    bool                m_useSigRadius     :1;
+    bool                m_useSecondTarget  :1;
+    bool                m_useTargSwitching :1;
 
     int8                m_state;
     int8                m_action;
@@ -226,15 +238,15 @@ private:
     int32               m_sightRange;                   //[6] npc sight range
     int32               m_attackRange;                  //[5] maximum engagement distance
     int32               m_chaseRange;                   //[4] min distance to activate mwd, if equipped
-    int32               m_flyRange;                     //[3] distance the drone orbits
+    int32               m_flyRange;                     //[3] distance the npc orbits
     int32               m_falloffDistance;              //[2] distance where accuracy has fallen by half
     int32               m_optimalRange;                 //[1] max distance range does not affect the to-hit equation.
 
     int64               m_actionTime;
-    int64               m_attackTime;                    // timestamp when attack started
+    int64               m_attackTime;                   // timestamp when attack started
     int64               m_chaseTimeEnd;                 // timestamp when npc chasing will end (maxChaseDuration)
 
-    float               m_switchTargChance;   //fuzzy logic
+    float               m_switchTargChance;             //fuzzy logic
     float               m_trackingSpeed;
     float               m_damageMultiplier;
     float               m_armorRepairDelayChance;
@@ -247,12 +259,13 @@ private:
     Timer               m_armorRepairTimer;             // repper
     Timer               m_beginFindTarget;              // main targeting timer (used as delay after warp-in)
     Timer               m_warpOutTimer;                 // as stated
+    Timer               m_retargetTimer;                // comfort breaker (allow npcs to change targets)
 
     // not sure how im gonna do this yet...160 fx types
-    std::vector<TypeEffects>                            m_effectMap;    //  all 'modules' this npc has (using effect data)
+    std::vector<TypeEffects>   m_effectMap;             //  all 'modules' this npc has (using effect data)
 
-    std::map<int8, uint16>                              m_attackFxMap;    // (NPCAI::State, fxID)
-    std::map<int8, uint16>                              m_defendFXMap;    // (NPCAI::State, fxID)
+    std::map<int8, uint16>     m_attackFxMap;           // (NPCAI::State, fxID)
+    std::map<int8, uint16>     m_defendFXMap;           // (NPCAI::State, fxID)
 };
 
 #endif

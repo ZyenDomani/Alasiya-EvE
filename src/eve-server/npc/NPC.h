@@ -36,6 +36,7 @@ class PyServiceMgr;
 class DestinyManager;
 class InventoryItem;
 class Missile;
+class NPCSquad;
 class SystemManager;
 
 class NPC
@@ -92,16 +93,62 @@ public:
     /* for command dropLoot - commands all npcs in bubble to jettison loot */
     void                CmdDropLoot();
 
+    /* advanced ai methods */
+    void                ApplyTrackingBoost(float mod=1.0f);
+
+    /* for new squad class */
+    void                SetSquad(NPCSquad* squad)       { m_squad = squad; }
+    void                SetSquadLeader(bool set=false)  { m_squadLeader = set; }
+    bool                IsSquadLeader()                 { return m_squadLeader; }
+    void                SetCommandRank(uint8 set=0)     { m_rank = set; }
+    uint8               GetCommandRank()                { return m_rank; }
+    NPCSquad*           GetSquad()                      { return m_squad; }
+
 protected:
     void                SetHauler()                     { m_hauler = true; }
 
 private:
     NPCAIMgr*           m_AI;
     SpawnMgr*           m_spawnMgr;
+    NPCSquad*           m_squad;
 
     bool                m_hauler;
+    bool                m_squadLeader;
     uint8               m_moduleCount;
+    uint8               m_rank;
     uint32              m_orbitingID;
+};
+
+// A lightweight, transient group coordinator
+class NPCSquad {
+public:
+    NPCSquad(uint32 squadID) : m_formationBreakTimer(0), m_tacticalTier(0), m_squadID(squadID),
+                               m_squadLeader(nullptr), m_squadTarget(nullptr)  {}
+    ~NPCSquad()                                         { m_members.clear(); }
+
+    void                RegisterMember(NPC* pNPC);
+    void                UnregisterMember(NPC* pNPC);
+    void                OnAllMembersArrived();
+
+    // The Master Focus-Fire Hook
+    SystemEntity*       GetSquadTarget()                { return m_squadTarget; }
+    void                SetSquadTarget(SystemEntity* pTarget)
+                                                        { m_squadTarget = pTarget; }
+
+    uint16              GetID()                         { return m_squadID; }
+
+    // Formation Handles
+    void                AssignLeader(NPC* pNPC)         { m_squadLeader = pNPC; }
+    NPC*                GetLeader()                     { return m_squadLeader; }
+    std::vector<NPC*>&  GetMembers()                    { return m_members; }
+
+private:
+    Timer               m_formationBreakTimer;
+    uint8               m_tacticalTier;
+    uint32              m_squadID;
+    NPC*                m_squadLeader;
+    SystemEntity*       m_squadTarget; // The authoritative focus-fire target for this fleet spawn
+    std::vector<NPC*>   m_members;     // Safe transient references to active grid rats
 };
 
 #endif

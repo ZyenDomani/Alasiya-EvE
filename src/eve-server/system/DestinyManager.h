@@ -122,6 +122,8 @@ public:
     float GetWarpDropSpeed()                            { return m_speedToLeaveWarp; }
     double GetCapNeed()                                 { return m_warpCapacitorNeed; }
     float GetRadTic()                                   { return m_orbitRadTic; }
+    uint8 GetBallMode()                                 { return m_ballMode; }
+    void SetBallMode(uint8 mode=0)                      { m_ballMode = mode; }
     uint8 GetState()                                    { return m_ballMode; }  // this is only used by my bubble debug command
     std::string GetStateName();
     bool IsFrozen()                                     { return m_frozen; }

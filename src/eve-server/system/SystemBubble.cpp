@@ -225,8 +225,11 @@ void SystemBubble::Add(SystemEntity* pSE) {
         for (auto &cur : m_drones)
             cur.second->GetAI()->SendGFX(pClient);
         // and npcs, if any
-        for (auto &cur : m_npcs)
+        for (auto &cur : m_npcs) {
             cur.second->GetAI()->SendGFX(pClient);
+            // Notify all active rats in this bubble
+            cur.second->GetAI()->ShipArrived(pClient);
+        }
 
         m_players[pClient->GetCharacterID()] = pClient;   //add to bubble's player list
     } else {
@@ -406,6 +409,7 @@ void SystemBubble::GetEntities(std::map<uint32, SystemEntity*> &into) const {
      *    Command_killallnpcs()           --GM command
      *    StructureSE::InitData()         --Get TowerSE for pos items
      *    DroneAI::FindTarget()           --Drone AI target finding
+     *    NPCAIMgr::EvaluateGridThreats() --advanced npc AI targeting
      */
     if (m_dynamicEntities.empty())
         return;
@@ -446,6 +450,32 @@ void SystemBubble::GetPlayers(std::vector<Client*> &into) const {
         return;
 
     for (auto &cur : m_players)
+        into.push_back(cur.second);
+}
+
+void SystemBubble::GetNPCs(std::vector<NPC*> &into) const {
+    /* updated to send ONLY players to the following:         -allan 14Feb15
+     *    NPCAIMgr::Process()             --for npc targeting
+     *    SpawnEntry::Process()           --for npc spawning
+     */
+    into.clear();
+    if (m_npcs.empty())
+        return;
+
+    for (auto &cur : m_npcs)
+        into.push_back(cur.second);
+}
+
+void SystemBubble::GetDrones(std::vector<DroneSE*> &into) const {
+    /* updated to send ONLY players to the following:         -allan 14Feb15
+     *    NPCAIMgr::Process()             --for npc targeting
+     *    SpawnEntry::Process()           --for npc spawning
+     */
+    into.clear();
+    if (m_drones.empty())
+        return;
+
+    for (auto &cur : m_drones)
         into.push_back(cur.second);
 }
 

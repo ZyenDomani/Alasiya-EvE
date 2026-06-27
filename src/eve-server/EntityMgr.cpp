@@ -229,10 +229,6 @@ void EntityMgr::Process() {
             if (cur.second->IsValidSession())   // verify client is constructed before calling ProcessClient() on it
                 cur.second->ProcessClient();
 
-    /** @todo test for adding OpenMP here to enable MP per system. */
-    // this wont work....possibility of removing systems, therefore invalidating the iterator.
-    // bad things can happen if this is running parallel on MP
-    //#pragma omp parallel  // starts a new team
         std::map<uint32, SystemManager*>::iterator itr = m_systems.begin();
         while (itr != m_systems.end()) {
             if (itr->second == nullptr) { /* this shouldnt happen.  log error to make note */
@@ -267,6 +263,9 @@ void EntityMgr::Process() {
                 sMktBotMgr.Process();  // 15m to 30m
                 sConsole.UpdateStatus();
                 sMissionDataMgr.Process();
+            }
+            if (m_minutes % 30 == 0) { // ~30m
+                sMktBotMgr.Process();  // 15m to 30m
             }
             if (m_minutes % 60 == 0) { // ~1h
                 MapDB::ManipulateTimeData();    // not used - does nothing at this time
@@ -394,7 +393,7 @@ std::string EntityMgr::GetAnomalyID()
     return res;
 }
 
-void EntityMgr::GetUpTime( std::string& time )
+const char* EntityMgr::GetUpTime()
 {
     float seconds = m_stamp - 1000;
     float minutes = seconds/60;
@@ -403,12 +402,12 @@ void EntityMgr::GetUpTime( std::string& time )
     float weeks = days/7;
     float months = days/30;
 
-    int s(fmod(seconds, 60));
-    int m(fmod(minutes, 60));
-    int h(fmod(hours, 24));
-    int d(fmod(days, 7));
-    int w(fmod(weeks, 4));
-    int M(fmod(months, 12));
+    int s(std::fmod(seconds, 60));
+    int m(std::fmod(minutes, 60));
+    int h(std::fmod(hours, 24));
+    int d(std::fmod(days, 7));
+    int w(std::fmod(weeks, 4));
+    int M(std::fmod(months, 12));
 
     std::ostringstream uptime;
     if (M) {
@@ -425,8 +424,7 @@ void EntityMgr::GetUpTime( std::string& time )
         uptime << s << "s";
     }
 
-    //std::shared_ptr<const char*> ret = uptime.str().c_str();
-    time = uptime.str();
+    return uptime.str().c_str();
 }
 
 

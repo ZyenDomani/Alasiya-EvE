@@ -264,6 +264,7 @@ public:
     void                        DropLoot(WreckContainerRef wreckRef, uint32 groupID, uint32 ownerID);
     void                        AwardSecurityStatus(InventoryItemRef iRef, Character* pChar);
     bool                        ApplyDamage(Damage &d); /* This method is defined in Damage.cpp */
+    bool                        IsImmuneToEWar()        { return m_self->GetAttribute(AttrEwImmuneTarget).get_bool(); }
     double                      DistanceTo2(const SystemEntity* other);
     PyTuple*                    MakeDamageState();
 
@@ -312,6 +313,7 @@ public:
     virtual void ShipTakingDamage(SystemEntity* pSourceSE) { /* do nothing here */ }
     // our assigned ship was killed...wtf we do now?
     virtual void       ShipKilled(SystemEntity* pSourceSE) { /* do nothing here */ }
+
 
 
 protected:

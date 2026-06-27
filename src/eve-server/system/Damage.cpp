@@ -225,7 +225,7 @@ bool SystemEntity::ApplyDamage(Damage &damage) {
         float armor_damage = DamageToArmor.GetTotal();
         if (armor_damage <= available_armor) {
             if (HasPilot()) {
-                if ((available_armor /m_self->GetAttribute(AttrArmorHP).get_float()) < m_self->GetAttribute(AttrArmorUniformity).get_float()) {
+                if ((available_armor / m_self->GetAttribute(AttrArmorHP).get_float()) < m_self->GetAttribute(AttrArmorUniformity).get_float()) {
                     float new_damage = damage.GetTotal() * 0.01;
                     float hull_damage = m_self->GetAttribute(AttrDamage).get_float() + new_damage;
                     _log(DAMAGE__DEBUG, "%s(%u): Applying %.2f leakthru damage to structure. New structure damage: %.2f",

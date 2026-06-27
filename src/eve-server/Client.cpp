@@ -2147,7 +2147,6 @@ void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool
             }
         PyTuple* t = dum.Encode();
         SendNotification("DoDestinyUpdate", "clientID", &t, false);
-        //PyDecRef(t);
     } else {
         act.update = *update;
         //m_packaged = true;
@@ -2433,12 +2432,12 @@ bool Client::_VerifyFuncResult(CryptoHandshakeResult& result)
     //send this before session change
     CryptoHandshakeAck ack;
         ack.jit = GetLanguageID();
-        ack.userid = GetUserID();   //5654387 accountID?
-        ack.maxSessionTime = PyStatic.NewNone();        // set this for an auto-logout time?
+        ack.userid = GetUserID();   // accountID
+        ack.maxSessionTime = PyStatic.NewNone();        // set this for an auto-logout time
         ack.userType = UserType::Mammon;      //GetAccountType()  - not written yet
         ack.role = Acct::Role::PLAYER | Acct::Role::NEWBIE | Acct::Role::LOGIN; /*  live returns these */
         ack.address = GetAddress();
-        ack.inDetention = PyStatic.NewNone();   // dont know what this is or what it's for
+        ack.inDetention = PyStatic.NewNone();   // limits player interactions
         ack.client_hash = PyStatic.NewNone();
         ack.user_clientid = GetClientID();  //241241000001103
         ack.live_updates = sLiveUpdateDB.GetUpdates();
@@ -2531,65 +2530,69 @@ void Client::_SendPingRequest()
     QueuePacket(packet);
 }
 
-/** @todo fix this to provide a somewhat accurate response */
-void Client::_SendPingResponse(const PyAddress& source, int64 callID)
+void Client::_SendPingResponse(const PyAddress& source, int64 callID, int64 receivedTime/*0*/)
 {
+    if (receivedTime == 0)
+        receivedTime = GetFileTimeNow();
+
     PyPacket* packet = new PyPacket();
     packet->type = PING_RSP;
     packet->type_string = "macho.PingRsp";
-
     packet->source = source;
-
     packet->dest.type = PyAddress::Client;
     packet->dest.objectID = GetClientID();
     packet->dest.callID = callID;
-
     packet->userid = GetUserID();
 
-    /*  Here the hacking begins, the ping packet handles the timestamps of various packet handling steps.
-     *        To really simulate/emulate that we need the various packet handlers which in fact we don't have (:P).
-     *        So the next piece of code "fake's" it, with a slight delay on the received packet time.
-     */
+    int64 now = Win32TimeNow();
+
+    // In a single-process emulator, proxy and server boundaries are crossed instantly.
+    // Therefore, the step-by-step pipeline mirrors reality perfectly.
     PyList* pingList = new PyList();
     PyTuple* pingTuple(nullptr);
 
+    // 1. Proxy handles message: From wire entry time to internal process time
     pingTuple = new PyTuple(3);
-    pingTuple->SetItem(0, new PyLong(Win32TimeNow() - 30000));     // this should be the time the packet was received (we cheat here a bit)
-    pingTuple->SetItem(1, new PyLong(Win32TimeNow()));             // this is the time the packet is (handled/written) by the (proxy/server) so we're cheating a bit again.
+    pingTuple->SetItem(0, new PyLong(receivedTime));
+    pingTuple->SetItem(1, new PyLong(now));
     pingTuple->SetItem(2, new PyString("proxy::handle_message"));
     pingList->AddItem(pingTuple);
 
+    // 2. Proxy Writing
     pingTuple = new PyTuple(3);
-    pingTuple->SetItem(0, new PyLong(Win32TimeNow() - 30000));
-    pingTuple->SetItem(1, new PyLong(Win32TimeNow()));
+    pingTuple->SetItem(0, new PyLong(receivedTime));
+    pingTuple->SetItem(1, new PyLong(now));
     pingTuple->SetItem(2, new PyString("proxy::writing"));
     pingList->AddItem(pingTuple);
 
+    // 3. Server Node Handles Message
     pingTuple = new PyTuple(3);
-    pingTuple->SetItem(0, new PyLong(Win32TimeNow() - 30000));
-    pingTuple->SetItem(1, new PyLong(Win32TimeNow()));
+    pingTuple->SetItem(0, new PyLong(receivedTime));
+    pingTuple->SetItem(1, new PyLong(now));
     pingTuple->SetItem(2, new PyString("server::handle_message"));
     pingList->AddItem(pingTuple);
 
+    // 4. Server Turnaround: Tracks the internal script processing latency
     pingTuple = new PyTuple(3);
-    pingTuple->SetItem(0, new PyLong(Win32TimeNow() - 30000));
-    pingTuple->SetItem(1, new PyLong(Win32TimeNow()));
+    pingTuple->SetItem(0, new PyLong(receivedTime));
+    pingTuple->SetItem(1, new PyLong(now));
     pingTuple->SetItem(2, new PyString("server::turnaround"));
     pingList->AddItem(pingTuple);
 
+    // 5. Outbound Proxy Handlers
     pingTuple = new PyTuple(3);
-    pingTuple->SetItem(0, new PyLong(Win32TimeNow() - 30000));
-    pingTuple->SetItem(1, new PyLong(Win32TimeNow()));
+    pingTuple->SetItem(0, new PyLong(now));
+    pingTuple->SetItem(1, new PyLong(now));
     pingTuple->SetItem(2, new PyString("proxy::handle_message"));
     pingList->AddItem(pingTuple);
 
+    // 6. Outbound Wire Write
     pingTuple = new PyTuple(3);
-    pingTuple->SetItem(0, new PyLong(Win32TimeNow() - 30000));
-    pingTuple->SetItem(1, new PyLong(Win32TimeNow()));
+    pingTuple->SetItem(0, new PyLong(now));
+    pingTuple->SetItem(1, new PyLong(now));
     pingTuple->SetItem(2, new PyString("proxy::writing"));
     pingList->AddItem(pingTuple);
 
-    // Set payload
     packet->payload = new PyTuple(1);
     packet->payload->SetItem(0, pingList);
 

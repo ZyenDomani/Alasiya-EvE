@@ -370,7 +370,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
 
     if (m_targetSE != nullptr) {
         /*
-         * AttrdisallowAgainstEwImmuneTarget
+         * AttrEwImmuneTarget
          * AttrDisallowOffensiveModifiers
          * AttrDisallowOffensiveModifierBonus
          */
@@ -848,6 +848,9 @@ void ActiveModule::DeactivateCycle(bool abortCycle/*false*/)
                 if (m_targetSE->TargetMgr() != nullptr) {
                     m_targetSE->TargetMgr()->RemoveTargetModule(this);
                     m_targetSE->TargetMgr()->Destroyed();
+                } else {
+                    // error here
+                    _log(MODULE__WARNING, "%s - DeactivateCycle() - target %s has no targMgr.", m_modRef->name(), m_targetSE->GetName());
                 }
                 m_targetSE->Delete();
                 SafeDelete(m_targetSE);
