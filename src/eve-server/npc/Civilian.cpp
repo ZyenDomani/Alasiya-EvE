@@ -97,15 +97,9 @@ void Civilian::Process() {
         } break;
         case Civ::State::Completed: {
             // If dest is a stargate: trigger the activation animation packet.
-<<<<<<< HEAD
             if (m_destSE->IsGateSE())
                 SendGFX10(m_destSE->GetID(), "effects.GateActivity");
             if (m_destSE->IsStationSE())
-=======
-            if (m_destSE->IsGate())
-                SendGFX10(m_destSE->itemID(), "effects.GateActivity");
-            if (m_destSE->isStation())
->>>>>>> 32d9c7bc28981b1043b5deea06d850a80b3c5f15
                 sTraderJoe.ExecuteCargoDrop(m_destSE); // Update marketbot with 'special, limited-time items'
             // run complete.  remove ship(s)
             Remove(m_destSE->SysBubble());
@@ -123,7 +117,7 @@ uint16 Civilian::GetAlignTime() {
     float mass = m_type->mass();
     double inertiaMod = m_type->GetAttribute(AttrInertiaMod).get_double();
     double agility = mass * inertiaMod / 1000000.0;
-    return static_cast<uint16>(std::ceilf(1.386294 * agility));
+    return static_cast<uint16>(std::ceil(1.386294 * agility));
 }
 
 void Civilian::Stop() {
@@ -158,11 +152,7 @@ void Civilian::SetVectors() {
             m_state = Civ::State::Completed;
             m_timeLeft = 5;
             // error?
-<<<<<<< HEAD
             _log(CIV__ERROR, "Civilian::Init() - %u (%u) hit 'else' in origin check", m_type->id(), m_itemID);
-=======
-            _log(CIV__ERROR, "Civilian::Init() - %u (%u) hit 'else' in origin check", cur.typeID, iRef->itemID());
->>>>>>> 32d9c7bc28981b1043b5deea06d850a80b3c5f15
             return;
         }
         Add(m_origSE->SysBubble());
@@ -175,11 +165,7 @@ void Civilian::SetVectors() {
     	float mass = m_type->mass();
     	double inertiaMod = m_type->GetAttribute(AttrInertiaMod).get_double();
         double agility = mass * inertiaMod / 1000000.0;
-<<<<<<< HEAD
         double speed = (1 - std::exp(-20 / agility));
-=======
-        double speed = (1 - exp(-20 / agility));
->>>>>>> 32d9c7bc28981b1043b5deea06d850a80b3c5f15
         m_velocity = m_heading * speed;
         Add(m_destSE->SysBubble());
     } else {
@@ -187,18 +173,14 @@ void Civilian::SetVectors() {
         m_state = Civ::State::Completed;
         m_timeLeft = 2;
         // error?
-<<<<<<< HEAD
         _log(CIV__ERROR, "Civilian::Init() - %u (%u) hit 'else' in origin check", m_type->id(), m_itemID);
-=======
-        _log(CIV__ERROR, "Civilian::Init() - %u (%u) hit 'else' in origin check", cur.typeID, iRef->itemID());
->>>>>>> 32d9c7bc28981b1043b5deea06d850a80b3c5f15
     }
 }
 
 void Civilian::Undock() {
     //get undock point and set heading
     StationData stationData;
-    stDataMgr.GetStationData(m_origSE->itemID(), stationData);
+    stDataMgr.GetStationData(m_origSE->GetID(), stationData);
     m_pos = stationData.dockPosition;
     m_heading = stationData.dockOrientation;
     m_velocity = stationData.dockOrientation * m_type->GetAttribute(AttrMaxVelocity).get_uint32();
@@ -241,7 +223,7 @@ void Civilian::Add(SystemBubble* pBubble) {
     addballs.slims->AddItem(new PyObject("foo.SlimItem", MakeSlimItem()));
 	//bubblecast the update
     PyTuple* t = addballs.Encode();
-    pBubble->BubblecastDestinyUpdateExclusive(&t, "Civ AddBall", pSE);
+    pBubble->BubblecastDestinyUpdate(&t, "Civ AddBall");
     PySafeDecRef(t);
 
     delete destinyBuffer; // Safe tracking cleanup
@@ -269,7 +251,7 @@ void Civilian::MakeDamageState(DoDestinyDamageState &into) {
 }
 
 PyDict* Civilian::MakeSlimItem() {
-    _log(SE__SLIMITEM, "MakeSlimItem for Ship %s(%u)", m_self->name(), m_self->itemID());
+    _log(SE__SLIMITEM, "MakeSlimItem for Ship %s(%u)", m_type->name().c_str(), m_itemID);
     PyDict *slim = new PyDict();
         slim->SetItemString("itemID",       new PyLong(m_itemID));
         slim->SetItemString("typeID",       new PyInt(m_type->id()));
@@ -336,27 +318,16 @@ void Civilian::EncodeDestiny( Buffer& into) {
     into.Append(data);
     switch (m_state) {
         case Civ::State::Departing: {
-<<<<<<< HEAD
             GPoint target = m_destSE->GetPosition();
-=======
-            GPoint target = m_destSE->position();
->>>>>>> 32d9c7bc28981b1043b5deea06d850a80b3c5f15
             WARP_Struct warp;
                 warp.formationID = 0xFF;
                 warp.targX = target.x;
                 warp.targY = target.y;
                 warp.targZ = target.z;
-<<<<<<< HEAD
                 warp.speed = 150;       //ship warp speed x10
                 warp.effectStamp = -1;
                 warp.distance = -1;
                 warp.trackingFlags = 0;
-=======
-                warp.speed = GetWarpSpeed();       //ship warp speed x10
-                warp.effectStamp = -1;
-                //warp.distance = -1;
-                //warp.trackingFlags = 0;
->>>>>>> 32d9c7bc28981b1043b5deea06d850a80b3c5f15
             into.Append(warp);
         }  break;
         case Civ::State::Undocking: {
@@ -369,11 +340,7 @@ void Civilian::EncodeDestiny( Buffer& into) {
             into.Append(go);
         }  break;
         case Civ::State::Arriving: {
-<<<<<<< HEAD
             GPoint target = m_destSE->GetPosition();
-=======
-            GPoint target = m_destSE->position();
->>>>>>> 32d9c7bc28981b1043b5deea06d850a80b3c5f15
             GOTO_Struct go;
                 go.formationID = 0xFF;
                 go.x = target.x;
@@ -384,15 +351,9 @@ void Civilian::EncodeDestiny( Buffer& into) {
         case Civ::State::Formation: {
             FORMATION_Struct form;
                 form.formationID = m_formID;
-<<<<<<< HEAD
                 form.leaderID = m_pLeader->GetID();
                 form.spacing = 800.0f;
                 form.syncIndex = 3;
-=======
-                //form.leaderID = m_pLeader->GetID();
-                //form.spacing = 800.0f;
-                //form.syncIndex = 3;
->>>>>>> 32d9c7bc28981b1043b5deea06d850a80b3c5f15
             into.Append(form);
         }  break;
         default: {
@@ -426,7 +387,7 @@ void Civilian::SendShipVars(SystemBubble* pBubble) {
     updates.push_back(sbspeed.Encode());
     if ((m_state == Civ::State::Departing) and (m_origSE->IsStationSE())) {
         StationData stationData;
-        stDataMgr.GetStationData(m_origSE->itemID(), stationData);
+        stDataMgr.GetStationData(m_origSE->GetID(), stationData);
         // undock velocity
         CmdGotoDirection du;
             du.entityID = m_itemID;

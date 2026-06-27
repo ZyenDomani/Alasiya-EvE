@@ -7,7 +7,7 @@
   */
 
 
- /*
+ /*  log types
   * PLANET__ERROR
   * PLANET__WARNING
   * PLANET__MESSAGE
