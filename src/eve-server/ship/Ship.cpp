@@ -192,7 +192,7 @@ void ShipItem::InitPod() {
 
 void ShipItem::InitAttribs()
 {
-    // Create default dynamic attributes in the AttributeMap
+    // Create default dynamic attributes in the AttributeMgr
     SetAttribute(AttrOnline,                            EvilOne, false);
     SetAttribute(AttrVolume,                            GetPackagedVolume(), false);
     SetAttribute(AttrMass,                              type().mass(), false);
@@ -1043,7 +1043,7 @@ void ShipItem::OfflineAll()
 void ShipItem::SaveShip()
 {
     SaveItem();                         // Save ship info
-    pAttributeMap->SaveShipState();     // save ship damage
+    pAttributeMgr->SaveShipState();     // save ship damage
     m_ModuleManager->SaveModules();     // Save item info for modules fitted to this ship
 }
 
@@ -1776,7 +1776,7 @@ void ShipItem::ProcessEffects(bool add/*false*/, bool update/*false*/)
         ProcessShipEffects(update);
     } else {
         ClearModifiers();
-        pAttributeMap->SaveShipState();      // save ship damage as it's removed on next call
+        pAttributeMgr->SaveShipState();      // save ship damage as it's removed on next call
         ResetAttributes();
         ClearModuleModifiers();
         m_pilot->GetChar()->ResetModifiers();
@@ -1841,7 +1841,7 @@ void ShipItem::ResetEffects() {
     m_ModuleManager->OfflineAll();
 
     // reset attributes on char, ship, all modules and charges
-    pAttributeMap->SaveShipState();      // save ship damage as it's removed on next call
+    pAttributeMgr->SaveShipState();      // save ship damage as it's removed on next call
     ResetAttributes();
     m_pilot->GetChar()->ResetModifiers();
     std::vector< InventoryItemRef > modVec;
@@ -2591,8 +2591,8 @@ void ShipSE::EncodeDestiny( Buffer& into) {
                 } else {
                     warp.effectStamp = -1;
                 }
-                warp.followRange = 0;   //this isnt right
-                warp.followID = 0;  //this isnt right
+                warp.distance = -1.0;
+                warp.trackingFlags = 0;
             into.Append(warp);
         }  break;
         case Ball::Mode::FOLLOW: {

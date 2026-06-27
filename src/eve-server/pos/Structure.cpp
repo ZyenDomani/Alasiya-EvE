@@ -83,7 +83,7 @@ StructureItemRef StructureItem::Spawn(ItemData &data)
     {
         sRef->SetAttribute(AttrIsGlobal, EvilOne);
     }
-    // Create default dynamic attributes in the AttributeMap:
+    // Create default dynamic attributes in the AttributeMgr:
     sRef->SetAttribute(AttrMass, sRef->type().mass(), false);
     sRef->SetAttribute(AttrRadius, sRef->type().radius(), false);
     sRef->SetAttribute(AttrVolume, sRef->type().volume(), false);

@@ -57,7 +57,7 @@ Concord::Concord(
              m_orbitRange = m_self->GetAttribute(AttrFalloff).get_float();
      }
 
-     // Create default dynamic attributes in the AttributeMap:
+     // Create default dynamic attributes in the AttributeMgr:
      m_self->SetAttribute(AttrInertiaMod,             EvilOne, false);
      m_self->SetAttribute(AttrDamage,              EvilZero, false);
      m_self->SetAttribute(AttrArmorDamage,         EvilZero, false);
@@ -159,8 +159,8 @@ void Concord::EncodeDestiny(Buffer& into) {
                 warp.speed = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
                 // warp timing.  see Ship::EncodeDestiny() for notes/updates
                 warp.effectStamp = -1; //m_destiny->GetStateStamp();   //timestamp when warp started
-                warp.followRange = 0;   //this isnt right
-                warp.followID = 0;  //this isnt right
+                warp.distance = -1.0;
+                warp.trackingFlags = 0;
             into.Append( warp );
         }  break;
         case Ball::Mode::FOLLOW: {

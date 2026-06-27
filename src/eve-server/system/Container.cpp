@@ -74,7 +74,7 @@ CargoContainerRef CargoContainer::Spawn( ItemData &data) {
         return CargoContainerRef(nullptr);
     CargoContainerRef containerRef = CargoContainer::Load(containerID);
 
-    // Create default dynamic attributes in the AttributeMap:
+    // Create default dynamic attributes in the AttributeMgr:
     containerRef->SetAttribute(AttrRadius,        containerRef->type().radius(), false);			// Radius
     containerRef->SetAttribute(AttrShieldCharge,  containerRef->GetAttribute(AttrShieldCapacity), false);  // Shield Charge
     containerRef->SetAttribute(AttrArmorDamage,   EvilZero, false);                                               // Armor Damage
@@ -445,7 +445,7 @@ WreckContainerRef WreckContainer::Spawn( ItemData &data) {
         return WreckContainerRef(nullptr);
     WreckContainerRef wreckRef = WreckContainer::Load(containerID );
 
-    // Create default dynamic attributes in the AttributeMap:
+    // Create default dynamic attributes in the AttributeMgr:
     wreckRef->SetAttribute(AttrShieldCharge,  wreckRef->GetAttribute(AttrShieldCapacity), false);  // Shield Charge
     wreckRef->SetAttribute(AttrArmorDamage,   EvilZero, false);                                               // Armor Damage
     wreckRef->SetAttribute(AttrMass,          wreckRef->type().mass(), false);          // Mass

@@ -407,6 +407,7 @@ uint32 LSCDB::StoreMail(uint32 senderID, uint32 recipID, const char * subject, c
 
     // Store message header
     uint32 messageID;
+    /*
     if (!sDatabase.RunQueryLID(err, messageID,
         " INSERT INTO eveMail "
         " (channelID, senderID, subject, created) "
@@ -415,7 +416,7 @@ uint32 LSCDB::StoreMail(uint32 senderID, uint32 recipID, const char * subject, c
     {
         _log(DATABASE__ERROR, "Error in query, message header couldn't be saved: %s", err.c_str());
         return (0);
-    }
+    }*/
 
     _log(SERVICE__MESSAGE, "New messageID: %u", messageID);
 
@@ -423,6 +424,7 @@ uint32 LSCDB::StoreMail(uint32 senderID, uint32 recipID, const char * subject, c
     sDatabase.DoEscapeString(escaped, message);
 
     // Store message content
+    /*
     if (!sDatabase.RunQuery(err,
         " INSERT INTO eveMailDetails "
         " (messageID, mimeTypeID, attachment) VALUES (%u, 1, '%s') ",
@@ -436,7 +438,7 @@ uint32 LSCDB::StoreMail(uint32 senderID, uint32 recipID, const char * subject, c
             _log(DATABASE__ERROR, "Failed to remove invalid header data for messgae id %u: %s", messageID, err.c_str());
         }
         return (0);
-    }
+    }*/
 
 
     return (messageID);
@@ -445,7 +447,7 @@ uint32 LSCDB::StoreMail(uint32 senderID, uint32 recipID, const char * subject, c
 
 PyObject *LSCDB::GetMailHeaders(uint32 recID) {
     DBQueryResult res;
-
+/*
     if (!sDatabase.RunQuery(res,
         "SELECT channelID, messageID, senderID, subject, created, `read` "
         " FROM eveMail "
@@ -454,7 +456,7 @@ PyObject *LSCDB::GetMailHeaders(uint32 recID) {
         _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
     }
-
+*/
     return DBResultToRowset(res);
 }
 
@@ -462,7 +464,7 @@ PyObject *LSCDB::GetMailHeaders(uint32 recID) {
 PyRep *LSCDB::GetMailDetails(uint32 messageID, uint32 readerID) {
     DBQueryResult result;
     DBResultRow row;
-
+/*
     //we need to query out the primary message here... not sure how to properly
     //grab the "main message" though... the text/plain clause is pretty hackish.
     if (!sDatabase.RunQuery(result,
@@ -480,7 +482,7 @@ PyRep *LSCDB::GetMailDetails(uint32 messageID, uint32 readerID) {
         _log(DATABASE__ERROR, "Error in query: %s", result.error.c_str());
         return nullptr;
     }
-
+*/
     if (!result.GetRow(row)) {
         codelog(SERVICE__MESSAGE, "No message with messageID %u", messageID);
         return nullptr;
@@ -504,7 +506,7 @@ PyRep *LSCDB::GetMailDetails(uint32 messageID, uint32 readerID) {
 
 bool LSCDB::MarkMessageRead(uint32 messageID) {
     DBerror err;
-
+/*
     if (!sDatabase.RunQuery(err,
         " UPDATE eveMail "
         " SET `read` = 1 "
@@ -514,7 +516,7 @@ bool LSCDB::MarkMessageRead(uint32 messageID) {
         _log(DATABASE__ERROR, "Error in query: %s", err.c_str());
         return false;
     }
-
+*/
     return true;
 }
 

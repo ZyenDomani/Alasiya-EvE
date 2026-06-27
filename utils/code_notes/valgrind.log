@@ -1,4 +1,14 @@
 
+  0.72.52-16feb23
+==16109== LEAK SUMMARY:
+==16109==    definitely lost: 4,138,352 bytes in 116,809 blocks
+==16109==    indirectly lost: 46,268,136 bytes in 1,296,189 blocks
+==16109==      possibly lost: 7,668 bytes in 213 blocks
+==16109==    still reachable: 3,280 bytes in 77 blocks
+==16109==         suppressed: 0 bytes in 0 blocks
+==16109==
+==16109== ERROR SUMMARY: 119 errors from 119 contexts (suppressed: 0 from 0)
+
 ==25423== LEAK SUMMARY:
 ==25423==    definitely lost: 7,634,069 bytes in 240,228 blocks
 ==25423==    indirectly lost: 60,705,037 bytes in 1,709,718 blocks

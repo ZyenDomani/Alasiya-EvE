@@ -159,7 +159,7 @@ private:
     uint16 m_defaultFxID;                               // default effectID
 
     std::map<uint16, uint8> m_reqSkillMap;              // k,v map of required skill, level for this ItemType, if any.
-    std::map<uint16, EvilNumber> m_AttributeMap;        // k,v map of attributeID, value
+    std::map<uint16, EvilNumber> m_AttributeMgr;        // k,v map of attributeID, value
 };
 
 /*

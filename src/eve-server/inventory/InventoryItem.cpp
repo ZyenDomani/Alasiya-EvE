@@ -49,7 +49,7 @@
  */
 InventoryItem::InventoryItem(uint32 _itemID, const ItemType& _type, const ItemData& _data)
 : RefObject(0),
-pAttributeMap(new AttributeMap(*this)),
+pAttributeMgr(new AttributeMgr(*this)),
 pInventory(nullptr),      // this is created/destroyed in derived classes as needed.
 m_data(_data),
 m_type(_type),
@@ -64,68 +64,9 @@ m_delete(false)
     _log(ITEM__TRACE, "II::C'tor - Created Generic Item %p for item %s (%u).", this, m_data.name.c_str(), m_itemID);
 }
 
-// copy c'tor
-InventoryItem::InventoryItem(const InventoryItem& oth)
-: RefObject(0),
-pAttributeMap(oth.pAttributeMap),
-pInventory(oth.pInventory),
-m_itemID(oth.m_itemID),
-m_data(oth.m_data),
-m_type(oth.m_type),
-m_timestamp(oth.m_timestamp),
-m_delete(false)
-{
-    sLog.Error("InventoryItem()", "InventoryItem copy c'tor called.");
-    EvE::traceStack();
-    assert(0);
-}
-
-// move c'tor
-InventoryItem::InventoryItem(InventoryItem&& oth) noexcept
-: RefObject(0),
-pAttributeMap(oth.pAttributeMap),
-pInventory(oth.pInventory),
-m_itemID(oth.m_itemID),
-m_data(oth.m_data),
-m_type(oth.m_type),
-m_timestamp(oth.m_timestamp),
-m_delete(false)
-{
-    sLog.Error("InventoryItem()", "InventoryItem move c'tor called.");
-    EvE::traceStack();
-    assert(0);
-}
-/*
-// copy assignment
-InventoryItem& InventoryItem::operator= ( const InventoryItem& oth )
-{
-    sLog.Error("InventoryItem()", "InventoryItem copy assign called.");
-    EvE::traceStack();
-    assert(0);
-
-    oth.GetAttributeMap()->CopyAttributes(pAttributeMap->mAttributes);
-
-    m_itemID = oth.itemID();
-    m_type = oth.type()
-}
-
-// move assignment
-InventoryItem& InventoryItem::operator= ( InventoryItem&& oth ) noexcept
-{
-    sLog.Error("InventoryItem()", "InventoryItem move assign called.");
-    EvE::traceStack();
-    assert(0);
-
-    oth.GetAttributeMap()->CopyAttributes(pAttributeMap->mAttributes);
-
-    m_itemID = oth.itemID();
-    m_type = oth.type();
-}
-*/
-
 InventoryItem::~InventoryItem() noexcept
 {
-    SafeDelete(pAttributeMap);
+    SafeDelete(pAttributeMgr);
 }
 
 InventoryItemRef InventoryItem::Load(uint32 itemID)
@@ -203,7 +144,7 @@ uint32 InventoryItem::CreateTempItemID(ItemData &data) {
 }
 
 bool InventoryItem::_Load() {
-    if (!pAttributeMap->Load()) {
+    if (!pAttributeMgr->Load()) {
         _log(ITEM__WARNING, "II::_Load() - Failed to load attribute map for %s(%u).", m_data.name.c_str(), m_itemID);
         return false;
     }
@@ -603,8 +544,8 @@ void InventoryItem::ToVirtual(uint32 locationID) {
         // verify this gets inventory containing item before trying to manipulate
         iRef->GetMyInventory()->RemoveItem(InventoryItemRef(this));
     }
-    if (pAttributeMap != nullptr)   // should never be null, but just in case
-        pAttributeMap->Delete();
+    if (pAttributeMgr != nullptr)   // should never be null, but just in case
+        pAttributeMgr->Delete();
 
     uint32 old_location(m_data.locationID);
     //EVEItemFlags old_flag(m_data.flag);
@@ -1152,7 +1093,7 @@ void InventoryItem::SaveItem()
     ItemDB::SaveItem(m_itemID, data);
     // item attributes are saved in ItemFactory.cpp:96  (save loop on shutdown for loaded items)
     // make call here for items saved after *some* change
-    pAttributeMap->Save();
+    pAttributeMgr->Save();
 }
 
 void InventoryItem::UpdateLocation() {
@@ -1263,7 +1204,7 @@ bool InventoryItem::Populate(Rsp_CommonGetInfo_Entry& result )
             tuple->SetItem(2, new PyInt(m_type.id()));
         result.itemID = tuple;
         result.invItem = PyStatic.NewNone();
-        for (AttrMapItr itr = pAttributeMap->begin(), end = pAttributeMap->end(); itr != end; ++itr)
+        for (AttrMapItr itr = pAttributeMgr->begin(), end = pAttributeMgr->end(); itr != end; ++itr)
             result.attributes[(*itr).first] = (*itr).second.GetPyObject();
         return true;
     }
@@ -1280,7 +1221,7 @@ bool InventoryItem::Populate(Rsp_CommonGetInfo_Entry& result )
     //} else if (m_type.id() == 51) { // for vouchers
     //    result.description = m_data.name;
 
-    if (pAttributeMap->GetAttribute(AttrOnline).get_bool()) {
+    if (pAttributeMgr->GetAttribute(AttrOnline).get_bool()) {
         EntityEffectState es;
             es.env_itemID = m_itemID;
             es.env_charID = m_data.ownerID;
@@ -1302,7 +1243,7 @@ bool InventoryItem::Populate(Rsp_CommonGetInfo_Entry& result )
         result.activeEffects[es.env_effectID] = es.Encode();
     }
 
-    for (AttrMapItr itr = pAttributeMap->begin(), end = pAttributeMap->end(); itr != end; itr++) {
+    for (AttrMapItr itr = pAttributeMgr->begin(), end = pAttributeMgr->end(); itr != end; itr++) {
         //localization.GetByLabel('UI/Fitting/FittingWindow/WarpSpeed', distText=util.FmtDist(max(1.0, bws) * wsm * 3 * const.AU, 2))
         if ((*itr).first == AttrWarpSpeedMultiplier) {
             result.attributes[AttrWarpSpeedMultiplier] = new PyFloat((*itr).second.get_float() / 3);
@@ -1351,35 +1292,35 @@ void InventoryItem::SetPosition(const GPoint& pos) {
 
 void InventoryItem::SetAttribute(uint16 attrID, float num, bool notify/*true*/) {
     EvilNumber eNum(num);
-    pAttributeMap->SetAttribute(attrID, eNum, notify);
+    pAttributeMgr->SetAttribute(attrID, eNum, notify);
 }
 
 void InventoryItem::SetAttribute(uint16 attrID, double num, bool notify/*true*/) {
     EvilNumber eNum(num);
-    pAttributeMap->SetAttribute(attrID, eNum, notify);
+    pAttributeMgr->SetAttribute(attrID, eNum, notify);
 }
 
 void InventoryItem::SetAttribute(uint16 attrID, EvilNumber num, bool notify/*true*/) {
-    pAttributeMap->SetAttribute(attrID, num, notify);
+    pAttributeMgr->SetAttribute(attrID, num, notify);
 }
 
 void InventoryItem::SetAttribute(uint16 attrID, int num, bool notify/*true*/) {
     EvilNumber eNum(num);
-    pAttributeMap->SetAttribute(attrID, eNum, notify);
+    pAttributeMgr->SetAttribute(attrID, eNum, notify);
 }
 
 void InventoryItem::SetAttribute(uint16 attrID, int64 num, bool notify/*true*/) {
     EvilNumber eNum(num);
-    pAttributeMap->SetAttribute(attrID, eNum, notify);
+    pAttributeMgr->SetAttribute(attrID, eNum, notify);
 }
 
 void InventoryItem::SetAttribute(uint16 attrID, uint32 num, bool notify/*true*/) {
     EvilNumber eNum(num);
-    pAttributeMap->SetAttribute(attrID, eNum, notify);
+    pAttributeMgr->SetAttribute(attrID, eNum, notify);
 }
 
 void InventoryItem::MultiplyAttribute(uint16 attrID, EvilNumber num, bool notify/*false*/) {
-    pAttributeMap->MultiplyAttribute(attrID, num, notify);
+    pAttributeMgr->MultiplyAttribute(attrID, num, notify);
 }
 
 double InventoryItem::GetPackagedVolume() {
@@ -1512,5 +1453,5 @@ void InventoryItem::ClearModifiers() {
 
 void InventoryItem::ResetAttributes() {
     _log(EFFECTS__TRACE, "Resetting attrib map for %s", m_data.name.c_str());
-    pAttributeMap->Load(true);
+    pAttributeMgr->Load(true);
 }

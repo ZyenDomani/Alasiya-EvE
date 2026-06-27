@@ -136,11 +136,11 @@ void CharacterDB::DeleteCharacter(uint32 characterID) {
      */
 
     DBerror err;
-    sDatabase.RunQuery(err, "DELETE FROM eveMailDetails"
-                            " USING eveMail, eveMailDetails"
-                            " WHERE eveMail.messageID = eveMailDetails.messageID"
-                            " AND (senderID = %u OR channelID = %u)", characterID, characterID);
-    sDatabase.RunQuery(err, "DELETE FROM eveMail WHERE (senderID = %u OR channelID = %u)", characterID, characterID);
+    //sDatabase.RunQuery(err, "DELETE FROM eveMailDetails"
+                            //" USING eveMail, eveMailDetails"
+                            //" WHERE eveMail.messageID = eveMailDetails.messageID"
+                            //" AND (senderID = %u OR channelID = %u)", characterID, characterID);
+    //sDatabase.RunQuery(err, "DELETE FROM eveMail WHERE (senderID = %u OR channelID = %u)", characterID, characterID);
     sDatabase.RunQuery(err, "DELETE FROM bookmarks WHERE ownerID = %u",  characterID);
     sDatabase.RunQuery(err, "DELETE FROM bookmarkFolders WHERE ownerID = %u",  characterID);
     //sDatabase.RunQuery(err, "DELETE FROM bookmarkVouchers WHERE ownerID = %u",  characterID);
@@ -1755,7 +1755,7 @@ PyRep* CharacterDB::List(uint32 ownerID)
         "  e.typeID, "
         "  e.ownerID, "
         "  e.locationID, "
-        "  e.flag AS flagID, "
+        "  e.flagID, "
         "  e.quantity AS stacksize, "
         "  e.customInfo, "
         "  e.singleton, "
@@ -1852,7 +1852,7 @@ PyRep* CharacterDB::ListStationItems(uint32 ownerID, uint32 stationID)
         "  e.typeID, "
         "  e.ownerID, "
         "  e.locationID, "
-        "  e.flag AS flagID, "
+        "  e.flagID, "
         "  e.quantity AS stacksize, "
         "  e.customInfo, "
         "  e.singleton, "
@@ -1886,7 +1886,7 @@ PyRep* CharacterDB::ListStationBlueprintItems(uint32 ownerID, uint32 stationID, 
             "  e.typeID, "
             "  e.ownerID, "
             "  o.stationID AS locationID, "
-            "  e.flag AS flagID, "
+            "  e.flagID, "
             "  e.quantity AS stacksize, "
             //"  e.customInfo, "
             "  e.singleton, "
@@ -1915,7 +1915,7 @@ PyRep* CharacterDB::ListStationBlueprintItems(uint32 ownerID, uint32 stationID, 
             "  e.typeID,"
             "  e.ownerID,"
             "  e.locationID,"
-            "  e.flag AS flagID,"
+            "  e.flagID,"
             "  e.quantity AS stacksize,"
             "  e.customInfo,"
             "  e.singleton,"

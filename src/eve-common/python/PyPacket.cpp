@@ -24,7 +24,6 @@
     Rewrite:    Allan
 */
 
-/** @todo  update this to unique_ptr/shared_ptr if possible  shared_ptr<T> p(new Y); or make_unique<>() */
 
 #include "eve-common.h"
 
@@ -39,29 +38,29 @@ const char* MACHONETMSG_TYPE_NAMES[MACHONETMSG_TYPE_COUNT] =
     "AUTHENTICATION_RSP",
     "IDENTIFICATION_REQ",
     "IDENTIFICATION_RSP",
-    "U4",
-    "U5",
+    "DISCONNECT_NOTIFICATION", //*
+    "HEARTBEAT",        //*
     "CALL_REQ",
     "CALL_RSP",
     "TRANSPORTCLOSED",
-    "U9",
+    "FORWARD_REQ",  //*
     "RESOLVE_REQ",
     "RESOLVE_RSP",
     "NOTIFICATION",
-    "U13",
-    "U14",
+    "MULTICAST_NOTIFICATION",  // pack the python object data exactly once, compress it once, attach an array of target SessionIDs to the header, and throw it at the network card.
+    "REJECT_NOTIFICATION",  //*
     "ERRORRESPONSE",
     "SESSIONCHANGENOTIFICATION",
-    "U17",
+    "SESSIONINITIALSTATEREQ",   // send me the local grid layout.
     "SESSIONINITIALSTATENOTIFICATION",
-    "U19",
+    "HEARTBEAT_ACK",  //*
     "PING_REQ",
     "PING_RSP"
 };
 
 PyPacket::PyPacket()
 : type_string("none"),
-type(__Fake_Invalid_Type),
+type(DISCONNECT_NOTIFICATION),
 userid(0),
 payload(nullptr),
 named_payload(nullptr)
@@ -84,6 +83,11 @@ PyPacket *PyPacket::Clone() const
         res->dest = dest;
         res->userid = userid;
         res->payload = payload->Clone();
+    if (payload == nullptr) {
+        res->payload = nullptr;
+    } else {
+        res->payload = payload->Clone();
+    }
     if (named_payload == nullptr) {
         res->named_payload = nullptr;
     } else {
@@ -96,7 +100,9 @@ void PyPacket::Dump(LogType ltype, PyVisitor& dumper)
 {
     _log(ltype, "Packet:");
     _log(ltype, "  Type: %s", type_string.c_str());
-    _log(ltype, "  Command: %s (%d)", MACHONETMSG_TYPE_NAMES[type], type);
+    _log(ltype, "  Command: %s (%d)",
+         (type >= 0 && type < MACHONETMSG_TYPE_COUNT) ? MACHONETMSG_TYPE_NAMES[type] : "UNKNOWN_TYPE",
+         type);
     _log(ltype, "  Source:");
     source.Dump(ltype, "    ");
     _log(ltype, "  Dest:");
@@ -114,7 +120,7 @@ void PyPacket::Dump(LogType ltype, PyVisitor& dumper)
 
 bool PyPacket::Decode(PyRep **in_packet)
 {
-    PyRep *pRep(*in_packet);    //assign
+    PyRep *pRep = *in_packet;    //assign
     *in_packet = nullptr;       //consume
 
     PySafeDecRef(payload);
@@ -187,6 +193,7 @@ bool PyPacket::Decode(PyRep **in_packet)
         case NOTIFICATION:
         case ERRORRESPONSE:
         case SESSIONCHANGENOTIFICATION:
+        case SESSIONINITIALSTATEREQ:
         case SESSIONINITIALSTATENOTIFICATION:
         case PING_REQ:
         case PING_RSP: {
@@ -235,6 +242,8 @@ bool PyPacket::Decode(PyRep **in_packet)
         return false;
     }
 
+    receivedTime = GetFileTimeNow();
+
     PyDecRef( pRep );
     return true;
 }
@@ -242,20 +251,20 @@ bool PyPacket::Decode(PyRep **in_packet)
 PyRep *PyPacket::Encode() {
     PyTuple* arg_tuple = new PyTuple(7);
     //command
-    arg_tuple->items[0] = new PyInt(type);
+    arg_tuple->SetItem(0, new PyInt(type));
     //source
-    arg_tuple->items[1] = source.Encode();
+    arg_tuple->SetItem(1, source.Encode());
     //dest
-    arg_tuple->items[2] = dest.Encode();
+    arg_tuple->SetItem(2, dest.Encode());
     //userid
-    arg_tuple->items[3] = (userid == 0 ? PyStatic.NewZero() : new PyInt(userid));
+    arg_tuple->SetItem(3, (userid == 0 ? PyStatic.NewZero() : new PyInt(userid)));
     //payload
-    arg_tuple->items[4] = payload;     // dont clone here.  set actual rep in item, and it will be cleaned up by d'tor later
+    arg_tuple->SetItem(4, payload);     // dont clone here.  set actual rep in item, and it will be cleaned up by d'tor later
     //named arguments (OID+ or sn)
     // dont clone here.  set actual rep in item, and it will be cleaned up by d'tor later
-    arg_tuple->items[5] = (named_payload == nullptr ? PyStatic.NewNone() : named_payload);
+    arg_tuple->SetItem(5, (named_payload == nullptr ? PyStatic.NewNone() : named_payload));
     //TODO: Not sure what this is, On packets so far they always have as PyNone
-    arg_tuple->items[6] = PyStatic.NewNone();
+    arg_tuple->SetItem(6, PyStatic.NewNone());
     return new PyObject(type_string.c_str(), arg_tuple);
 }
 
@@ -318,7 +327,7 @@ PyAddress& PyAddress::operator=(const PyAddress &right) {
 }
 
 bool PyAddress::Decode(PyRep *&in_object) {
-    PyRep *pRep(in_object);
+    PyRep* pRep = in_object;   //assign
     in_object = nullptr;
 
     if ( pRep == nullptr) {
@@ -358,11 +367,8 @@ bool PyAddress::Decode(PyRep *&in_object) {
                 return false;
             }
             type = Any;
-
-            if (!_DecodeService(tuple->items[1])
-            or !_DecodeCallID(tuple->items[2])) {
-                return false;
-            }
+            service = PyRep::StringContent(tuple->items[1]);
+            callID = PyRep::IntegerValue(tuple->items[2]);
         }  break;
         case Node: {
             if (tuple->items.size() != 4) {
@@ -370,12 +376,9 @@ bool PyAddress::Decode(PyRep *&in_object) {
                 return false;
             }
             type = Node;
-
-            if (!_DecodeObjectID(tuple->items[1])
-            or !_DecodeService(tuple->items[2])
-            or !_DecodeCallID(tuple->items[3])) {
-                return false;
-            }
+            objectID = PyRep::IntegerValue(tuple->items[1]);
+            service = PyRep::StringContent(tuple->items[2]);
+            callID = PyRep::IntegerValue(tuple->items[3]);
         }  break;
         case Client: {
             if (tuple->items.size() != 4) {
@@ -383,12 +386,9 @@ bool PyAddress::Decode(PyRep *&in_object) {
                 return false;
             }
             type = Client;
-
-            if (!_DecodeObjectID(tuple->items[1])
-            or !_DecodeCallID(tuple->items[2])
-            or !_DecodeService(tuple->items[3])) {
-                return false;
-            }
+            objectID = PyRep::IntegerValue(tuple->items[1]);
+            callID = PyRep::IntegerValue(tuple->items[2]);
+            service = PyRep::StringContent(tuple->items[3]);
         }  break;
         case Broadcast: {
             if (tuple->items.size() != 4) {
@@ -411,11 +411,11 @@ bool PyAddress::Decode(PyRep *&in_object) {
 
             //items[2] is either a list or a tuple.
             /*
-            //PyList *nclist = (PyList *) tuple->items[2];
-            if (!nclist->items.empty()) {
-                printf("Not decoding narrowcast list:");
-                nclist->Dump(NET__PACKET_ERROR, "     ");
-            }*/
+             *            //PyList *nclist = (PyList *) tuple->items[2];
+             *            if (!nclist->items.empty()) {
+             *                printf("Not decoding narrowcast list:");
+             *                nclist->Dump(NET__PACKET_ERROR, "     ");
+        }*/
         }   break;
         default: {
             codelog(NET__PACKET_ERROR, "Unknown address type: %li", PyRep::IntegerValue(tuple->items[0]));
@@ -426,62 +426,47 @@ bool PyAddress::Decode(PyRep *&in_object) {
     return true;
 }
 
-PyRep *PyAddress::Encode() {
-    PyTuple *t(nullptr);
+PyRep* PyAddress::Encode() {
+    PyTuple* rsp = nullptr;
     switch(type) {
-        case Any: {
-            t = new PyTuple(3);
-            t->items[0] = new PyInt((int)type);
-            t->items[1] = (service.empty() ? PyStatic.NewNone() : new PyString(service.c_str()));
-            t->items[2] = (objectID == 0 ? PyStatic.NewNone() : new PyLong(objectID));
+        case Any: {             //8
+            rsp = new PyTuple(3);
+            rsp->SetItemInt(0, type);
+            rsp->SetItem(1, (service.empty() ? PyStatic.NewNone() : new PyString(service.c_str())));
+            rsp->SetItem(2, (objectID == 0 ? PyStatic.NewNone() : new PyLong(objectID)));
         } break;
-        case Node: {
-            t = new PyTuple(4);
-            t->items[0] = new PyInt((int)type);
-            t->items[1] = new PyLong(objectID);
-            t->items[2] = (service.empty() ? PyStatic.NewNone() : new PyString(service.c_str()));
-            t->items[3] = (callID == 0 ? PyStatic.NewNone() : new PyLong(callID));
+        case Node: {    //1
+            rsp = new PyTuple(4);
+            rsp->SetItemInt(0, type);
+            rsp->SetItem(1, new PyLong(objectID));
+            rsp->SetItem(2, (service.empty() ? PyStatic.NewNone() : new PyString(service.c_str())));
+            rsp->SetItem(3, (callID == 0 ? PyStatic.NewNone() : new PyLong(callID)));
         } break;
-        case Client: {
-            t = new PyTuple(4);
-            t->items[0] = new PyInt((int)type);
-            t->items[1] = new PyLong(objectID);
-            t->items[2] = (callID == 0 ? PyStatic.NewNone() : new PyLong(callID));
-            t->items[3] = (service.empty() ? PyStatic.NewNone() : new PyString(service.c_str()));
+        case Client: {  //2
+            rsp = new PyTuple(4);
+            rsp->SetItemInt(0, type);
+            rsp->SetItem(1, new PyLong(objectID));
+            rsp->SetItem(2, (callID == 0 ? PyStatic.NewNone() : new PyLong(callID)));
+            rsp->SetItem(3, (service.empty() ? PyStatic.NewNone() : new PyString(service.c_str())));
         } break;
-        case Broadcast: {
-            t = new PyTuple(4);
-            t->items[0] = new PyInt((int)type);
+        case Broadcast: {       //4
+            rsp = new PyTuple(4);
+            rsp->SetItemInt(0, type);
             //broadcastID
-            t->items[1] = (service.empty() ? PyStatic.NewNone() : new PyString(service.c_str()));
+            rsp->SetItem(1, (service.empty() ? PyStatic.NewNone() : new PyString(service.c_str())));
             //narrowcast
-            t->items[2] = PyStatic.mtList(); // LSC uses tuple here, others None() or empty List()
+            rsp->SetItem(2, PyStatic.mtList()); // LSC uses tuple here, others None() or empty List()
             //typeID
-            t->items[3] = new PyString(bcast_idtype.c_str());
+            rsp->SetItemString(3, bcast_idtype.c_str());
         } break;
         case Invalid:
         default: {
             //this still needs to be something which will not crash us.
-            t = new_tuple(PyStatic.mtTuple());
+            rsp = PyStatic.mtTuple();
         } break;
     }
 
-    return new PyObject( "macho.MachoAddress", t );
-}
-
-bool PyAddress::_DecodeService(PyRep *rep) {
-    service = PyRep::StringContent(rep);
-    return true;
-}
-
-bool PyAddress::_DecodeCallID(PyRep *rep) {
-    callID = PyRep::IntegerValue(rep);
-    return true;
-}
-
-bool PyAddress::_DecodeObjectID(PyRep *rep) {
-    objectID = PyRep::IntegerValue(rep);
-    return true;
+    return new PyObject("macho.MachoAddress", rsp);
 }
 
 
@@ -494,6 +479,7 @@ PyCallStream::PyCallStream()
 }
 
 PyCallStream::~PyCallStream() {
+    // verify these
     //PySafeDecRef(arg_tuple);
     //PySafeDecRef(arg_dict);
 }
@@ -533,7 +519,7 @@ void PyCallStream::Dump(LogType type, PyVisitor& dumper)
 }
 
 bool PyCallStream::Decode(const std::string &type, PyTuple *&in_payload) {
-    PyTuple *payload(in_payload);   //copy
+    PyTuple *payload = in_payload;   //copy
     in_payload = nullptr;            //consume
 
     PySafeDecRef(arg_tuple);
@@ -572,7 +558,9 @@ bool PyCallStream::Decode(const std::string &type, PyTuple *&in_payload) {
     }
 
     //decode inner payload tuple
-    //ignore tuple 0, it should be an int, dont know what it is
+    // payload2->items[0] represents the Macho Service Routing Mode flag:
+    // 0 = Specific Instantiated GPC Object - bound memory address instance
+    // 1 = Named Cluster Service - calling a manager or broker service by name
     if (!payload2->items[1]->IsSubStream()) {
         codelog(NET__PACKET_ERROR, "PyCallStream::Decode() - non-substream type");
         return false;
@@ -605,7 +593,13 @@ bool PyCallStream::Decode(const std::string &type, PyTuple *&in_payload) {
         return false;
     }
 
-    //parse first tuple element, unknown
+    //parse first tuple element, Target Object Identifier / Destination Service Key
+    /* PyString: holds the explicit name of the cluster service being executed (e.g., "LSC", "market", "docking").
+     * This maps right to remoteObjectStr.
+     * PyInt / PyLong: It holds a dynamic memory object runtime tracking handle or node reference target
+     * (like an active fleet object ID or specific structural inventory instance handle).
+     * This maps straight to remoteObject.
+     */
     if (maint->items[0]->IsInt()) {
         remoteObject = PyRep::IntegerValue(maint->items[0]);
         remoteObjectStr = "";
@@ -657,7 +651,7 @@ bool PyCallStream::Decode(const std::string &type, PyTuple *&in_payload) {
 }
 
 PyTuple *PyCallStream::Encode() {
-    PyTuple *res_tuple(new PyTuple(4));
+    PyTuple *res_tuple = new PyTuple(4);
 
     //remoteObject
     if (remoteObject == 0) {
@@ -681,13 +675,15 @@ PyTuple *PyCallStream::Encode() {
         res_tuple->items[3] = arg_dict;
     }
 
-    //now that we have the main arg tuple, build the unknown stuff around it...
+    //now that we have the main arg tuple, build the other stuff around it...
     PyTuple *it2 = new PyTuple(2);
-        it2->items[0] = new PyInt(remoteObject==0?1:0); /* some sort of flag, "process here or call UP"....*/
+        //If remoteObject == 0 (it's a string, like "dynamicIDManager" or "broker"), this flag tells the cluster router that this call targets a named cluster-wide Service, requiring the proxy to resolve it to an active service node.
+        //If remoteObject != 0, it means it targets a specific Global Project Object (GPC) / bound object instance (like an active session object, a solar system manager, or a specific ship entity), bypassing named-service lookup.
+        it2->items[0] = new PyInt(remoteObject==0?1:0); /* isService or isGPCObject flag */
         it2->items[1] = new PySubStream(res_tuple);
     PyTuple *it1 = new PyTuple(2);
         it1->items[0] = it2;
-        //this is the "channel" dict if populated.  obviously incomplete
+        //this is the "channel" dict if populated.  obviously incomplete  **see xtra notes on this**
         it1->items[1] = PyStatic.NewNone();
     return it1;
 }
@@ -704,8 +700,13 @@ EVENotificationStream::~EVENotificationStream() {
 }
 
 EVENotificationStream *EVENotificationStream::Clone() const {
-    EVENotificationStream *res(new EVENotificationStream());
-    res->args = std::move(args->Clone());
+    EVENotificationStream* res = new EVENotificationStream();
+    if (args == nullptr) {
+        res->args = nullptr;
+    } else {
+        res->args = args->Clone();
+    }
+
     return res;
 }
 
@@ -760,7 +761,9 @@ bool EVENotificationStream::Decode(const std::string &pkt_type, const std::strin
     }
 
     //decode inner payload tuple
-    //ignore tuple 0, it should be an int, dont know what it is
+    // payload2->items[0] represents the Macho Service Routing Mode flag:
+    // 0 = Specific Instantiated GPC Object - bound memory address instance
+    // 1 = Named Cluster Service - calling a manager or broker service by name
     if (!payload2->items[1]->IsSubStream()) {
         codelog(NET__PACKET_ERROR, "EVENotificationStream::Decode() - non-substream type");
         return false;
@@ -825,8 +828,8 @@ bool EVENotificationStream::Decode(const std::string &pkt_type, const std::strin
 
     //parse first tuple element, remote object
     if (subt->items[0]->IsInt()) {
+        ; //MachoCommandType identifier (1 = OBJECT_METHOD_CALL)
         //PyInt *tuple0 = (PyInt *) maint->items[0];
-        //no idea what this is.
     } else {
         codelog(NET__PACKET_ERROR, "EVENotificationStream::Decode() - sub tuple[0] has invalid type %s", subt->items[0]->TypeString());
         _log(NET__PACKET_ERROR, " in:");
@@ -849,13 +852,13 @@ bool EVENotificationStream::Decode(const std::string &pkt_type, const std::strin
 
 PyTuple *EVENotificationStream::Encode() {
     PyTuple *t4 = new PyTuple(2);
-        t4->SetItem(0, PyStatic.NewOne());
+        t4->SetItem(0, PyStatic.NewOne());      // MachoCommandType  (1 = OBJECT_METHOD_CALL, 2 (Macho Exception))
         t4->SetItem(1, args);       // set actual rep in item, and it will be cleaned up by d'tor later
     PyTuple *t3 = new PyTuple(2);
-        t3->SetItem(0, PyStatic.NewZero());
+        t3->SetItem(0, PyStatic.NewZero());     // Data Stream Compression Flag  (StreamType)
         t3->SetItem(1, t4);
     PyTuple *t2 = new PyTuple(2);
-        t2->SetItem(0, PyStatic.NewZero());
+        t2->SetItem(0, PyStatic.NewZero());     // Transport Protocol Version  (MachoProtocolVersion)
         t2->SetItem(1, new PySubStream(t3));
     PyTuple *t1 = new PyTuple(1);
         t1->SetItem(0, t2);

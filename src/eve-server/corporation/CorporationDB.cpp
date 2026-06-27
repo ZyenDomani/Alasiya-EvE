@@ -175,7 +175,7 @@ PyObject *CorporationDB::ListStationOwners(uint32 stationID) {
         "  s.corporationID AS ownerID,"
         "  c.corporationName AS ownerName,"
         "  c.corporationType AS typeID,"
-        //"  c.corporationID AS ownerNameID,"
+        "  c.corporationNameID AS ownerNameID,"
         "  cs.gender"
         " FROM staStations AS s"
         "  LEFT JOIN crpCorporation AS c ON cs.corporationID = c.corporationID"
@@ -191,7 +191,7 @@ PyObject *CorporationDB::ListStationOwners(uint32 stationID) {
         "  c.corporationID AS ownerID,"
         "  c.corporationName AS ownerName,"
         "  c.corporationType AS typeID,"
-        //"  c.corporationID AS ownerNameID,"
+        "  c.corporationNameID AS ownerNameID,"
         "  cs.gender"
         " FROM entity AS e"
         "  LEFT JOIN crpCorporation AS c USING ( corporationID )"
@@ -2443,7 +2443,7 @@ PyRep* CorporationDB::GetAssetInventoryForLocation(uint32 corpID, uint32 locatio
     DBQueryResult res;
     if (sDataMgr.IsStation(locationID)) {    // transpose stationID to officeID for item location...should never hit
         if (!sDatabase.RunQuery(res,
-            " SELECT e.itemID, e.itemName, e.typeID, e.ownerID, e.locationID, e.flag AS flagID, e.singleton,"
+            " SELECT e.itemID, e.itemName, e.typeID, e.ownerID, e.locationID, e.flagID, e.singleton,"
             " e.quantity AS stacksize, t.groupID, g.categoryID FROM entity AS e"
             " LEFT JOIN invTypes AS t USING (typeID)"
             " LEFT JOIN invGroups AS g USING (groupID)"
@@ -2455,7 +2455,7 @@ PyRep* CorporationDB::GetAssetInventoryForLocation(uint32 corpID, uint32 locatio
         }
     } else if (IsOfficeID(locationID)) {  // transpose officeID to stationID for item location...most oft used (corp hangars in station)
         if (!sDatabase.RunQuery(res,
-            " SELECT e.itemID, e.itemName, e.typeID, e.ownerID, e.locationID, e.flag AS flagID, e.singleton,"
+            " SELECT e.itemID, e.itemName, e.typeID, e.ownerID, e.locationID, e.flagID, e.singleton,"
             " e.quantity AS stacksize, t.groupID, g.categoryID FROM entity AS e"
             " LEFT JOIN invTypes AS t USING (typeID)"
             " LEFT JOIN invGroups AS g USING (groupID)"
@@ -2467,7 +2467,7 @@ PyRep* CorporationDB::GetAssetInventoryForLocation(uint32 corpID, uint32 locatio
         }
     } else if (IsPlayerItem(locationID)) {  // location is item with corp hangar (ship, pos, etc)
         if (!sDatabase.RunQuery(res,
-            " SELECT e.itemID, e.itemName, e.typeID, e.ownerID, e.locationID, e.flag AS flagID, e.singleton,"
+            " SELECT e.itemID, e.itemName, e.typeID, e.ownerID, e.locationID, e.flagID, e.singleton,"
             " e.quantity AS stacksize, t.groupID, g.categoryID FROM entity AS e"
             " LEFT JOIN invTypes AS t USING (typeID)"
             " LEFT JOIN invGroups AS g USING (groupID)"

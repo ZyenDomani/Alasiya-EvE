@@ -58,5 +58,4 @@ bool IsPrintable( const PyWString* str );
  */
 bool DBTYPE_IsCompatible( DBTYPE type, const PyRep* rep );
 
-
 #endif

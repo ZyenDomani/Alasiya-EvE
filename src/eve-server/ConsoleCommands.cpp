@@ -197,9 +197,7 @@ bool ConsoleCommand::Process() {
                 sLog.Warning("     Memory Usage", " RSS: %.3fMb  VM: %.3fMb", rss, vm );
                 sLog.Warning("    Server Status", "  S: %s | T: %lli(%u) | U: %.2f | K: %.2f", \
                 state.data(), threads, aThreads, user, kernel );
-                std::string uptime;
-                sEntityMgr.GetUpTime(uptime);
-                sLog.Warning("    Server UpTime", " %s", uptime.c_str() );
+                sLog.Warning("    Server UpTime", " %s", sEntityMgr.GetUpTime());
                 //  loaded items
                 sLog.Warning("     Loaded Items", " %u", sItemFactory.Count());
                 //  loaded NPCs
@@ -243,9 +241,7 @@ bool ConsoleCommand::Process() {
                 sLog.Green("  Alasiya's EvEMu", "Server Profile:");
                 if (sConfig.debug.UseProfiling) {
                     sLog.Warning("    Current Stamp", " %u", sEntityMgr.GetStamp());
-                    std::string uptime;
-                    sEntityMgr.GetUpTime(uptime);
-                    sLog.Warning("    Server UpTime", " %s", uptime.c_str() );
+                    sLog.Warning("    Server UpTime", " %s", sEntityMgr.GetUpTime());
                     sLog.Warning("      Connections", " %u Current Clients Online.", sEntityMgr.GetClientCount());
                     sLog.Warning("      Connections", " %u Clients Connected since startup.", sEntityMgr.GetConnections() );
                     sProfiler.PrintProfile();

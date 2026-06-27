@@ -134,7 +134,7 @@ public:
 
     void ResetStartTime()                               { m_startTime = GetFileTimeNow(); }
     int64 GetStartTime()                                { return m_startTime; }
-    void GetUpTime(std::string& time);
+    const char* GetUpTime();
     uint32 GetConnections()                             { return m_connections; }
 
 

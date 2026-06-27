@@ -92,10 +92,6 @@ public:
     std::string service;    //broadcastID for a broadcast.
     std::string bcast_idtype;
 
-protected:
-    bool _DecodeService(PyRep *rep);
-    bool _DecodeCallID(PyRep *rep);
-    bool _DecodeObjectID(PyRep *rep);
 };
 
 class PyPacket {
@@ -118,6 +114,7 @@ public:
     uint32      userid;
     PyTuple*    payload;
     PyRep*      named_payload;
+    int64       receivedTime;
 
 #if 0
     //options:

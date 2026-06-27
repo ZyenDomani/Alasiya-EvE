@@ -57,7 +57,7 @@ void StaticDataMgr::Clear() {
         PyDecRef(cur.second);
     m_bpMatlData.clear();
     PyDecRef(m_bpMatlHeader);
-    
+
     SafeDelete(m_pFactionInfo);
 
     m_ramReq.clear();
@@ -175,12 +175,11 @@ void StaticDataMgr::Populate() {
     ManagerDB::GetCategoryData(*res);
     while (res->GetRow(row)) {
         //SELECT categoryID, categoryName, description, published FROM invCategories
-        Inv::CatData data       = Inv::CatData();
-            data.id             = row.GetUInt8(0);
-            data.name           = row.GetText(1);
-            data.description    = row.GetText(2);
-            data.published      = (sConfig.server.AllowNonPublished ? true : row.GetBool(3));
-        m_catData.emplace(row.GetUInt(0), data);
+        m_catData.emplace(row.GetUInt(0), 
+                          Inv::CatData{row.GetUInt8(0),
+                                    row.GetText(1),
+                                    row.GetText(2),
+                          (sConfig.server.AllowNonPublished ? true : row.GetBool(3))});
     }
     sLog.Cyan("    StaticDataMgr", "%lu Inventory Categories loaded in %.3fms.", m_catData.size(), (GetTimeMSeconds() - startTime));
 

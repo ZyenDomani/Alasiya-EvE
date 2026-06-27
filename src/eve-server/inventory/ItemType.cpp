@@ -45,7 +45,7 @@ ItemType::ItemType(uint16 _id, const Inv::TypeData& _data)
     assert(m_type.id == _id);
     sDataMgr.GetGroup(_data.groupID, m_group);
     assert(_data.groupID == m_group.id);
-    m_AttributeMap.clear();
+    m_AttributeMgr.clear();
 
     _log(ITEM__TRACE, "Created ItemType object %p for type %s (%u).", this, name().c_str(), id());
 }
@@ -115,19 +115,19 @@ bool ItemType::_Load()
     std::vector< Inv::DmgTypeAttribute > typeAttrVec;
     sDataMgr.GetDgmTypeAttrVec(m_type.id, typeAttrVec);
     for (auto &cur : typeAttrVec)
-        m_AttributeMap.emplace(cur.attributeID, cur.value);
+        m_AttributeMgr.emplace(cur.attributeID, cur.value);
 
     // load attributes found in invTypes
     if (m_type.mass)
-        m_AttributeMap.emplace(AttrMass, m_type.mass);
+        m_AttributeMgr.emplace(AttrMass, m_type.mass);
     if (m_type.radius)
-        m_AttributeMap.emplace(AttrRadius, m_type.radius);
+        m_AttributeMgr.emplace(AttrRadius, m_type.radius);
     if (m_type.volume)
-        m_AttributeMap.emplace(AttrVolume, m_type.volume);
+        m_AttributeMgr.emplace(AttrVolume, m_type.volume);
     if (m_type.capacity)
-        m_AttributeMap.emplace(AttrCapacity, m_type.capacity);
+        m_AttributeMgr.emplace(AttrCapacity, m_type.capacity);
     if (m_type.race)
-        m_AttributeMap.emplace(AttrRaceID, m_type.race);
+        m_AttributeMgr.emplace(AttrRaceID, m_type.race);
 
     // load required skills and levels into their own map, for later checks
     if (HasAttribute(AttrRequiredSkill1))
@@ -150,21 +150,21 @@ bool ItemType::_Load()
 
 const void ItemType::CopyAttributes(InventoryItem& itemRef) const {
     // set attributes in the item's own attrMap.
-    for (auto &cur : m_AttributeMap)
+    for (auto &cur : m_AttributeMgr)
         itemRef.SetAttribute(cur.first, cur.second, false);
-        //itemRef.GetAttributeMap()->SetAttribute(cur.first, cur.second, false);
+        //itemRef.GetAttributeMgr()->SetAttribute(cur.first, cur.second, false);
 }
 
 const bool ItemType::HasAttribute(const uint16 attributeID) const {
-    AttrMapConstItr itr = m_AttributeMap.find(attributeID);
-    if (itr != m_AttributeMap.end())
+    AttrMapConstItr itr = m_AttributeMgr.find(attributeID);
+    if (itr != m_AttributeMgr.end())
         return true;
     return false;
 }
 
 EvilNumber ItemType::GetAttribute(const uint16 attributeID) const {
-    AttrMapConstItr itr = m_AttributeMap.find(attributeID);
-    if (itr != m_AttributeMap.end())
+    AttrMapConstItr itr = m_AttributeMgr.find(attributeID);
+    if (itr != m_AttributeMgr.end())
         return itr->second;
     return EvilZero;
 }

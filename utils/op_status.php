@@ -52,9 +52,9 @@ There will be some response, like opening windows, but *should not* generate an 
 <td style="width: 4%;">Status</td><td style="width: 26%;">Comments</td></tr>
 <tr><td> - Stable, Efficient Server Code<BR>
 <font color=yellow>Gained valuable insight while coding DroneAI.<BR>
-This led to much faster runtime than I expected, and will be updating all systems with these leanings.</font></td><td class="working">60%
+This led to much faster runtime than I expected, and will be updating all systems with these leanings.</font></td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 60%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>Constantly in Progress - monitoring & adjusting code for faster runtime. most segfaults eliminated<BR>Been working this code for >10y<BR>15Feb25</td></tr>
 <tr><td> - Memory Management<BR>
@@ -67,7 +67,7 @@ This led to much faster runtime than I expected, and will be updating all system
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>In Progress - Most packets understood and correctly processed<BR>4Feb23</td></tr>
+<td>Major Progress - Most packets understood and correctly processed<BR>17Jun26</td></tr>
 <tr><td> - Mutexes</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
@@ -686,13 +686,14 @@ Deadspace locations will have rats, either region-specific or wanderers</td><td 
 <td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font><BR>
-<font color=red>Not Given out yet</font><BR>2Mar25</td></tr>
+<font color=red>Not Given out yet</font><BR>17Jun26</td></tr>
 <tr><td> - <font color=lime>Security Missions</font><BR>
-Destroy ships at given location in space.</td><td class="broken">0%
+Destroy ships at given location in space.</td><td class="broken">15%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=red>NOT IMPLEMENTED</font><BR>19Nov18</td></tr>
+<td><font color=yellow>Preliminary Implementation</font><BR>
+<font color=red>Not Given out yet</font><BR>17Jun26</td></tr>
 <tr><td> - <font color=lime>Trade Missions</font><BR>
 Provide item(s) to specific station.<BR>
 Can be either crafted or bought. <BR>

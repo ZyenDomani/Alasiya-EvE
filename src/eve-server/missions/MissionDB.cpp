@@ -15,8 +15,8 @@
 
 void MissionDB::LoadMissionData(DBQueryResult& res) {
     if (!sDatabase.RunQuery(res,
-        "SELECT id, briefingID, name, level, typeID, important, storyline, raceID, constellationID, corporationID, dungeonID,"
-        " rewardItemID, rewardItemQty, bonusTime FROM agtMissions WHERE briefingID > 0"))
+        "SELECT id, briefingID, name, level, typeID, important, storyline"
+        " FROM agtMissions WHERE briefingID > 0 AND typeID = 2"))
         codelog(DATABASE__ERROR, "Error in LoadMissionData query: %s", res.error.c_str());
 }
 

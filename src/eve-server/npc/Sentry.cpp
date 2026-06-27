@@ -31,7 +31,7 @@ Sentry::Sentry(InventoryItemRef self, PyServiceMgr& services, SystemManager* sys
     m_ownerID = data.ownerID;
     m_AI = new SentryAI(this);
 
-    // Create default dynamic attributes in the AttributeMap:
+    // Create default dynamic attributes in the AttributeMgr:
     m_self->SetAttribute(AttrInertiaMod,             EvilOne, false);
     m_self->SetAttribute(AttrDamage,              EvilZero, false);
     m_self->SetAttribute(AttrArmorDamage,         EvilZero, false);

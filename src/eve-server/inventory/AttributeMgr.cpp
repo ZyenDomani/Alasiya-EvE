@@ -30,7 +30,7 @@
 #include "Client.h"
 #include "EntityMgr.h"
 #include "StaticDataMgr.h"
-#include "inventory/AttributeMap.h"
+#include "inventory/AttributeMgr.h"
 #include "inventory/InventoryItem.h"
 
 
@@ -45,19 +45,19 @@
  */
 
 
-AttributeMap::AttributeMap( InventoryItem& item)
+AttributeMgr::AttributeMgr( InventoryItem& item)
 : mItem(item)
 {
     mAttributes.clear();
 }
 
-AttributeMap::~AttributeMap()
+AttributeMgr::~AttributeMgr()
 {
     //mAttributes.clear();
 }
 
 
-bool AttributeMap::Load(bool reset/*false*/) {
+bool AttributeMgr::Load(bool reset/*false*/) {
     if (reset) {
         // this will allow total clearing of attribs to eliminate the necessity of 'removing' effects
         mAttributes.clear();
@@ -75,10 +75,10 @@ bool AttributeMap::Load(bool reset/*false*/) {
     DBQueryResult res;
     if (IsCharacterID(mItem.itemID())) {
         if (!sDatabase.RunQuery(res, "SELECT attributeID, valueInt, valueFloat FROM chrCharacterAttributes WHERE charID=%u", mItem.itemID()))
-            _log(DATABASE__ERROR, "AttributeMap Error in char db load query: %s", res.error.c_str());
+            _log(DATABASE__ERROR, "AttributeMgr Error in char db load query: %s", res.error.c_str());
     } else {
         if (!sDatabase.RunQuery(res, "SELECT attributeID, valueInt, valueFloat FROM entity_attributes WHERE itemID=%u", mItem.itemID()))
-            _log(DATABASE__ERROR, "AttributeMap Error in item db load query: %s", res.error.c_str());
+            _log(DATABASE__ERROR, "AttributeMgr Error in item db load query: %s", res.error.c_str());
     }
 
     DBResultRow row;
@@ -98,16 +98,16 @@ bool AttributeMap::Load(bool reset/*false*/) {
 
     /* item now has it's own attribute map, and is deleted when item object is destroyed or reset */
     if (is_log_enabled(ATTRIBUTE__INFO))
-        _log(ATTRIBUTE__INFO, "AttributeMap::Load(%s)  Loaded %lu attribs for %s(%u).", \
+        _log(ATTRIBUTE__INFO, "AttributeMgr::Load(%s)  Loaded %lu attribs for %s(%u).", \
             reset?"reset":"", mAttributes.size(), mItem.name(), mItem.itemID());
     return true;
 }
 
-bool AttributeMap::SaveAttributes() {
+bool AttributeMgr::SaveAttributes() {
     return Save();
 }
 
-bool AttributeMap::Save() {
+bool AttributeMgr::Save() {
     /** @note
      * we are saving:
      *   ability attribs for characters
@@ -216,9 +216,9 @@ bool AttributeMap::Save() {
     return true;
 }
 
-void AttributeMap::SetAttribute(uint16 attrID, EvilNumber& num, bool notify/*true*/) {
+void AttributeMgr::SetAttribute(uint16 attrID, EvilNumber& num, bool notify/*true*/) {
     if (num.isNaN() or num.isInf()) {
-        _log(ATTRIBUTE__ERROR, "AttributeMap::SetAttribute() - Something sent NaN or Inf for Attr %u on %s(i:%u/t:%u). Returning without modifying.",\
+        _log(ATTRIBUTE__ERROR, "AttributeMgr::SetAttribute() - Something sent NaN or Inf for Attr %u on %s(i:%u/t:%u). Returning without modifying.",\
                 attrID, mItem.name(), mItem.itemID(), mItem.typeID());
         if (sConfig.server.StackTrace)
             EvE::traceStack();
@@ -279,10 +279,10 @@ void AttributeMap::SetAttribute(uint16 attrID, EvilNumber& num, bool notify/*tru
     itr->second = num;
 }
 
-void AttributeMap::MultiplyAttribute(uint16 attrID, EvilNumber& num, bool notify/*false*/)
+void AttributeMgr::MultiplyAttribute(uint16 attrID, EvilNumber& num, bool notify/*false*/)
 {
     if (num.isNaN() or num.isInf()) {
-        _log(ATTRIBUTE__ERROR, "AttributeMap::MultiplyAttribute() - Something sent NaN or Inf for %u on %s(%u). Returning without modifying.", \
+        _log(ATTRIBUTE__ERROR, "AttributeMgr::MultiplyAttribute() - Something sent NaN or Inf for %u on %s(%u). Returning without modifying.", \
                 attrID, mItem.name(), mItem.itemID());
         EvE::traceStack();
         //ResetAttribute(attrID, notify);
@@ -291,7 +291,7 @@ void AttributeMap::MultiplyAttribute(uint16 attrID, EvilNumber& num, bool notify
     if (num == EvilZero) {
         // could this be on purpose?
         //ResetAttribute(attrID, notify);
-        _log(ATTRIBUTE__WARNING, "AttributeMap::MultiplyAttribute() - Something sent 0 for %u on %s(%u). Returning without modifying.", \
+        _log(ATTRIBUTE__WARNING, "AttributeMgr::MultiplyAttribute() - Something sent 0 for %u on %s(%u). Returning without modifying.", \
                 attrID, mItem.name(), mItem.itemID());
         EvE::traceStack();
         return;
@@ -308,7 +308,7 @@ void AttributeMap::MultiplyAttribute(uint16 attrID, EvilNumber& num, bool notify
 }
 
 
-EvilNumber AttributeMap::GetAttribute(const uint16 attrID) const
+EvilNumber AttributeMgr::GetAttribute(const uint16 attrID) const
 {
     /*
     if ((attrID == AttrInertiaMultiplier)
@@ -329,12 +329,12 @@ EvilNumber AttributeMap::GetAttribute(const uint16 attrID) const
     return EvilZero;
 }
 
-bool AttributeMap::HasAttribute(const uint16 attrID) const
+bool AttributeMgr::HasAttribute(const uint16 attrID) const
 {
     return (mAttributes.find(attrID) != mAttributes.end());
 }
 
-bool AttributeMap::HasAttribute(const uint16 attrID, EvilNumber &value) const
+bool AttributeMgr::HasAttribute(const uint16 attrID, EvilNumber &value) const
 {
     AttrMapConstItr itr = mAttributes.find(attrID);
     if (itr != mAttributes.end()) {
@@ -346,7 +346,7 @@ bool AttributeMap::HasAttribute(const uint16 attrID, EvilNumber &value) const
 }
 
 // [eventName,] ownerID, itemID, attributeID, time, newValue, oldValue = change (unless attrib = quantity)
-bool AttributeMap::Change(uint16 attrID, EvilNumber& old_val, EvilNumber& new_val) {
+bool AttributeMgr::Change(uint16 attrID, EvilNumber& old_val, EvilNumber& new_val) {
     // check for internal skill time data
     if (attrID == AttrStartTime)
         return true;
@@ -416,7 +416,7 @@ bool AttributeMap::Change(uint16 attrID, EvilNumber& old_val, EvilNumber& new_va
     return SendChanges(modChange.Encode());
 }
 
-bool AttributeMap::Add(uint16 attrID, EvilNumber& num) {
+bool AttributeMgr::Add(uint16 attrID, EvilNumber& num) {
     if (attrID == AttrStartTime)
         return true;
 
@@ -464,7 +464,7 @@ bool AttributeMap::Add(uint16 attrID, EvilNumber& num) {
     return SendChanges(modChange.Encode());
 }
 
-bool AttributeMap::SendChanges(PyTuple* attrChange) {
+bool AttributeMgr::SendChanges(PyTuple* attrChange) {
     if (attrChange == nullptr)
         return true;
 
@@ -492,7 +492,7 @@ bool AttributeMap::SendChanges(PyTuple* attrChange) {
     }
 
     if (pClient == nullptr) {
-        _log(PLAYER__WARNING, "AttributeMap::SendChanges() - ownerID for %u not found", mItem.itemID() );
+        _log(PLAYER__WARNING, "AttributeMgr::SendChanges() - ownerID for %u not found", mItem.itemID() );
         return false;
     }
 
@@ -512,18 +512,18 @@ bool AttributeMap::SendChanges(PyTuple* attrChange) {
     return true;
 }
 
-void AttributeMap::ResetAttribute(uint16 attrID, bool notify/*false*/) {
+void AttributeMgr::ResetAttribute(uint16 attrID, bool notify/*false*/) {
     EvilNumber value(mItem.GetDefaultAttribute(attrID));
     SetAttribute(attrID, value, notify);
 }
 
-void AttributeMap::CopyAttributes(std::map< uint16, EvilNumber >& attrMap)
+void AttributeMgr::CopyAttributes(std::map< uint16, EvilNumber >& attrMap)
 {
     for (auto &cur : mAttributes)
         attrMap[cur.first] =  cur.second;
 }
 
-void AttributeMap::SaveShipState()
+void AttributeMgr::SaveShipState()
 {
     // do we need to save others for persistence here?
     std::ostringstream Inserts;
@@ -623,11 +623,11 @@ void AttributeMap::SaveShipState()
 }
 
 // Delete() only called from InventoryItem::Delete()
-void AttributeMap::Delete() {
+void AttributeMgr::Delete() {
     mAttributes.clear();
 }
 
-void AttributeMap::DeleteAttribute(uint16 attrID) {
+void AttributeMgr::DeleteAttribute(uint16 attrID) {
     _log(ATTRIBUTE__DELETE, "Delete Attribute %u for %s(%u)", attrID, mItem.name(), mItem.itemID());
     AttrMapItr itr = mAttributes.find(attrID);
     if (itr != mAttributes.end()) {
@@ -648,10 +648,10 @@ void AttributeMap::DeleteAttribute(uint16 attrID) {
     }
 }
 
-AttrMapItr AttributeMap::begin() {
+AttrMapItr AttributeMgr::begin() {
     return mAttributes.begin();
 }
 
-AttrMapItr AttributeMap::end() {
+AttrMapItr AttributeMgr::end() {
     return mAttributes.end();
 }

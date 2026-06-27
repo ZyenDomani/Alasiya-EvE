@@ -457,11 +457,11 @@ protected:
     void _SendPingRequest();
     void _SendException( const PyAddress& source, int64 callID, MACHONETMSG_TYPE in_response_to, MACHONETERR_TYPE exception_type, PyRep** payload );
     void _SendCallReturn( const PyAddress& source, int64 callID, PyResult& rsp);
-    void _SendPingResponse( const PyAddress& source, int64 callID );
+    void _SendPingResponse( const PyAddress& source, int64 callID, int64 receivedTime=0 );
 
     bool Handle_CallReq( PyPacket* packet, PyCallStream* req );
     bool Handle_Notify( PyPacket* packet );
-    bool Handle_PingReq( PyPacket* packet )             { _SendPingResponse( packet->dest, packet->source.callID ); return true; }
+    bool Handle_PingReq( PyPacket* packet )             { _SendPingResponse( packet->dest, packet->source.callID, packet->receivedTime ); return true; }
     bool Handle_PingRsp( PyPacket* packet )             { /* do nothing */ return true; }
 
 private:

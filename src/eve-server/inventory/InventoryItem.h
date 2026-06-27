@@ -33,7 +33,7 @@
 #include "inventory/InventoryDB.h"
 #include "inventory/ItemType.h"
 #include "inventory/ItemFactory.h"
-#include "inventory/AttributeMap.h"
+#include "inventory/AttributeMgr.h"
 
 class PyRep;
 class PyDict;
@@ -69,9 +69,9 @@ public:
     /* begin rewrite and update */
     /** @todo  derive and execute tests to determine if these are needed... */
     // copy c'tor
-    InventoryItem(const InventoryItem& oth);
+    InventoryItem(const InventoryItem& oth) =delete;
     // move c'tor
-    InventoryItem(InventoryItem&& oth) noexcept;
+    InventoryItem(InventoryItem&& oth) noexcept =delete;
     // copy assignment
     InventoryItem& operator= (const InventoryItem& oth) =delete;
     // move assignment
@@ -314,7 +314,7 @@ public:
 
 
 /*  new attribute system */
-    AttributeMap*           GetAttributeMap()           { return pAttributeMap; }
+    AttributeMgr*           GetAttributeMgr()           { return pAttributeMgr; }
     int64                   GetTimeStamp()              { return m_timestamp; }
 
     void SetAttribute(uint16 attrID, int num, bool notify=true);
@@ -324,19 +324,19 @@ public:
     void SetAttribute(uint16 attrID, double num, bool notify=true);
     void SetAttribute(uint16 attrID, EvilNumber num, bool notify=true);
     void MultiplyAttribute(uint16 attrID, EvilNumber num, bool notify=false);
-    bool HasAttribute(const uint16 attrID) const                       { return pAttributeMap->HasAttribute(attrID); }
-    bool HasAttribute(const uint16 attrID, EvilNumber &value) const    { return pAttributeMap->HasAttribute(attrID, value); }
-    bool SaveAttributes()                                              { return pAttributeMap->SaveAttributes(); }
-    void ResetAttribute(uint16 attrID, bool notify=false)              { pAttributeMap->ResetAttribute(attrID, notify); }
-    void DeleteAttribute(uint16 attrID)                                { pAttributeMap->DeleteAttribute(attrID); }
+    bool HasAttribute(const uint16 attrID) const                       { return pAttributeMgr->HasAttribute(attrID); }
+    bool HasAttribute(const uint16 attrID, EvilNumber &value) const    { return pAttributeMgr->HasAttribute(attrID, value); }
+    bool SaveAttributes()                                              { return pAttributeMgr->SaveAttributes(); }
+    void ResetAttribute(uint16 attrID, bool notify=false)              { pAttributeMgr->ResetAttribute(attrID, notify); }
+    void DeleteAttribute(uint16 attrID)                                { pAttributeMgr->DeleteAttribute(attrID); }
 
     // returns 0 if not exist
-    EvilNumber GetAttribute(const uint16 attrID) const                 { return pAttributeMap->GetAttribute(attrID); }
+    EvilNumber GetAttribute(const uint16 attrID) const                 { return pAttributeMgr->GetAttribute(attrID); }
     // returns 0 if not exist
     EvilNumber GetDefaultAttribute(const uint16 attrID) const          { return m_type.GetAttribute(attrID); }
 
 protected:
-    AttributeMap* pAttributeMap;
+    AttributeMgr* pAttributeMgr;
 
 private:
     // fx timestamp

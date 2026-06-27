@@ -64,23 +64,54 @@
  * PRE_INSTATION = 8
  * PRE_INFLIGHT = 16
  */
-
+/*
+The Complete MachoNet Core Message Enum Map
+Index   Message Name                    Purpose & Behaviour
+0       AUTHENTICATION_REQ              Initial secure crypto-handshake request packet sent from the client to the Proxy.
+1       AUTHENTICATION_RSP              Crypto-handshake acknowledgment containing public key/seed validation.
+2       IDENTIFICATION_REQ              Client identifying its account details, version string, and authentication token.
+3       IDENTIFICATION_RSP              Proxy returns server status, connection acceptance, and character selection hooks.
+4       DISCONNECT_NOTIFICATION         Low-level wire signal forced down the line if an explicit gracefully closed connection fires.
+5       HEARTBEAT                       Raw transport-layer micro-ping to ensure socket health before the session initializes.
+6       CALL_REQ                        Client-to-Server RPC Call. Standard execution frame for invoking active back-end service methods.
+7       CALL_RSP                        Server-to-Client RPC Response. Delivers successfully marshaled Python tuple/dict structures back.
+8       TRANSPORTCLOSED                 Hard socket socket teardown interceptor. Triggered immediately if the client forcefully vanishes.
+9       FORWARD_REQ                     Internal Proxy-to-Node cross-routing packet used to transition a client across cluster boundaries.
+10      RESOLVE_REQ                     High-level distributed cache or object resolution query (finding the physical server tracking an entity).
+11      RESOLVE_RSP                     Resolution return providing exact object location address bounds.
+12      NOTIFICATION                    One-Way Server Push. Pushes grid updates, warp confirmations, and chat text requiring zero handshake feedback.
+13      MULTICAST_NOTIFICATION          Specialized batch push optimizing server efficiency by broadcast routing a single chunk to a list of sessions.
+14      REJECT_NOTIFICATION             Specific network-level dropping packet sent when a service request format breaks schema boundaries.
+15      ERRORRESPONSE                   Central Error Marshaller. Direct router to pop open error boxes, using your central UserError sounds and tokens.
+16      SESSIONCHANGENOTIFICATION       Dispatched when boundaries shift (e.g., passing through a jumpgate, docking, changing characters).
+17      SESSIONINITIALSTATEREQ          Dispatched during handshake initialization to request localized environment configurations.
+18      SESSIONINITIALSTATENOTIFICATION Transmits full state synchronization bundles immediately upon establishing a new connection.
+19      HEARTBEAT_ACK                   Immediate hardware answer to prevent the network interface card from idling or timing out.
+20      PING_REQ                        High-level transport loop measuring round-trip latency.
+21      PING_RSP                        Immediate latency confirmation payload.
+*/
 enum MACHONETMSG_TYPE
 {
     AUTHENTICATION_REQ              = 0,
     AUTHENTICATION_RSP              = 1,
     IDENTIFICATION_REQ              = 2,
     IDENTIFICATION_RSP              = 3,
-    __Fake_Invalid_Type             = 4,
+    DISCONNECT_NOTIFICATION         = 4,
+    HEARTBEAT                       = 5,
     CALL_REQ                        = 6,
     CALL_RSP                        = 7,
     TRANSPORTCLOSED                 = 8,
+    FORWARD_REQ                     = 9,
     RESOLVE_REQ                     = 10,
     RESOLVE_RSP                     = 11,
     NOTIFICATION                    = 12,
+    MULTICAST_NOTIFICATION          = 13,
+    REJECT_NOTIFICATION             = 14,
     ERRORRESPONSE                   = 15,
     SESSIONCHANGENOTIFICATION       = 16,
+    SESSIONINITIALSTATEREQ          = 17,
     SESSIONINITIALSTATENOTIFICATION = 18,
+    HEARTBEAT_ACK                   = 19,
     PING_REQ                        = 20,
     PING_RSP                        = 21,
     MOVEMENTNOTIFICATION            = 100,

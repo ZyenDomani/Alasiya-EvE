@@ -301,7 +301,7 @@ SET( imageserver_SOURCE
 
 SET( inventory_INCLUDE
      "${TARGET_INCLUDE_DIR}/inventory/AttributeEnum.h"
-     "${TARGET_INCLUDE_DIR}/inventory/AttributeMap.h"
+     "${TARGET_INCLUDE_DIR}/inventory/AttributeMgr.h"
      "${TARGET_INCLUDE_DIR}/inventory/InvBrokerService.h"
      "${TARGET_INCLUDE_DIR}/inventory/Inventory.h"
      "${TARGET_INCLUDE_DIR}/inventory/InventoryBound.h"
@@ -313,7 +313,7 @@ SET( inventory_INCLUDE
      "${TARGET_INCLUDE_DIR}/inventory/ItemType.h"
      "${TARGET_INCLUDE_DIR}/inventory/Voucher.h" )
 SET( inventory_SOURCE
-     "${TARGET_SOURCE_DIR}/inventory/AttributeMap.cpp"
+     "${TARGET_SOURCE_DIR}/inventory/AttributeMgr.cpp"
      "${TARGET_SOURCE_DIR}/inventory/InvBrokerService.cpp"
      "${TARGET_SOURCE_DIR}/inventory/Inventory.cpp"
      "${TARGET_SOURCE_DIR}/inventory/InventoryBound.cpp"

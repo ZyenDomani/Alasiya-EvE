@@ -38,11 +38,11 @@ typedef AttrMap::const_iterator         AttrMapConstItr;
 class PyTuple;
 class InventoryItem;
 
-class AttributeMap
+class AttributeMgr
 {
 public:
-    AttributeMap(InventoryItem& item);
-    ~AttributeMap() noexcept;
+    AttributeMgr(InventoryItem& item);
+    ~AttributeMgr() noexcept;
 
     void SetAttribute(uint16 attrID, EvilNumber& num, bool notify=true);
     // used by Missiles and Modules
@@ -70,15 +70,15 @@ public:
     void CopyAttributes(std::map<uint16, EvilNumber>& attrMap);
 
     /**
-     * @brief return the begin iterator of the AttributeMap
-     * @return the begin iterator of the AttributeMap
+     * @brief return the begin iterator of the AttributeMgr
+     * @return the begin iterator of the AttributeMgr
      * @note this way to solve the attribute system problems are quite hacky... but atm its needed
      */
     AttrMapItr begin();
 
     /**
-     * @brief return the end iterator of the AttributeMap
-     * @return the end iterator of the AttributeMap
+     * @brief return the end iterator of the AttributeMgr
+     * @return the end iterator of the AttributeMgr
      * @note this way to solve the attribute system problems are quite hacky... but atm its needed
      */
     AttrMapItr end();

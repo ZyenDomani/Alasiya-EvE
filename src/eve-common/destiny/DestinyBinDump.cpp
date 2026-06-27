@@ -151,7 +151,7 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
             data += sizeof(WARP_Struct);
             len -= sizeof(WARP_Struct);
             _log(into, "       formID: %u, TargPt: %.1f, %.1f, %.1f start: %i", b->formationID, b->targX, b->targY, b->targZ, b->effectStamp);
-            _log(into, "       followRange: %lli, followID: %lli, warpSpeed: %i", b->followRange, b->followID, b->speed);
+            _log(into, "       distance: %.1f, trackingFlags: %.1f, warpSpeed: %i", b->distance, b->trackingFlags, b->speed);
         } break;
         case Ball::Mode::ORBIT: {
             const ORBIT_Struct *b = (const ORBIT_Struct *) data;
@@ -170,7 +170,7 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
             const MUSHROOM_Struct *b = (const MUSHROOM_Struct *) data;
             data += sizeof(MUSHROOM_Struct);
             len -= sizeof(MUSHROOM_Struct);
-            _log(into, "       formID: %u, distance: %.2f, u125: %.3f, start: %i, ownerID: %lli", b->formationID, b->followRange, b->unknown125, b->effectStamp, b->ownerID);
+            _log(into, "       formID: %u, maxRadius: %.2f, waveFactor: %.3f, effectStamp: %i, ownerID: %lli", b->formationID, b->maxRadius, b->waveFactor, b->effectStamp, b->ownerID);
         } break;
         case Ball::Mode::TROLL: {
             const TROLL_Struct *b = (const TROLL_Struct *) data;
@@ -194,7 +194,7 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
             const FORMATION_Struct *b = (const FORMATION_Struct *) data;
             data += sizeof(FORMATION_Struct);
             len -= sizeof(FORMATION_Struct);
-            _log(into, "       formID: %u, followID: %lli, followRange: %.1f, start: %i", b->formationID, b->followID, b->followRange, b->effectStamp);
+            _log(into, "       formID: %u, leaderID: %lli, spacing: %.1f, syncIndex: %i", b->formationID, b->leaderID, b->spacing, b->syncIndex);
         } break;
         default:
             _log(into, "Error: Unknown ball mode %u!", ballhead->mode);

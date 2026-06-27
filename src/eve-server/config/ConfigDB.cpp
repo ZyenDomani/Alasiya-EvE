@@ -62,7 +62,7 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
             "  corporationName AS ownerName,"
             "  2 AS typeID,"                    // corp typeID
             "  false AS gender,"
-            "  NULL AS ownerNameID"             // this is a messageID - have not taken time to find and insert
+            "  corporationNameID AS ownerNameID"    // this is a messageID - have not taken time to find and insert
             " FROM crpCorporation"
             " WHERE corporationID IN (%s)", ids.c_str()))
         {

@@ -1,7 +1,7 @@
 
 *******************************************************
 ****  Allan's EvEmu TODO LIST
-****     31 August 2025
+****     26 June 26
 
     note:  this whole file needs to be reorganized (wip)
 
@@ -19,8 +19,7 @@ NOTE:  for calls that use internal methods that send a reply, model from InjectS
 
 
 current....
-find launchForCorp...see how 'closest planet' is determiend for tower (m_system->GetClosestPlanetSE())
-towerSE - m_hasShield is redundant...can use (m_shieldSE (!/=)= nullptr)
+find launchForCorp...see how 'closest planet' is determined for tower (m_system->GetClosestPlanetSE())
 test planet determination and check distance when launching customs office
   - complete code for proper init when launched
 when PI started on planet, check for customs office and create interbus customs office if planet doesnt have one
@@ -71,12 +70,20 @@ char creation - figure certs and set skills accordingly
     write method to pull skill data and print.  will use this as base then modify as needed.
 
 
+many unimplemented salvage error msgs noted in prospector.h
+  - current code is working POC and not many checks made at this time
+
 *******************************************************
 *******************************************************
 **********  liveupdates code improvements ... hi priority
 update all 16 references to www.eveonline.com and create pages on server to respond properly
 add agent portraits to server and update 'backupurl' in server code
+  - portraits are downloaded.  need to add to server and update
 
+still need to host agent photos...
+  search client code for xxxx and use liveupdates to replace to my server
+23:49:09 C       ImageServer:  GetImage() called. Cat: Character, id: 3014016, size:50
+23:49:09 W      Image Server:  RedirectLocation() called for http://images.evetech.net/Character/3014016_50.jpg.
 
 *******************************************************
 *******************************************************
@@ -95,7 +102,7 @@ quantity is off (in db) on some items (purchased or gifted)
 rewrite wreck creation tables.  wrecks are in invTypes table and listed as s/m/l +few extras
    use npc ship groupID to determine faction and size
 
-update this to use static data instead of db hits:
+update this to use static data instead of db hits:  ~8k rows
 StationSvc::Handle_GetSolarSystem
 
 replace all (<type>)(<math result>) c-type casting to use static_cast<type>(<math result>)
@@ -122,7 +129,6 @@ NOTE:  copy idea from drones (state/actions) using lessons gleaned
     battleship rats may attack your heavy/sentry drones.
     In particular, elite rats (see NPC Naming Convention) have a higher probability of attacking your drones.
     At the extreme end, Sleeper NPC are very fond of attacking drones.
-*** check m_entityChaseRange and m_entityAttackRange.  same value for drones (need to adjust logic)
 
 lsc system better, but incomplete and needs revisiting    -priority level: med-lo
     - may need xmlp code instead of muddled python decoding
@@ -135,23 +141,13 @@ entire Inv codebase is slow.  loading chars (and their inventory) is biggest bot
 
 InventoryItem - multiple remove calls....trace and fix
 
-Coverity found more shit
-ImageServer::GetImage - fclose(fp)
-temp object going out of scope - return (uptime.str().c_str());
-
 go thru entire codebase and determine where variable precision is needed and adjust accordingly (float/double - int/uint/8/16/32/64)
     radius() doesnt need to be double  (43 matches in 26 files)
-
-go thru all header #include to determine if it is actually needed in header as opposed to #include in .cpp
-while you're at it, verify member initialization is correct.  i know destiny isnt (and it's member list is huge)
-	- im sure its not the only one...but some (or most) of my 'newer' classes should be right (at least a lot closer).
 
 remove station/static queries from InventoryDB
 remove *lsc_service and *cache_service from PyServiceMgr
     - lsc_service may be singleton.  channels should remain dynamic...will have to look into this more
     - cache_service....will have to look into this more before deciding.
-
-update headers to fix 'class' vs 'struct' declarations  (most done years ago in a major refactor)
 
 closely examine target mgr and see what we can improve.
     - test changing TargetEntry class (and enums) to struct
@@ -283,9 +279,6 @@ player corps - finish wip code for RAM, market  -priority level: med-hi
 expeditions.  not sure how to do this one.
 dungeonExplorationMgr::GetMyEscalatingPathDetails()
 
-many unimplemented salvage error msgs noted in prospector.h
-  - current code is working POC and not many checks made at this time
-
 OSE::Killed() unfinished.  (structures, empty ships  - need those systems finished first)
 
 still many ClientErrorMgs not used/implemented
@@ -372,6 +365,7 @@ see file:///home/allan/Desktop/eve_packets/aknor/crucible/1.5.4/03272012-02-13-a
 
 there is a lot more to machonet than we currently have coded/working....
     - narrowcast is for notification types of "broadcast" using "bcast_idtype"
+    - this is used to map parser on server to send data to specific set instead of entire [area]
 
 look into removing xmlp encode() for things we can build in code
 
@@ -417,15 +411,9 @@ activemodule c'tor - check/verify needsCharge code as some modules listed use sc
 
 link/unlink need a bit more logic work (as per notes in code)
 
-salvager success crashes other salvagers and tractor
-  - should call TargetManager::Destroyed() to properly shut down other modules targeting this item
-
 after unloading module using ungroup, tried loading charge to newly-ungrouped module, and got this:
 01:58:17 [ModTrace] ShipItem::LoadCharge - Trying to load Flameburst Light Missile from HiSlot6 to HiSlot7.
 see also (gamepc)inventory call while in station....showed "ship module" flags for items in inventory?
-
-prop mod destiny call - update ship speed to AccelTime math isnt right...see cruc/MoveTrace and cruc/SpeedBoost
-    - this is better after SpeedBoost() update, but still needs work (activate/deactivate working)
 
 19:43:02 [Bound] DogmaIMBound::LoadAmmoToBank()
 19:43:02 [FxWarning] FxProc::ParseExpression(): Item Piranha Light Missile(140027127) is set to flagAutoFit.  correcting to Seventh Hi Slot.
@@ -439,11 +427,6 @@ prop mod destiny call - update ship speed to AccelTime math isnt right...see cru
 19:43:02 [FxWarning] FxProc::ParseExpression(): Item Fusion S(140027131) is set to flagAutoFit.  correcting to Second Hi Slot.
 19:43:02 [Bound] DogmaIMBound::LoadAmmoToBank()
 19:43:02 [FxWarning] FxProc::ParseExpression(): Item Fusion S(140027132) is set to flagAutoFit.  correcting to Fifth Hi Slot.
-
-fleet shit....)
-19:43:47 [LootInfo] added 2909550757  Tritanium to list for Angel Trucker(750000014)
-19:46:15 [InvMsg] IB::List() called by Lee with ownerID 90000000 for Jettisoned Loot Container(140027289:AutoFit:active) - origFlag: AutoFit
-
 
 
 *******************************************************
@@ -478,12 +461,8 @@ finish DestinyManager::SendCloakFx()
         shieldRadius            Radius of the force shield that this structure generates.
         smugglingChance         Chance of being caught Transporting contraband.
 
-rename AttributeMap to AttributeMgr
-  actual maps can remain
-
 client/script/ui/shared/neocom/locationInfoSvc.py
     this file has data for some items we dont have info/data/code for yet
-
 
 asteroid/belt grow
   - idea is roids' gravity will accumulate more ore in areas unmolested by ships...after 6h or so
@@ -527,11 +506,6 @@ frigates
 ibis?, navitas, bantam, probe, tormentor
 cruisers
 arbitrator, osprey, scythe, vexor
-
-still need to host agent photos...
-  search client code for xxxx and use liveupdates to replace to my server
-23:49:09 C       ImageServer:  GetImage() called. Cat: Character, id: 3014016, size:50
-23:49:09 W      Image Server:  RedirectLocation() called for http://images.evetech.net/Character/3014016_50.jpg.
 
 .inventory command
   - 10000000001 (office) - has no name
@@ -580,14 +554,9 @@ effects processing incomplete....this may be much more complete than i implied h
 15:30:42 [Attr Error] AttributeMap::SetAttribute() - Something sent NaN or Inf for Attr 309 on Kapteyn Sensor Array Inhibitor I(140023207). Returning without modifying.
 
 
-
 check data sent by client for bound objects to see what we can use.
     verify members for bound objects.  we may need to add few more to avoid redirects (cant find data on effectiveness of static member vs multi-redirect call)
     client sends some data we dont necessarily need, due to server differences between us and live
-
-pypacket building isnt completely right....some things dont need to be that deep.
-some returns are put instead of substruct, and others dont have the 2 tuples that follow substruct.
-no clue on criteria or exactly what goes where yet.
 
 jettison now checks for can capy.  (official has updates to this)
     - once full, loop stops and warning issued
@@ -631,10 +600,7 @@ systemmgr - use kills object instead of db hit
     - load kill times when system boots.  use 15m timer call (from EntityList) to update data
     ** tried this...didnt work correctly.  disabled code.  needs review
 
-civilianMgr code?  i thought it was empty
-
 InvBrokerService needs a good lookover
-
 InvBrokerBound::Handle_GetInventory
     - incomplete
 InvBrokerBound::Handle_GetInventoryFromId
@@ -649,10 +615,6 @@ InventoryBound  incomplete
   SetPassword()
   RunRefiningProcess()
   TakeOutTrash()  -- still dont know what this is for (or how its used)
-
-
-StaticDataMgr::GetSolarSystemData incomplete (unused - is it needed?)
-
 
 GetMyInventory()->ContainsTypeByFlag
     - should this check for items in holds other than default cargoHold?   -yes, but depends on how its used
@@ -710,7 +672,8 @@ AttributeError: 'NoneType' object has no attribute 'contracts'
 missions/agents - major agent/mission rewrite 7mar25
 all courier missions coded and working
 mining missions started.  need dungeon work for these
-need security/encounter missions.  need dungeon work for these.   -priority level: hi
+security/encounter mission briefings and spawns done. 26jun26
+need dungeon work for these.   -priority level: hi
 
 anomaly system - working. may need revisit after other systems mature.   -priority level: med
     - sig data needs work and common add/create method for scanning
@@ -729,11 +692,7 @@ ship/cargo scanning
     - there are packets on both of these.  must make bpc updates play nice with scanner code.  may have to update client
 
 these can be found in 'db_shit/output.txt'
-locationName = localization.GetByMessageID(self.locationNameID)
-    - locationNameID is a messageID!!!
-return localization.GetByMessageID(self.ownerNameID, languageID)
-    - ownerNameID is a messageID!!!
-0 AS landmarkNameID
+0 AS landmarkNameID  (mapLandmarks is incomplete)
     - landmarkNameID is a messageID!!!
 
 KeeperService will need work (accel gates) (james updated official with some of this)
@@ -808,7 +767,7 @@ create ".modify" command to allow ingame setting of attributes
 on tracking, autostop, autoattack command, send lsc msg with current status (like motd)
 
 ***  errors
-
+-none-
 
 ***  other
 finish dot commands
@@ -833,15 +792,6 @@ npc->rclick->gm menu->view attribs?
 *******************************************************
 *****************  db shit
 
-add getuint16 to dbcore
-update getuint to getuint32
-update row calls (row.getint) to use 'new' getuint8, getuint16, getuint32 methods as needed
-
-all PackedRows are marshalled into a buffer, where None is inserted as zero.
-    - this negates client conditional checks like using "if x is None:" because x=0 will return false in that check, which makes shit weird
-    - UPDATE:  client patched (hacked) to correct this, using "if x == 0:" after above "None" check  ONLY ON xxx CHECK  (not all checks)
-    - UPDATE AGAIN:  Almamu rewrote the marshal/unmarshal code to fix this (real fix).  i personally havent tested it yet.
-
 this is used for pricing update based on minerals.  this query returns ~300 items
 SELECT * FROM `invTypeMaterials` WHERE `quantity` = 0
 
@@ -855,6 +805,7 @@ check/add dynamic tables to Dump.sh to avoid copying local server data to repo
 merge bloodlineTypes table into chrBloodlines table
 
 rename 'entities' to 'gameItems'
+    -- this will be involved.
 
 
 ************************************************
@@ -870,13 +821,6 @@ some items dont have complete description in db (data is truncated)
 go thru classes and rename per class type...
     -  *Item  for items
     -  *SE  for system entities
-
-
-F11 map - universe not showing region connecting (jump) lines (should be green for region jumps)
-	--Blue lines separate Systems, Red lines separate Constellations, and Purple lines separate Regions. (circa 2007)
-	on mine, red = system, blue = constallation, green = region
-
-
 
 
 trader joe (market bot)
@@ -910,20 +854,10 @@ skillHazardousMaterialFreight = 13075, // Trade The skill at transporting contra
 skillTaxEvasion = 28261, // Trade Knowledge of the SCC tax regime and the ability to utilize that to one's own advantage.
 2% reduction in SCC tax per level.
 
-
-bounties have a bonus...
-skillDEDConnections = 3362, // Social Skill at dealing with Concord Department and negotiating bounties
-Bonus fee of 1,500 isk per pirate head per level of the skill
-
-
-*** actually, ALL of the social and trade skills have bonuses.
+*** ALL of the social and trade skills have bonuses.
     - these need to be looked over and implemented.
 skillGeneralFreight = 12834, // Trade Skill at the stowage and transportation of bulk goods
 5% Bonus per level to Ship Cargo Capacity
-
-
-check into call returns.  they may be missing data (like callID)
-    - i think these are mostly complete.  may be too deep in packet.
 
 all classes need init list corrected
     - should be same order as declarations
@@ -931,9 +865,6 @@ all classes need init list corrected
 17908 - nerf bat    <<-- this is `QA Cruise Missile`  100km/s, 1k multi-spectral damage
 
 GM/WM slash commands arent parsed in server (rclick '/create this type'....etc)
-
-i have a sneaky suspicion 'throw' isnt used properly throughout the entire codebase
-    -- i should have noted this better...i dont remember where/why i got this idea
 
 update console commands to use complete words instead of first (or single) letter
     - this will enable greater command control and passing of arguments
@@ -948,9 +879,6 @@ as this is still beyond me, it may take a while.
 till then, we'll have to used the hacked system.
 after all, it works
 
-item flags are stored in db as 'entity.flag', but client wants 'flagID'.
-look into changing our code to conform. charDB and corpDB still use "flag AS flagID" in sql query.
-
 figure out how to colorize _log() msgs to console   -priority level: low
 
 CmdStargateJump has multiple client-side msgs that would be fun to implement (system shut down due to traffik, closed from congestion, etc)
@@ -964,20 +892,6 @@ ideas for holoscreen in CQ:
     - others?
     - more?
 
-_Prime uses slimItem.ownerID to set keys, which are then fetch()'d from RecordSet.EveOwners (or server if empty)
-    - as ownerID defaults to '0', client throws error when receives 'None' as response  (need more the 0 values to unpack)
-    - all ownerIDs should be actual EveOwners, (default to current system owner when SOV is implemented), NOT '0' or '_System' (which is 1)
-    -  could this be part of "EveOwners" bulkdata, which is why client is throwing error?  look into and fix as needed.
-
-stations - look into individual hangers loaded into mem objects (charid/items)
-    - not sure if this would be worth it, but would make 'by owner' searches much faster
-
-destiny shit - misc things found in destiny.dll
-    - markers for ball's yaw, pitch, roll (dunRotation)
-    - cruise velocity as a fraction of max velocity (uk)
-    - id of bubble ball belongs to, both current and former (uk)
-    - dunRotation is used for accel gates, customs offices, moon miners, and possibly others i havent found yet
-
 need timer/var for after cloak for targeting (cannot target x sec after uncloak - currently no delay)
 
 GetChar()->HasShares())  // not written, no underlying code yet
@@ -985,19 +899,8 @@ GetChar()->HasShares())  // not written, no underlying code yet
 began putting specific throw msgs in appropriate common/EVE_*.h files if available,
 else src/*/*.h files
 
-remove all Ref: ServerError xxxxx msgs in favor of actual messages for players.
-
 create data needed for killboard, and integrate killboard into site  -priority level: low
     - page started.  data non-existent  will use src/eve-core/killboard/
-
-Profile::GetRunTimes()  - adjust this to Automatically set us/ms/s as needed  ....not working right.  later.
-current average takes all time into consideration, even ones that are way high.
-  idea: make map/list/vec of times, as it seems the high times are one-off
-    start loop
-    take times x higher than current average
-    times lower in another map/list/vec
-    use lower list to get better average times
-    get count & average of high times for a better idea of code runtimes
 
 player agent/error msgs - pool of msgs adjusted for character secstatus or standings with corp/sov holder, a la sphereScript's speech files
 
@@ -1044,6 +947,7 @@ finish player command "srvoptions" to show current server settings in client not
   - most code is there.  just incomplete
 
 ****  make safe save method to verify and save data on segfault
+    -- nah...just fix all the segfaults
 
 aggressionMgr - this obj is system-wide, per system.  bound object could(should) be used for all clients in system
     - should create instance on system boot, then pass that instance to clients when requested.
@@ -1053,6 +957,7 @@ aggressionMgr - this obj is system-wide, per system.  bound object could(should)
 
 drone chat window for drone specific msgs (using individual drone as sender)  depending on player drone skill(s)?
 player command to show drones' TargetedBy map
+notes in drone class files
 
 
 charge chars for jetcans? (100isk?, 1000isk?)
@@ -1060,9 +965,6 @@ charge chars for jetcans? (100isk?, 1000isk?)
 rats should test for faction signals in system and set origin along that direction (to appear they came from their 'base' in system)
     - this should be fairly easy to set up
     - if no faction presence in system, continue with random point
-
-civilian class - non-combatant ships moving from one point to another. skeleton code and notes in class file.   -priority level: low
-    - found and noted groupIDs for this class  ships and escorts
 
 expanded cargo modules update for specialized holds.   -priority level: low
     - there are some client checks for updated hold capy
@@ -1077,12 +979,10 @@ need to figure out how to load/queue assets for chars (on login or w/e)
 
 integrate UTF8 into code (or make my own class)
    - same with zlib and gangsta
-   - is zlib even used??
+   - is zlib even used??  it is now...
 
 update ValidateAddItem() to return >0 on error and use enums to determine/display error (see char::injectskillintobrain)
     - there are many methods with this name.  i dont remember which one i was referring to here.
-
-make log/config option for (en/dis)able client massive check.
 
 validate ship pilot skills to assemble/repack ship..nope
     - this is a service by station personnel.
@@ -1099,8 +999,6 @@ others cause multiple other effects.  is this something we can implement/exploit
 integrate jeremie's liveintel code?
 https://github.com/jeremieroy/EVELiveIntel
 
-    note:  *somewhere* i've seen
-            agility = 1 - inertia;
 
 *******************************************************
 *******************************************************

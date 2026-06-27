@@ -293,7 +293,7 @@ CargoContainerRef StationItem::GetContainerFromInventory(uint32 contID)
 StationSE::StationSE(StationItemRef station, PyServiceMgr &services, SystemManager* system)
 : StaticSystemEntity(station, services, system)
 {
-    // Create default dynamic attributes in the AttributeMap:
+    // Create default dynamic attributes in the AttributeMgr:
     station->SetAttribute(AttrOnline,             EvilOne, false);
     station->SetAttribute(AttrCapacity,           STATION_HANGAR_MAX_CAPACITY, false);
     station->SetAttribute(AttrInertiaMod,            EvilOne, false);

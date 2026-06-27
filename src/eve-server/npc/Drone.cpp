@@ -66,7 +66,7 @@ DroneSE::~DroneSE() {
 }
 //AttrDroneMaxVelocityBonus
 void DroneSE::Init() {
-    // Create default dynamic attributes in the AttributeMap:
+    // Create default dynamic attributes in the AttributeMgr:
     m_self->SetAttribute(AttrDamage,              EvilZero, false);
     m_self->SetAttribute(AttrArmorDamage,         EvilZero, false);
     m_self->SetAttribute(AttrMass,                m_self->type().mass(), false);

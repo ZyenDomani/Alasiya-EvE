@@ -48,7 +48,7 @@ void MissionDataMgr::Clear() {
         cur.second.bookmarks = nullptr;
         PySafeDecRef(pbmk);
     }
-    
+
     m_names.clear();
     m_offers.clear();
     m_mining.clear();
@@ -231,20 +231,13 @@ void MissionDataMgr::Populate() {
         data.typeID             = row.GetUInt8(4);
         data.important          = row.GetBool(5);
         data.storyLine          = row.GetBool(6);
-        data.raceID             = row.GetUInt8(7);
-        data.constellationID    = row.GetUInt(8);
-        data.corporationID      = row.GetUInt(9);
-        data.dungeonID          = row.GetUInt(10);
-        data.rewardItemID       = row.GetUInt(11);
-        data.rewardItemQty      = row.GetUInt(12);
-        data.bonusTime          = row.GetUInt(13);
         if (data.important) {
             m_missionsImp.emplace(row.GetUInt8(3), data);
         } else {
             m_missions.emplace(row.GetUInt8(3), data);
         }
     }
-    sLog.Cyan("   MissionDataMgr", "%lu(%lu) Unsorted Mission Data Sets loaded in %.3fms.", m_missions.size(), m_missionsImp.size(), (GetTimeMSeconds() - start));
+    sLog.Cyan("   MissionDataMgr", "%lu(%lu) Unsorted Encounter Mission Data Sets loaded in %.3fms.", m_missions.size(), m_missionsImp.size(), (GetTimeMSeconds() - start));
 
     //res->Reset();
     start = GetTimeMSeconds();

@@ -626,7 +626,7 @@ PyResult Command_attrlist(Client* pClient, CommandDB* db, PyServiceMgr* services
     }
 
     std::map<uint16, EvilNumber> attrMap;
-    iRef->GetAttributeMap()->CopyAttributes(attrMap);
+    iRef->GetAttributeMgr()->CopyAttributes(attrMap);
 
     std::ostringstream str;
     str << "%s (%u) has %u attributes.<br><br>"; //70

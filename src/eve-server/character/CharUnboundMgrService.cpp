@@ -339,7 +339,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     //now set up some initial inventory:
     /** @todo update this to reflect char career */
 
-    // add client to EntityMgr for subsequent calls that need Client* (AttributeMap changes)
+    // add client to EntityMgr for subsequent calls that need Client* (AttributeMgr changes)
     pClient->SetChar(charRef);        // AddPlayer() needs charRef
     sEntityMgr.AddPlayer(pClient);
 

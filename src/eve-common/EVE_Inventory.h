@@ -52,6 +52,12 @@ namespace Inv {
         uint8           id;
         std::string     name;
         std::string     description;
+        CatData(uint8 _id, std::string _name, std::string _description, bool _published) {
+            published = _published;
+            id = _id;
+            name = _name;
+            description = _description;
+        }
     };
 
     /* POD structure for Inventory groups */
