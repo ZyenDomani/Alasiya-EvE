@@ -28,6 +28,10 @@
 #include "PyServiceCD.h"
 #include "chat/VoiceMgrService.h"
 
+
+/** @note: this isnt accurate for crucible client */
+
+
 PyCallable_Make_InnerDispatcher(VoiceMgrService)
 
 VoiceMgrService::VoiceMgrService(PyServiceMgr *mgr)
@@ -46,7 +50,7 @@ VoiceMgrService::~VoiceMgrService()
 
 PyResult VoiceMgrService::Handle_VoiceEnabled(PyCallArgs &call) {
     //maybe in future, but not now ...
-    return(new PyInt(0));
+    return PyStatic.NewZero();
 }
 
 /*

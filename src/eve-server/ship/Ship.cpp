@@ -2542,7 +2542,7 @@ void ShipSE::RemoveTarget(SystemEntity* pSE) {
 void ShipSE::EncodeDestiny( Buffer& into) {
     using namespace Destiny;
 
-    uint8 mode = m_destiny->GetState(); //Ball::Mode::STOP;
+    uint8 mode = m_destiny->GetBallMode(); //Ball::Mode::STOP;
 /*
     NameStruct name;
         name.name = GetName();

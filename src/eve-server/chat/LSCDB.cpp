@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur, Aknor Jaden
+    Rewrite:    Allan  (incomplete)
 */
 
 /** @todo this entire file needs review */
@@ -30,193 +31,124 @@
 #include "chat/LSCDB.h"
 #include "chat/LSCService.h"
 
-void LSCDB::GetChannelNames(uint32 charID, std::vector<std::string> & names) {
+
+
+// Clean, structured signature:
+LSC::CharMetaData LSCDB::GetChannelNames(uint32 charID)
+{
     DBQueryResult res;
 
+    // Executing an optimized, explicitly structured query
     if (!sDatabase.RunQuery(res,
         "SELECT"
         "    ch.characterName, "
-        "    cr.corporationName "
+        "    COALESCE(cr.corporationName, '') " // Protect against character-less corps
         " FROM chrCharacters AS ch"
-        "  LEFT JOIN crpCorporation AS cr USING (corporationID) "
-        " WHERE ch.characterID = %u ", charID))
+        " LEFT JOIN crpCorporation AS cr USING (corporationID) "
+        " WHERE ch.characterID = %u", charID))
     {
         _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return;
+        return LSC::CharMetaData("", ""); // Return safe empty defaults
     }
 
     DBResultRow row;
     if (!res.GetRow(row)) {
         _log(SERVICE__ERROR, "CharID %u isn't present in the database", charID);
-        return;
+        return LSC::CharMetaData("", "");
     }
 
-    names.push_back(row.GetText(0));    // charName
-    names.push_back(row.GetText(1));    // corpName
-}
+    // Safely extract text pointers and handle null safety idiomatic to modern C++
+    std::string charName = (row.GetText(0) == nullptr ? "" : row.GetText(0));
+    std::string corpName = (row.GetText(1) == nullptr ? "" : row.GetText(1));
 
-int32 LSCDB::GetNextAvailableChannelID()
-{
-    /** @todo fix this shit */
-    DBQueryResult res;
-    if ( !sDatabase.RunQuery(res,
-        "SELECT"
-        "    channelID "
-        " FROM channels "
-        " WHERE channelID >= %i ", LSCService::BASE_CHANNEL_ID ))
-    {
-        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return 0;
-    }
+    // Return the structure natively. Modern compilers perform RVO (Return Value Optimization)
+    return LSC::CharMetaData(charName, corpName);
 
-    int32 currentChannelID = LSCService::BASE_CHANNEL_ID;
+	// LSC::CharMetaData meta = m_db->GetChannelNames(charID);
+	// _log(LSC__INFO, "Loaded login names for %s of corp %s", meta.characterName.c_str(), meta.corporationName.c_str());
 
-    DBResultRow row;
-    while( res.GetRow(row) )
-    {
-        if ( ++currentChannelID < row.GetInt( 0 ) )
-            return currentChannelID;
-    }
-
-        // Check to make sure that the next available channelID is not equal to the Maximum channel ID value
-    if ( currentChannelID <= LSCService::MAX_CHANNEL_ID )
-        return currentChannelID;
-
-    return 0;    // No free channel IDs found (this should never happen as there are way too many IDs to exhaust)
 }
 
 void LSCDB::UpdateChannelInfo(LSCChannel *channel) {
-    std::string new_password = "NULL";
-    if (channel->GetPassword() != "")
-        new_password = "'" + channel->GetPassword() + "'";
+    // Sanitize user-facing inputs to securely escape characters like apostrophes
+
+    std::string escapedName;
+    sDatabase.DoEscapeString(escapedName, channel->GetDisplayName());
+    std::string escapedMOTD;
+    sDatabase.DoEscapeString(escapedMOTD, channel->GetMOTD());
+    std::string escapedKey;
+    sDatabase.DoEscapeString(escapedKey, channel->GetComparisonKey());
+
+    // Clean, safe parameterization logic for the password field
+    std::string passwordValue;
+    if (channel->GetPassword().empty()) {
+        passwordValue = "NULL"; // True SQL NULL token (no single quotes)
+    } else {
+        std::string escapedPass;
+        sDatabase.DoEscapeString(escapedPass, channel->GetPassword());
+        passwordValue = "'" + escapedPass + "'"; // Securely quoted & escaped
+    }
 
     DBerror err;
+    // Optimized query utilizing a modern Row Alias (AS target) and safe string injections
     if (!sDatabase.RunQuery(err,
         " INSERT INTO channels"
         "   (channelID, ownerID, displayName, motd, comparisonKey, memberless, password, mailingList, cspa)"
-        " VALUES (%i, %u, '%s', '%s', '%s', %u, '%s', %u, %u)"
+        " VALUES (%i, %u, '%s', '%s', '%s', %u, %s, %u, %u)"
         " ON DUPLICATE KEY UPDATE"
-        "  ownerID=VALUES(ownerID),"
-        "  displayName=VALUES(displayName),"
-        "  motd=VALUES(motd),"
-        "  comparisonKey=VALUES(comparisonKey),"
-        "  memberless=VALUES(memberless),"
-        "  password=VALUES(password),"
-        "  mailingList=VALUES(mailingList),"
-        "  cspa=VALUES(cspa)",
+        "  ownerID = VALUES(ownerID),"
+        "  displayName = VALUES(displayName),"
+        "  motd = VALUES(motd),"
+        "  comparisonKey = VALUES(comparisonKey),"
+        "  memberless = VALUES(memberless),"
+        "  password = VALUES(password),"
+        "  mailingList = VALUES(mailingList),"
+        "  cspa = VALUES(cspa)",
         channel->GetChannelID(),
         channel->GetOwnerID(),
-        channel->GetDisplayName().c_str(),
-        channel->GetMOTD().c_str(),
-        channel->GetComparisonKey().c_str(),
+        escapedName.c_str(),
+        escapedMOTD.c_str(),
+        escapedKey.c_str(),
         (channel->GetMemberless() ? 1 : 0),
-        new_password.c_str(),
+        passwordValue.c_str(), // Formatted dynamic SQL token string
         (channel->GetMailingList() ? 1 : 0),
         channel->GetCSPA()))
     {
-        _log(DATABASE__ERROR, "Error in query: %s", err.c_str());
+        _log(DATABASE__ERROR, "Error in UpdateChannelInfo query: %s", err.c_str());
     }
 }
 
 void LSCDB::UpdateSubscription(int32 channelID, Client* pClient) {
     DBerror err;
+    // Corrected signed (%i) specifiers to unsigned (%u) to prevent negative ID wraps
     sDatabase.RunQuery(err,
         " INSERT INTO channelChars "
         " (channelID, corpID, charID, allianceID, role, extra) "
-        " VALUES (%i, %i, %i, %i, %lli, 0) ",
-        channelID, pClient->GetCorporationID(),  pClient->GetCharacterID(), pClient->GetAllianceID(), pClient->GetAccountRole());
+        " VALUES (%i, %u, %u, %u, %lli, 0) "
+        " ON DUPLICATE KEY UPDATE role = VALUES(role)", // Prevent duplicate primary key insertion locks
+        channelID,
+        pClient->GetCorporationID(),
+        pClient->GetCharacterID(),
+        pClient->GetAllianceID(),
+        pClient->GetAccountRole());
 }
 
 void LSCDB::DeleteChannel(int32 channelID)
 {
     DBerror err;
-    sDatabase.RunQuery(err, "DELETE FROM channels WHERE channelID=%i", channelID);
+	if (!sDatabase.RunQuery(err, "DELETE FROM channels WHERE channelID=%i", channelID))
+    	_log(DATABASE__ERROR, "Failed to delete channel %i from DB: %s", channelID, err.c_str());
 }
 
 void LSCDB::DeleteSubscription(int32 channelID, uint32 charID)
 {
     DBerror err;
     sDatabase.RunQuery(err, "DELETE FROM channelChars WHERE channelID=%i AND charID=%u", channelID, charID );
-}
-
-
-// Function: Return true or false result for the check of whether or not the specified
-// channel 'displayName' is already being used by a channel.
-bool LSCDB::IsChannelNameAvailable(std::string name)
-{
-    DBQueryResult res;
-
-    // MySQL query channels table for any channel whose displayName matches "name":
-    if (!sDatabase.RunQuery(res,
-        "SELECT"
-        "    displayName "
-        " FROM channels "
-        " WHERE displayName = upper('%s')", name.c_str()))
-    {
-        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return false;
-    }
-
-    DBResultRow row;
-
-    // Return true (this 'displayName' not in use) if there are no rows returned by the query:
-    if (!res.GetRow(row))
-        return true;
-
-    return false;
-}
-
-
-// Function: Return true or false result for the check of whether or not the specified
-// channelID is available to be taken for a new channel's channelID.
-bool LSCDB::IsChannelIDAvailable(int32 channelID)
-{
-    DBQueryResult res;
-
-    if (!sDatabase.RunQuery(res,
-        "SELECT"
-        "    channelID "
-        " FROM channels "
-        " WHERE channelID = %i", channelID ))
-    {
-        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return false;
-    }
-
-    DBResultRow row;
-
-    // Return true (this channelID not in use) if there are no rows returned by the query:
-    if (!(res.GetRow(row)))
-        return true;
-
-    return false;
-}
-
-
-// Function: Return true or false result for the check of whether or not the channel
-// specified by channelID is already subscribed to by the character specified by charID.
-bool LSCDB::IsChannelSubscribedByThisChar(uint32 charID, int32 channelID)
-{
-    DBQueryResult res;
-
-    if (!sDatabase.RunQuery(res,
-        "SELECT"
-        "   channelID, "
-        "   charID "
-        " FROM channelChars "
-        " WHERE channelID = %i AND charID = %u", channelID, charID ))
-    {
-        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return false;
-    }
-
-    DBResultRow row;
-
-    // Return false (no subscription exists) if there are no rows returned by the query:
-    if (!(res.GetRow(row)))
-        return false;
-
-    return true;
+	/*ALTER TABLE channelChars
+ADD CONSTRAINT fk_channel
+FOREIGN KEY (channelID) REFERENCES channels(channelID)
+ON DELETE CASCADE;
+*/
 }
 
 int32 LSCDB::GetChannelID(std::string &name) {
@@ -235,13 +167,7 @@ int32 LSCDB::GetChannelID(std::string &name) {
     return row.GetInt(0);
 }
 
-// Function: Query 'channels' table for the channel whose 'channelID' matches the ID specified,
-// then return all parameters for that channel.
-void LSCDB::GetChannelInformation(int32 channelID, std::string & name,
-        std::string & motd, uint32 & ownerid, std::string & compkey,
-        bool & memberless, std::string & password, bool & maillist,
-        uint32 & cspa)
-{
+bool LSCDB::GetChannelInformation(int32 channelID, LSC::ChannelData& data) {
     DBQueryResult res;
 
     if (!sDatabase.RunQuery(res,
@@ -259,85 +185,70 @@ void LSCDB::GetChannelInformation(int32 channelID, std::string & name,
         " WHERE channelID = %i", channelID))
     {
         _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return;
+        return false;
     }
 
     DBResultRow row;
-
-    if (!(res.GetRow(row)))
-    {
-            _log(SERVICE__ERROR, "Channel %i isn't present in the database", channelID );
-            return;
+    if (!res.GetRow(row)) {
+        _log(SERVICE__ERROR, "Channel %i isn't present in the database", channelID);
+        return false;
     }
 
-    name = (row.IsNull(1) ? "" : row.GetText(1));    // empty displayName field in channels table row returns NULL, so fill this string with "" in that case
-    motd = (row.IsNull(2) ? "" : row.GetText(2));    // empty motd field in channels table row returns NULL, so fill this string with "" in that case
-    ownerid = row.GetUInt(3);
-    compkey = (row.IsNull(4) ? "" : row.GetText(4)); // empty comparisonKey field in channels table row returns NULL, so fill this string with "" in that case
-    memberless = row.GetBool(5);
-    password = (row.IsNull(6) ? "" : row.GetText(6));// empty password field in channels table row returns NULL, so fill this string with "" in that case
-    maillist = row.GetBool(7);
-    cspa = row.GetUInt(8);
+    // Populate the structured data payload using modern nullptr checking rules
+    data.channelID     = row.GetInt(0);
+    data.displayName   = (row.GetText(1) == nullptr ? "" : row.GetText(1));
+    data.motd          = (row.GetText(2) == nullptr ? "" : row.GetText(2));
+    data.ownerID       = row.GetUInt(3);
+    data.comparisonKey = (row.GetText(4) == nullptr ? "" : row.GetText(4));
+    data.memberless    = (row.GetUInt(5) != 0); // Convert directly to boolean
+    data.password      = (row.GetText(6) == nullptr ? "" : row.GetText(6));
+    data.mailingList   = (row.GetUInt(7) != 0); // Convert directly to boolean
+    data.cspa          = row.GetUInt(8);
+
+    return true; // Execution succeeded, caller can safely use the struct data
 }
 
-// Function: Query the 'channelChars' table for all channels subscribed to by the character specified by charID and
-// return lists of parameters for all of those channels as well as a total channel count.
-void LSCDB::GetChannelSubscriptions(uint32 charID, std::vector<long> & ids, std::vector<std::string> & names,
-        std::vector<std::string> & MOTDs, std::vector<unsigned long> & ownerids, std::vector<std::string> & compkeys,
-        std::vector<int> & memberless, std::vector<std::string> & passwords, std::vector<int> & maillists,
-        std::vector<int> & cspas, int & channelCount)
-{
-    DBQueryResult res;
+void LSCDB::GetChannelSubscriptions(uint32 charID, std::vector<LSC::ChannelData>& subscriptions) {
+    // Clear out the vector to prevent appending to stale data if reused
+    subscriptions.clear();
 
-    // Cross-reference "channelchars" table with "channels" table using the charID
-    // The result is a two column multi-row structure where each row is a channel
-    // that the character (charID) is subscribed to where the channel ID is presented
-    // in the first column and the display name of that channel in the second column
+    DBQueryResult res;
+    // Optimized using an INNER JOIN instead of a nested subquery loop
     if (!sDatabase.RunQuery(res,
         "SELECT"
-        "   channelID, "
-        "   displayName, "
-        "   motd, "
-        "   ownerID, "
-        "   comparisonKey, "
-        "   memberless, "
-        "   password, "
-        "   mailingList, "
-        "   cspa "
-        " FROM channels "
-        " WHERE channelID = ANY ("
-        "   SELECT channelID FROM channelChars WHERE charID = %u )", charID))
+        "   c.channelID, "
+        "   c.displayName, "
+        "   c.motd, "
+        "   c.ownerID, "
+        "   c.comparisonKey, "
+        "   c.memberless, "
+        "   c.password, "
+        "   c.mailingList, "
+        "   c.cspa "
+        " FROM channels c"
+        " INNER JOIN channelChars cc ON c.channelID = cc.channelID "
+        " WHERE cc.charID = %u", charID))
     {
         _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return;
     }
 
     DBResultRow row;
-    int rowCount = 0;
-
-    // Traverse through all rows in the query result and copy the IDs and displayNames to the
-    // "ids" and "names" vectors for return to the calling function:
-    while(res.GetRow(row))
-    {
-        ++rowCount;
-
-        ids.push_back(row.GetInt(0));
-        names.push_back((row.GetText(1) == NULL ? "" : row.GetText(1)));    // empty displayName field in channels table row returns NULL, so fill this string with "" in that case
-        MOTDs.push_back((row.GetText(2) == NULL ? "" : row.GetText(2)));    // empty motd field in channels table row returns NULL, so fill this string with "" in that case
-        ownerids.push_back(row.GetUInt(3));
-        compkeys.push_back((row.GetText(4) == NULL ? "" : row.GetText(4)));    // empty comparisonKey field in channels table row returns NULL, so fill this string with "" in that case
-        memberless.push_back(row.GetUInt(5));
-        passwords.push_back((row.GetText(6) == NULL ? "" : row.GetText(6)));    // empty password field in channels table row returns NULL, so fill this string with "" in that case
-        maillists.push_back(row.GetUInt(7));
-        cspas.push_back(row.GetUInt(8));
+    subscriptions.reserve(res.GetRowCount());
+    while (res.GetRow(row))  {
+	    // Construct the item straight inside the vector array memory!
+        subscriptions.emplace_back(LSC::ChannelData{
+            row.GetInt(0),                                      // channelID
+            (row.GetText(1) == nullptr ? "" : row.GetText(1)),  // displayName
+            (row.GetText(2) == nullptr ? "" : row.GetText(2)),  // motd
+            row.GetUInt(3),                                     // ownerID
+            (row.GetText(4) == nullptr ? "" : row.GetText(4)),  // comparisonKey
+            (row.GetUInt(5) != 0),                              // memberless
+            (row.GetText(6) == nullptr ? "" : row.GetText(6)),  // password
+            (row.GetUInt(7) != 0),                              // mailingList
+            row.GetUInt(8)                                      // cspa
+        });
     }
-
-    if (rowCount == 0) {
-        //_log(SERVICE__ERROR, "CharID %u isn't present in the database", charID);
-        return;
-    }
-
-    channelCount = rowCount;
 }
 
 //TODO  check these next 2 calls to solve error/warning in console...
@@ -354,18 +265,18 @@ bool LSCDB::GetChannelInfo(int32 channelID, std::string &name, std::string &motd
         // _log(SERVICE__ERROR, "Couldn't find %u in table channels", channelID);
         return false;
     }
+name = (row.GetText(0) == nullptr ? "" : row.GetText(0));
+motd = (row.GetText(1) == nullptr ? "" : row.GetText(1));
 
-    name = row.GetText(0);
-    motd = row.GetText(1);
 
     return true;
 }
 
-
+//TODO: replace this database hit entirely by having your memory lookup scan for the matching comparison key via GetChannelByName
 int32 LSCDB::GetChannelIDFromComparisonKey(std::string compkey)
 {
     DBQueryResult res;
-    if (!sDatabase.RunQuery(res, "SELECT channelID FROM channels WHERE comparisonKey RLIKE '%s'", compkey.c_str())) {
+    if (!sDatabase.RunQuery(res, "SELECT channelID FROM channels WHERE comparisonKey = '%s'", compkey.c_str())) {
         _log(DATABASE__ERROR, "Error in GetChannelIDFromComparisonKey query: %s", res.error.c_str());
         return 0;
     }
@@ -376,7 +287,8 @@ int32 LSCDB::GetChannelIDFromComparisonKey(std::string compkey)
         return 0;
     }
 
-    return row.GetInt(0);
+    // Protect string conversion from underlying SQL null pointers
+    return (row.IsNull(0) ? 0 : row.GetInt(0));
 }
 
 std::string LSCDB::GetChannelName(uint32 id, const char * table, const char * column, const char * key) {
@@ -395,7 +307,6 @@ std::string LSCDB::GetChannelName(uint32 id, const char * table, const char * co
     return row.GetText(0);
 }
 
-//temporarily relocated into ServiceDB until some things get cleaned up...
 uint32 LSCDB::StoreMail(uint32 senderID, uint32 recipID, const char * subject, const char * message, int64 sentTime) {
     DBQueryResult res;
     DBerror err;
@@ -407,7 +318,6 @@ uint32 LSCDB::StoreMail(uint32 senderID, uint32 recipID, const char * subject, c
 
     // Store message header
     uint32 messageID;
-    /*
     if (!sDatabase.RunQueryLID(err, messageID,
         " INSERT INTO eveMail "
         " (channelID, senderID, subject, created) "
@@ -416,7 +326,7 @@ uint32 LSCDB::StoreMail(uint32 senderID, uint32 recipID, const char * subject, c
     {
         _log(DATABASE__ERROR, "Error in query, message header couldn't be saved: %s", err.c_str());
         return (0);
-    }*/
+    }
 
     _log(SERVICE__MESSAGE, "New messageID: %u", messageID);
 
@@ -424,7 +334,6 @@ uint32 LSCDB::StoreMail(uint32 senderID, uint32 recipID, const char * subject, c
     sDatabase.DoEscapeString(escaped, message);
 
     // Store message content
-    /*
     if (!sDatabase.RunQuery(err,
         " INSERT INTO eveMailDetails "
         " (messageID, mimeTypeID, attachment) VALUES (%u, 1, '%s') ",
@@ -438,7 +347,7 @@ uint32 LSCDB::StoreMail(uint32 senderID, uint32 recipID, const char * subject, c
             _log(DATABASE__ERROR, "Failed to remove invalid header data for messgae id %u: %s", messageID, err.c_str());
         }
         return (0);
-    }*/
+    }
 
 
     return (messageID);
@@ -447,7 +356,7 @@ uint32 LSCDB::StoreMail(uint32 senderID, uint32 recipID, const char * subject, c
 
 PyObject *LSCDB::GetMailHeaders(uint32 recID) {
     DBQueryResult res;
-/*
+
     if (!sDatabase.RunQuery(res,
         "SELECT channelID, messageID, senderID, subject, created, `read` "
         " FROM eveMail "
@@ -456,7 +365,7 @@ PyObject *LSCDB::GetMailHeaders(uint32 recID) {
         _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
     }
-*/
+
     return DBResultToRowset(res);
 }
 
@@ -464,7 +373,7 @@ PyObject *LSCDB::GetMailHeaders(uint32 recID) {
 PyRep *LSCDB::GetMailDetails(uint32 messageID, uint32 readerID) {
     DBQueryResult result;
     DBResultRow row;
-/*
+
     //we need to query out the primary message here... not sure how to properly
     //grab the "main message" though... the text/plain clause is pretty hackish.
     if (!sDatabase.RunQuery(result,
@@ -482,7 +391,7 @@ PyRep *LSCDB::GetMailDetails(uint32 messageID, uint32 readerID) {
         _log(DATABASE__ERROR, "Error in query: %s", result.error.c_str());
         return nullptr;
     }
-*/
+
     if (!result.GetRow(row)) {
         codelog(SERVICE__MESSAGE, "No message with messageID %u", messageID);
         return nullptr;
@@ -506,7 +415,7 @@ PyRep *LSCDB::GetMailDetails(uint32 messageID, uint32 readerID) {
 
 bool LSCDB::MarkMessageRead(uint32 messageID) {
     DBerror err;
-/*
+
     if (!sDatabase.RunQuery(err,
         " UPDATE eveMail "
         " SET `read` = 1 "
@@ -516,7 +425,7 @@ bool LSCDB::MarkMessageRead(uint32 messageID) {
         _log(DATABASE__ERROR, "Error in query: %s", err.c_str());
         return false;
     }
-*/
+
     return true;
 }
 

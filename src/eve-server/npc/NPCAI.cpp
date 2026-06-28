@@ -373,7 +373,7 @@ void NPCAIMgr::Process() {
                 // Throttle up MicroWarpDrive to close the distance gap
                 ChangeSpeed(true);
                 // Break the shared destiny local-space anchor
-                myNPC->DestinyMgr()->SetBallMode(Destiny::Ball::Mode::FOLLOW);
+                //myNPC->DestinyMgr()->SetBallMode(Destiny::Ball::Mode::FOLLOW);
                 // Pivot instantly into a high-speed pursuit state
                 SetChasing(m_attackTarget);
                 return;
@@ -772,7 +772,7 @@ void NPCAIMgr::SetEngaged(SystemEntity* pTargetSE) {
     //_log(NPC__AI_LOGIC, "SetEngaged(); ");
     _log(NPC__AI_TRACE, "%s(%u): Begin engaging.  Target is %s(%u).  state:%s", \
             myNPC->GetName(), myNPC->GetID(), pTargetSE->GetName(), pTargetSE->GetID(), \
-            m_destiny->GetStateName().c_str());
+            m_destiny->GetModeNameString().c_str());
 
     // this should only be set once when attack begins unless non-repeating gfx is sent on every loop
     if (m_action != NPCAI::Action::Attack)
@@ -810,7 +810,7 @@ void NPCAIMgr::SetFollowing(SystemEntity* pTargetSE) {
     //_log(NPC__AI_LOGIC, "SetFollowing(); ");
     _log(NPC__AI_TRACE, "%s(%u): Begin following.  Target is %s(%u).  state:%s", \
             myNPC->GetName(), myNPC->GetID(), pTargetSE->GetName(), pTargetSE->GetID(), \
-            m_destiny->GetStateName().c_str());
+            m_destiny->GetModeNameString().c_str());
 
     // this should only be set once when attack begins unless non-repeating gfx is sent on every loop
     if (m_action != NPCAI::Action::Attack)
@@ -848,7 +848,7 @@ void NPCAIMgr::SetChasing(SystemEntity* pTargetSE) {
     //_log(NPC__AI_LOGIC, "SetChasing(); ");
     _log(NPC__AI_TRACE, "%s(%u): Begin chasing.  Target is %s(%u).  %s target.  state:%s", \
             myNPC->GetName(), myNPC->GetID(), m_attackTarget->GetName(), m_attackTarget->GetID(), \
-            newTarg?"new":"same", m_destiny->GetStateName().c_str());
+            newTarg?"new":"same", m_destiny->GetModeNameString().c_str());
 
     if (m_action != NPCAI::Action::Attack) {
         if (m_chaseTimeEnd == 0) {
@@ -907,7 +907,7 @@ void NPCAIMgr::SetFleeing(SystemEntity* pTargetSE) {
     //_log(NPC__AI_LOGIC, "SetFleeing(); ");
     _log(NPC__AI_TRACE, "%s(%u): Begin fleeing.  Target is %s(%u).  state:%s", \
             myNPC->GetName(), myNPC->GetID(), m_attackTarget->GetName(), \
-            m_attackTarget->GetID(), m_destiny->GetStateName().c_str());
+            m_attackTarget->GetID(), m_destiny->GetModeNameString().c_str());
     // actively fleeing
     m_state = NPCAI::State::Fleeing;
     // reset action before clearing timers

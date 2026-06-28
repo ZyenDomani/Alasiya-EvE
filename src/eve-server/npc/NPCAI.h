@@ -73,7 +73,8 @@ namespace NPCAI {
             Destroyer   = 100,
             Cruiser     = 200,
             BCruiser    = 300,
-            BShip       = 350
+            BShip       = 350,
+            Indy        = 450
         };
     }
 

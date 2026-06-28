@@ -117,4 +117,5 @@ utils/liveupdategen/tmp
 utils/liveupdategen/patches/disabled
 utils/liveupdategen/patches/to fix
 utils/liveupdategen/patches/wip
+test/
 

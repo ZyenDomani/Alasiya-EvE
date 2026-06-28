@@ -175,7 +175,7 @@ void StaticDataMgr::Populate() {
     ManagerDB::GetCategoryData(*res);
     while (res->GetRow(row)) {
         //SELECT categoryID, categoryName, description, published FROM invCategories
-        m_catData.emplace(row.GetUInt(0), 
+        m_catData.emplace(row.GetUInt(0),
                           Inv::CatData{row.GetUInt8(0),
                                     row.GetText(1),
                                     row.GetText(2),
@@ -1481,6 +1481,16 @@ DBRowDescriptor* StaticDataMgr::CreateItemHeader() {
     return header;
 }
 
+/*
+ * Formation Type IDs:
+ * The engine natively parses structural integer IDs mapping to known layout algorithms:
+ * Point (ID 1)
+ * Sphere (ID 2)
+ * Arrow (ID 3)
+ * Wall (ID 4)
+ * Plane (ID 5)
+ * Custom (ID 6+)
+ */
 PyTuple* StaticDataMgr::CreateFormationTuple() {
     // added missing formations and move here.  -allan
     PyTuple* res = new PyTuple(4);

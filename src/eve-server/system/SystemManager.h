@@ -117,7 +117,9 @@ public:
     void AddNPC(NPC* pNPC);
     void RemoveNPC(NPC* pNPC);
     void AddEntity(SystemEntity* pSE, bool addSignal=true);    // add entity to system, and (optionally) add signal to AnomalyMgr
+    void AddTicEntity(SystemEntity* pSE);  // this is ONLY to add an entity to the ProcessTic() loop
     void RemoveEntity(SystemEntity* pSE);   // this also removes SE* from bubble and sig from AnomalyMgr (if applicable)
+    void RemoveTicEntity(SystemEntity* pSE);  // this is ONLY to remove an entity from the ProcessTic() loop
     void AddClient(Client* pClient, bool count=false, bool jump=false);
     void AddMarker(SystemEntity* pSE, bool sendBall=false, bool addSignal=false);    // rather specific here.
     void RemoveClient(Client* pClient, bool count=false, bool jump=false);

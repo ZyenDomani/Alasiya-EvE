@@ -85,7 +85,7 @@ m_sessionID(15)
 
 ClientSession::~ClientSession()
 {
-    delete mSession;
+    PySafeDecRef(mSession);
     sEntityMgr.RemoveSID(m_sessionID);
 }
 
@@ -161,11 +161,23 @@ void ClientSession::EncodeChanges(PyDict* into)
         return;
 
     PyDict::const_iterator cur = mSession->begin();
-    for (; cur != mSession->end(); ++cur)
-        if (cur->second->AsTuple()->GetItem(2)->AsBool()->value()) {    // if this value hasnt changed, dont send it.
+    for (; cur != mSession->end(); ++cur) {
+        // If this value hasn't changed, don't send it.
+        if (cur->second->AsTuple()->GetItem(2)->AsBool()->value()) {
             _GetValueTuple(PyRep::StringContent(cur->first).c_str())->SetItem(2, PyStatic.NewFalse());
-            into->SetItem(cur->first->AsString(), new_tuple(cur->second->AsTuple()->GetItem(0), cur->second->AsTuple()->GetItem(1)));
+
+            // Extract the pointers from your tracking state
+            PyRep* oldVal = cur->second->AsTuple()->GetItem(0);
+            PyRep* newVal = cur->second->AsTuple()->GetItem(1);
+
+            // Safely increment both before passing them to the packet structure
+            PySafeIncRef(oldVal);
+            PySafeIncRef(newVal);
+
+            // The outgoing packet tuple now safely shares ownership of these pointers
+            into->SetItem(cur->first->AsString(), new_tuple(oldVal, newVal));
         }
+    }
 
     mDirty = false;
 }
@@ -204,20 +216,17 @@ PyRep* ClientSession::_GetCurrent(const char* name) const
     return tuple->GetItem(1);
 }
 
-void ClientSession::_Set(const char* name, PyRep* value)
-{
+void ClientSession::_Set(const char* name, PyRep* value) {
     PyTuple* tuple = _GetValueTuple(name);
-    if (tuple == nullptr) {
-        // this may no longer be needed
+    if (tuple == nullptr) {     // edge case but should never hit
         tuple = new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse());
         mSession->SetItemString(name, tuple);
-    } else {
-        // delete old value before replacing
-        PyDecRef(tuple->GetItem(0));
     }
 
     PyRep* current = tuple->GetItem(1);
     if (value->hash() != current->hash()) {
+        // decrement references on existing/previous value before replacing/abandoning
+        PyDecRef(tuple->GetItem(0));
         tuple->SetItem(0, current);
         tuple->SetItem(1, value);
         tuple->SetItem(2, PyStatic.NewTrue());

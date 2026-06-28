@@ -479,7 +479,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     switch (groupID()) {
         case EVEDB::invGroups::Afterburner:
         case EVEDB::invGroups::Microwarpdrive: {
-            m_destinyMgr->SpeedBoost();
+            m_destinyMgr->SpeedBoost(m_modRef);
         } break;
         case EVEDB::invGroups::Stasis_Web: {
             if (m_targetSE != nullptr)
@@ -789,7 +789,7 @@ void ActiveModule::DeactivateCycle(bool abortCycle/*false*/)
         } break;
         case EVEDB::invGroups::Afterburner:
         case EVEDB::invGroups::Microwarpdrive: {
-            m_destinyMgr->SpeedBoost(true);
+            m_destinyMgr->SpeedBoost(m_modRef, true);
         } break;
         case EVEDB::invGroups::Stasis_Web: {
             if (m_targetSE != nullptr)

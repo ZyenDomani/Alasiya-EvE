@@ -867,7 +867,7 @@ const char* TargetManager::GetStateName(uint8 state) {
     }
 }
 
-const char* TargetManager::GetModeName (uint8 mode) {
+const char* TargetManager::GetModeName(uint8 mode) {
     switch(mode) {
         case TargMgr::Mode::None:       return "None";
         case TargMgr::Mode::Add:        return "Add";

@@ -168,3 +168,13 @@ protected:
 };
 
 #endif
+/*
+In the raw Python client, ChannelID is defined as a generic PyRep* variant.
+For a solar system channel, EncodeID() must return a PyInt(solarSystemID).
+For a custom channel, EncodeID() must return a PyInt(-1 * (customID + Offset)).
+For a fleet channel, EncodeID() must return a PyString("fleetid:XXXX").
+If your inherited EncodeID() is forcing everything into a standard int32, it will completely choke the moment a player launches a fleet
+or opens a player-created trade channel.
+
+custom channel id = -1 * (channelID + 2147483647)
+*/

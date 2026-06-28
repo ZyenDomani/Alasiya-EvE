@@ -326,7 +326,7 @@
       <!-- 0 -->
       <tupleInline>
         <!-- 0 -->
-        <int name="clueless" none_marker="0" />
+        <int name="modDelta" none_marker="0" />
         <!-- 1 -->
         <dict name="changes" />
       </tupleInline>

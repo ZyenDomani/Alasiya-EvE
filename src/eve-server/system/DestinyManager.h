@@ -38,6 +38,9 @@
 static const float TURN_ALIGNMENT = 4.0f;       //0.0698132 rad
 static const float WARP_ALIGNMENT = 6.0f;       //0.105 rad
 
+static const float VISUAL_STOP_THRESHOLD_SQ = 0.0025f;
+static const float HARD_STOP_THRESHOLD_SQ = 0.0001f;
+
 // for testing only.  this isnt right.
 static const uint16 BUMP_DISTANCE = 50;     //in meters.  <= this is contact.
 
@@ -104,46 +107,40 @@ public:
     /* Informational query functions: */
     //  functions to return protected variables for SystemBubble exclusive WarpTo updates and other methods that need Destiny Variables
     const GPoint &GetPosition() const                   { return m_position; }
-    const GVector &GetVelocity() const                  { return m_velocity; }
+    const GVector &GetVelocity() const                  { return m_shipVelocity; }
     float GetSpeedFraction()                            { return m_activeSpeedFraction; }
-    float GetSpeed()                                    { return (m_maxShipSpeed * m_activeSpeedFraction); }
+    float GetSpeed()                                    { return (m_maxSpeed * m_activeSpeedFraction); }
     int32 GetWarpSpeed()                                { return (int32)(m_shipWarpSpeed * 10); }
     uint32 GetTargetID()                                { return m_targetEntity.first; }
     SystemEntity* GetTargetEntity()                     { return m_targetEntity.second; }
     GPoint GetTargetPoint()                             { return m_targetPoint; }
-    float GetMaxVelocity()                              { return m_maxShipSpeed; }
+    float GetMaxVelocity()                              { return m_maxSpeed; }
     // is this right??
     float GetFollowDistance()                           { return (float)m_targetDistance; }
-    int32 GetStateStamp()                               { return m_stateStamp; }
+    uint32 GetStateStamp()                              { return m_stateStamp; }
     GVector GetHeading()                                { return m_shipHeading; }
-    float GetAccelTime()                                { return m_shipMaxAccelTime; }
     double GetAgility()                                 { return m_agility; }   // this is only used by my GetShipVars command
     uint8 GetAlignTime()                                { return m_alignTime; } // this is only used by my GetShipVars command
     float GetWarpDropSpeed()                            { return m_speedToLeaveWarp; }
     double GetCapNeed()                                 { return m_warpCapacitorNeed; }
-    float GetRadTic()                                   { return m_orbitRadTic; }
     uint8 GetBallMode()                                 { return m_ballMode; }
-    void SetBallMode(uint8 mode=0)                      { m_ballMode = mode; }
-    uint8 GetState()                                    { return m_ballMode; }  // this is only used by my bubble debug command
-    std::string GetStateName();
+
     bool IsFrozen()                                     { return m_frozen; }
-    bool IsMoving()                                     { return (m_activeSpeedFraction > 0.0005); }
+    bool IsMoving()                                     { return (m_activeSpeedFraction > 0.05); }
     bool IsGoto()                                       { return (m_ballMode == Destiny::Ball::Mode::GOTO); }
     bool IsStopped()                                    { return (m_ballMode == Destiny::Ball::Mode::STOP); }
     bool IsOrbiting()                                   { return (m_ballMode == Destiny::Ball::Mode::ORBIT); }
     bool IsFollowing()                                  { return (m_ballMode == Destiny::Ball::Mode::FOLLOW); }
     bool IsWarping()                                    { return (m_warpState != nullptr); }
     bool IsCloaked()                                    { return m_cloaked; }
-    bool IsTurning()                                    { return m_turning; }
     bool IsTractored()                                  { return m_tractored; }
     bool IsAutoPilot()                                  { return m_autoPilot; }
-    void SetAutoPilot(bool set=false)                   { m_autoPilot = set; }
-    bool IsAligned(GPoint &targetPoint);
+    bool IsAligned(const GPoint &targetPoint);
 
     /* Configuration methods */
     void WebbedMe(InventoryItemRef modRef, bool apply=false);
-	// reset speed variables and bubblecast ship's AB/MWD modified speed (module activate/deactivate)
-    void SpeedBoost(bool deactivate=false);
+    // reset speed variables and bubblecast ship's AB/MWD modified speed (module activate/deactivate)
+    void SpeedBoost(ModuleItemRef mRef, bool deactivate=false);
     void SetPosition(const GPoint& pt, bool update=false);
     void SetMaxVelocity(uint16 maxVelocity);
     void UpdateShipVariables();
@@ -157,7 +154,7 @@ public:
     void EntityRemoved(SystemEntity* pSE);
     void SetCloak(bool set=false)                       { m_cloaked = set; }
     void SetFrozen(bool set=false)                      { m_frozen = set; }
-    void SetMoveTimeNow()                               { m_moveTime = GetTimeMSeconds(); } // called only by Beyonce from CmdSetSpeedFraction()
+    void SetAutoPilot(bool set=false)                   { m_autoPilot = set; }
     void UpdateSpeedFraction(float speedPct=0);  // called only by Beyonce from CmdSetSpeedFraction()
 
     /* Local Movement */
@@ -166,7 +163,7 @@ public:
     void AlignTo(SystemEntity* pSE);
     void GotoPoint(const GPoint &point);
     void GotoDirection(const GPoint &direction);
-    void SetSpeedFraction(float fraction=1.0f, bool startMovement=false);
+    void SetSpeedFraction(float fraction=1.0f);
 
     /* TractorBeam */
     void TractorBeamStop();
@@ -201,6 +198,7 @@ public:
     // jumpout sends stargateID as target - wormhole sends ?? as otherTypeID
     void SendGFX10(uint32 entityID, std::string guid, int32 targetID=0, int32 otherTypeID=0) const;
     // this is for structure effects
+	// refactor this to avoid creating copies of args
     void SendGFX14(int32 entityID, int32 moduleID, int32 moduleTypeID, int32 targetID,
                    int32 chargeTypeID, std::string guid, bool isOffensive, bool start,
                    bool isActive, int32 duration, int32 repeat, int64 startTime=0, int32 graphicInfo=0,
@@ -210,6 +208,10 @@ public:
     void SendSingleDestinyEvent(PyTuple** ev, bool self_only=false) const;// this will not consume *ev
     void SendSingleDestinyUpdate(PyTuple** up, bool self_only=false) const; // this will not consume *up
     void SendDestinyUpdates(std::vector<PyTuple*> &updates, bool self_only=false) const;// this will consume all updates in vector
+
+    /* misc */
+    const char* GetModeName(uint8 mode);
+    std::string GetModeNameString();
 
 protected:
     bool ValidTarget();                 //performs common target checks
@@ -224,7 +226,7 @@ protected:
     void BeginMovement();               //set initial variables for all movement (common code)
     void UpdateVelocity(bool isMoving=false);
 
-    SystemEntity* const mySE;			//we do not own this.
+    SystemEntity* const mySE;		//we do not own this.
     SystemBubble* m_targBubble;         //we do not own this.
 
     uint8 m_ballMode;                   //current state of ball
@@ -232,65 +234,47 @@ protected:
 
 	// things dictated by ship and skills
     double m_warpCapacitorNeed;         //in GJ     - capacitor charged needed to initiate warp
+    double m_spaceDrag;			// factor to apply space friction based on ship variables
 
     //things dictated by our entity's configuration:
+    float m_maxSpeed;                   //in m/s
+    float m_maxSpeedSq;                 //square of max speed (faster comparison checks)
     float m_alignTime;                  //in s      - time to change directions or enter warp
-    float m_prevSpeed;                  //in m/s    - used to calculate speed during decel
-    float m_maxShipSpeed;               //in m/s
     float m_shipWarpSpeed;              //in au/s   x/3 = warp speed multiplier
     float m_speedToLeaveWarp;           //in m/s    - this is set to 75% of m_maxShipSpeed
-
-    //derived from above params:
-    float m_maxSpeed;                   //in m/s    - derived from m_maxShipSpeed * m_userSpeedFraction
-    float m_shipAccelTime;              //in s      - used to check time for speed change
-    float m_shipMaxAccelTime;           //in s      - used to determine accel rate, and total accel time
+    //float m_agilityCoefficient;         //
 
     //User controlled information used by a state to determine what to do.
     bool m_stop;                        //used to denote Stop() has been called to avoid multiple stops (and associated decel)
-    bool m_accel;                       //used to execute code for increasing ship speed
-    bool m_decel;                       //used to execute code for decreasing ship speed
     bool m_cloaked;
-    bool m_turning;                     //used to execute code for ship turning
     bool m_tractored;
     bool m_tractorPause;
 
-    int8 m_orbiting;                    // 0=no orbit, >0=in orbit, 1=at distance, 2=too close , 3=too far, 4=way too close, 5=way too far
-    int32 m_stateStamp;                 //statestamp of when current state began, in seconds
-    //Destiny::Ball::stateStamp m_stateStamp; //state and count of current state since beginning, in seconds
-    //Destiny::Ball::timeStamp m_timeStamp; //mode and timestamp of when current mode began
+    uint32 m_stateStamp;                //statestamp of when current state began, in seconds
+    int64 m_timeStamp;                  //timestamp of when current mode began, in filetime
 
-    double m_degPerTic;                 //ship turn variable
-    double m_orbitTime;                 //in s - time to complete one orbit using current variables
-    double m_orbitRadTic;               //in rad/sec  - radians around orbit per tic
-    double m_radians;                   //in rad    - radians of an ongoing turn
-
-    float m_timeFraction;               //fuzzy logic - holds current euler value for time
-    float m_turnMinFraction;            //fuzzy logic - used for turn accel/decel checks
-    float m_origSpeedFraction;          //fuzzy logic - percent of full speed commanded before turn.  used for directional changes
-    float m_prevSpeedFraction;          //fuzzy logic - previous percent of full speed.  used for speed changes
     float m_userSpeedFraction;          //fuzzy logic - user commanded percent of max speed
     float m_activeSpeedFraction;        //fuzzy logic - current percent of max speed
     float m_maxOrbitSpeedFraction;      //fuzzy logic - ship's max speed based on orbit data
 
-    uint16 m_turnTime;                  //in s        - time turn started.  now uses EntityMgr.Stamp()
-    uint32 m_followDistance;            //in m        - used for follow, orbit, and distance where ship should be removed from bubble during warp if < bubble radius
-    int64  m_targetDistance;            //in m
-    double m_moveTime;                  //in ms       - time when speed change started.  used to calculate m_timeFraction
+    int64 m_targetDistance;             //in m  this is current distance to target
+    int64 m_followDistance;             //in m  this is desired distance to target
 
     GPoint m_position;                  //in m
-    GVector m_velocity;                 //in m/s
-    GPoint m_targetPoint;               //vector      - point in space used as current destination
+    GPoint m_targetPoint;               //vector  point in space used as current destination
+    GPoint m_orbitNormal;
     GVector m_shipHeading;              //direction ship is facing
-    GVector m_targetHeading;            //direction to target from current heading
+    GVector m_shipVelocity;             //current ship velocity
+    GVector m_targetHeading;            //direction from current to target
+    GVector m_targetVelocity;           //desired ship velocity
     std::pair<uint32, SystemEntity*> m_targetEntity;   //we do not own the SystemEntity*
 
 private:
     bool m_autoPilot;                   // as stated
     bool m_alignTo;                     // once aligned, ship will stop
     bool m_frozen;                      // hack to keep ship from moving when using modules that prevent movement
-    bool m_changeDelay;                 // this is to try to sync destiny with client, as client has a delay when changing destiny states.
-    bool m_moveDelay;                   // same as above, for less of a delay when changing direction or speed
     bool m_paused;                      // used to fake orbit while keeping velocity but not actually move ship.
+    bool m_posHack;                     //force position update
     float m_agility;                    //unitless?   - not sent to client
 
     // Internal Collision Methods   -allan Nov 2015
@@ -299,36 +283,10 @@ private:
     void Bump(SystemEntity* who);                  //math methods for determining direction and speed of bumped ships
     void Bounce(GVector direction, float speed);   //packet sending for ships after bounce
 
-    // Internal Turn Methods    -allan  Aug - Oct, 2015
-    bool IsTurn();                     //check for current heading vs target direction. return true if degrees > 2 for warp align and > 0.8 for normal movement
-    void InitTurn();                   //set turn variables
-    void Turn(float& speed, std::string& move);           //apply heading update and asf checks for turning.  called by MoveObject()
-    void ClearTurn();
     void MarkPoint(const GPoint& position, std::string& name, std::string& desc);
-    bool m_posHack;                    //force position update after turn
 
-    // bezier turn data (wip)      -allan  Feb 2023
-    bool m_wasDecel;
-    bool m_turnAccel;
-    bool m_turnDecel;
-    float m_turnPct;
-    GVector m_origHeading;
-    GPoint m_curveStart;
-    GPoint m_curveApex;
-    GPoint m_curveEnd;
-    // return percent change between from and to
-    double getPct(double from, double to, float pct) {
-        return from + ((to - from) * pct);
-    }
-    float getPctf(float from, float to, float pct) {
-        return from + ((to - from) * pct);
-    }
-
-    // Internal Orbit shit
-    GPoint ComputePosition(double curRad);   // currently testing...wip
-    double m_inclination;               //inclination of orbit
-    double m_longAscNode;               //longitude of ascending node
-    void ClearOrbit();
+    void SetAgilityInertia();
+    void CalculateMaxOrbitSpeedFraction();
 
     // Internal Warp Methods
     float m_accelTime;
@@ -372,12 +330,12 @@ private:
         decel(decel_)
         {}
         int32 start_time;          //from sEntityMgr::GetStamp()
-        int64  total_distance;      //in m
+        int64 total_distance;      //in m
         int64 warpSpeed;           //in m/s
         int64 accelDist;           //in m
         int64 cruiseDist;          //in m
         int64 decelDist;           //in m
-        float warpTime;             //in s
+        float warpTime;            //in s
         float accelFraction;
         bool accel;
         bool cruise;

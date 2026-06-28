@@ -117,6 +117,11 @@ namespace EvE {
     std::string sh(std::string cmd);
     // this is SLOOOWWW as shit!
     void traceStackLN(void);
+
+    // return percent change between from and to
+    double getPct(double from, double to, float pct);
+    // return percent change between from and to
+    float getPctf(float from, float to, float pct);
 }
 
 #endif /* !__MISC_H__INCL__ */

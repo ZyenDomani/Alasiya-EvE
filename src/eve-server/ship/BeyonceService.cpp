@@ -224,22 +224,7 @@ PyResult BeyonceBound::Handle_CmdSetSpeedFraction(PyCallArgs &call) {
     if ((arg.arg != 0.0) and (arg.arg < 0.1))
         return PyStatic.NewNone();
 
-    if (pDestiny->IsAutoPilot()) {
-        pDestiny->SetSpeedFraction(arg.arg);
-    } else if (!call.client->IsUndock()) {
-        // need to update move time first
-        pDestiny->SetMoveTimeNow();
-        if (pDestiny->IsTurning()) {
-            // do not reset turnTime here
-            pDestiny->UpdateSpeedFraction(arg.arg);
-        } else {
-            pDestiny->SetSpeedFraction(arg.arg, (!pDestiny->IsMoving()));
-        }
-    } else {
-        // player undocked and wants to reset speed
-        // update....client started sending this on undock...dont know why yet...
-        pDestiny->SetSpeedFraction(arg.arg);
-    }
+    pDestiny->SetSpeedFraction(arg.arg);
 
     return PyStatic.NewNone();
 }

@@ -688,19 +688,6 @@ void ModuleManager::Activate(int32 itemID, uint16 effectID, int32 targetID, int3
         pMod->Online();
         return;
     }
-    /*{'FullPath': u'UI/Messages', 'messageID': 259628, 'label': u'InvalidTargetCanAlreadyTractoredBody'}(u'The {[item]module.name} cannot engage a tractor beam on that object as it is already being tractor beamed by something else.', None, {u'{[item]module.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'module'}})
-     * {'FullPath': u'UI/Messages', 'messageID': 259630, 'label': u'InvalidTargetGroupBody'}(u'Invalid target, can only activate this on {groupName}.', None, {u'{groupName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'groupName'}})
-     */
-
-    if (effectID == 2255) { // tractorBeamCan
-        SystemEntity* pSE = pShipItem->GetPilot()->SystemMgr()->GetSE(targetID);
-        if (pSE == nullptr)
-            throw UserError("DeniedActivateTargetNotPresent");
-        if (pSE->DestinyMgr()->IsTractored()) {
-            pShipItem->GetPilot()->SendNotifyMsg("Your %s cannot engage the %s, which is already being tractor beamed by something else.", pMod->GetSelf()->name(), pSE->GetName());
-            return;
-        }
-    }
 
     if (!pMod->isOnline()) {
         // client wont allow activating an offline module.  this is catchall. (but should never hit)
@@ -713,6 +700,20 @@ void ModuleManager::Activate(int32 itemID, uint16 effectID, int32 targetID, int3
         throw UserError("DeniedActivateCloaked");
     } else if (pShipItem->GetPilot()->IsJump()) {
         throw UserError("DeniedActivateInJump");
+    }
+
+    /*{'FullPath': u'UI/Messages', 'messageID': 259628, 'label': u'InvalidTargetCanAlreadyTractoredBody'}(u'The {[item]module.name} cannot engage a tractor beam on that object as it is already being tractor beamed by something else.', None, {u'{[item]module.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'module'}})
+     * {'FullPath': u'UI/Messages', 'messageID': 259630, 'label': u'InvalidTargetGroupBody'}(u'Invalid target, can only activate this on {groupName}.', None, {u'{groupName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'groupName'}})
+     */
+
+    if (effectID == 2255) { // tractorBeamCan
+        SystemEntity* pSE = pShipItem->GetPilot()->SystemMgr()->GetSE(targetID);
+        if (pSE == nullptr)
+            throw UserError("DeniedActivateTargetNotPresent");
+        if (pSE->DestinyMgr()->IsTractored()) {
+            pShipItem->GetPilot()->SendNotifyMsg("Your %s cannot engage the %s, which is already being tractor beamed by something else.", pMod->GetSelf()->name(), pSE->GetName());
+            return;
+        }
     }
 
     if (!pMod->IsLinked() or pMod->IsMaster())

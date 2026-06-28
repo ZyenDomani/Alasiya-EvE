@@ -116,7 +116,6 @@ public:
 
     int64 GetAccountRole() const                        { return pSession->GetCurrentLong( "role" ); }
     int64 GetClientID() const                           { return pSession->GetCurrentLong( "user_clientid" ); }
-    int64 GetSessionID() const                          { return pSession->GetCurrentLong( "sessionID" ); }
 
     float GetCorpTaxRate()                              { return (m_char.get() != nullptr ? m_char->corpTaxRate() : 0.0f); }
     int32 GetCorporationID() const                      { return pSession->GetCurrentInt( "corpid" ); }

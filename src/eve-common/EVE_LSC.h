@@ -1,5 +1,8 @@
 
 
+#ifndef EVE_LSC_H
+#define EVE_LSC_H
+
 /*
  *
  * LSC stands for Large Scale Chat
@@ -91,12 +94,12 @@ namespace LSC {
     enum Mode {
         chDisallowed = -2,
         chUnspecified = -1,
-        chNone = 0,
-        chListener = 1,
-        chSpeaker = 2,
-        chConversationalist = 3,
+        chNone = 0,                             // banned/muted
+        chListener = 1,                 // read-only
+        chSpeaker = 2,                  // std member
+        chConversationalist = 3,// op/mod
         chOperator = 7,
-        chCreator = 15
+        chCreator = 15                  // owner
     };
 
     enum Error {
@@ -107,6 +110,33 @@ namespace LSC {
         errWrongPass = -5,
         errChannelExists = -6,
         errTooManyChannels = -7
+    };
+
+    struct ChannelData {
+        int32 channelID = 0;
+        std::string displayName;
+        std::string motd;
+        uint32 ownerID = 0;
+        std::string comparisonKey;
+        bool memberless = false;
+        std::string password;
+        bool mailingList = false;
+        uint32 cspa = 0;
+
+        // Explicit constructor required to satisfy GCC 4.9.2's emplace constraints
+        ChannelData(int32 id, std::string name, std::string m, uint32 owner,
+                       std::string key, bool memb, std::string pass, bool mail, uint32 cs)
+        : channelID(id), displayName(name), motd(m), ownerID(owner),
+        comparisonKey(key), memberless(memb), password(pass), mailingList(mail), cspa(cs) {}
+    };
+
+    struct CharMetaData {
+        std::string characterName;
+        std::string corporationName;
+
+        // GCC 4.9.2 constructor constraint matching
+        CharMetaData(std::string charName, std::string corpName)
+        : characterName(charName), corporationName(corpName) {}
     };
 
 }   // namespace LSC
@@ -360,3 +390,6 @@ groupTypes = {groupAgents: [notifyIDs.notificationTypeAgentMoveMsg,
             notifyIDs.notificationTypeFWAllianceKickMsg]}
             */
 }   // namespace Notifications
+
+
+#endif

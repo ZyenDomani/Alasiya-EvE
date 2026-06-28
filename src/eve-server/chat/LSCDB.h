@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur, Aknor Jaden
+    Rewrite:    Allan  (incomplete)
 */
 
 
@@ -28,6 +29,7 @@
 #define __LSCDB_H_INCL__
 
 #include "ServiceDB.h"
+#include "EVE_LSC.h"
 
 class Client;
 class LSCService;
@@ -42,9 +44,9 @@ public:
     PyRep *GetMailDetails(uint32 messageID, uint32 readerID);
     bool MarkMessageRead(uint32 messageID);
     bool DeleteMessage(uint32 messageID, uint32 readerID);
-    void GetChannelNames(uint32 charID, std::vector<std::string> & names);
 
-    int32 GetNextAvailableChannelID();
+    LSC::CharMetaData GetChannelNames(uint32 charID);
+
     bool IsChannelNameAvailable(std::string name);
     bool IsChannelIDAvailable(int32 channel_ID);
     bool IsChannelSubscribedByThisChar(uint32 char_ID, int32 channel_ID);
@@ -58,15 +60,9 @@ public:
 
     int32 GetChannelID(std::string &name);
 
-    void GetChannelInformation(int32 channelID, std::string & name,
-        std::string & motd, uint32 & ownerid, std::string & compkey,
-        bool & memberless, std::string & password, bool & maillist,
-        uint32 & cspa);
+    bool GetChannelInformation(int32 channelID, LSC::ChannelData& data);
 
-    void GetChannelSubscriptions(uint32 charID, std::vector<long> & ids, std::vector<std::string> & names,
-        std::vector<std::string> & MOTDs, std::vector<unsigned long> & ownerids, std::vector<std::string> & compkeys,
-        std::vector<int> & memberless, std::vector<std::string> & passwords, std::vector<int> & maillists,
-        std::vector<int> & cspas, int & channelCount);
+    void GetChannelSubscriptions(uint32 charID, std::vector<LSC::ChannelData>& subscriptions);
 
     bool GetChannelInfo(int32 channelID, std::string& name, std::string& motd);
 

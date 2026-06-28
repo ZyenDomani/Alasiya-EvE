@@ -187,9 +187,11 @@ bool SystemManager::LoadCosmicMgrs()
 bool SystemManager::ProcessTic() {
     double profileStartTime(GetTimeUSeconds());
 
-    for (auto &cur : m_deleteLater)
-        SafeDelete(cur.second);
-    m_deleteLater.clear();
+    if (!m_deleteLater.empty()) {
+        for (auto &cur : m_deleteLater)
+            SafeDelete(cur.second);
+        m_deleteLater.clear();
+    }
 
     std::map<uint32, SystemEntity*>::iterator itr = m_ticEntities.begin(), end = m_ticEntities.end();
     while (itr != end) {
@@ -670,6 +672,11 @@ void SystemManager::AddEntity(SystemEntity* pSE, bool addSignal/*true*/) {
         m_anomMgr->AddSignal(pSE);
 }
 
+void SystemManager::AddTicEntity(SystemEntity* pSE) {
+    m_entityChanged = true;
+    m_ticEntities[pSE->GetID()] = pSE;
+}
+
 void SystemManager::RemoveEntity(SystemEntity* pSE) {
     if (pSE == nullptr)
         return;
@@ -685,8 +692,11 @@ void SystemManager::RemoveEntity(SystemEntity* pSE) {
 
     // remove from anomaly map, if exists
     m_anomMgr->RemoveSignal(itemID);
+}
 
+void SystemManager::RemoveTicEntity(SystemEntity* pSE) {
     m_entityChanged = true;
+    m_ticEntities.erase(pSE->GetID());
 }
 
 void SystemManager::AddMarker(SystemEntity* pSE, bool sendBall/*false*/, bool addSignal/*false*/) {

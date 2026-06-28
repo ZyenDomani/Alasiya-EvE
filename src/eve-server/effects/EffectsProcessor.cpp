@@ -10,7 +10,6 @@
  */
 
 #include "Client.h"
-#include "effects/EffectsActions.h"
 #include "effects/EffectsProcessor.h"
 #include "inventory/InventoryItem.h"
 #include "character/Character.h"

@@ -405,3 +405,10 @@ void EvE::traceStack(void)
 
     free(strings);
 }
+
+double EvE::getPct(double from, double to, float pct) {
+    return from + ((to - from) * pct);
+}
+float EvE::getPctf(float from, float to, float pct) {
+    return from + ((to - from) * pct);
+}

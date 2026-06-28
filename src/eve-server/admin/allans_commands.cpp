@@ -183,27 +183,9 @@ PyResult Command_list(Client* pClient, CommandDB* db, PyServiceMgr* services, co
             str << " (no bubble)  "; // 13 + 27 + 40 for name (80)
         }
         if (cur.second->DestinyMgr() != nullptr) {
-            std::string modeStr = "Rigid";
-            if (!cur.second->IsStaticEntity()) {
-                switch (cur.second->DestinyMgr()->GetState()) {
-                    case 0: modeStr = "Goto"; break;
-                    case 1: modeStr = "Follow"; break;
-                    case 2: modeStr = "Stop"; break;
-                    case 3: modeStr = "Warp"; break;
-                    case 4: modeStr = "Orbit"; break;
-                    case 5: modeStr = "Missile"; break;
-                    case 6: modeStr = "Mushroom"; break;
-                    case 7: modeStr = "Boid"; break;
-                    case 8: modeStr = "Troll"; break;
-                    case 9: modeStr = "Miniball"; break;
-                    case 10: modeStr = "Field"; break;
-                    case 11: modeStr = "Rigid"; break;
-                    case 12: modeStr = "Formation"; break;
-                }
-            }
-
-            str << modeStr.c_str() << " (asf: " << cur.second->DestinyMgr()->GetSpeedFraction() << ") speed: ";
-            str << cur.second->DestinyMgr()->GetSpeed() << " [" << cur.second->GetName() << "]<br>"; // 13 + 27 + 40 for name (80)
+            DestinyManager* pDM =  cur.second->DestinyMgr();
+            str << pDM->GetModeNameString().c_str() << " (asf: " << pDM->GetSpeedFraction() << ") speed: ";
+            str << pDM->GetSpeed() << " [" << cur.second->GetName() << "]<br>"; // 13 + 27 + 40 for name (80)
         } else {
             str << " [" << cur.second->GetName() << "]<br>"; // 13 + 27 + 40 for name (80)
         }
@@ -249,32 +231,15 @@ PyResult Command_bubblelist(Client* pClient, CommandDB* db, PyServiceMgr* servic
         if (cur.second == nullptr)
             continue;
         if (cur.second->DestinyMgr() != nullptr) {
-            std::string modeStr = "Rigid";
-            if (!cur.second->IsStaticEntity()) {
-                switch (cur.second->DestinyMgr()->GetState()) {
-                    case 0: modeStr = "Goto"; break;
-                    case 1: modeStr = "Follow"; break;
-                    case 2: modeStr = "Stop"; break;
-                    case 3: modeStr = "Warp"; break;
-                    case 4: modeStr = "Orbit"; break;
-                    case 5: modeStr = "Missile"; break;
-                    case 6: modeStr = "Mushroom"; break;
-                    case 7: modeStr = "Boid"; break;
-                    case 8: modeStr = "Troll"; break;
-                    case 9: modeStr = "Miniball"; break;
-                    case 10: modeStr = "Field"; break;
-                    case 11: modeStr = "Rigid"; break;
-                    case 12: modeStr = "Formation"; break;
-                }
-            }
+            DestinyManager* pDM =  cur.second->DestinyMgr();
             str << cur.first;
             if (cur.second->isGlobal()) {
                 str << ": (global) ";
             } else {
                 str << ": ";
             }
-            str << modeStr.c_str() << " (asf: " << cur.second->DestinyMgr()->GetSpeedFraction() << ") speed: ";
-            str << cur.second->DestinyMgr()->GetSpeed() << " [" << cur.second->GetName() << "]<br>"; // 13 + 27 + 40 for name (80)
+            str << pDM->GetModeNameString().c_str() << " (asf: " << pDM->GetSpeedFraction() << ") speed: ";
+            str << pDM->GetSpeed() << " [" << cur.second->GetName() << "]<br>"; // 13 + 27 + 40 for name (80)
         } else {
             str << cur.first << ": None (asf: 0) speed: 0 [" << cur.second->GetName() << "]<br>"; // 13 + 27 + 40 for name (80)
         }
@@ -396,7 +361,6 @@ PyResult Command_destinyvars(Client* pClient, CommandDB* db, PyServiceMgr* servi
              "ShipID: %u<br>" //28
              "Mass: %.2fkg<br>" //28
              "AlignTime: %us<br>" //27
-             "AccelTime: %.2fs<br>"
              "MaxSpeed: %.2fm/s<br>" //27
              "WarpSpeed: %.2fau/s<br>" //27
              "WarpDropSpeed: %.2fm/s<br>" //27
@@ -407,7 +371,7 @@ PyResult Command_destinyvars(Client* pClient, CommandDB* db, PyServiceMgr* servi
              "Heading: %.3f,%.3f,%.3f<br>", //21
              sRef->name(), sRef->itemID(),
              sRef->mass(), dm->GetAlignTime(),
-             dm->GetAccelTime(), dm->GetMaxVelocity(), (float)(dm->GetWarpSpeed() / 10),
+             dm->GetMaxVelocity(), (float)(dm->GetWarpSpeed() / 10),
              dm->GetWarpDropSpeed(), sRef->radius(), dm->GetCapNeed(),
              //sRef->GetAttribute(AttrAgility).get_double(),
              dm->GetAgility(),

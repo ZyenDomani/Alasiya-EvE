@@ -2060,7 +2060,7 @@ void Client::SendSessionChange()
     }
 
     scn.sessionID = pSession->GetSessionID();
-    scn.clueless = 0;
+    scn.modDelta = 0;
     scn.nodesOfInterest.push_back(-1);  /* this means 'all nodes' */
     scn.nodesOfInterest.push_back(m_services.GetNodeID());  /* add current node to list */
     /* if other nodes are created, add those that are 'live' for this client here */
@@ -2392,10 +2392,10 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     server_shake.user_logonqueueposition = _GetQueuePosition();
     // binascii.crc_hqx of marshaled single-element tuple containing 64 zero-bytes string
     server_shake.challenge_responsehash = "55087";
-
     // the image server to be used by the client to download images
     server_shake.imageserverurl = sImageServer.url();
-
+    server_shake.bugReporting_ShowButton = 0;
+    server_shake.defaultPortraitSaveSize = 512;
     server_shake.macho_version = MachoNetVersion;
     server_shake.boot_version = EVEVersionNumber;
     server_shake.boot_build = EVEBuildVersion;
@@ -2441,7 +2441,7 @@ bool Client::_VerifyFuncResult(CryptoHandshakeResult& result)
         ack.client_hash = PyStatic.NewNone();
         ack.user_clientid = GetClientID();  //241241000001103
         ack.live_updates = sLiveUpdateDB.GetUpdates();
-        ack.sessionID = pSession->GetSessionID();   //398773966249980114
+        ack.sessionID = pSession->GetSessionID();
     PyRep* res(ack.Encode());
     if (is_log_enabled(CLIENT__CALL_DUMP))
         res->Dump(CLIENT__CALL_DUMP, "    ");

@@ -203,7 +203,7 @@ void NPC::EncodeDestiny(Buffer& into)
 {
     using namespace Destiny;
 
-    uint8 mode = m_destiny->GetState(); //Ball::Mode::STOP;
+    uint8 mode = m_destiny->GetBallMode(); //Ball::Mode::STOP;
 
     BallHeader head = BallHeader();
         head.entityID = GetID();

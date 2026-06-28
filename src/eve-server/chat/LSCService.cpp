@@ -52,16 +52,13 @@
  *
  */
 
-// Set the base (minimum) and maximum numbers for any user-created chat channel.
-const int32 LSCService::BASE_CHANNEL_ID = 2100000000;      //trial accts are spam-restricted to 1m input buffer when channelID < 2100000000
-const uint32 LSCService::MAX_CHANNEL_ID = 0xFFFFFFFF;
-
 PyCallable_Make_InnerDispatcher(LSCService)
 
 LSCService::LSCService(PyServiceMgr *mgr, CommandDispatcher* cd)
 : PyService(mgr, "LSC"),
   m_dispatch(new Dispatcher(this)),
-  m_commandDispatch(cd)
+  m_commandDispatch(cd),
+  m_channelID(BASE_CHANNEL_ID)
 {
     _SetCallDispatcher(m_dispatch);
 
@@ -213,9 +210,9 @@ PyResult LSCService::Handle_CreateChannel(PyCallArgs& call)
     if (joinExisting) {
         channel = GetChannelByName(name.arg);
     } else if (create)  {
+        int32 nextID = m_channelID++;
         // figure out how to determine owner of this channel.....corp, ally, char.  for now, use charID
-        int32 nextID = m_db->GetNextAvailableChannelID();
-        if (nextID != 0) {
+        if (nextID != 0) {  // do we really need this check??
             std::string comStr = name.arg;
             boost::algorithm::to_lower(comStr);
             comStr.erase(std::remove(comStr.begin(), comStr.end(), ' '), comStr.end());

@@ -43,10 +43,9 @@ class LSCService
   public PyService
 {
 public:
-    // All user-created chat channels are created with IDs that are in this set:
-    //     [baseChannelID,maxChannelID]  (note the inclusivity in that set)
-    static const int32 BASE_CHANNEL_ID;
-    static const uint32 MAX_CHANNEL_ID;
+    // Set the base (minimum) and maximum numbers for any user-created chat channel.
+    const int32 BASE_CHANNEL_ID = 2100000000;      //trial accts are spam-restricted to 1m input buffer when channelID < 2100000000
+    const uint32 MAX_CHANNEL_ID = 0xFFFFFFFF;
 
     LSCService(PyServiceMgr *mgr, CommandDispatcher *cd);
     ~LSCService();
@@ -97,6 +96,7 @@ protected:
     PyCallable_DECL_CALL(DeleteMessages);
 
 private:
+    int32 m_channelID;
     void CreateStaticChannels();
     LSCChannel *GetChannelByID(int32 channelID);
     // iterate thru entire list and string::comp for name

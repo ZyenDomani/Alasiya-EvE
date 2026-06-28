@@ -43,7 +43,7 @@ enum EveAttrEnum {
     AttrPowerLoad = 15,
     AttrCapacitorCharge = 18,                           // current charge of the ship's capacitor
     AttrPowerToSpeed = 19,
-    AttrSpeedFactor = 20,
+    AttrSpeedFactor = 20,                               //Factor by which topspeed increases.
     AttrWarpFactor = 21,
     AttrWarpInhibitor = 29,
     AttrPower = 30,                                     //power required by this item for fitting
@@ -520,15 +520,15 @@ enum EveAttrEnum {
     AttrScanResolution = 564,
     AttrScanResolutionMultiplier = 565,
     AttrScanResolutionBonus = 566,
-    AttrSpeedBoostFactor = 567,
+    AttrSpeedBoostFactor = 567,                         //Used to divide with mass to give a factor for speed boost modules
     AttrEliteBonusInterceptor = 568,
     AttrEliteBonusCoverOps1 = 569,
     AttrEliteBonusBombers = 570,
     AttrEliteBonusGunships = 571,
     AttrEliteBonusdestroyers = 573,
     AttrEliteBonusBattlecruiser = 575,
-    AttrSpeedBoostFactorCalc = 576,
-    AttrSpeedBoostFactorCalc2 = 578,
+    AttrSpeedBoostFactorCalc = 576,                     //Hidden attribute that is used for speedBoostFactor calculation because Dogma cant handle it.
+    AttrSpeedBoostFactorCalc2 = 578,                    //Second hidden attribute.
     AttrTestForEggert = 579,
     AttrEntityChaseMaxDelay = 580,                      //The maximum amount of time stalled before entity chase speed kicks in.
     AttrEntityChaseMaxDelayChance = 581,                //Chance that the max delay is used before chase is engaged.
@@ -729,7 +729,7 @@ enum EveAttrEnum {
     AttrShipBonusPirateFaction = 793,
     AttrProbesInGroup = 794,
     AttrShipBonus1ABC = 795,
-    AttrMassAddition = 796,     // this is solely for mwd/ab mass addition. (checked in client)
+    AttrMassAddition = 796,                             // Attribute for adding mass to a ship via an afterburner or MWD.
     AttrMaximumRangeCap = 797,
     AttrEntityBracketColour = 798,                      //overview hostility: 0 = white, 1 = red
     AttrImplantSetBloodraider = 799,
@@ -816,7 +816,7 @@ enum EveAttrEnum {
     AttrFreighterBonusG1 = 891,
     AttrFreighterBonusM1 = 892,
     AttrFreighterBonusM2 = 893,
-    AttrSpeedBoostBonus = 894,
+    AttrSpeedBoostBonus = 894,                          //Testing for fuels for speed boosters.
     AttrArmorDamageAmountBonus = 895,
     AttrArmorDamageDurationBonus = 896,
     AttrShieldBonusDurationBonus = 897,
@@ -827,8 +827,8 @@ enum EveAttrEnum {
     AttrSpawnWithoutGuardsToo = 903,
     AttrWarcruiserCPUBonus = 904,
     AttrTacklerBonus = 905,
-    AttrDisallowEarlyDeactivation = 906,        // not used, but would be helpful
-    AttrHasShipMaintenanceBay = 907,            //flagShipHangar  AttrShipMaintenanceBayCapacity
+    AttrDisallowEarlyDeactivation = 906,                // not used, but would be helpful
+    AttrHasShipMaintenanceBay = 907,                    //flagShipHangar  AttrShipMaintenanceBayCapacity
     AttrShipMaintenanceBayCapacity = 908,
     AttrMaxShipGroupActiveID = 909,
     AttrMaxShipGroupActive = 910,
@@ -1177,15 +1177,15 @@ enum EveAttrEnum {
     AttrModuleRepairRate = 1267,
     AttrEliteBonusViolatorsRole1 = 1268,
     AttrEliteBonusViolatorsRole2 = 1269,
-    AttrSpeedBoostFactorBonus = 1270,
-    AttrDroneBandwidth = 1271,                                  // ship attribute - total available
-    AttrDroneBandwidthUsed = 1272,                              // drone attribute - required for communication
-    AttrDroneBandwidthLoad = 1273,                              // ship attribute - currently used
+    AttrSpeedBoostFactorBonus = 1270,                   //Afterburner and Microwarpdrive Thrust Bonus
+    AttrDroneBandwidth = 1271,                          // ship attribute - total available
+    AttrDroneBandwidthUsed = 1272,                      // drone attribute - required for communication
+    AttrDroneBandwidthLoad = 1273,                      // ship attribute - currently used
     AttrMiningTargetMultiplier = 1274,
     AttrDroneIsAgressive = 1275,
     AttrNonBrokenModuleRepairCostMultiplier = 1276,
     AttrShipBrokenModuleRepairCostMultiplier = 1277,
-    AttrDroneIsChaotic = 1278,                                  // disabled in crucible.  used here for .autoattack
+    AttrDroneIsChaotic = 1278,                          // disabled in crucible.  used here for .autoattack
     AttrEliteBonusViolatorsRole3 = 1279,
     AttrEliteBonusInterceptorRole = 1280,
     AttrBaseWarpSpeed = 1281,
@@ -1232,7 +1232,7 @@ enum EveAttrEnum {
     AttrCommandBonusTD = 1322,
     AttrCommandBonusTP = 1323,
     AttrMassBonusPercentageBonus = 1324,
-    AttrSpeedBoostFactorBonusBonus = 1325,
+    AttrSpeedBoostFactorBonusBonus = 1325,              //Modification of Afterburner and Microwarpdrive Thrust Bonus
     AttrSpeedFactorBonusBonus = 1326,
     AttrWarpScrambleRangeBonus = 1327,
     AttrDroneBandwidthMultiplier = 1328,
