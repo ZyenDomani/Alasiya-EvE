@@ -47,7 +47,6 @@
  */
 Inventory::Inventory(InventoryItemRef iRef)
 : m_self(iRef),
-m_loadClient(nullptr),
 mContentsLoaded(false),
 m_myID(iRef->itemID()),
 m_profileStartTime(0)
@@ -115,23 +114,25 @@ bool Inventory::LoadContents() {
         return true;
     m_profileStartTime = GetTimeUSeconds();
     /* rewrote logic, optimized, and fixed "empty inventory" for new chars in existing systems  -allan 22.2.16 */
-    m_loadClient = sItemFactory.GetUsingClient();
+    Client* loadClient = sItemFactory.GetUsingClient();
 
     // test for character creation(which throws errors) and station loading
-    if (m_loadClient != nullptr) {
-        if (m_loadClient->IsCharCreation())
+    if (loadClient != nullptr) {
+        if (loadClient->IsCharCreation())
             return true;
-        if (sDataMgr.IsStation(m_myID)) {
-            if (m_loadClient->IsHangarLoaded(m_myID))
-                return true;
-            m_loadClient->AddLoadedHangar(m_myID);
-            mContentsLoaded = false;
-        }
+        if ((sDataMgr.IsStation(m_myID) and loadClient->IsHangarLoaded(m_myID)))
+            return true;
+
+        loadClient->AddLoadedHangar(m_myID);
+        mContentsLoaded = false;
     }
 
     // check if the contents has already been loaded
     if (mContentsLoaded) {
         _log(INV__INFO, "Inventory::LoadContents() - inventory %u(%p) already loaded.", m_myID, this);
+        if (sConfig.debug.UseProfiling)
+            sProfiler.AddTime(Profile::itemload, GetTimeUSeconds() - m_profileStartTime);
+
         return true;
     }
 
@@ -141,9 +142,9 @@ bool Inventory::LoadContents() {
 
     std::vector<uint32> items;
 	// get owner data
-    if (m_loadClient != nullptr) {
-        if (m_loadClient->IsValidSession())
-            od.corpID = m_loadClient->GetCorporationID();
+    if (loadClient != nullptr) {
+        if (loadClient->IsValidSession())
+            od.corpID = loadClient->GetCorporationID();
         if (sDataMgr.IsStation(m_myID)) {
             if (!StationItemRef::StaticCast(m_self)->IsLoaded())
                 StationDB::LoadOffices(od, items);
@@ -158,7 +159,7 @@ bool Inventory::LoadContents() {
                 /* this will load corp hangars' inventory for this station */
                 od.ownerID = od.corpID;
                 _log(INV__TRACE, "Inventory::LoadContents() - Loading office inventory %u(%p) for corp %u in station %s",\
-                            m_myID, this , od.ownerID,(m_loadClient->IsValidSession() ? itoa(m_loadClient->GetStationID()) : "(invalid)"));
+                            m_myID, this , od.ownerID,(loadClient->IsValidSession() ? itoa(loadClient->GetStationID()) : "(invalid)"));
                 GetItems(od, items);
             } else {
                 // make error for loading office and NOT a PC corp
@@ -166,10 +167,10 @@ bool Inventory::LoadContents() {
             }
         }
         // test for char creation (data set incomplete in char creation)
-        if (m_loadClient->IsValidSession()) {
-            od.ownerID = m_loadClient->GetCharacterID();
+        if (loadClient->IsValidSession()) {
+            od.ownerID = loadClient->GetCharacterID();
         } else {
-            od.ownerID = m_loadClient->GetCharID();
+            od.ownerID = loadClient->GetCharID();
         }
     }
 
@@ -178,8 +179,11 @@ bool Inventory::LoadContents() {
     if (!GetItems(od, items)) {
         _log(INV__ERROR, "Inventory::LoadContents() - Failed to get inventory items for %s(%u)", \
                 m_self->name(), m_myID);
-        if ((m_loadClient != nullptr) and sDataMgr.IsStation(m_myID))
-            m_loadClient->RemoveStationHangar(m_myID);
+        if ((loadClient != nullptr) and sDataMgr.IsStation(m_myID))
+            loadClient->RemoveStationHangar(m_myID);
+        if (sConfig.debug.UseProfiling)
+            sProfiler.AddTime(Profile::itemload, GetTimeUSeconds() - m_profileStartTime);
+
         return false;
     }
 
@@ -251,7 +255,6 @@ void Inventory::RemoveItem(InventoryItemRef iRef) {
                 m_self->name(), m_myID, iRef->name(), iRef->itemID());
     }
 
-    /** @todo @note  this isnt working right, and im not sure why yet...  */
     auto range = m_contentsByFlag.equal_range(iRef->flag());
     for (auto &cur = range.first; cur != range.second; ++cur) {
         if (cur->second == iRef) {
@@ -272,10 +275,10 @@ void Inventory::DeleteContents()
 {
     if (!mContentsLoaded)
         return;
-    InventoryItemRef iRef(nullptr);
+
     std::map<uint32, InventoryItemRef>::iterator cur = mContents.begin();
     while(cur != mContents.end()) {
-        iRef = cur->second;
+        InventoryItemRef iRef = cur->second;
         ++cur;
         iRef->Delete();
     }
@@ -417,18 +420,18 @@ InventoryItemRef Inventory::GetByID(uint32 id) const {
     return InventoryItemRef(nullptr);
 }
 
-void Inventory::UpdateFlag(EVEItemFlags newFlag, InventoryItemRef iRef) const
-{
-    sLog.Warning("Inv::UpdateFlag", "this is used...finish code here");
+void Inventory::UpdateFlag(EVEItemFlags newFlag, InventoryItemRef iRef) {
     // this method is for changing flags for existing items in our inventory
-    /* wont compile
     auto range = m_contentsByFlag.equal_range(iRef->flag());
-    for (auto &cur = range.first; cur != range.second; ++cur ) {
-        if (cur->second == iRef)
-            m_contentsByFlag.erase(cur);
+    for (auto itr = range.first; itr != range.second; ++itr) {
+        if (itr->second == iRef) {
+            m_contentsByFlag.erase(itr);
+            m_contentsByFlag.emplace(newFlag, iRef);
+            return;
+        }
     }
+    // just in case it's not in the map under old flag
     m_contentsByFlag.emplace(newFlag, iRef);
-    */
 }
 
 // for stations only...can get expensive for stations that have many players loaded
@@ -470,8 +473,18 @@ void Inventory::GetInventoryMap( std::map< uint32, InventoryItemRef >& invMap ) 
 
 uint32 Inventory::GetItemsByFlag(EVEItemFlags flag, std::vector<InventoryItemRef> &items) const {
     auto range = m_contentsByFlag.equal_range(flag);
-    for (auto itr = range.first; itr != range.second; ++itr )
-        items.push_back(itr->second);
+    uint16 count = std::distance(range.first, range.second);
+    if (count == 0)
+        return 0;
+    //items.reserve(items.size() + count);
+
+    for (auto itr = range.first; itr != range.second; ++itr ) {
+        //verify we have good ref...getting errors after mem work.
+        InventoryItemRef iRef = itr->second;
+        if (iRef.get() != nullptr)
+            items.push_back(iRef);
+    }
+
     return items.size();
 }
 

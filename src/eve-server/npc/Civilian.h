@@ -41,8 +41,8 @@ namespace Civ {
     };
 }
 
-class SystemEntity;
 class SystemBubble;
+class SystemEntity;
 
 class Civilian
 {
@@ -59,6 +59,7 @@ public:
     uint32 		GetID()	const			{ return m_itemID; }
     uint32 		GetTypeID()   const 		{ return m_type->id(); }
     Civilian*		GetLeader()			{ return m_pLeader; }
+    const char*         GetName()                       { return m_type->name().c_str(); }
 
     // Setters
     void		SetPos(GPoint pos)		{ m_pos = pos; }
@@ -80,8 +81,9 @@ protected:
 
     /* (fake) SystemEntity interface */
     void                EncodeDestiny(Buffer& into);
-    void                MakeDamageState(DoDestinyDamageState &into);
+    PyTuple*            MakeDamageState();
     PyDict*             MakeSlimItem();
+    void                SendShipVars(SystemBubble* pBubble);
 
 private:
     uint8               m_state;
@@ -95,7 +97,7 @@ private:
     GVector             m_velocity;
 
     Civilian*           m_pLeader;
-    ItemType*	        m_type;
+    const ItemType*	m_type;
     SystemEntity*       m_origSE;
     SystemEntity*       m_destSE;
 

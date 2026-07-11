@@ -16,24 +16,33 @@
 void MissionDB::LoadMissionData(DBQueryResult& res) {
     if (!sDatabase.RunQuery(res,
         "SELECT id, briefingID, name, level, typeID, important, storyline"
-        " FROM agtMissions WHERE briefingID > 0 AND typeID = 2"))
+        " FROM agtMissions WHERE briefingID > 0 AND typeID != 0 AND typeID != 2"))
         codelog(DATABASE__ERROR, "Error in LoadMissionData query: %s", res.error.c_str());
 }
 
 void MissionDB::LoadCourierData(DBQueryResult& res) {
     if (!sDatabase.RunQuery(res,
-        "SELECT q.id, q.briefingID, q.name, q.level, q.typeID, q.important, q.storyline, q.itemTypeID, q.itemQty, it.volume, q.rewardItemID,"
-        " q.rewardItemQty, q.bonusTime, q.raceID"
-        " FROM qstCourier AS q LEFT JOIN invTypes AS it ON it.typeID = itemTypeID WHERE briefingID > 0 AND itemTypeID > 0"))
+        "SELECT q.id, q.briefingID, q.name, q.level, q.typeID, q.important, q.storyline, q.itemTypeID, "
+        " q.itemQty, it.volume, q.rewardItemID, q.rewardItemQty, q.bonusTime, q.raceID"
+        " FROM qstCourier AS q LEFT JOIN invTypes AS it ON it.typeID = itemTypeID "
+        " WHERE briefingID > 0 AND itemTypeID > 0"))
         codelog(DATABASE__ERROR, "Error in LoadCourierData query: %s", res.error.c_str());
 }
 
 void MissionDB::LoadMiningData(DBQueryResult& res) {
     if (!sDatabase.RunQuery(res,
-        "SELECT q.id, q.briefingID, q.name, q.level, q.typeID, q.itemTypeID, q.itemQty, it.volume, q.rewardItemID,"
-        " q.rewardItemQty, q.bonusTime"
-        " FROM qstMining AS q LEFT JOIN invTypes AS it ON it.typeID = q.itemTypeID WHERE q.briefingID > 0 AND q.itemTypeID > 0"))
+        "SELECT q.id, q.briefingID, q.name, q.level, q.typeID, q.itemTypeID, q.itemQty, it.volume, "
+        " q.rewardItemID, q.rewardItemQty, q.bonusTime"
+        " FROM qstMining AS q LEFT JOIN invTypes AS it ON it.typeID = q.itemTypeID "
+        " WHERE q.briefingID > 0 AND q.itemTypeID > 0"))
         codelog(DATABASE__ERROR, "Error in LoadMiningData query: %s", res.error.c_str());
+}
+
+void MissionDB::LoadEncounterData(DBQueryResult& res) {
+    if (!sDatabase.RunQuery(res,
+        "SELECT id, briefingID, name, level, typeID, important, storyline"
+        " FROM agtMissions WHERE briefingID > 0 AND typeID = 2"))  //Mission::Type::Encounter
+        codelog(DATABASE__ERROR, "Error in LoadMissionData query: %s", res.error.c_str());
 }
 
 void MissionDB::CreateOfferID(MissionOffer& data) {

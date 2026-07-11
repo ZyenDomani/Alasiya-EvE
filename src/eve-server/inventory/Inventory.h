@@ -87,7 +87,7 @@ public:
     InventoryItemRef FindFirstByFlag(EVEItemFlags flag) const;
     InventoryItemRef GetItemByTypeFlag(uint16 typeID, EVEItemFlags flag=flagAutoFit);
 
-    void UpdateFlag(EVEItemFlags newFlag, InventoryItemRef iRef) const;
+    void UpdateFlag(EVEItemFlags newFlag, InventoryItemRef iRef);
 
     /* Primary packet builders */
     CRowSet* List(EVEItemFlags flag, uint32 ownerID = 0) const;
@@ -106,13 +106,10 @@ protected:
     InventoryItemRef m_self;
 
 private:
-    Client* m_loadClient;               // this is to speed up item loading (avoid creating instance on every iteration)
     bool mContentsLoaded;
 
     uint32 m_myID;
     double m_profileStartTime;
-
-    std::map<EVEItemFlags, double> m_itemsByFlag;
 
     std::vector<InventoryItemRef> SortVector(std::vector<InventoryItemRef> &itemVec);
     std::map<uint32, InventoryItemRef> mContents;        // itemID/ItemRef

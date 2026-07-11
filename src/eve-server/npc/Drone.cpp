@@ -91,7 +91,7 @@ void DroneSE::Init() {
     } else if (m_pClient->IsLogin()) {
         // client/owner is not online or is logging in.  abandon drone
         m_abandoned = true;
-    } else if (m_pClient->GetShip()->typeID() == EVEDB::invTypes::Capsule) {
+    } else if (m_pClient->GetShip()->typeID() == EVEItemTypes::Capsule) {
         // cant control drone from capsule...abandon drone
         m_abandoned = true;
     }
@@ -121,7 +121,7 @@ void DroneSE::AssignTo(Client* pClient) {
 void DroneSE::Process() {
     if (m_killed)
         return;
-    double profileStartTime(GetTimeUSeconds());
+    double profileStartTime = GetTimeUSeconds();
 
     if (m_online) {
         m_AI->Process();

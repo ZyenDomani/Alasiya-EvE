@@ -151,7 +151,7 @@ void Missile::Process() {
         EndOfLife();
         return;
     }
-    double profileStartTime(GetTimeUSeconds());
+    double profileStartTime = GetTimeUSeconds();
 
     /*   Base call to Process Movement  */
     SystemEntity::Process();

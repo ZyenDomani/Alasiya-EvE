@@ -82,8 +82,8 @@ void log_messageVA(LogType type, const char *fmt, va_list args) {
 }
 
 extern void log_messageVA( LogType type, uint32 iden, const char *fmt, va_list args) {
-    /* allocate enough room for a med message  (changed from 4k to 1k) */
-    size_t log_msg_size = 0x400;
+    /* allocate enough room for a med message  (changed from 4k to 2k) */
+    size_t log_msg_size = 0x800;
     size_t log_msg_index = 0;
     char* log_msg = (char*)malloc(log_msg_size);
 

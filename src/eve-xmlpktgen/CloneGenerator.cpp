@@ -541,7 +541,7 @@ bool ClassCloneGenerator::ProcessDictInt( const TiXmlElement* field )
             "\n"
             "    //now we can copy in the new ones...\n"
             "    for (%s_cur = oth.%s.begin(); %s_cur != oth.%s.end(); ++%s_cur)\n"
-            "        %s[ %s_cur->first ] = std::move(%s_cur->second->Clone());\n"
+            "        %s[ %s_cur->first ] = %s_cur->second->Clone();\n"
             "\n",
             name, name,
             name, name, name,
@@ -571,7 +571,7 @@ bool ClassCloneGenerator::ProcessDictStr( const TiXmlElement* field )
             "\n"
             "    //now we can copy in the new ones...\n"
             "    for (%s_cur = oth.%s.begin(); %s_cur != oth.%s.end(); ++%s_cur)\n"
-            "        %s[ %s_cur->first ] = std::move(%s_cur->second->Clone());\n"
+            "        %s[ %s_cur->first ] = %s_cur->second->Clone();\n"
             "\n",
             name, name,
             name, name, name,

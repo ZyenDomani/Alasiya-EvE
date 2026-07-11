@@ -668,7 +668,7 @@ void MarketMgr::SetBasePrice()
     Market::matlData data = Market::matlData();
     data.typeID = 22175;
     data.name = "Codebreaker I";
-    materialMap[22175] = std::move(data);
+    materialMap[22175] = data;
 
     // this will have to use db to get current data.
     //  mineral prices are (will be) updated via a 'price average' method yet to be written
@@ -696,7 +696,7 @@ void MarketMgr::SetBasePrice()
         // get materials required for this item
         std::vector<EvERam::RamMaterials> matVec;
         sDataMgr.GetRamMaterials(itemItr->first, matVec);
-        itemMatMap[itemItr->first] = std::move(matVec);
+        itemMatMap[itemItr->first] = matVec;
     }
 
 
@@ -925,7 +925,8 @@ void MarketMgr::GetCruPrices()
 
     sLog.Warning("     SetBasePrice", "Getting types.");
     std::map<uint16, Inv::TypeData> types;
-    sDataMgr.GetTypes(types);           //19669 unique items in type data
+    sLog.Error("     SetBasePrice","Types need to be updated to new map.");
+    //sDataMgr.GetTypes(types);           //19669 unique items in type data
     sLog.Green("     SetBasePrice", "GetTypes returned %lu items.  Getting price avg.", types.size());
     // delete the typeID '0'
     types.erase(0);

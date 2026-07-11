@@ -20,7 +20,7 @@
  ------------------------------------------------------------------------------------
  Author:        Zhur
  Additions:  Allan
- Log Version: 11.5
+ Log Version: 11.6
  */
 /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -168,6 +168,11 @@ LOG_CATEGORY( COLLECT )
 LOG_TYPE( COLLECT, PACKET_DUMP, DISABLED, "PacketDump" )
 LOG_TYPE( COLLECT, CALL_DUMP, DISABLED, "CollectCallDump" )
 LOG_TYPE( COLLECT, OTHER_DUMP, DISABLED, "BindDump" )
+
+LOG_CATEGORY( CIV )
+LOG_TYPE( CIV, ERROR, DISABLED, "CivError" )
+LOG_TYPE( CIV, WARNING, DISABLED, "CivWarning" )
+LOG_TYPE( CIV, INFO, DISABLED, "CivInfo" )
 
 LOG_CATEGORY( COLONY )
 LOG_TYPE( COLONY, ERROR,   ENABLED, "ColonyError" )

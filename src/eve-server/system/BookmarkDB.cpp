@@ -396,12 +396,12 @@ bool BookmarkDB::UpdateFolder(int32 folderID, std::string folderName)
 bool BookmarkDB::DeleteFolder(int32 folderID)
 {
     DBerror err;
-    if (!sDatabase.RunQuery(err, "DELETE FROM bookmarkFolders WHERE folderID = %i", folderID))
-        sLog.Error( "BmDB::DeleteFolder(1)", "Error in query: %s", err.c_str() );
-
     // these bms may have copies....cannot delete yet
     if (!sDatabase.RunQuery(err, "UPDATE bookmarks SET ownerID = 1 WHERE folderID = %i", folderID))
         sLog.Error( "BmDB::DeleteFolder(2)", "Error in query: %s", err.c_str() );
+
+    if (!sDatabase.RunQuery(err, "DELETE FROM bookmarkFolders WHERE folderID = %i", folderID))
+        sLog.Error( "BmDB::DeleteFolder(1)", "Error in query: %s", err.c_str() );
 
     return true;
 }

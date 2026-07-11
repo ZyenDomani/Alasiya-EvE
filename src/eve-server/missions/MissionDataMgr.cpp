@@ -160,7 +160,8 @@ void MissionDataMgr::Populate() {
             m_courier.emplace(row.GetUInt8(3), data);
         }
     }
-    sLog.Cyan("   MissionDataMgr", "%lu(%lu) Courier Mission Data Sets loaded in %.3fms.", m_courier.size(), m_courierImp.size(),(GetTimeMSeconds() - start));
+    sLog.Cyan("   MissionDataMgr", "%lu(%lu) Courier Mission Data Sets loaded in %.3fms.", \
+            m_courier.size(), m_courierImp.size(),(GetTimeMSeconds() - start));
 
     //res->Reset();
     start = GetTimeMSeconds();
@@ -182,10 +183,30 @@ void MissionDataMgr::Populate() {
         data.bonusTime          = row.GetUInt(10);
         m_mining.emplace(row.GetUInt8(3), data);
     }
-    sLog.Cyan("   MissionDataMgr", "%lu Mining Mission Data Sets loaded in %.3fms.", m_mining.size(), (GetTimeMSeconds() - start));
+    sLog.Cyan("   MissionDataMgr", "%lu Mining Mission Data Sets loaded in %.3fms.", \
+            m_mining.size(), (GetTimeMSeconds() - start));
 
     start = GetTimeMSeconds();
-    sLog.Cyan("   MissionDataMgr", "0 Encounter Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
+    MissionDB::LoadEncounterData(*res);
+    while (res->GetRow(row)) {
+        //SELECT id, briefingID, name, level, typeID, important, storyline, raceID, constellationID, corporationID,
+        // dungeonID, rewardItemID, rewardItemQty, bonusTime FROM agtMission
+        MissionData data        = MissionData();
+        data.missionID          = row.GetUInt(0);
+        data.briefingID         = row.GetUInt(1);
+        data.name               = row.GetText(2);
+        data.level              = row.GetUInt8(3);
+        data.typeID             = row.GetUInt8(4);
+        data.important          = row.GetBool(5);
+        data.storyLine          = row.GetBool(6);
+        if (data.important) {
+            m_encounterImp.emplace(row.GetUInt8(3), data);
+        } else {
+            m_encounter.emplace(row.GetUInt8(3), data);
+        }
+    }
+    sLog.Cyan("   MissionDataMgr", "%lu(%lu) Encounter Mission Data Sets loaded in %.3fms.", \
+            m_encounter.size(), m_encounterImp.size(), (GetTimeMSeconds() - start));
 
     start = GetTimeMSeconds();
     sLog.Cyan("   MissionDataMgr", "0 Career Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
@@ -237,7 +258,8 @@ void MissionDataMgr::Populate() {
             m_missions.emplace(row.GetUInt8(3), data);
         }
     }
-    sLog.Cyan("   MissionDataMgr", "%lu(%lu) Unsorted Encounter Mission Data Sets loaded in %.3fms.", m_missions.size(), m_missionsImp.size(), (GetTimeMSeconds() - start));
+    sLog.Cyan("   MissionDataMgr", "%lu(%lu) Unsorted Mission Data Sets loaded in %.3fms.", \
+            m_missions.size(), m_missionsImp.size(), (GetTimeMSeconds() - start));
 
     //res->Reset();
     start = GetTimeMSeconds();
@@ -292,7 +314,7 @@ void MissionDataMgr::Populate() {
     //res->Reset();
     start = GetTimeMSeconds();
     // config switch to allow loading/displaying of expired/completed mission offers
-    if (sConfig.server.LoadOldMissions)
+    if (sConfig.mission.LoadOldMissions)
         MissionDB::LoadClosedOffers(*res);
     while (res->GetRow(row)) {
         //TODO: determine if these are used.  if so, complete data population
@@ -381,7 +403,7 @@ void MissionDataMgr::LoadMissionOffers(uint32 charID, std::vector<MissionOffer>&
 
     // config switch to allow loading/displaying of expired/completed mission offers
     // not completely working yet.....AgentMgrService::Handle_GetMyJournalDetails() will need work to implement this.
-    if (sConfig.server.LoadOldMissions) {
+    if (sConfig.mission.LoadOldMissions) {
         auto itr = m_xoffers.equal_range(charID);
         for (auto it = itr.first; it != itr.second; ++it)
             data.push_back(it->second);
@@ -400,8 +422,8 @@ void MissionDataMgr::CreateMissionOffer(uint8 typeID, uint8 level, uint8 raceID,
             CourierData cData = CourierData();
             std::vector<CourierData> cVec;
             if (important) {
-                auto itr = m_courierImp.equal_range(level);
-                for (auto it = itr.first; it != itr.second; ++it) {
+                auto range = m_courierImp.equal_range(level);
+                for (auto it = range.first; it != range.second; ++it) {
                     if (it->second.raceID == 0) {
                         cVec.push_back(it->second);
                     } else if (it->second.raceID == raceID) {
@@ -409,8 +431,8 @@ void MissionDataMgr::CreateMissionOffer(uint8 typeID, uint8 level, uint8 raceID,
                     }
                 }
             } else {
-                auto itr = m_courier.equal_range(level);
-                for (auto it = itr.first; it != itr.second; ++it) {
+                auto range = m_courier.equal_range(level);
+                for (auto it = range.first; it != range.second; ++it) {
                     if (it->second.raceID == 0) {
                         cVec.push_back(it->second);
                     } else if (it->second.raceID == raceID) {

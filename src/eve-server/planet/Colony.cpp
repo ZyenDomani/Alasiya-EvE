@@ -397,7 +397,7 @@ void Colony::CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latit
     //iRef->SetAttribute(AttrPowerLoad, m_pg);
 
     m_db.CreatePin(ccData->colonyID, iRef->itemID(), pin);
-    ccData->pins[iRef->itemID()] = std::move(pin);
+    ccData->pins[iRef->itemID()] = pin;
 
     // save map of tempID to itemID - this handles the stacked-calls from client to use real itemIDs
     if (groupID != Command_Centers)
@@ -461,7 +461,7 @@ void Colony::CreateRoute(uint16 routeID, uint32 typeID, uint32 qty, PyList* path
             }
         }
         list1.clear();
-        list1 = std::move(list2);
+        list1 = list2;
     }
 
     PI_Route route = PI_Route();
@@ -471,7 +471,7 @@ void Colony::CreateRoute(uint16 routeID, uint32 typeID, uint32 qty, PyList* path
         route.commodityQuantity = qty;
         route.srcPinID = list1.front();
         route.destPinID = list1.back();
-        route.path = std::move(list1);
+        route.path = list1;
 
     routeID = m_db.SaveRoute(m_colonyID, route);
     ccData->routes[routeID] = route;
@@ -944,7 +944,7 @@ PyRep* Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items
 	 * 5d timer
 	 */
     location.MakeRandomPointOnSphere(m_pSE->GetRadius() + 2000000);   //2000km orbit for launch can
-    ItemData canData(EVEDB::invTypes::PlanetaryLaunchContainer,
+    ItemData canData(EVEItemTypes::PlanetaryLaunchContainer,
                     m_client->GetCharacterID(),  // owner is Character
                     pSysMgr->GetID(),
                     flagAutoFit,
@@ -955,7 +955,7 @@ PyRep* Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items
     if (contRef.get() == nullptr) {
         contRef->Delete();
         if (m_client->CanThrow())
-            throw CustomError("Unable to spawn item of type %u.", EVEDB::invTypes::PlanetaryLaunchContainer);
+            throw CustomError("Unable to spawn item of type %u.", EVEItemTypes::PlanetaryLaunchContainer);
     }
 
     FactionData data = FactionData();
@@ -1339,7 +1339,7 @@ PyRep* Colony::GetColony() {
 }
 
 void Colony::Update() {
-    double profileStartTime(GetTimeUSeconds());
+    double profileStartTime = GetTimeUSeconds();
 
     /* loop thru process calls to update each pin to simulate production and logistics
      *  this will have to be fast, as there may/will be large time deltas between updates

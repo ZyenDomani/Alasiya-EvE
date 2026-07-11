@@ -330,7 +330,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
             _log(MANUF__WARNING, "Failed to split %s for %s.", bpRef->name(), sRamMthd.GetActivityName(args.activityID));
             throw UserError("RamActivityRequiresABlueprint");
         }
-        bpRef = std::move(iRef);
+        bpRef = iRef;
     }
 
     // unpackage bpo and move to factory

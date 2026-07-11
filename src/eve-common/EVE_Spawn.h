@@ -157,9 +157,102 @@ namespace Spawn {
             Sleeper     = 8,
             Escalation  = 9
         };
-
     }
 }
 
+namespace Rat {
+    namespace ShipClass {
+        enum {
+            None                                = 0,
+
+            // --- Legacy Asteroid Belt Progression ---
+            Asteroid_Frigate                    = 1,
+            Asteroid_AdvancedFrigate            = 2,
+            Asteroid_Destroyer                  = 3,
+            Asteroid_Cruiser                    = 4,
+            Asteroid_AdvancedCruiser            = 5,
+            Asteroid_Battlecruiser              = 6,
+            Asteroid_Battleship                 = 7,
+            Asteroid_Hauler                     = 8,
+            Asteroid_Officer                    = 9,
+
+            // --- Unified Asteroid Commander Layer ---
+            Asteroid_CommanderFrigate          = 10,
+            Asteroid_CommanderDestroyer        = 11,
+            Asteroid_CommanderCruiser          = 12,
+            Asteroid_CommanderBattlecruiser    = 13,
+            Asteroid_CommanderBattleship       = 14,
+
+            // --- Legacy Deadspace / Anomaly Progression ---
+            Deadspace_Frigate                   = 15,
+            Deadspace_AdvancedFrigate           = 16,
+            Deadspace_Destroyer                 = 17,
+            Deadspace_Cruiser                   = 18,
+            Deadspace_AdvancedCruiser           = 19,
+            Deadspace_Battlecruiser             = 20,
+            Deadspace_Battleship                = 21,
+            Deadspace_Swarm                     = 22,
+
+            // --- New: Missing Deadspace Commander Layer ---
+            Deadspace_CommanderFrigate          = 23,
+            Deadspace_CommanderDestroyer        = 24,
+            Deadspace_CommanderCruiser          = 25,
+            Deadspace_CommanderBattlecruiser    = 26,
+            Deadspace_CommanderBattleship       = 27,
+
+            // --- New: Missing Capital & Supercapital Layers ---
+            Capital_Dreadnought                 = 30,
+            Capital_Carrier                     = 31,
+            Capital_Supercarrier                = 32,
+            Capital_Titan                       = 33,
+
+            // --- New: Missing Wormhole Sleeper Matrices ---
+            Sleeper_Frigate                     = 40,  // Emergent
+            Sleeper_Cruiser                     = 41,  // Awakened
+            Sleeper_Battleship                  = 42,  // Sleepless
+            Sleeper_Sentry                      = 43,
+
+            // --- New: Missing Incursion Fleet Matrix ---
+            Incursion_Frigate                   = 50,
+            Incursion_Cruiser                   = 51,
+            Incursion_Battlecruiser             = 52,
+            Incursion_Battleship                = 53,
+            Incursion_Supercapital              = 54
+        };
+    }
+}
+
+/*
+ * these are belt/anomaly site spawn class
+class 1 f,d
+class 2 f,d,c
+class 3 f,d,c
+class 4 d,c,bc
+class 5 d,c,bc,bs
+class 6 c,bc,bs
+class 7 bc,bs
+
+ 1.0    class 1
+ 0.9    class 1
+ 0.8    class 1
+ 0.7    class 2
+ 0.6    class 2
+ 0.5    class 2
+ 0.4    class 3
+ 0.3    class 3
+ 0.2    class 3
+ 0.1    class 4
+ 0.0    class 4
+-0.1    class 4
+-0.2    class 5
+-0.3    class 5
+-0.4    class 5
+-0.5    class 6
+-0.6    class 6
+-0.7    class 6
+-0.8    class 7
+-0.9    class 7
+-1.0    class 7
+*/
 
 #endif  // EVE_SPAWN_H

@@ -20,6 +20,7 @@
 
 #include "EVEServerConfig.h"
 #include "PyServiceMgr.h"
+#include "system/SystemBubble.h"
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/CivilianMgr.h"
 
@@ -49,9 +50,9 @@ void CivilianMgr::SpawnCiv(SystemManager* sMgr) {
         return;
 
     // Pick random point-to-point warp points inside the system manager landmarks
-    /*
-    SystemEntity* pOrig = sMgr->GetCivOrig();
-    SystemEntity* pDest = sMgr->GetCivDest(pOrig); // verify separate destination
+    SystemEntity* pOrig;
+    SystemEntity* pDest;
+    sMgr->GetCivPath(pOrig, pDest);
 
     if (pOrig->SysBubble()->IsEmpty() and pDest->SysBubble()->IsEmpty())
         return;
@@ -59,46 +60,46 @@ void CivilianMgr::SpawnCiv(SystemManager* sMgr) {
     // Use a vector to preserve our exact fill position order
     // Element [0] will ALWAYS be our leader, elements [1+] will be escorts
     std::vector<uint16_t> spawnSequence;
-	uint8 formation = 0;
-	Civilian* pLeader = nullptr;
+    uint8 formation = 0;
+    Civilian* pLeader = nullptr;
 
     // Roll for class type: 60% Single, 40% Convoy  (config option?)
     uint32 roll = MakeRandomInt();
+    /*
     if (roll < 61) {
         spawnSequence.push_back(GetCivilianShip()); // Solo ship (Index 0)
     } else {	// Convoy!
         spawnSequence.push_back(GetCivilianHauler());   // Convoy Leader (Index 0)
         formation  = sDataMgr.GetRandFormation(); // Choose formation footprint from available options
 
-		// set up data for guards   **todo later - different guard faction?**
+        // set up data for guards   **todo later - different guard faction?**
         uint8 escortCount = MakeRandomInt(2, 6); // Spawns 2 to 6 escorts
         for (uint8 i = 0; i < escortCount; ++i) {
-			// once this is working, create guards in static data...can group by type, faction, size, etc.
+            // once this is working, create guards in static data...can group by type, faction, size, etc.
             spawnSequence.push_back(CivGuards[MakeRandomInt(0, 3)]);  // Appended in fill order (Indices 1+)
         }
     }
-
-	// spawn civ ships
-	std::string name = "CivSpawn";
+*/
+    // spawn civ ships
+    std::string name = "CivSpawn";
     for (size_t i = 0; i < spawnSequence.size(); ++i) {
+        Civilian* pCiv = new Civilian(sItemFactory.GetNextTempID(), spawnSequence[i]);
 
-		Civilian* pCiv = new Civilian(sItemFactory.GetNextTempID(), spawnSequence[i]);
-
-        _log(CIV__INFO, "CivilianMgr::SpawnCiv - Spawning Civilian %s type %u (%u)", pCiv->name(), pCiv->typeID(), pCiv->itemID());
+        _log(CIV__INFO, "CivilianMgr::SpawnCiv - Spawning Civilian %s type %u (%u)", \
+                pCiv->GetTypeID(), pCiv->GetName(), pCiv->GetID());
 
         // If this isn't first, it is an escort.
         if (i > 0) {
-			pCiv->SetFormID(formation);
+            pCiv->SetFormID(formation);
             pCiv->SetLeader(pLeader);
-			pLeader->AddGuard(pCiv);
+            pLeader->AddGuard(pCiv);
         } else {
-			pLeader = pCiv;
+            pLeader = pCiv;
         }
 
-		// civilian created...drop in (player's) system
-		pCiv->Init(pOrig, pDest);
-	}
-	*/
+        // civilian created...drop in (player's) system
+        pCiv->Init(pOrig, pDest);
+    }
 }
 
 void CivilianMgr::Process() {
@@ -112,52 +113,6 @@ void CivilianMgr::Process() {
     // there are 24 haulers(g297) and 4 guards(g298) in these groups
     static const uint32 CivHaulers[] = { 10043, 10044, 10045, 10114, 10115, 10116, 10823, 20719 };
     static const uint32 CivGuards[]  = { 10999, 11000, 11001, 11002 };
-
-
-
-
-
-***********************  create
-sysMgr()->AddCiv(Civilian* pCiv) 	{ m_civilians.push_back(pCiv); }
-sysMgr()->RemoveCiv(Civilian* pCiv) { m_civilians.erase(pCiv); SafeDelete(pCiv); }
-
-std::vector<Civilian*> m_civilians;
-
-
-
-
-***********************  update sysMgr with data for civ ships
-check for pirate spawn:  (for later)
-if pirate=true, create an actual faction npc to warp to anom/sig (will have to disable auto-attack for this)
-else send data to civMgr
-
-
-in Init() or boot()
-
-    // Scale True Security to ensure low-sec/null-sec don't wipe out numbers completely
-    // High-Sec (1.0) -> Multiplier 1.0
-    // Low-Sec (0.1)  -> Multiplier 0.55
-    // Null-Sec (-1.0)-> Multiplier 0.0 (or forced minimum if you want smugglers!)
-    float secMultiplier = (truSec + 1.0f) / 2.0f;
-    if (secMultiplier < 0.1f)
-		secMultiplier = 0.0f; // Silence traffic in deep Null
-
-    m_civDensity = static_cast<uint32>(secMultiplier * playerCount * (minConvoys + (trand() % (maxConvoys - minConvoys + 1))));
-
-
-in Process()
-
-	for (auto& cur : m_civilians)
-    	cur.Process();
-
-	//on (x)m tic (config or system)
-    if (m_players and m_civDensity) {
-    	// create spawns to density limits
-    	if (m_civilians.size() < m_civDensity)
-        	sCivMgr.SpawnCiv(this);
-    }
-
-
 
 
 

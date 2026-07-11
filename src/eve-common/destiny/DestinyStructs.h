@@ -226,7 +226,7 @@ struct FIELD_Struct {
 
 struct RIGID_Struct {
     uint8  formationID;
-    uint16 visualStateKey;        // Optional state key; handles client mesh orientation overrides
+    //uint16 visualStateKey;        // Optional state key; handles client mesh orientation overrides
 };
 
 struct FORMATION_Struct {		  // ONLY used by slaves with no other mode structure; linked via leaderID

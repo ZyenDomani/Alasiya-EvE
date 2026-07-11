@@ -149,7 +149,7 @@ bool ItemDB::GetItem(uint32 itemID, ItemData &into) {
         //fallback to entity
         if (!sDatabase.RunQuery(res,
             "SELECT"
-            "  itemName, typeID, ownerID, locationID, flag, contraband,"
+            "  itemName, typeID, ownerID, locationID, flagID, contraband,"
             "  singleton, quantity, x, y, z, customInfo"
             " FROM entity WHERE itemID=%u", itemID))
         {
@@ -196,7 +196,7 @@ uint32 ItemDB::NewItem(const ItemData &data) {
 
     if (!sDatabase.RunQueryLID(err, uid,
         "INSERT INTO entity"
-        " (itemName, typeID, ownerID, locationID, flag, contraband,"
+        " (itemName, typeID, ownerID, locationID, flagID, contraband,"
         " singleton, quantity, x, y, z, customInfo)"
         " VALUES ('%s', %u, %u, %u, %u, %u,"
         "        %u, %i, %lli, %lli, %lli, '%s' )",
@@ -213,7 +213,7 @@ uint32 ItemDB::NewItem(const ItemData &data) {
 void ItemDB::UpdateLocation(uint32 itemID, uint32 locationID, EVEItemFlags flag)
 {
     DBerror err;
-    sDatabase.RunQuery(err, "UPDATE entity SET locationID = %u, flag = %u WHERE itemID = %u", \
+    sDatabase.RunQuery(err, "UPDATE entity SET locationID = %u, flagID = %u WHERE itemID = %u", \
             locationID, (uint16)flag, itemID);
 }
 
@@ -239,7 +239,7 @@ bool ItemDB::SaveItem(uint32 itemID, const ItemData &data) {
         "  itemName = '%s',"
         "  ownerID = %u,"
         "  locationID = %u,"
-        "  flag = %u,"
+        "  flagID = %u,"
         "  singleton = %u,"
         "  quantity = %i,"
         "  x = %lli, y = %lli, z = %lli,"
@@ -267,7 +267,7 @@ void ItemDB::SaveItems(std::vector<Inv::SaveData>& data)
     std::ostringstream Inserts;
     // start the insert into command.
     Inserts << "INSERT INTO entity";
-    Inserts << " (itemID, typeID, ownerID, locationID, flag, contraband, singleton, quantity, x, y, z, customInfo)";
+    Inserts << " (itemID, typeID, ownerID, locationID, flagID, contraband, singleton, quantity, x, y, z, customInfo)";
     Inserts << " VALUES ";
     bool save(false);
     for (auto &cur : data) {
@@ -294,7 +294,7 @@ void ItemDB::SaveItems(std::vector<Inv::SaveData>& data)
         Inserts << "ON DUPLICATE KEY UPDATE ";
         Inserts << "ownerID=VALUES(ownerID), ";
         Inserts << "locationID=VALUES(locationID), ";
-        Inserts << "flag=VALUES(flag), ";
+        Inserts << "flagID=VALUES(flagID), ";
         Inserts << "singleton=VALUES(singleton), ";
         Inserts << "quantity=VALUES(quantity), ";
         Inserts << "x=VALUES(x), ";

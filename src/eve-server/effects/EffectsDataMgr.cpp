@@ -150,8 +150,8 @@ Effect FxDataMgr::GetEffect(uint16 eID) {
 }
 
 void FxDataMgr::GetTypeEffect(uint16 typeID, std::vector< TypeEffects >& typeEffMap) {
-    auto itr = m_typeFxMap.equal_range(typeID);
-    for (auto it = itr.first; it != itr.second; ++it)
+    auto range = m_typeFxMap.equal_range(typeID);
+    for (auto it = range.first; it != range.second; ++it)
         typeEffMap.push_back(it->second);
 }
 
@@ -171,8 +171,8 @@ Operand FxDataMgr::GetOperand(uint16 oID) {
 
 bool FxDataMgr::isDefault(uint16 eID) {
     /*  this is NOT right...will have to think about it a while
-    auto typeRange = m_typeFxMap.equal_range(typeID);
-    for (auto &it = typeRange.first; it != typeRange.second; ++it) {
+    auto range = m_typeFxMap.equal_range(typeID);
+    for (auto it = range.first; it != range.second; ++it) {
         if (it->second.isDefault)
             return it->second.effectID;
     }

@@ -97,7 +97,7 @@ void testing::CharAttribTest() {
         data.tMemory = data.aMemory + data.bMemory + data.cMemory;
         data.tIntelligence = data.aIntelligence + data.bIntelligence + data.cIntelligence;
 
-        m_attribTest[row.GetUInt8(0)] = std::move(data);
+        m_attribTest[row.GetUInt8(0)] = data;
     }
 
     sLog.Green("Character Base Attributes", "%u Ancestry ID's registered.", m_attribTest.size());
@@ -121,9 +121,48 @@ void testing::CharAttribTest() {
     }
 }
 
+void testing::GetSkills() {
+
+    std::map<uint32, uint8> startingSkills;
+    //  Base Skills
+    CharacterDB::GetBaseSkills(startingSkills); //9
+    for (auto cur : startingSkills)
+        sLog.Green("Base: ", "%u:%u (%s)", cur.first, cur.second, sDataMgr.GetTypeName(cur.first));
+
+    //  Race Skills
+    startingSkills.clear();
+    CharacterDB::GetSkillsByRace(1, startingSkills); //32
+    for (auto skill : startingSkills)
+        sLog.Green("Race: ", "%s: %u:%u (%s)", sDataMgr.GetRaceName(1), skill.first, skill.second, sDataMgr.GetTypeName(skill.first));
+    startingSkills.clear();
+    CharacterDB::GetSkillsByRace(2, startingSkills); //32
+    for (auto skill : startingSkills)
+        sLog.Green("Race: ", "%s: %u:%u (%s)", sDataMgr.GetRaceName(2), skill.first, skill.second, sDataMgr.GetTypeName(skill.first));
+    startingSkills.clear();
+    CharacterDB::GetSkillsByRace(4, startingSkills); //32
+    for (auto skill : startingSkills)
+        sLog.Green("Race: ", "%s: %u:%u (%s)", sDataMgr.GetRaceName(4), skill.first, skill.second, sDataMgr.GetTypeName(skill.first));
+    startingSkills.clear();
+    CharacterDB::GetSkillsByRace(8, startingSkills); //32
+    for (auto skill : startingSkills)
+        sLog.Green("Race: ", "%s: %u:%u (%s)", sDataMgr.GetRaceName(8), skill.first, skill.second, sDataMgr.GetTypeName(skill.first));
+
+    DBQueryResult res;
+    sDatabase.RunQuery(res, "SELECT raceID, careerID, careerName FROM careers WHERE raceID < 10"); //15
+    DBResultRow row;
+    while (res.GetRow(row)) {
+        //  Career Skills
+        startingSkills.clear();
+        CharacterDB::GetSkillsByCareer(row.GetUInt(1), startingSkills); //162
+        for (auto skill : startingSkills)
+            sLog.Green("Career: ", "%s/%s(%u): %u:%u (%s)", sDataMgr.GetRaceName(row.GetUInt(0)), \
+            row.GetText(2), row.GetUInt(1), skill.first, skill.second, sDataMgr.GetTypeName(skill.first));
+    }
+}
+
 // 11jan25
 void testing::WarpTest(uint8 type) {
-    double profileStartTime(GetTimeUSeconds());
+    double profileStartTime = GetTimeUSeconds();
 
     BUBBLE_RADIUS_METERS = 300000;
 
@@ -372,7 +411,7 @@ void testing::WarpUpdate(int64 currentDistance, uint16 sec_into_warp, uint8 type
 
 //22jan25
 void testing::TurnTest(uint8 type) {
-    double profileStartTime(GetTimeUSeconds());
+    double profileStartTime = GetTimeUSeconds();
     m_stop = false;
     m_agility = 18.4f;
     m_alignTime = 25.50871f;

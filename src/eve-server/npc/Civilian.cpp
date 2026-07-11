@@ -39,14 +39,12 @@ m_type(sItemFactory.GetType(typeID)),
 m_origSE(nullptr),
 m_destSE(nullptr)
 {
-    _log(CIV__INFO, "Created Civilian %s(%u).", m_type->name(), itemID);
+    _log(CIV__INFO, "Created Civilian %s(%u).", m_type->name().c_str(), itemID);
 }
 
-void Civilian::~Civilian() {
-    for (auto cur : m_guards) {
-    cur->RemoveCiv(m_destSE->SysBubble());
-        SafeDelete(cur);
-    }
+Civilian::~Civilian() {
+    for (auto cur : m_guards)
+        m_origSE->SystemMgr()->RemoveCiv(cur);
 }
 
 void Civilian::Init(SystemEntity* pOrig, SystemEntity* pDest) {
@@ -98,9 +96,9 @@ void Civilian::Process() {
         case Civ::State::Completed: {
             // If dest is a stargate: trigger the activation animation packet.
             if (m_destSE->IsGateSE())
-                SendGFX10(m_destSE->GetID(), "effects.GateActivity");
-            if (m_destSE->IsStationSE())
-                sTraderJoe.ExecuteCargoDrop(m_destSE); // Update marketbot with 'special, limited-time items'
+                SendGateActivity(m_destSE);
+            //if (m_destSE->IsStationSE())
+            //    sTraderJoe.ExecuteCargoDrop(m_destSE); // Update marketbot with 'special, limited-time items'
             // run complete.  remove ship(s)
             Remove(m_destSE->SysBubble());
             m_destSE->SystemMgr()->RemoveCiv(this);
@@ -124,14 +122,14 @@ void Civilian::Stop() {
     CmdStop du;
         du.entityID = m_itemID;
     PyTuple *up = du.Encode();
-    m_destSE->SysBubble()->BubblecastDestinyUpdate(up, "Fake Destiny Updates for Civilian (Stop)");
+    m_destSE->SysBubble()->BubblecastDestinyUpdate(&up, "Fake Destiny Updates for Civilian (Stop)");
     PyDecRef(up);
 }
 
 void Civilian::SetVectors() {
     GVector targHeading(m_origSE->GetPosition(), m_destSE->GetPosition());
     targHeading.normalize();
-    m_heading = std::move(targHeading);
+    m_heading = targHeading;
 
     // what and where?
     if (IsEven(MakeRandomInt()) and !m_origSE->SysBubble()->IsEmpty()) {
@@ -139,7 +137,7 @@ void Civilian::SetVectors() {
         if (m_origSE->IsGateSE()) {
             // ...from a gate
             m_state = Civ::State::Departing;
-            m_pos = m_origSE->GetPosition()();
+            m_pos = m_origSE->GetPosition();
             m_pos.MakeRandomPointOnSphereLayer(1500, 3500);
             SendGateActivity(m_origSE);
         } else if (m_origSE->IsStationSE()) {  //(sDataMgr.IsStation(m_locationID)
@@ -152,7 +150,7 @@ void Civilian::SetVectors() {
             m_state = Civ::State::Completed;
             m_timeLeft = 5;
             // error?
-            _log(CIV__ERROR, "Civilian::Init() - %u (%u) hit 'else' in origin check", m_type->id(), m_itemID);
+            _log(CIV__ERROR, "Civilian::Init() - %s (%u) hit 'else' in origin check", m_type->name().c_str(), m_itemID);
             return;
         }
         Add(m_origSE->SysBubble());
@@ -161,7 +159,7 @@ void Civilian::SetVectors() {
         m_state = Civ::State::Arriving;
         m_timeLeft = 1;
         // get warp speed and set entry position at bubble boundry -5k
-        m_pos = m_destSE.position() - (m_heading * (BUBBLE_RADIUS_METERS - 5000));
+        m_pos = m_destSE->GetPosition() - (m_heading * (BUBBLE_RADIUS_METERS - 5000));
     	float mass = m_type->mass();
     	double inertiaMod = m_type->GetAttribute(AttrInertiaMod).get_double();
         double agility = mass * inertiaMod / 1000000.0;
@@ -173,7 +171,7 @@ void Civilian::SetVectors() {
         m_state = Civ::State::Completed;
         m_timeLeft = 2;
         // error?
-        _log(CIV__ERROR, "Civilian::Init() - %u (%u) hit 'else' in origin check", m_type->id(), m_itemID);
+        _log(CIV__ERROR, "Civilian::Init() - %s (%u) hit 'else' in origin check", m_type->name().c_str(), m_itemID);
     }
 }
 
@@ -222,9 +220,9 @@ void Civilian::Add(SystemBubble* pBubble) {
     addballs.slims = new PyList();
     addballs.slims->AddItem(new PyObject("foo.SlimItem", MakeSlimItem()));
 	//bubblecast the update
-    PyTuple* t = addballs.Encode();
-    pBubble->BubblecastDestinyUpdate(&t, "Civ AddBall");
-    PySafeDecRef(t);
+    PyTuple* up = addballs.Encode();
+    pBubble->BubblecastDestinyUpdate(&up, "Civ AddBall");
+    PySafeDecRef(up);
 
     delete destinyBuffer; // Safe tracking cleanup
 }
@@ -242,16 +240,18 @@ void Civilian::Remove(SystemBubble* pBubble) {
     PySafeDecRef(tmp);
 }
 
-void Civilian::MakeDamageState(DoDestinyDamageState &into) {
-    into.shield = 1;
-    into.recharge = 11000;
-    into.armor = 1;
-    into.structure = 1;
-    into.timestamp = GetFileTimeNow();
+PyTuple* Civilian::MakeDamageState() {
+    DoDestinyDamageState ddds;
+    ddds.shield = 1;
+    ddds.recharge = 11000;
+    ddds.armor = 1;
+    ddds.structure = 1;
+    ddds.timestamp = GetFileTimeNow();
+    return ddds.Encode();
 }
 
 PyDict* Civilian::MakeSlimItem() {
-    _log(SE__SLIMITEM, "MakeSlimItem for Ship %s(%u)", m_type->name().c_str(), m_itemID);
+    _log(SE__SLIMITEM, "MakeSlimItem for Civilian %s(%u)", m_type->name().c_str(), m_itemID);
     PyDict *slim = new PyDict();
         slim->SetItemString("itemID",       new PyLong(m_itemID));
         slim->SetItemString("typeID",       new PyInt(m_type->id()));
@@ -262,7 +262,7 @@ PyDict* Civilian::MakeSlimItem() {
 }
 
 void Civilian::SendGateActivity(SystemEntity* pGateSE) const {
-	std::string guid = "effects.GateActivity";
+    std::string guid = "effects.GateActivity";
     OnSpecialFX10 effect;
         effect.entityID = pGateSE->GetID();
         effect.targetID = PyStatic.NewNone();
@@ -273,7 +273,7 @@ void Civilian::SendGateActivity(SystemEntity* pGateSE) const {
         effect.start = 1;
         effect.active = 0;
     PyTuple *up = effect.Encode();
-    pGateSE->SysBubble()->BubblecastDestinyEvent(up, "Civ Destiny Gate Event" );
+    pGateSE->SysBubble()->BubblecastDestinyEvent(&up, "Civ Gate Event" );
     PyDecRef(up);
 }
 
@@ -296,9 +296,9 @@ void Civilian::EncodeDestiny( Buffer& into) {
         head.entityID = m_itemID;
         head.mode = mode;
         head.radius = m_type->radius();
-        head.posX = m_pos.x();
-        head.posY = m_pos.y();
-        head.posZ = m_pos.z();
+        head.posX = m_pos.x;
+        head.posY = m_pos.y;
+        head.posZ = m_pos.z;
         head.flags = Ball::Flag::IsFree;
     into.Append(head);
     MassSector mass = MassSector();
@@ -311,9 +311,9 @@ void Civilian::EncodeDestiny( Buffer& into) {
     DataSector data = DataSector();
         data.inertia = m_type->GetAttribute(AttrInertiaMod).get_float();
         data.maxSpeed = m_type->GetAttribute(AttrMaxVelocity).get_uint32();
-        data.velX = m_velocity.x();
-        data.velY = m_velocity.y();
-        data.velZ = m_velocity.z();
+        data.velX = m_velocity.x;
+        data.velY = m_velocity.y;
+        data.velZ = m_velocity.z;
         data.speedfraction = (m_velocity.length() / data.maxSpeed);
     into.Append(data);
     switch (m_state) {
@@ -367,7 +367,7 @@ void Civilian::EncodeDestiny( Buffer& into) {
 
 // may not need/use these...
 void Civilian::SendShipVars(SystemBubble* pBubble) {
-	/*** add ship data ***/
+    /*** add ship data ***/
     std::vector<PyTuple*> updates;
     SetBallAgility sbagility;
         sbagility.entityID =  m_itemID;

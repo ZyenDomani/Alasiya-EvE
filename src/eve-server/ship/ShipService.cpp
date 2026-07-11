@@ -165,8 +165,8 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
     }
 
     //  do we need this? yes....this needs more work in destiny to implement correctly
-    if (pShipSE->DestinyMgr()->GetSpeed() > 20)
-        throw CustomError("You cannot eject current ship while moving faster than 20m/s.");
+    //if (pShipSE->DestinyMgr()->GetSpeed() > 20)
+    //    throw CustomError("You cannot eject current ship while moving faster than 20m/s.");
 
     SystemManager* pSysMgr = pClient->SystemMgr();
     if (pSysMgr == nullptr) {
@@ -182,7 +182,7 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
         throw CustomError("Something bad happened as you prepared to board the ship.");
     }
 
-    if (pShipSE->GetTypeID() == EVEDB::invTypes::Capsule) {
+    if (pShipSE->GetTypeID() == EVEItemTypes::Capsule) {
         codelog(ITEM__ERROR, "Empty Pod %u in space.  SystemID %u.", args.newShipID, pSysMgr->GetID());
         throw CustomError("You already have a pod.  These cannot be boarded manally.");
     }
@@ -190,8 +190,8 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
     //CantBoardTargeted
 
     //  do we need this? yes....this needs more work in destiny to implement correctly
-    if (pShipSE->DestinyMgr()->GetSpeed() > 20)
-        throw CustomError("You cannot board the ship while it's moving faster than 20m/s.");
+    //if (pShipSE->DestinyMgr()->GetSpeed() > 20)
+    //    throw CustomError("You cannot board the ship while it's moving faster than 20m/s.");
 
     // should we eject player here and deny boarding new ship, or just leave char in current ship and return?
     if (!pShipSE->GetShipItemRef()->ValidateBoardShip(pClient->GetChar()))
@@ -241,8 +241,8 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
     }
 
     //  do we need this? yes....this needs more work in destiny to implement correctly
-    if (pShipSE->DestinyMgr()->GetSpeed() > 20)
-        throw CustomError("You cannot eject current ship while moving faster than 20m/s.");
+    //if (pShipSE->DestinyMgr()->GetSpeed() > 20)
+    //    throw CustomError("You cannot eject current ship while moving faster than 20m/s.");
 
     pClient->Eject();
 
@@ -837,7 +837,7 @@ void ShipBound::CheckScoop(SystemManager* sysMgr, PyList* itemList, PyDict* erro
      */
 
     uint32 itemID(0);
-    SystemEntity* pSE(nullptr);
+    SystemEntity* pSE = nullptr;
     InventoryItemRef iRef(nullptr);
     PyList::const_iterator itr = itemList->begin();
     while (itr != itemList->end()) {
@@ -1058,7 +1058,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
             // Spawn jetcan then continue loop
             location.MakeRandomPointOnSphere(500.0);
             ItemData p_idata(
-                            itemTypeJetCan,
+                            Item::Type::JetCan,
                             pClient->GetCharacterID(),  //owner is Character?  figure out how to test for corp owner
                             pClient->GetLocationID(),
                             flagAutoFit,

@@ -1460,7 +1460,7 @@ void DroneAIMgr::OrbitTarget() {
                     // update heading
                     GVector targHeading(mySE->GetPosition(), shipSE->GetPosition());
                     targHeading.normalize();
-                    m_heading = std::move(targHeading);
+                    m_heading = targHeading;
                     // are we outside of control distance and idling back to our ship?
                     if (!mySE->InControlDistance())
                         idle = true;
@@ -1478,7 +1478,7 @@ void DroneAIMgr::OrbitTarget() {
                     // update heading
                     GVector targHeading(mySE->GetPosition(), targSE->GetPosition());
                     targHeading.normalize();
-                    m_heading = std::move(targHeading);
+                    m_heading = targHeading;
                 } break;
                 // this should never hit
                 case DroneAI::State::Invalid:
@@ -1497,7 +1497,7 @@ void DroneAIMgr::OrbitTarget() {
             // update heading
             GVector targHeading(mySE->GetPosition(), targSE->GetPosition());
             targHeading.normalize();
-            m_heading = std::move(targHeading);
+            m_heading = targHeading;
         } break;
         case DroneAI::Action::AccelToShip:
         case DroneAI::Action::DecelToShip: {
@@ -1508,7 +1508,7 @@ void DroneAIMgr::OrbitTarget() {
             // update heading
             GVector targHeading(mySE->GetPosition(), shipSE->GetPosition());
             targHeading.normalize();
-            m_heading = std::move(targHeading);
+            m_heading = targHeading;
             // are we outside of control distance and idling back to our ship?
             if (!mySE->InControlDistance())
                 idle = true;
@@ -1616,7 +1616,7 @@ void DroneAIMgr::FindTarget() {
        bool focus(mySE->GetSelf()->GetAttribute(AttrDroneFocusFire).get_bool());
     bool aggressive(mySE->GetSelf()->GetAttribute(AttrDroneIsAgressive).get_bool()
                     or mySE->GetSelf()->GetAttribute(AttrDroneIsChaotic).get_bool());
-    bool follow(mySE->GetSelf()->GetAttribute(AttrFightersAttackAndFollow).get_bool());
+    bool FollowBall(mySE->GetSelf()->GetAttribute(AttrFightersAttackAndFollow).get_bool());
 
     if (focus and !m_focusfire) {
         // ok, so we have focus fire set.  see if any other drone has a valid target and assist

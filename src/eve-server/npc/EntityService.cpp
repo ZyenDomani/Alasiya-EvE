@@ -105,7 +105,7 @@ PyResult EntityBound::Handle_CmdEngage(PyCallArgs &call) {
     if (!errorDict->empty())
         return errorDict;
 
-    SystemEntity* pSE(nullptr);
+    SystemEntity* pSE = nullptr;
     PyList::const_iterator itr = droneList->begin();
     while (itr != droneList->end()) {
         pSE = m_sysMgr->GetEntityByID(PyRep::IntegerValueU32(*itr));
@@ -130,7 +130,7 @@ PyResult EntityBound::Handle_CmdRelinquishControl(PyCallArgs &call) {
     PyList* droneList = call.tuple->AsTuple()->GetItem(0)->AsList();
     PyDict* errorDict = new PyDict();
 
-    SystemEntity* pSE(nullptr);
+    SystemEntity* pSE = nullptr;
     PyList::const_iterator itr = droneList->begin();
     while (itr != droneList->end()) {
         pSE = m_sysMgr->GetEntityByID(PyRep::IntegerValueU32(*itr));
@@ -175,7 +175,7 @@ PyResult EntityBound::Handle_CmdDelegateControl(PyCallArgs &call) {
     if (!errorDict->empty())
         return errorDict;
 
-    SystemEntity* pSE(nullptr);
+    SystemEntity* pSE = nullptr;
     PyList::const_iterator itr = droneList->begin();
     while (itr != droneList->end()) {
         pSE = m_sysMgr->GetEntityByID(PyRep::IntegerValueU32(*itr));
@@ -211,7 +211,7 @@ PyResult EntityBound::Handle_CmdAssist(PyCallArgs &call) {
     if (!errorDict->empty())
         return errorDict;
 
-    SystemEntity* pSE(nullptr);
+    SystemEntity* pSE = nullptr;
     PyList::const_iterator itr = droneList->begin();
     while (itr != droneList->end()) {
         pSE = m_sysMgr->GetEntityByID(PyRep::IntegerValueU32(*itr));
@@ -247,7 +247,7 @@ PyResult EntityBound::Handle_CmdGuard(PyCallArgs &call) {
     if (!errorDict->empty())
         return errorDict;
 
-    SystemEntity* pSE(nullptr);
+    SystemEntity* pSE = nullptr;
     PyList::const_iterator itr = droneList->begin();
     while (itr != droneList->end()) {
         pSE = m_sysMgr->GetEntityByID(PyRep::IntegerValueU32(*itr));
@@ -282,7 +282,7 @@ PyResult EntityBound::Handle_CmdMine(PyCallArgs &call) {
         return errorDict;
     }
 
-    SystemEntity* pSE(nullptr);
+    SystemEntity* pSE = nullptr;
     PyList::const_iterator itr = droneList->begin();
     while (itr != droneList->end()) {
         pSE = m_sysMgr->GetEntityByID(PyRep::IntegerValueU32(*itr));
@@ -317,7 +317,7 @@ PyResult EntityBound::Handle_CmdMineRepeatedly(PyCallArgs &call) {
         return errorDict;
     }
 
-    SystemEntity* pSE(nullptr);
+    SystemEntity* pSE = nullptr;
     PyList::const_iterator itr = droneList->begin();
     while (itr != droneList->end()) {
         pSE = m_sysMgr->GetEntityByID(PyRep::IntegerValueU32(*itr));
@@ -335,7 +335,7 @@ PyResult EntityBound::Handle_CmdReturnHome(PyCallArgs &call) {
     PyDict* errorDict = new PyDict();
     PyList* droneList = call.tuple->AsTuple()->GetItem(0)->AsList();
 
-    SystemEntity* pSE(nullptr);
+    SystemEntity* pSE = nullptr;
     PyList::const_iterator itr = droneList->begin();
     while (itr != droneList->end()) {
         pSE = m_sysMgr->GetEntityByID(PyRep::IntegerValueU32(*itr));
@@ -352,7 +352,7 @@ PyResult EntityBound::Handle_CmdReturnBay(PyCallArgs &call) {
     PyDict* errorDict = new PyDict();
     PyList* droneList = call.tuple->AsTuple()->GetItem(0)->AsList();
 
-    SystemEntity* pSE(nullptr);
+    SystemEntity* pSE = nullptr;
     PyList::const_iterator itr = droneList->begin();
     while (itr != droneList->end()) {
         pSE = m_sysMgr->GetEntityByID(PyRep::IntegerValueU32(*itr));
@@ -368,7 +368,7 @@ PyResult EntityBound::Handle_CmdReturnBay(PyCallArgs &call) {
 PyResult EntityBound::Handle_CmdAbandonDrone(PyCallArgs &call) {
     PyList* droneList = call.tuple->AsTuple()->GetItem(0)->AsList();
 
-    SystemEntity* pSE(nullptr);
+    SystemEntity* pSE = nullptr;
     PyList::const_iterator itr = droneList->begin();
     while (itr != droneList->end()) {
         pSE = m_sysMgr->GetEntityByID(PyRep::IntegerValueU32(*itr));
@@ -389,7 +389,7 @@ PyResult EntityBound::Handle_CmdReconnectToDrones(PyCallArgs &call) {
     PyDict* errorDict = new PyDict();
     PyList* droneList = call.tuple->AsTuple()->GetItem(0)->AsList();
 
-    SystemEntity* pSE(nullptr);
+    SystemEntity* pSE = nullptr;
     PyList::const_iterator itr = droneList->begin();
     while (itr != droneList->end()) {
         pSE = m_sysMgr->GetEntityByID(PyRep::IntegerValueU32(*itr));
@@ -587,7 +587,7 @@ void EntityBound::CheckMisc(SystemEntity* pTarget, PyList* droneList, PyDict* er
         // what if we're commanding drone to attack char pod?
         if (pTarget->HasPilot()) {
             // for assist, guard, and delegating command
-            if (pTarget->GetShipSE()->GetTypeID() == EVEDB::invTypes::Capsule) {
+            if (pTarget->GetShipSE()->GetTypeID() == EVEItemTypes::Capsule) {
                 if (m_attack and sConfig.drone.GuardPod)
                     continue;
                 PyDict* data = new PyDict();

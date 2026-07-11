@@ -65,7 +65,7 @@ Sentry::~Sentry() {
 void Sentry::Process() {
     if (m_killed)
         return;
-    double profileStartTime(GetTimeUSeconds());
+    double profileStartTime = GetTimeUSeconds();
 
     m_AI->Process();
     /*   Base call to Process Movement  */

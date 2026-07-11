@@ -162,47 +162,48 @@ void Prospector::DropSalvage() {
     std::vector<uint32> list;
     sDataMgr.GetSalvage(atoi(m_targetSE->GetSelf()->customInfo().c_str()), list);
 
-    bool drone(false);
+    if (list.empty())
+        return;
+
+    bool drone = false;
     if (atoi(m_targetSE->GetSelf()->customInfo().c_str()) == factionUnknown)
         drone = true;
 
-    if (!list.empty()) {
-        uint8 drop(0);
-        switch (m_accessChance) {       // drop qty * rate in config
-            case  30: drop = 1; break;  //  1 to 4
-            case  20: drop = 2; break;  //  2 to 8
-            case  10: drop = 3; break;  //  3 to 12
-            case   0: drop = 4; break;  //  4 to 16
-            case -10: drop = 5; break;  //  5 to 20
-            case -20: drop = 6; break;  //  6 to 32
-        }
+    uint8 drop(0);
+    switch (m_accessChance) {       // drop qty * rate in config
+        case  30: drop = 1; break;  //  1 to 4
+        case  20: drop = 2; break;  //  2 to 8
+        case  10: drop = 3; break;  //  3 to 12
+        case   0: drop = 4; break;  //  4 to 16
+        case -10: drop = 5; break;  //  5 to 20
+        case -20: drop = 6; break;  //  6 to 32
+    }
 
-        InventoryItemRef iRef(nullptr);
-        Inventory* sInv(m_shipRef->GetMyInventory());
-        uint32 quantity(0), minDrop = drop, maxDrop = (drop * sConfig.rates.DropSalvage);
-        for (auto &cur : list) {
-            // each drop has 50/50 chance.  may need to change this later.   base on char's salvage skill?
-            if (drone) {
-                // if drone, then chance is less than half
-                if (MakeRandomUInt() < 70)
-                    continue;
-            } else if (IsEven(MakeRandomUInt())) {
+    InventoryItemRef iRef(nullptr);
+    Inventory* sInv(m_shipRef->GetMyInventory());
+    uint32 quantity(0), minDrop = drop, maxDrop = (drop * sConfig.rates.DropSalvage);
+    for (auto &cur : list) {
+        // each drop has 50/50 chance.  may need to change this later.   base on char's salvage skill?
+        if (drone) {
+            // if drone, then chance is less than half
+            if (MakeRandomUInt() < 70)
                 continue;
-            }
-            quantity = (MakeRandomUInt(minDrop, maxDrop));
-            ItemData iLoot(cur, pChar->itemID(), locTemp, flagAutoFit, quantity);
-            iRef = sItemFactory.SpawnItem(iLoot);
-            if (iRef.get() == nullptr) // we'll get over it...continue
-                continue;
-            if (sInv->HasAvailableSpace(m_holdFlag, iRef)) {
-                //iRef->Move(m_shipRef->itemID(), m_holdFlag, true);
-                iRef->MergeTypesInCargo(m_shipRef.get(), m_holdFlag);
-                _log(MODULE__DEBUG, "Prospector::DropSalvage - dropped %u %s of %u/%u", quantity, iRef->name(), minDrop, maxDrop);
-            } else {
-                _log(MODULE__DEBUG, "Prospector::DropSalvage - %s's %s is full.", m_shipRef->name(), sDataMgr.GetFlagName(m_holdFlag));
-                m_shipRef->GetPilot()->SendNotifyMsg("Your %s is full.  Remaining salvage is lost.", sDataMgr.GetFlagName(m_holdFlag));
-                break;
-            }
+        } else if (IsEven(MakeRandomUInt())) {
+            continue;
+        }
+        quantity = (MakeRandomUInt(minDrop, maxDrop));
+        ItemData iLoot(cur, pChar->itemID(), locTemp, flagAutoFit, quantity);
+        iRef = sItemFactory.SpawnItem(iLoot);
+        if (iRef.get() == nullptr) // we'll get over it...continue
+            continue;
+        if (sInv->HasAvailableSpace(m_holdFlag, iRef)) {
+            //iRef->Move(m_shipRef->itemID(), m_holdFlag, true);
+            iRef->MergeTypesInCargo(m_shipRef.get(), m_holdFlag);
+            _log(MODULE__DEBUG, "Prospector::DropSalvage - dropped %u %s of %u/%u", quantity, iRef->name(), minDrop, maxDrop);
+        } else {
+            _log(MODULE__DEBUG, "Prospector::DropSalvage - %s's %s is full.", m_shipRef->name(), sDataMgr.GetFlagName(m_holdFlag));
+            m_shipRef->GetPilot()->SendNotifyMsg("Your %s is full.  Remaining salvage is lost.", sDataMgr.GetFlagName(m_holdFlag));
+            break;
         }
     }
 
@@ -217,7 +218,7 @@ void Prospector::DropSalvage() {
         m_targetSE->GetSelf()->GetMyInventory()->GetInventoryMap(shipLoot);
 
         // create new container
-        ItemData p_idata(23,   // 23 = cargo container
+        ItemData p_idata(Item::Type::JetCan,
                         m_targetSE->GetSelf()->ownerID(),
                         locTemp,
                         flagAutoFit,

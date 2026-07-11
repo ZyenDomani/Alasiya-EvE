@@ -14,6 +14,7 @@
 
 #include "StaticDataMgr.h"
 #include "EVEServerConfig.h"
+
 #include "character/CharacterDB.h"
 #include "database/EVEDBUtils.h"
 #include "manufacturing/FactoryDB.h"
@@ -25,6 +26,7 @@
 #include "../eve-common/EVE_Agent.h"
 #include "../eve-common/EVE_Character.h"
 #include "../eve-common/EVE_POS.h"
+#include "../eve-common/EVE_Spawn.h"
 
 /*
  * DATA__ERROR          # specific "data not found but should be there" msgs
@@ -73,7 +75,6 @@ void StaticDataMgr::Clear() {
     m_corpFaction.clear();
     m_typeAttrMap.clear();
     m_LootGroupMap.clear();
-    m_stationCount.clear();
     m_stationConst.clear();
     m_stationRegion.clear();
     m_stationSystem.clear();
@@ -173,18 +174,21 @@ void StaticDataMgr::Populate() {
 
     startTime = GetTimeMSeconds();
     ManagerDB::GetCategoryData(*res);
+    m_catData.reserve(res->GetRowCount());
     while (res->GetRow(row)) {
         //SELECT categoryID, categoryName, description, published FROM invCategories
-        m_catData.emplace(row.GetUInt(0),
-                          Inv::CatData{row.GetUInt8(0),
-                                    row.GetText(1),
-                                    row.GetText(2),
-                          (sConfig.server.AllowNonPublished ? true : row.GetBool(3))});
+        Inv::CatData data = Inv::CatData();
+            data.id                     = row.GetUInt8(0);
+            data.name                   = row.GetText(1);
+            data.description            = row.GetText(2);
+            data.published              = (sConfig.server.AllowNonPublished ? true : row.GetBool(3));
+        m_catData.emplace(row.GetUInt(0), std::move(data));
     }
     sLog.Cyan("    StaticDataMgr", "%lu Inventory Categories loaded in %.3fms.", m_catData.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
     ManagerDB::GetGroupData(*res);
+    m_grpData.reserve(res->GetRowCount());
     while (res->GetRow(row)) {
         //SELECT groupID, categoryID, groupName, description, useBasePrice, allowManufacture, allowRecycler,
         //  anchored, anchorable, fittableNonSingleton, published FROM invGroups
@@ -200,12 +204,13 @@ void StaticDataMgr::Populate() {
             data.anchorable             = row.GetBool(8);
             data.fittableNonSingleton   = row.GetBool(9);
             data.published              = (sConfig.server.AllowNonPublished ? true : row.GetBool(10));
-        m_grpData.emplace(row.GetUInt(0), data);
+        m_grpData.emplace(row.GetUInt(0), std::move(data));
     }
     sLog.Cyan("    StaticDataMgr", "%lu Inventory Groups loaded in %.3fms.", m_grpData.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
     ManagerDB::GetTypeData(*res);
+    m_typeData.reserve(res->GetRowCount());
     while (res->GetRow(row)) {
         Inv::TypeData data              = Inv::TypeData();
             data.id                     = row.GetUInt(0);
@@ -224,17 +229,15 @@ void StaticDataMgr::Populate() {
             data.marketGroupID          = (row.IsNull(12) ? 0 : row.GetUInt(12));
             data.chanceOfDuplicating    = row.GetFloat(13);
             data.metaLvl                = (row.IsNull(14) ? 0 : row.GetUInt(14));
-            // these will take a bit of work, but will eliminate multiple db hits on inventory/menu loading ingame
-            if (sConfig.server.LoadStaticRecyclable)
-                data.isRecyclable       = FactoryDB::IsRecyclable(data.id);   // +5s to startup
-            if (sConfig.server.LoadStaticRefinable)
-                data.isRefinable        = FactoryDB::IsRefinable(data.id);     // +3s to startup
-        m_typeData.emplace(row.GetUInt(0), data);
+            data.isRefinable            = row.GetUInt(15);
+            data.isRecyclable           = row.GetUInt(16);
+        m_typeData.emplace(row.GetUInt(0), std::move(data));
     }
     sLog.Cyan("    StaticDataMgr", "%lu Inventory Types loaded in %.3fms.", m_typeData.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
     ManagerDB::GetAttributeTypes(*res);
+    m_attrTypeData.reserve(res->GetRowCount());
     while (res->GetRow(row)) {
         //SELECT attributeID, attributeName, attributeCategory, displayName, categoryID FROM dgmAttributeTypes
         Inv::AttrTypeData typeData      = Inv::AttrTypeData();
@@ -243,18 +246,19 @@ void StaticDataMgr::Populate() {
         typeData.attributeCategory      = (row.IsNull(2) ? 0        : row.GetUInt(2));
         typeData.displayName            = (row.IsNull(3) ? "*none*" : row.GetText(3));
         typeData.categoryID             = (row.IsNull(4) ? 0        : row.GetUInt(4));
-        m_attrTypeData[row.GetUInt(0)] = std::move(typeData);
+        m_attrTypeData.emplace(row.GetUInt(0), std::move(typeData));
     }
     sLog.Cyan("    StaticDataMgr", "%lu Attribute data sets loaded in %.3fms.", m_attrTypeData.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
     ManagerDB::GetSystemData(*res);
+    m_solSysData.reserve(res->GetRowCount());
     while (res->GetRow(row)) {
         // SELECT solarSystemID, constellationID, regionID, solarSystemName, x, y, z,
         // xMin, xMax, yMin, yMax, zMin, zMax, luminosity,
         // border, fringe, corridor, hub, international, regional, constellation,
         // security, factionID, radius, sunTypeID, securityClass, security FROM mapSolarSystems
-        SolarSystemData sysData   = SolarSystemData();
+        SolarSystemData sysData         = SolarSystemData();
         sysData.systemID                = row.GetUInt(0);
         sysData.constellationID         = row.GetUInt(1);
         sysData.regionID                = row.GetUInt(2);
@@ -275,9 +279,7 @@ void StaticDataMgr::Populate() {
         sysData.radius                  = row.GetFloat(23);
         sysData.sunTypeID               = row.GetUInt(24);
         sysData.securityClass           = (row.IsNull(25) ? "0" : row.GetText(25));
-        m_solSysData[row.GetUInt(0)]     = std::move(sysData);
-        m_systemConst[row.GetUInt(0)]    = row.GetUInt(1);
-        m_systemRegion[row.GetUInt(0)]   = row.GetUInt(2);
+        m_solSysData.emplace(row.GetUInt(0), std::move(sysData));
         m_constSystems.emplace(row.GetUInt(1), row.GetUInt(0));
         m_regionSystems.emplace(row.GetUInt(2), row.GetUInt(0));
     }
@@ -325,6 +327,7 @@ void StaticDataMgr::Populate() {
 
     startTime = GetTimeMSeconds();
     ManagerDB::GetStaticData(*res);
+    m_staticData.reserve(res->GetRowCount());
     while (res->GetRow(row)) {
         //SELECT itemID, regionID, constellationID, solarSystemID, typeID, radius, x, y, z FROM mapDenormalize
         StaticData data         = StaticData();
@@ -335,8 +338,8 @@ void StaticDataMgr::Populate() {
         data.typeID             = row.GetUInt(4);
         data.radius             = row.GetFloat(5);
         data.position           = GPoint(row.GetDouble(6),row.GetDouble(7),row.GetDouble(8));
-        //m_staticData[row.GetInt(0)] = std::move(data);
-        m_staticData.emplace(row.GetUInt(0), data);
+        //m_staticData[row.GetInt(0)] = data;
+        m_staticData.emplace(row.GetUInt(0), std::move(data));
     }
     sLog.Cyan("    StaticDataMgr", "%lu Static Entity data sets loaded in %.3fms.", m_staticData.size(), (GetTimeMSeconds() - startTime));
 
@@ -344,25 +347,25 @@ void StaticDataMgr::Populate() {
     MapDB::GetStationCount(*res);
     while (res->GetRow(row)) {
         //SELECT map.solarSystemID, count(sta.stationID) FROM staStations sta
-        m_stationCount[row.GetUInt(0)] = row.GetUInt(1);
+        m_stationCount.emplace(row.GetUInt(0), row.GetUInt(1));
     }
     StationDB::GetStationRegion(*res);
     while (res->GetRow(row)) {
         //SELECT stationID, regionID FROM staStations
-        m_stationRegion[row.GetUInt(0)] = row.GetUInt(1);
+        m_stationRegion.emplace(row.GetUInt(0), row.GetUInt(1));
     }
     StationDB::GetStationConstellation(*res);
     while (res->GetRow(row)) {
         //SELECT stationID, constellationID FROM staStations
-        m_stationConst[row.GetUInt(0)] = row.GetUInt(1);
+        m_stationConst.emplace(row.GetUInt(0), row.GetUInt(1));
     }
     StationDB::GetStationSystem(*res);
     while (res->GetRow(row)) {
         //SELECT stationID, solarSystemID FROM staStations
-        m_stationSystem[row.GetUInt(0)] = row.GetUInt(1);
+        m_stationSystem.emplace(row.GetUInt(0), row.GetUInt(1));
     }
 
-    std::map<uint32, std::vector<uint32>>::iterator itr = m_stationList.begin();
+    std::unordered_map<uint32, std::vector<uint32>>::iterator itr = m_stationList.begin();
     for (auto &cur : m_stationSystem) {
         itr = m_stationList.find(cur.second);
         if (itr != m_stationList.end()) {
@@ -399,7 +402,7 @@ void StaticDataMgr::Populate() {
         data.perception         = row.GetUInt8(3);
         data.memory             = row.GetUInt8(4);
         data.willpower          = row.GetUInt8(5);
-        m_ancestryBonuses[row.GetUInt8(0)] = std::move(data);
+        m_ancestryBonuses[row.GetUInt8(0)] = data;
     }
 
     CharacterDB::GetAttributesFromBloodline(*res);
@@ -411,7 +414,7 @@ void StaticDataMgr::Populate() {
         data.perception         = row.GetUInt8(3);
         data.memory             = row.GetUInt8(4);
         data.willpower          = row.GetUInt8(5);
-        m_bloodlineBonuses[row.GetUInt8(0)] = std::move(data);
+        m_bloodlineBonuses[row.GetUInt8(0)] = data;
     }
 
     sLog.Cyan("    StaticDataMgr", "%lu Type Attribute Sets loaded in %.3fms", m_typeAttrMap.size(), (GetTimeMSeconds() - startTime));
@@ -513,7 +516,7 @@ void StaticDataMgr::Populate() {
             bpTypeData.chanceOfRE               = row.GetFloat(13);
             bpTypeData.catID                    = (row.IsNull(14) ? 0 : row.GetUInt(14));
         m_bpProductData[row.GetUInt(2)] = bpTypeData;
-        m_bpTypeData[row.GetUInt(0)] = std::move(bpTypeData);
+        m_bpTypeData[row.GetUInt(0)] = bpTypeData;
     }
 
     _log(MANUF__DUMP, "m_bpTypeData.size() = %u", m_bpTypeData.size());
@@ -690,14 +693,14 @@ void StaticDataMgr::GetInfo()
 
 void StaticDataMgr::GetCategory(uint8 catID, Inv::CatData& into)
 {
-    std::map<uint16, Inv::CatData>::const_iterator itr = m_catData.find(catID);
+    std::unordered_map<uint16, Inv::CatData>::const_iterator itr = m_catData.find(catID);
     if (itr != m_catData.end())
         into = itr->second;
 }
 
 const char* StaticDataMgr::GetCategoryName(uint8 catID)
 {
-    std::map<uint16, Inv::CatData>::const_iterator itr = m_catData.find(catID);
+    std::unordered_map<uint16, Inv::CatData>::const_iterator itr = m_catData.find(catID);
     if (itr != m_catData.end())
         return itr->second.name.c_str();
 
@@ -707,14 +710,14 @@ const char* StaticDataMgr::GetCategoryName(uint8 catID)
 
 void StaticDataMgr::GetGroup(uint16 grpID, Inv::GrpData& into)
 {
-    std::map<uint16, Inv::GrpData>::const_iterator itr = m_grpData.find(grpID);
+    std::unordered_map<uint16, Inv::GrpData>::const_iterator itr = m_grpData.find(grpID);
     if (itr != m_grpData.end())
         into = itr->second;
 }
 
 const char* StaticDataMgr::GetGroupName(uint16 grpID)
 {
-    std::map<uint16, Inv::GrpData>::const_iterator itr = m_grpData.find(grpID);
+    std::unordered_map<uint16, Inv::GrpData>::const_iterator itr = m_grpData.find(grpID);
     if (itr != m_grpData.end())
         return itr->second.name.c_str();
 
@@ -722,16 +725,22 @@ const char* StaticDataMgr::GetGroupName(uint16 grpID)
     return "None";
 }
 
-void StaticDataMgr::GetType(uint16 typeID, Inv::TypeData& into)
-{
-    std::map<uint16, Inv::TypeData>::const_iterator itr = m_typeData.find(typeID);
+uint8 StaticDataMgr::GetMetaLevel(uint16 typeID) {
+    std::unordered_map<uint16, Inv::TypeData>::const_iterator itr = m_typeData.find(typeID);
+    if (itr != m_typeData.end())
+        return itr->second.metaLvl;
+
+    return 0;
+}
+
+void StaticDataMgr::GetType(uint16 typeID, Inv::TypeData& into) {
+    std::unordered_map<uint16, Inv::TypeData>::const_iterator itr = m_typeData.find(typeID);
     if (itr != m_typeData.end())
         into = itr->second;
 }
 
-const char* StaticDataMgr::GetTypeName(uint16 typeID)
-{
-    std::map<uint16, Inv::TypeData>::const_iterator itr = m_typeData.find(typeID);
+const char* StaticDataMgr::GetTypeName(uint16 typeID) {
+    std::unordered_map<uint16, Inv::TypeData>::const_iterator itr = m_typeData.find(typeID);
     if (itr != m_typeData.end())
         return itr->second.name.c_str();
 
@@ -739,14 +748,12 @@ const char* StaticDataMgr::GetTypeName(uint16 typeID)
     return "None";
 }
 
-void StaticDataMgr::GetTypes(std::map< uint16, Inv::TypeData >& into)
-{
+void StaticDataMgr::GetTypes(std::unordered_map< uint16, Inv::TypeData >& into) {
     into = m_typeData;
 }
 
-const char* StaticDataMgr::GetAttrName(uint16 attrID)
-{
-    std::map<uint16, Inv::AttrTypeData>::const_iterator itr = m_attrTypeData.find(attrID);
+const char* StaticDataMgr::GetAttrName(uint16 attrID) {
+    std::unordered_map<uint16, Inv::AttrTypeData>::const_iterator itr = m_attrTypeData.find(attrID);
     if (itr != m_attrTypeData.end())
         return itr->second.attributeName.c_str();
         //return itr->second.displayName.c_str();
@@ -756,14 +763,14 @@ const char* StaticDataMgr::GetAttrName(uint16 attrID)
 }
 
 uint32 StaticDataMgr::GetAgentCorpID(uint32 agentID) {
-    std::map<uint32, uint32>::iterator itr = m_agentCorp.find(agentID);
+    std::unordered_map<uint32, uint32>::iterator itr = m_agentCorp.find(agentID);
     if (itr != m_agentCorp.end())
         return itr->second;
     return 0;
 }
 
 PyInt* StaticDataMgr::GetAgentSystemID(int32 agentID) {
-    std::map<uint32, uint32>::iterator itr = m_agentSystem.find(agentID);
+    std::unordered_map<uint32, uint32>::iterator itr = m_agentSystem.find(agentID);
     if (itr != m_agentSystem.end())
         return new PyInt(itr->second);
 
@@ -771,26 +778,70 @@ PyInt* StaticDataMgr::GetAgentSystemID(int32 agentID) {
     return PyStatic.NewZero()->AsInt();
 }
 
-void StaticDataMgr::GetSalvage(uint32 factionID, std::vector<uint32> &itemList) {
-    auto itr = m_salvageMap.equal_range(factionID);
-    for (auto &it = itr.first; it != itr.second; ++it)
-        itemList.push_back(it->second);
+void StaticDataMgr::GetSalvage(uint32 factionID, std::vector<uint32> &into) {
+    auto range = m_salvageMap.equal_range(factionID);
+    uint16 count = std::distance(range.first, range.second);
+    if (count == 0)
+        return;
+    into.reserve(into.size() + count);
+    for (auto &it = range.first; it != range.second; ++it)
+        into.push_back(it->second);
 }
 
-bool StaticDataMgr::GetRoidDist(const char* secClass, std::unordered_multimap<float, uint16>& roids) {
-    auto groupRange = m_oreBySecClass.equal_range(secClass);
-    for (auto &it = groupRange.first; it != groupRange.second; ++it) {
+// new loot system part
+void StaticDataMgr::LoadSalvageTables() {
+    m_FactionToSalvageMap.clear();
+
+    DBQueryResult* res = new DBQueryResult();
+    // Query your legacy salvage data, utilizing techLvl to scale the relative weight
+    //auto res = db.Query("SELECT factionID, techLvl, itemID FROM facSalvage;");
+
+    DBResultRow row;
+    while (res->GetRow(row)) {
+        uint32 factionID = row.GetUInt(0);
+        uint8 techLvl    = row.GetUInt8(1);
+
+        LootItem item;
+        item.typeID = row.GetUInt16(2);
+        item.minQuantity = 1;
+        item.maxQuantity = 1;
+
+        // Define discrete distribution odds natively based on SDE Tech Tiering
+        item.weight = (techLvl == 2) ? 50 : 1000;
+
+        // Emplace item configurations safely into the faction's active pool cache
+        // Assuming a standard single salvage pool model per faction family
+        if (m_FactionToSalvageMap[factionID].empty()) {
+            LootPool newPool;
+            newPool.poolType = "SALVAGE";
+            m_FactionToSalvageMap[factionID].push_back(newPool);
+        }
+        m_FactionToSalvageMap[factionID][0].items.push_back(item);
+    }
+}
+
+bool StaticDataMgr::GetRoidDist(const char* secClass, std::unordered_multimap<float, uint16>& into) {
+    auto range = m_oreBySecClass.equal_range(secClass);
+    uint16 count = std::distance(range.first, range.second);
+    if (count == 0)
+        return false;
+    into.reserve(into.size() + count);
+    for (auto it = range.first; it != range.second; ++it) {
         _log(MINING__INFO, "GetRoidDist - adding %u with chance %.3f", it->second.typeID, it->second.chance);
-        roids.emplace(it->second.chance, it->second.typeID);
+        into.emplace(it->second.chance, it->second.typeID);
     }
 
-    return !roids.empty();
+    return !into.empty();
 }
 
-void StaticDataMgr::GetDgmTypeAttrVec(uint16 typeID, std::vector< Inv::DmgTypeAttribute >& typeAttrVec) {
-    auto itr = m_typeAttrMap.equal_range(typeID);
-    for (auto &it = itr.first; it != itr.second; ++it)
-        typeAttrVec.push_back(it->second);
+void StaticDataMgr::GetDgmTypeAttrVec(uint16 typeID, std::vector< Inv::DmgTypeAttribute >& into) {
+    auto range = m_typeAttrMap.equal_range(typeID);
+    uint16 count = std::distance(range.first, range.second);
+    if (count == 0)
+        return;
+    into.reserve(into.size() + count);
+    for (auto it = range.first; it != range.second; ++it)
+        into.push_back(it->second);
 }
 
 bool StaticDataMgr::IsSkillTypeID(uint16 typeID) {
@@ -798,7 +849,7 @@ bool StaticDataMgr::IsSkillTypeID(uint16 typeID) {
 }
 
 const char* StaticDataMgr::GetSkillName(uint16 skillID) {
-    std::map<uint16, std::string>::iterator itr = m_skills.find(skillID);
+    std::unordered_map<uint16, std::string>::iterator itr = m_skills.find(skillID);
     if (itr != m_skills.end()) {
         return itr->second.c_str();
     }
@@ -813,7 +864,7 @@ void StaticDataMgr::GetComponentData(std::map< uint16, Market::matlData >& into)
         data.price              = 0.0f;
         data.typeID             = cur.first;
         data.name               = cur.second;
-        into[cur.first]         = std::move(data);
+        into[cur.first]         = data;
     }
 }
 
@@ -823,7 +874,7 @@ void StaticDataMgr::GetMineralData(std::map< uint16, Market::matlData >& into) {
         data.price              = 0.0f;
         data.typeID             = cur.first;
         data.name               = cur.second;
-        into[cur.first]         = std::move(data);
+        into[cur.first]         = data;
     }
 }
 
@@ -833,7 +884,7 @@ void StaticDataMgr::GetCompoundData(std::map< uint16, Market::matlData >& into) 
         data.price              = 0.0f;
         data.typeID             = cur.first;
         data.name               = cur.second;
-        into[cur.first]         = std::move(data);
+        into[cur.first]         = data;
     }
 }
 
@@ -843,7 +894,7 @@ void StaticDataMgr::GetSalvageData(std::map< uint16, Market::matlData >& into) {
         data.price              = 0.0f;
         data.typeID             = cur.first;
         data.name               = cur.second;
-        into[cur.first]         = std::move(data);
+        into[cur.first]         = data;
     }
 }
 
@@ -853,7 +904,7 @@ void StaticDataMgr::GetPIResourceData(std::map< uint16, Market::matlData >& into
         data.price              = 0.0f;
         data.typeID             = cur.first;
         data.name               = cur.second;
-        into[cur.first]         = std::move(data);
+        into[cur.first]         = data;
     }
 }
 
@@ -863,7 +914,7 @@ void StaticDataMgr::GetPICommodityData(std::map< uint16, Market::matlData >& int
         data.price              = 0.0f;
         data.typeID             = cur.first;
         data.name               = cur.second;
-        into[cur.first]         = std::move(data);
+        into[cur.first]         = data;
     }
 }
 
@@ -873,7 +924,7 @@ void StaticDataMgr::GetMiscCommodityData(std::map< uint16, Market::matlData >& i
         data.price              = 0.0f;
         data.typeID             = cur.first;
         data.name               = cur.second;
-        into[cur.first]         = std::move(data);
+        into[cur.first]         = data;
     }
 }
 
@@ -884,13 +935,13 @@ void StaticDataMgr::GetMoonResouces(std::map<uint16, uint8>& data) {
 }
 
 void StaticDataMgr::GetAncestryBonuses(uint8 ancestryID, Char::AttrData& into) {
-    std::map<uint8, Char::AttrData>::iterator itr = m_ancestryBonuses.find(ancestryID);
+    std::unordered_map<uint8, Char::AttrData>::iterator itr = m_ancestryBonuses.find(ancestryID);
     if (itr != m_ancestryBonuses.end())
         into = itr->second;
 }
 
 void StaticDataMgr::GetBloodlineBonuses(uint8 bloodlineID, Char::AttrData& into) {
-    std::map<uint8, Char::AttrData>::iterator itr = m_bloodlineBonuses.find(bloodlineID);
+    std::unordered_map<uint8, Char::AttrData>::iterator itr = m_bloodlineBonuses.find(bloodlineID);
     if (itr != m_bloodlineBonuses.end())
         into = itr->second;
 }
@@ -899,12 +950,12 @@ uint16 StaticDataMgr::GetRandRatType(uint8 sClass, uint16 groupID) {
     if (groupID == 0)
         return 0;
     std::vector< uint16 > typeVec;
-    auto classRange = m_npcTypes.equal_range(sClass);
-    for (auto &it = classRange.first; it != classRange.second; ++it) {
-        for (auto &itr : it->second)
-            if (itr.first == groupID) {
-                for (auto &tItr : itr.second)
-                    typeVec.push_back(tItr);
+    auto range = m_npcTypes.equal_range(sClass);
+    for (auto it = range.first; it != range.second; ++it) {
+        for (auto &cur : it->second)
+            if (cur.first == groupID) {
+                for (auto &tCur : cur.second)
+                    typeVec.push_back(tCur);
                 break;
             }
     }
@@ -917,8 +968,8 @@ uint16 StaticDataMgr::GetRandRatType(uint8 sClass, uint16 groupID) {
 
 bool StaticDataMgr::GetNPCTypes(uint16 groupID, std::vector< uint16 >& typeVec) {
     /*  this is now invalid.....
-    auto groupRange = m_npcTypes.equal_range(groupID);
-    for (auto it = groupRange.first; it != groupRange.second; ++it)
+     auto range = m_npcTypes.equal_range(groupID);
+    for (auto it = range.first; it != range.second; ++it)
         typeVec.push_back(it->second);
 
     return !typeVec.empty();
@@ -927,17 +978,21 @@ bool StaticDataMgr::GetNPCTypes(uint16 groupID, std::vector< uint16 >& typeVec) 
 }
 
 bool StaticDataMgr::GetNPCGroups(uint32 factionID, std::map< uint8, uint16 >& groupMap) {
-    auto groupRange = m_npcGroups.equal_range(factionID);
-    for (auto it = groupRange.first; it != groupRange.second; ++it)
+    auto range = m_npcGroups.equal_range(factionID);
+    for (auto it = range.first; it != range.second; ++it)
         groupMap[it->second.shipClass] = it->second.groupID;
 
     return !groupMap.empty();
 }
 
 //TODO:  this is getting all levels for the class...we only need one level, but level isnt calculated yet
-bool StaticDataMgr::GetNPCClasses(uint8 sClass, std::vector< RatSpawnClass >& classMap) {
-    auto classRange = m_npcClasses.equal_range(sClass);
-    for (auto it = classRange.first; it != classRange.second; ++it) {
+bool StaticDataMgr::GetNPCClasses(uint8 sClass, std::vector< RatSpawnClass >& classVec) {
+    auto range = m_npcClasses.equal_range(sClass);
+    uint16 count = std::distance(range.first, range.second);
+    if (count == 0)
+        return false;
+    classVec.reserve(classVec.size() + count);
+    for (auto it = range.first; it != range.second; ++it) {
         RatSpawnClass spawnClass   = RatSpawnClass();
             spawnClass.type        = it->second.type;
             spawnClass.sub         = it->second.sub;
@@ -956,10 +1011,10 @@ bool StaticDataMgr::GetNPCClasses(uint8 sClass, std::vector< RatSpawnClass >& cl
             spawnClass.cbc         = it->second.cbc;
             spawnClass.cbs         = it->second.cbs;
             spawnClass.desc        = it->second.desc;
-        classMap.push_back(spawnClass);
+        classVec.push_back(spawnClass);
     }
 
-    return !classMap.empty();
+    return !classVec.empty();
 }
 
 uint32 StaticDataMgr::GetWreckID(uint32 typeID) {
@@ -969,9 +1024,156 @@ uint32 StaticDataMgr::GetWreckID(uint32 typeID) {
     return 0;
 }
 
+// new loot system part
+void StaticDataMgr::LoadLoot() {
+    m_ClassToProfileMap.clear();
+
+    DBQueryResult* res = new DBQueryResult();
+
+    /*
+    // Query assignments utilizing our synchronized shipClass profile ids
+    auto res = db.Query("SELECT p.profile_id, lpa.pool_id, lp.pool_type, lp.base_drop_chance, lp.selection_type " \
+    "FROM dgm_npc_loot_profile p " \
+    "JOIN dgm_loot_pool_assignment lpa ON p.profile_id = lpa.profile_id " \
+    "JOIN dgm_loot_pool lp ON lpa.pool_id = lp.pool_id;");
+*/
+    DBResultRow row;
+    uint32 factionID = 0;
+    while (res->GetRow(row)) {
+        uint32 shipClassID = row.GetUInt(0);
+
+        LootPool pool;
+        pool.poolID = row.GetUInt(1);
+        pool.poolType = row.GetText(2);
+        pool.calculatedDropChance = row.GetFloat(3);
+        pool.rollAll = (row.GetText(4) == "ROLL_ALL");
+
+        // Populate the specific item contents array
+        DBQueryResult* res2 = new DBQueryResult();
+        std::string sql = "SELECT type_id, min_quantity, max_quantity, selection_weight FROM dgm_loot_pool_item WHERE pool_id = " + std::to_string(pool.poolID);
+  //      auto res = db.Query(sql);
+
+        DBResultRow row2;
+        while (res2->GetRow(row)) {
+            uint16 itemTypeID = row2.GetUInt(0);
+            uint8 meta = GetMetaLevel(itemTypeID); // Quick lookup against attribute 633
+
+            LootItem item;
+            item.typeID = itemTypeID;
+            item.minQuantity = row2.GetUInt16(1);
+            item.maxQuantity = row2.GetUInt16(2);
+            item.weight = row2.GetUInt(3);
+            pool.items.push_back(item);
+        }
+
+        // Your single boot parser now handles every drop category across the galaxy
+        if (pool.poolType == "SALVAGE") {
+            m_FactionToSalvageMap[factionID].push_back(pool);
+        } else {
+            m_ClassToProfileMap[shipClassID].assignedPools.push_back(pool);
+        }
+
+    }
+    _log(LOOT__INFO, "Loot Engine V2 Synchronized. Loaded %lu Class profiles.", m_ClassToProfileMap.size());
+}
+
+std::vector<LootPool> StaticDataMgr::FetchPoolsForGroup(uint32 groupID, bool isAdvanced, bool isCommander) {
+    std::vector<LootPool> pools;
+
+    DBQueryResult* res = new DBQueryResult();
+    // Direct SQL lookup query run at boot time
+    // We fetch pool headers mapped to our profile structure
+    std::string sql = "SELECT lp.pool_id, lp.pool_name, lp.pool_type, lp.base_drop_chance, lp.selection_type "
+    "FROM dgm_npc_loot_profile p "
+    "JOIN dgm_loot_pool_assignment lpa ON p.profile_id = lpa.profile_id "
+    "JOIN dgm_loot_pool lp ON lpa.pool_id = lp.pool_id "
+    "WHERE p.source_group_id = " + std::to_string(groupID);
+
+   // auto res = db.Query(sql);
+    DBResultRow row;
+    while (res->GetRow(row)) {
+        LootPool pool;
+        pool.poolID = row.GetUInt(0);
+        pool.poolType = row.GetText(1);
+        pool.calculatedDropChance = row.GetFloat(2);
+        pool.rollAll = (row.GetText(3) == "ROLL_ALL");
+
+        // TIER MODIFICATION ARCHITECTURE:
+        if (isCommander) {
+            pool.calculatedDropChance *= 2.0f; // Commanders double their effective drops
+        } else if (isAdvanced) {
+            pool.calculatedDropChance *= 1.5f; // Advanced ships get a 50% baseline drop rate buff
+        }
+
+        // Hydrate items for this pool from dgm_loot_pool_item
+        DBQueryResult* res2 = new DBQueryResult();
+        std::string sql = "SELECT type_id, min_quantity, max_quantity, selection_weight FROM dgm_loot_pool_item WHERE pool_id = " + std::to_string(pool.poolID);
+    //    auto res = db.Query(sql);
+
+        DBResultRow row2;
+        while (res2->GetRow(row)) {
+            uint16 itemTypeID = row2.GetUInt(0);
+            uint8 meta = GetMetaLevel(itemTypeID); // Quick lookup against attribute 633
+
+            // Skip rare modules if this profile is for a standard T1 rat
+            if (!isAdvanced && !isCommander && meta >= 4)
+                continue;
+
+            LootItem item;
+            item.typeID = itemTypeID;
+            item.minQuantity = row2.GetUInt(1);
+            item.maxQuantity = row2.GetUInt(2);
+            item.weight = row2.GetUInt(3);
+            pool.items.push_back(item);
+        }
+
+        pools.push_back(pool);
+    }
+    return pools;
+}
+
+void StaticDataMgr::GetLootFinal(float trueSec, uint32 shipClassID, std::vector<LootList>& lootList) {
+    auto it = m_ClassToProfileMap.find(shipClassID);
+    if (it == m_ClassToProfileMap.end())
+        return;
+
+    const LootProfile& profile = it->second;
+
+    for (const auto& pool : profile.assignedPools) {
+        // Execute absolute gate check
+        if (MakeRandomFloat() > pool.calculatedDropChance)
+            continue;
+
+        std::vector<double> weights;
+        for (const auto& item : pool.items) {
+            // Apply security location scalars natively
+            weights.push_back(item.weight * (1.0f + (std::max(0.0f, 1.0f - trueSec) * 0.5f)));
+        }
+
+        if (pool.items.empty())
+            continue;
+
+        if (pool.rollAll) {
+            for (const auto& item : pool.items) {
+                LootList list;
+                list.typeID = (uint16)item.typeID;
+                list.minDrop = item.minQuantity;
+                list.maxDrop = item.maxQuantity;
+                lootList.push_back(list);
+            }
+        } else {
+            std::discrete_distribution<size_t> dist(weights.begin(), weights.end());
+            //size_t idx = dist(gen);
+            //const auto& selected = pool.items[idx];
+            //lootList.push_back({ (uint16)selected.typeID, selected.minQuantity, selected.maxQuantity });
+        }
+    }
+}
+
+
 void StaticDataMgr::GetLoot(float secValue, uint32 groupID, std::vector<LootList>& lootList) {
     // called by SE::DropLoot()
-    double profileStartTime(GetTimeUSeconds());
+    double profileStartTime = GetTimeUSeconds();
 
     float randChance(0.0f);
     uint8 metaLevel(0);
@@ -989,6 +1191,11 @@ void StaticDataMgr::GetLoot(float secValue, uint32 groupID, std::vector<LootList
     // Finds a range containing all elements whose key is k.
     // pair<iterator, iterator> equal_range(const key_type& k)
     auto range = m_LootGroupMap.equal_range(groupID);
+    uint16 count = std::distance(range.first, range.second);
+    if (count == 0)
+        return;
+    lootGrpVec.reserve(lootGrpVec.size() + count);
+
     for (auto it = range.first; it != range.second; ++it) {
         _log(LOOT__INFO, "checking GroupID %u with %.2f chance", it->second.lootGroupID, it->second.dropChance);
         // make lootMap of lootGroupID's
@@ -1069,9 +1276,49 @@ void StaticDataMgr::GetLoot(float secValue, uint32 groupID, std::vector<LootList
         sProfiler.AddTime(Profile::loot, GetTimeUSeconds() - profileStartTime);
 }
 
+void StaticDataMgr::ProcessLootModifiers(uint8 classID, LootPool& pool) {
+    switch (classID) {
+        // High tier targets scale drop percentages dramatically
+        case Rat::ShipClass::Asteroid_Officer:
+        case Rat::ShipClass::Capital_Titan:
+            pool.calculatedDropChance *= 3.0f;
+            break;
+
+        case Rat::ShipClass::Asteroid_CommanderBattleship:
+        case Rat::ShipClass::Deadspace_CommanderBattleship:
+            pool.calculatedDropChance *= 2.0f;
+            break;
+
+            // Wormhole Sleepers automatically trigger custom blue-loot salvage tracking
+        case Rat::ShipClass::Sleeper_Battleship:
+            InjectSleeperSalvage(pool);
+            break;
+
+        default:
+            break;
+    }
+}
+
+// part of new loot
+void StaticDataMgr::InjectSleeperSalvage(LootPool& pool) {
+    // Since the Python script already assigned generic/drone component pools,
+    // we can explicitly override the drop behavior of this pool instance
+    // to transform it into a dedicated, guaranteed Sleeper Salvage table.
+
+    pool.calculatedDropChance = 1.00000f; // Ensure a salvage roll vector always exists
+
+    // Optional: If you want to force specific rare salvage materials
+    // (like Melted Nanoribbons) to ONLY drop in high-tier wormhole space,
+    // you can manipulate the active memory pool parameters right here at boot:
+    for (auto& item : pool.items) {
+        if (item.typeID == 30259) //EVE_SDE::Items::MeltedNanoribbon)
+            item.weight = 500; // Boost or throttle presence based on your design goals
+    }
+}
+
 void StaticDataMgr::GetBpTypeData(uint16 typeID, EvERam::bpTypeData& tData)
 {
-    std::map<uint16, EvERam::bpTypeData>::iterator itr = m_bpTypeData.find(typeID);
+    std::unordered_map<uint16, EvERam::bpTypeData>::iterator itr = m_bpTypeData.find(typeID);
     if (itr != m_bpTypeData.end()) {
         tData = itr->second;
     } else {
@@ -1090,7 +1337,7 @@ bool StaticDataMgr::GetBpDataForItem(uint16 typeID, EvERam::bpTypeData& tData)
 }
 
 bool StaticDataMgr::IsPublished(uint16 typeID) {
-    std::map<uint16, Inv::TypeData>::iterator itr = m_typeData.find(typeID);
+    std::unordered_map<uint16, Inv::TypeData>::iterator itr = m_typeData.find(typeID);
     if (itr != m_typeData.end())
         return itr->second.published;
     return false;
@@ -1098,7 +1345,7 @@ bool StaticDataMgr::IsPublished(uint16 typeID) {
 
 bool StaticDataMgr::IsRecyclable(uint16 typeID)
 {
-    std::map<uint16, Inv::TypeData>::iterator itr = m_typeData.find(typeID);
+    std::unordered_map<uint16, Inv::TypeData>::iterator itr = m_typeData.find(typeID);
     if (itr != m_typeData.end())
         return itr->second.isRecyclable;
     return false;
@@ -1106,7 +1353,7 @@ bool StaticDataMgr::IsRecyclable(uint16 typeID)
 
 bool StaticDataMgr::IsRefinable(uint16 typeID)
 {
-    std::map<uint16, Inv::TypeData>::iterator itr = m_typeData.find(typeID);
+    std::unordered_map<uint16, Inv::TypeData>::iterator itr = m_typeData.find(typeID);
     if (itr != m_typeData.end())
         return itr->second.isRefinable;
     return false;
@@ -1114,8 +1361,8 @@ bool StaticDataMgr::IsRefinable(uint16 typeID)
 
 void StaticDataMgr::GetRamReturns(uint16 typeID, int8 activityID, std::vector< EvERam::RequiredItem >& ramReqs)
 {
-    auto itr = m_ramReq.equal_range(typeID);
-    for (auto it = itr.first; it != itr.second; ++it)
+    auto range = m_ramReq.equal_range(typeID);
+    for (auto it = range.first; it != range.second; ++it)
         if ((it->second.activityID == activityID) and (it->second.extra) and !(IsSkillTypeID(it->second.requiredTypeID))) {
             EvERam::RequiredItem data   = EvERam::RequiredItem();
             data.typeID                 = it->second.requiredTypeID;
@@ -1129,22 +1376,22 @@ void StaticDataMgr::GetRamReturns(uint16 typeID, int8 activityID, std::vector< E
 
 void StaticDataMgr::GetRamMaterials(uint16 typeID, std::vector< EvERam::RamMaterials >& ramMatls)
 {
-    auto itr = m_ramMatl.equal_range(typeID);
-    for (auto it = itr.first; it != itr.second; ++it)
-        ramMatls.push_back(it->second);
+    auto range = m_ramMatl.equal_range(typeID);
+    for (auto cur = range.first; cur != range.second; ++cur)
+        ramMatls.push_back(cur->second);
 }
 
 void StaticDataMgr::GetRamRequirements(uint16 typeID, std::vector< EvERam::RamRequirements >& ramReqs)
 {
-    auto itr = m_ramReq.equal_range(typeID);
-    for (auto it = itr.first; it != itr.second; ++it)
-        ramReqs.push_back(it->second);
+    auto range = m_ramReq.equal_range(typeID);
+    for (auto cur = range.first; cur != range.second; ++cur)
+        ramReqs.push_back(cur->second);
 }
 
 void StaticDataMgr::GetRamRequiredItems(const uint32 typeID, const int8 activity, std::vector< EvERam::RequiredItem >& into)
 {
     if (activity == EvERam::Activity::Manufacturing) {
-        std::map<uint16, EvERam::bpTypeData>::iterator itr = m_bpTypeData.find(typeID);
+        std::unordered_map<uint16, EvERam::bpTypeData>::iterator itr = m_bpTypeData.find(typeID);
         if (itr != m_bpTypeData.end()) {
             auto range = m_ramMatl.equal_range(itr->second.productTypeID);
             for (auto it = range.first; it != range.second; ++it) {
@@ -1156,8 +1403,8 @@ void StaticDataMgr::GetRamRequiredItems(const uint32 typeID, const int8 activity
         }
     }
 
-    auto itr = m_ramReq.equal_range(typeID);
-    for (auto it = itr.first; it != itr.second; ++it)
+    auto range = m_ramReq.equal_range(typeID);
+    for (auto it = range.first; it != range.second; ++it)
         if (it->second.activityID == activity) {
             EvERam::RequiredItem data   = EvERam::RequiredItem();
             data.typeID                 = it->second.requiredTypeID;
@@ -1195,7 +1442,7 @@ uint8 StaticDataMgr::GetStationCount(uint32 systemID)
 
 bool StaticDataMgr::GetStationList(uint32 systemID, std::vector< uint32 >& data)
 {
-    std::map<uint32, std::vector<uint32>>::iterator itr = m_stationList.find(systemID);
+    std::unordered_map<uint32, std::vector<uint32>>::iterator itr = m_stationList.find(systemID);
     if (itr != m_stationList.end()) {
         data = itr->second;
         return true;
@@ -1204,7 +1451,7 @@ bool StaticDataMgr::GetStationList(uint32 systemID, std::vector< uint32 >& data)
 }
 
 uint32 StaticDataMgr::GetStationRegion(uint32 stationID) {
-    std::map<uint32, uint32>::iterator itr = m_stationRegion.find(stationID);
+    std::unordered_map<uint32, uint32>::iterator itr = m_stationRegion.find(stationID);
     if (itr != m_stationRegion.end())
         return itr->second;
 
@@ -1213,7 +1460,7 @@ uint32 StaticDataMgr::GetStationRegion(uint32 stationID) {
 }
 
 uint32 StaticDataMgr::GetStationConstellation(uint32 stationID) {
-    std::map<uint32, uint32>::iterator itr = m_stationConst.find(stationID);
+    std::unordered_map<uint32, uint32>::iterator itr = m_stationConst.find(stationID);
     if (itr != m_stationConst.end())
         return itr->second;
 
@@ -1222,7 +1469,7 @@ uint32 StaticDataMgr::GetStationConstellation(uint32 stationID) {
 }
 
 uint32 StaticDataMgr::GetStationSystem(uint32 stationID) {
-    std::map<uint32, uint32>::iterator itr = m_stationSystem.find(stationID);
+    std::unordered_map<uint32, uint32>::iterator itr = m_stationSystem.find(stationID);
     if (itr != m_stationSystem.end())
         return itr->second;
 
@@ -1230,39 +1477,29 @@ uint32 StaticDataMgr::GetStationSystem(uint32 stationID) {
     return 0;
 }
 
-uint32 StaticDataMgr::GetSystemConstellation(uint32 stationID) {
-    std::map<uint32, uint32>::iterator itr = m_systemConst.find(stationID);
-    if (itr != m_systemConst.end())
-        return itr->second;
-
-    _log(DATA__MESSAGE, "Failed to get constellationID for system %u.", stationID);
-    return 0;
-}
-
-uint32 StaticDataMgr::GetSystemRegion(uint32 stationID) {
-    std::map<uint32, uint32>::iterator itr = m_systemRegion.find(stationID);
-    if (itr != m_systemRegion.end())
-        return itr->second;
-
-    _log(DATA__MESSAGE, "Failed to get regionID for system %u.", stationID);
-    return 0;
-}
-
 void StaticDataMgr::GetConstellationSystems(uint32 constellationID, std::vector<uint32>& into) {
-    auto itr = m_constSystems.equal_range(constellationID);
-    for (auto &it = itr.first; it != itr.second; ++it)
+    auto range = m_constSystems.equal_range(constellationID);
+    uint16 count = std::distance(range.first, range.second);
+    if (count == 0)
+        return;
+    into.reserve(into.size() + count);
+    for (auto &it = range.first; it != range.second; ++it)
         into.push_back(it->second);
 }
 
 void StaticDataMgr::GetRegionSystems(uint32 regionID, std::vector<uint32>& into) {
-    auto itr = m_regionSystems.equal_range(regionID);
-    for (auto &it = itr.first; it != itr.second; ++it)
+    auto range = m_regionSystems.equal_range(regionID);
+    uint16 count = std::distance(range.first, range.second);
+    if (count == 0)
+        return;
+    into.reserve(into.size() + count);
+    for (auto &it = range.first; it != range.second; ++it)
         into.push_back(it->second);
 }
 
 uint8 StaticDataMgr::GetWHSystemClass(uint32 systemID)
 {
-    std::map<uint32, uint8>::iterator itr = m_whRegions.find(systemID);
+    std::unordered_map<uint32, uint8>::iterator itr = m_whRegions.find(systemID);
     if (itr != m_whRegions.end())
         return itr->second;
 
@@ -1286,7 +1523,7 @@ uint8 StaticDataMgr::GetWHSystemClass(uint32 systemID)
 
 bool StaticDataMgr::GetStaticInfo(uint32 itemID, StaticData& data)
 {
-    std::map<uint32, StaticData>::iterator itr = m_staticData.find(itemID);
+    std::unordered_map<uint32, StaticData>::iterator itr = m_staticData.find(itemID);
     if (itr != m_staticData.end()) {
         data = itr->second;
         return true;
@@ -1298,7 +1535,7 @@ bool StaticDataMgr::GetStaticInfo(uint32 itemID, StaticData& data)
 
 uint16 StaticDataMgr::GetStaticType(uint32 itemID)
 {
-    std::map<uint32, StaticData>::iterator itr = m_staticData.find(itemID);
+    std::unordered_map<uint32, StaticData>::iterator itr = m_staticData.find(itemID);
     if (itr != m_staticData.end())
         return itr->second.typeID;
     return 0;
@@ -1306,7 +1543,7 @@ uint16 StaticDataMgr::GetStaticType(uint32 itemID)
 
 uint32 StaticDataMgr::GetRegionFaction(uint32 regionID)
 {
-    std::map<uint32, uint32>::iterator itr = m_regions.find(regionID);
+    std::unordered_map<uint32, uint32>::iterator itr = m_regions.find(regionID);
     if (itr != m_regions.end())
         return itr->second;
 
@@ -1316,7 +1553,7 @@ uint32 StaticDataMgr::GetRegionFaction(uint32 regionID)
 
 uint32 StaticDataMgr::GetRegionRatFaction(uint32 regionID)
 {
-    std::map<uint32, uint32>::iterator itr = m_ratRegions.find(regionID);
+    std::unordered_map<uint32, uint32>::iterator itr = m_ratRegions.find(regionID);
     if (itr != m_ratRegions.end())
         return itr->second;
 
@@ -1326,7 +1563,7 @@ uint32 StaticDataMgr::GetRegionRatFaction(uint32 regionID)
 
 std::string StaticDataMgr::GetCorpName(uint32 corpID)
 {
-    std::map<uint32, std::string>::iterator itr = m_corpName.find(corpID);
+    std::unordered_map<uint32, std::string>::iterator itr = m_corpName.find(corpID);
     if (itr != m_corpName.end())
         return itr->second;
 
@@ -1336,7 +1573,7 @@ std::string StaticDataMgr::GetCorpName(uint32 corpID)
 
 uint32 StaticDataMgr::GetCorpFaction(uint32 corpID)
 {
-    std::map<uint32, uint32>::iterator itr = m_corpFaction.find(corpID);
+    std::unordered_map<uint32, uint32>::iterator itr = m_corpFaction.find(corpID);
     if (itr != m_corpFaction.end())
         return itr->second;
 
@@ -1348,7 +1585,7 @@ uint32 StaticDataMgr::GetCorpFaction(uint32 corpID)
 
 std::string StaticDataMgr::GetFactionName(uint32 factionID)
 {
-    std::map<uint32, std::string>::const_iterator itr = m_factionName.find(factionID);
+    std::unordered_map<uint32, std::string>::const_iterator itr = m_factionName.find(factionID);
     if (itr != m_factionName.end())
         return itr->second;
 
@@ -1365,7 +1602,7 @@ bool StaticDataMgr::GetSystemData(uint32 locationID, SystemData& data)
         return false;
     }
 
-    std::map<uint32, SolarSystemData>::const_iterator itr = m_solSysData.find(locationID);
+    std::unordered_map<uint32, SolarSystemData>::const_iterator itr = m_solSysData.find(locationID);
     if (itr != m_solSysData.end()) {
         data.systemID = itr->second.systemID;
         data.constellationID = itr->second.constellationID;
@@ -1382,6 +1619,24 @@ bool StaticDataMgr::GetSystemData(uint32 locationID, SystemData& data)
     return false;
 }
 
+uint32 StaticDataMgr::GetSystemConstellation(uint32 systemID) {
+    SystemData data;
+    if (GetSystemData(systemID, data))
+        return data.constellationID;
+
+    _log(DATA__MESSAGE, "Failed to get constellationID for system %u.", systemID);
+    return 0;
+}
+
+uint32 StaticDataMgr::GetSystemRegion(uint32 systemID) {
+    SystemData data;
+    if (GetSystemData(systemID, data))
+        return data.regionID;
+
+    _log(DATA__MESSAGE, "Failed to get regionID for system %u.", systemID);
+    return 0;
+}
+
 bool StaticDataMgr::GetSolarSystemData(uint32 locationID, SolarSystemData& data) {
     if (IsStation(locationID))
         locationID = GetStationSystem(locationID);
@@ -1390,7 +1645,7 @@ bool StaticDataMgr::GetSolarSystemData(uint32 locationID, SolarSystemData& data)
         _log(DATA__MESSAGE, "Failed to query info:  locationID %u is neither station nor system.", locationID);
         return false;
     }
-    std::map<uint32, SolarSystemData>::const_iterator itr = m_solSysData.find(locationID);
+    std::unordered_map<uint32, SolarSystemData>::const_iterator itr = m_solSysData.find(locationID);
     if (itr == m_solSysData.end())
         return false;
     data = itr->second;
@@ -1406,7 +1661,7 @@ const char* StaticDataMgr::GetSystemName(uint32 locationID) {
         return "Error";
     }
 
-    std::map<uint32, SolarSystemData>::const_iterator itr = m_solSysData.find(locationID);
+    std::unordered_map<uint32, SolarSystemData>::const_iterator itr = m_solSysData.find(locationID);
     if (itr != m_solSysData.end())
         return itr->second.name.c_str();
 
@@ -1416,50 +1671,48 @@ const char* StaticDataMgr::GetSystemName(uint32 locationID) {
 
 bool StaticDataMgr::IsSolarSystem(uint32 systemID/*0*/) {
     // if systemID has entry here, it is valid
-    std::map<uint32, SolarSystemData>::const_iterator itr = m_solSysData.find(systemID);
+    std::unordered_map<uint32, SolarSystemData>::const_iterator itr = m_solSysData.find(systemID);
     return (itr != m_solSysData.end());
 }
 
 bool StaticDataMgr::IsConSystem(uint32 systemID) {
-    std::map<uint32, SolarSystemData>::const_iterator itr = m_solSysData.find(systemID);
+    std::unordered_map<uint32, SolarSystemData>::const_iterator itr = m_solSysData.find(systemID);
     if (itr != m_solSysData.end())
         return itr->second.constellation;
     return false;
 }
 
 bool StaticDataMgr::IsCorridorSystem(uint32 systemID) {
-    std::map<uint32, SolarSystemData>::const_iterator itr = m_solSysData.find(systemID);
+    std::unordered_map<uint32, SolarSystemData>::const_iterator itr = m_solSysData.find(systemID);
     if (itr != m_solSysData.end())
         return itr->second.corridor;
     return false;
 }
 
 bool StaticDataMgr::IsFringeSystem(uint32 systemID) {
-    std::map<uint32, SolarSystemData>::const_iterator itr = m_solSysData.find(systemID);
+    std::unordered_map<uint32, SolarSystemData>::const_iterator itr = m_solSysData.find(systemID);
     if (itr != m_solSysData.end())
         return itr->second.fringe;
     return false;
 }
 
 bool StaticDataMgr::IsHubSystem(uint32 systemID) {
-    std::map<uint32, SolarSystemData>::const_iterator itr = m_solSysData.find(systemID);
+    std::unordered_map<uint32, SolarSystemData>::const_iterator itr = m_solSysData.find(systemID);
     if (itr != m_solSysData.end())
         return itr->second.hub;
     return false;
 }
 
 bool StaticDataMgr::IsRegionSystem(uint32 systemID) {
-    std::map<uint32, SolarSystemData>::const_iterator itr = m_solSysData.find(systemID);
+    std::unordered_map<uint32, SolarSystemData>::const_iterator itr = m_solSysData.find(systemID);
     if (itr != m_solSysData.end())
         return itr->second.region;
     return false;
 }
 
-
-bool StaticDataMgr::IsStation(uint32 stationID/*0*/)
-{
+bool StaticDataMgr::IsStation(uint32 stationID/*0*/) {
     // if stationID has entry here, it is valid
-    std::map<uint32, uint32>::const_iterator itr = m_stationRegion.find(stationID);
+    std::unordered_map<uint32, uint32>::const_iterator itr = m_stationRegion.find(stationID);
     return (itr != m_stationRegion.end());
 }
 
@@ -1868,7 +2121,7 @@ const char* StaticDataMgr::GetDmgRptName(uint8 type) {
 
 uint8 StaticDataMgr::GetRegionQuarter(uint32 regionID) {
     uint32 factionID = 0;
-    std::map<uint32, uint32>::iterator itr = m_regions.find(regionID);
+    std::unordered_map<uint32, uint32>::iterator itr = m_regions.find(regionID);
     if (itr != m_regions.end())
         factionID = (*itr).second;
 
@@ -1943,14 +2196,18 @@ uint32 StaticDataMgr::GetFactionCorp(uint32 factionID) {
 
 const char* StaticDataMgr::GetRaceName(uint8 raceID) {
     switch (raceID) {
-        case Char::Race::Caldari:       return "Caldari";
-        case Char::Race::Minmatar:      return "Minmatar";
-        case Char::Race::Amarr:         return "Amarr";
-        case Char::Race::Gallente:      return "Gallente";
-        case Char::Race::Jove:          return "Jove";
-        case Char::Race::Pirate:        return "Pirate";
-        case Char::Race::Sleeper:       return "Sleeper";
-        case Char::Race::ORE:           return "ORE";
+        case Char::Race::Caldari:       return "Caldari";       //1
+        case Char::Race::Minmatar:      return "Minmatar";      //2
+        case Char::Race::Amarr:         return "Amarr";         //4
+        case Char::Race::Sansha:        return "Sansha";        //5
+        case Char::Race::Ammatar:       return "Ammatar";       //6
+        case Char::Race::Gallente:      return "Gallente";      //8
+        case Char::Race::Guristas:      return "Guristas";      //9
+        case Char::Race::Serpentis:     return "Serpentis";     //10
+        case Char::Race::Jove:          return "Jove";          //16
+        case Char::Race::Pirate:        return "Pirate";        //32
+        case Char::Race::Sleeper:       return "Sleeper";       //64
+        case Char::Race::ORE:           return "ORE";           //128
     }
     // default to none
     return "Race Not Defined";
@@ -1961,7 +2218,11 @@ uint32 StaticDataMgr::GetRaceFaction(uint8 raceID) {
         case Char::Race::Caldari:       return factionCaldari;
         case Char::Race::Minmatar:      return factionMinmatar;
         case Char::Race::Amarr:         return factionAmarr;
+        case Char::Race::Sansha:        return factionSanshas;
+        case Char::Race::Ammatar:       return factionAmmatar;
         case Char::Race::Gallente:      return factionGallente;
+        case Char::Race::Guristas:      return factionGuristas;
+        case Char::Race::Serpentis:     return factionSerpentis;
         case Char::Race::Jove:          return factionJove;
         case Char::Race::Pirate:        return factionNoFaction;
         case Char::Race::Sleeper:       return factionSleeper;
@@ -1979,7 +2240,7 @@ uint8 StaticDataMgr::GetFactionRace(uint32 factionID) {
         case factionGallente:       return Char::Race::Gallente;
         case factionJove:           return Char::Race::Jove;
         case factionNoFaction:      return Char::Race::Pirate;
-        case factionSleeper:       return Char::Race::Sleeper;
+        case factionSleeper:        return Char::Race::Sleeper;
         case factionORE:            return Char::Race::ORE;
         case factionAmmatar:        return Char::Race::Ammatar;
     }

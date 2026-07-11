@@ -692,11 +692,11 @@ void NPCAIMgr::SetWander() {
         // FIX: The Destiny engine should track targeted anchors via entityID
         // rather than storing raw C++ memory pointers to protect against segregation faults!
         if (sConfig.npc.UseOrbit) {
-            m_destiny->InitOrbit(m_actionTarget, orbitDistance);
+            m_destiny->OrbitBall(m_actionTarget, orbitDistance);
             _log(NPC__AI_TRACE, "%s(%u): Initializing ambient orbit ring around %s(%u) at %um.",
                  myNPC->GetName(), myNPC->GetID(), m_actionTarget->GetName(), m_actionTarget->GetID(), orbitDistance);
         } else {
-            m_destiny->Follow(m_actionTarget, orbitDistance);
+            m_destiny->FollowBall(m_actionTarget, orbitDistance);
             _log(NPC__AI_TRACE, "%s(%u): Initializing passive path tracking behind %s(%u) at %um.",
                  myNPC->GetName(), myNPC->GetID(), m_actionTarget->GetName(), m_actionTarget->GetID(), orbitDistance);
         }
@@ -785,9 +785,9 @@ void NPCAIMgr::SetEngaged(SystemEntity* pTargetSE) {
     // update speed
     ChangeSpeed(false);
     if (sConfig.npc.UseOrbit) {
-        m_destiny->InitOrbit(pTargetSE, m_optimalRange);  //try to get inside orbit range
+        m_destiny->OrbitBall(pTargetSE, m_optimalRange);  //try to get inside orbit range
     } else {
-        m_destiny->Follow(pTargetSE, m_falloffDistance);  //try toget within falloff
+        m_destiny->FollowBall(pTargetSE, m_falloffDistance);  //try toget within falloff
     }
 }
 
@@ -822,7 +822,7 @@ void NPCAIMgr::SetFollowing(SystemEntity* pTargetSE) {
 
     // outside optimal range; increase speed to get closer
     ChangeSpeed(true);
-    m_destiny->Follow(pTargetSE, m_falloffDistance);  //try to get inside falloff range
+    m_destiny->FollowBall(pTargetSE, m_falloffDistance);  //try to get inside falloff range
 }
 
 void NPCAIMgr::SetChasing(SystemEntity* pTargetSE) {
@@ -891,7 +891,7 @@ void NPCAIMgr::SetChasing(SystemEntity* pTargetSE) {
     }
 
     // start chasing / still chasing
-    m_destiny->Follow(m_attackTarget, m_flyRange);  //head towards target
+    m_destiny->FollowBall(m_attackTarget, m_flyRange);  //head towards target
 }
 
 // not used yet
@@ -919,7 +919,7 @@ void NPCAIMgr::SetFleeing(SystemEntity* pTargetSE) {
     ChangeSpeed(true);
 
     if (sConfig.npc.UseOrbit) {
-        m_destiny->InitOrbit(m_attackTarget, m_flyRange);  //try to get ouside orbit range
+        m_destiny->OrbitBall(m_attackTarget, m_flyRange);  //try to get ouside orbit range
     } else {
         // we will need a better direction here...like to local stronghold (which is not written yet)   (idea...warpout...see same pc...localchat "you again??")
         // for now, go opposite from target
@@ -958,19 +958,19 @@ void NPCAIMgr::SetSignaling(SystemEntity* pTargetSE) {
         // no clue how to do this yet.
         /*
         if (sConfig.npc.UseOrbit) {
-            m_destiny->InitOrbit(hauler, m_falloffDistance);  //try to get inside orbit range
+            m_destiny->OrbitBall(hauler, m_falloffDistance);  //try to get inside orbit range
         } else {
-            m_destiny->Follow(hauler, m_falloffDistance);
+            m_destiny->FollowBall(hauler, m_falloffDistance);
         } */
     }
 
     //  start speedtanking while signaling.  (im sure this is cheating, but fuckem.)
     ChangeSpeed(true);
     if (sConfig.npc.UseOrbit) {
-        m_destiny->InitOrbit(m_attackTarget, m_flyRange);  //try to get outside orbit range
+        m_destiny->OrbitBall(m_attackTarget, m_flyRange);  //try to get outside orbit range
     } else {
         // we will need a better direction here
-        m_destiny->Follow(m_attackTarget, m_flyRange);
+        m_destiny->FollowBall(m_attackTarget, m_flyRange);
     }
 }
 
@@ -2003,13 +2003,13 @@ void NPCAIMgr::ExecuteCombatMovement(SystemEntity* pPlayerTarget) {
 /** todo:  will need more thought and infrastructure to implement this
     // Fallback: If no squad or formation is active, run your original free-for-all pathfinding
     if (pSquad == nullptr || !pSquad->IsFormationActive()) {
-        m_destiny->InitOrbit(pPlayerTarget, m_flyRange);
+        m_destiny->OrbitBall(pPlayerTarget, m_flyRange);
         return;
     }
 
     if (myNPC->IsSquadLeader()) {
         // The Leader acts as the master absolute world navigator
-        m_destiny->InitOrbit(pPlayerTarget, m_flyRange);
+        m_destiny->OrbitBall(pPlayerTarget, m_flyRange);
 
         _log(NPC__AI_TRACE, "Squad Leader %u executing master orbit path around %s.",
              myNPC->GetID(), pPlayerTarget->GetName());
@@ -2097,7 +2097,7 @@ void NPCAIMgr::LaunchMissile(uint16 typeID, SystemEntity* pTargetSE) {
     pMissile->DestinyMgr()->MakeMissile(pMissile);
 
     // tell target a missile has been launched at them.. (defender missile trigger for ship, tower, pos, npc, others?)
-    if (typeID != EVEDB::invTypes::DefenderI)  // but only if it's NOT a defender missile  (their target is another missile)
+    if (typeID != EVEItemTypes::DefenderI)  // but only if it's NOT a defender missile  (their target is another missile)
         pTargetSE->MissileLaunched(pMissile);
 }
 
@@ -2107,7 +2107,7 @@ void NPCAIMgr::MissileLaunched(Missile* pMissile) {
         chance += sConfig.npc.DefenderMissileChance;
     // check chance to shoot defender missile at incoming missile (working, ??/??/??)
     if (MakeRandomFloat() < chance)
-        LaunchMissile(EVEDB::invTypes::DefenderI, pMissile); // defender missile
+        LaunchMissile(EVEItemTypes::DefenderI, pMissile); // defender missile
     // TODO:  set and test for this every x {timeframe}?   no attribute for it
 }
 

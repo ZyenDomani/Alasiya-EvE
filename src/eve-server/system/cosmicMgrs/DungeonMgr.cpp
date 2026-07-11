@@ -773,63 +773,93 @@ void DungeonMgr::CreateDeco(uint32 templateID, CosmicSignature& sig) {
 void DungeonMgr::AddDecoToVector(uint8 dunType, uint32 templateID, std::vector<uint16>& groupVec)
 {
     // templateID = (sig.dungeonType *10000) + (sec *1000) + (type *100) + (level *10) + factionID;
-    uint8 factionID = templateID % 10;
+    //uint8 factionID = templateID % 10;
     uint8 level = templateID / 10 % 10;
-    uint8 type = templateID / 100 % 10;
-    uint8 sec = templateID / 1000 % 10;
+    //uint8 type = templateID / 100 % 10;
+    //uint8 sec = templateID / 1000 % 10;
 
-    int8 step = 0;
-    uint16 count = 0, radius = 0, pos = 10000 * level;
+    if (groupVec.empty())
+        return;
+
+    // Decode our standard 5-variable Hex layout parameters
+    //uint8_t level = (templateID >> 8) & 0xFF; // Op Level (1-9)
+    float secMultiplier = m_system->GetSecValue();
+    uint8_t origLevel = std::ceil((static_cast<float>(level) * (secMultiplier * 10.0f)) / 10.0f);
+    if (origLevel < 1) origLevel = 1;
+
     double theta = 0;
+    double degreeSeparation = (250.0 / static_cast<double>(origLevel));
 
-    // level is 0 to 9, system multiplier is 0.1 to 2.0 (x10 is 1-20)
-    level *= (m_system->GetSecValue() * 10);  // config variable here?
-    // set origLevel 0 to 18, rounding up
-    uint8 origLevel = ceil(level / 10.0);
-    if (origLevel < 1)
-        origLevel = 1;
     for (auto &cur : groupVec) {
-        level = origLevel;
-        count = sDunDataMgr.groups.count(cur);
-        if (count < 1)
-            continue;
+        uint16 count = sDunDataMgr.groups.count(cur);
+        if (count < 1) continue;
 
-        _log(COSMIC_MGR__DEBUG, "DungeonMgr::AddDecoToVector() - %s(%u):  faction %u, group %u, type %u, level %u, count %u, baseLvl %u",\
-                    sDunDataMgr.GetDungeonType(dunType), dunType, factionID, \
-                    cur, type, level, count, origLevel);
+        // Isolate the root ABB category code to pick our hardcoded boxSize tier
+        uint8_t abbRootCategory = cur / 100;
+        double chosenGridSize = BOX_SIZES[2]; // Default fallback baseline: 240m grid
+
+        // =====================================================================
+        // GRID LAYOUT OPTIMIZATION MATRIX
+        // =====================================================================
+        switch (abbRootCategory) {
+            case 1:  // Ambient Space Debris / Wormholes
+                chosenGridSize = BOX_SIZES[4]; // 3,840m wide background scatter
+                break;
+            case 3:  // Ores / Clouds / Asteroids
+                chosenGridSize = BOX_SIZES[2]; // 240m natural resource clumps
+                break;
+            case 4:  // Localized Landscape Objects (LCOs)
+                chosenGridSize = BOX_SIZES[3]; // 960m cluster spacing
+                break;
+            case 6:  // Core Base Stations, Shipyards, Structures
+                if (cur == 670 || cur == 160) { // Mega Structures
+                    chosenGridSize = BOX_SIZES[5]; // 15,360m epic separation footprint
+                } else {
+                    chosenGridSize = BOX_SIZES[3]; // 960m standard station footprint
+                }
+                break;
+            default:
+                chosenGridSize = BOX_SIZES[2]; // 240m safety default
+                break;
+        }
 
         auto groupRange = sDunDataMgr.groups.equal_range(cur);
-        auto it = groupRange.first;
-        double degreeSeparation = (250.0 / level);
-        // make 1-20 random items in the anomaly based on system trusec
-        for (uint8 i=0; i < level; ++i) {
+
+        for (uint8 i = 0; i < origLevel; ++i) {
             Dungeon::GroupData grp = Dungeon::GroupData();
-            step = MakeRandomUInt(1,count);
-            std::advance(it,step);      // this is some fancy shit here
-            grp.typeID = it->second.typeID;
-            grp.typeName = it->second.typeName;
-            grp.typeGrpID = it->second.typeGrpID;
-            grp.typeCatID = it->second.typeCatID;
-            // site size and item radius determine position
-            radius = it->second.radius;
-            //if (sig.dungeonType == Gravimetric) {
-                theta =  EvE::Trig::Deg2Rad(degreeSeparation * i);
-                //theta = MakeRandomFloat(0,  EvE::Trig::Pi);
-                grp.x = (radius + pos * std::cos(theta)) * (IsEven(MakeRandomUInt()) ? -1 : 1);
-                grp.z = (radius + pos * std::sin(theta)) * -1;
-                /*
-                grp.y = MakeRandomFloat(-radius, radius);
-            } else if (IsEven(MakeRandomUInt())) {
-                grp.x = (pos + it->second.x + (radius*2)) * (IsEven(MakeRandomUInt()) ? -1 : 1);
-                grp.z = pos + it->second.z + radius;
-            } else {
-                grp.x = (pos + it->second.x + radius) * -1;
-                grp.z = (pos + it->second.z + (radius*2)) * -1;
-            } */
-            grp.y = it->second.y + MakeRandomInt(-5000, radius * 2);
+
+            // Safe independent iterator traversal pass
+            auto localIt = groupRange.first;
+            std::advance(localIt, MakeRandomUInt(0, count - 1));
+
+            grp.typeID    = localIt->second.typeID;
+            grp.typeName  = localIt->second.typeName;
+            grp.typeGrpID = localIt->second.typeGrpID;
+            grp.typeCatID = localIt->second.typeCatID;
+            uint16 radius = localIt->second.radius;
+
+            theta = EvE::Trig::Deg2Rad(degreeSeparation * i);
+
+            // =====================================================================
+            // GENERATE PREDICTABLE HIERARCHICAL GEOMETRY
+            // =====================================================================
+            // Instead of multiplying by a static 10000m value, we use the chosen
+            // hierarchical grid size scaled by our calculation loops.
+            double gridMultiplier = (i + 1) * chosenGridSize;
+
+            // Apply trigonometry positioning vectors
+            double rawX = (radius + gridMultiplier * std::cos(theta)) * (IsEven(MakeRandomUInt()) ? -1 : 1);
+            double rawZ = (radius + gridMultiplier * std::sin(theta)) * -1;
+            double rawY = localIt->second.y + MakeRandomInt(-1000, radius);
+
+            // SNAP TO THE SECTOR GRID: Ensure the coordinate positions match
+            // the exact boundary steps of the chosen cell size to prevent clipping!
+            grp.x = std::round(rawX / chosenGridSize) * chosenGridSize;
+            grp.z = std::round(rawZ / chosenGridSize) * chosenGridSize;
+            grp.y = std::round(rawY / chosenGridSize) * chosenGridSize;
             grp.radius = radius;
+
             m_anomalyItems.push_back(grp);
-            it = groupRange.first;
         }
     }
 }

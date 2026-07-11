@@ -90,8 +90,8 @@ static const uint32 HackCacheNodeID = 333444;
 
 CachedObjectMgr::~CachedObjectMgr()
 {
-    CachedObjMapItr cur = m_cachedObjects.begin(), end = m_cachedObjects.end();
-    for (; cur != end; ++cur)
+    CachedObjMapItr cur = m_cachedObjects.begin();
+    for (; cur != m_cachedObjects.end(); ++cur)
         delete cur->second;
 }
 
@@ -162,7 +162,6 @@ void CachedObjectMgr::InvalidateCache(const PyRep *objectID)
 {
     //const std::string str = OIDToString(objectID);
     CachedObjMapItr res = m_cachedObjects.find(OIDToString(objectID));
-
     if (res != m_cachedObjects.end()) {
         SafeDelete(res->second);
         m_cachedObjects.erase(res);
@@ -179,14 +178,14 @@ void CachedObjectMgr::UpdateCacheFromSS(const std::string &objectID, PySubStream
         return;
     }
 
-    PyString* str(new PyString(objectID));
+    PyString* str = new PyString(objectID);
     PyBuffer* buf = cache.cache->data();
     _UpdateCache(str, buf);
 }
 
 void CachedObjectMgr::UpdateCache(const std::string &objectID, PyRep **in_cached_data)
 {
-    PyString *str(new PyString(objectID));
+    PyString* str = new PyString(objectID);
     UpdateCache(str, in_cached_data);
     //PyDecRef(str);
 }
@@ -201,11 +200,11 @@ void CachedObjectMgr::UpdateCache(const PyRep *objectID, PyRep **in_cached_data)
         //cached_data->visit(&dumper, 0);
     //}
 
-    Buffer* buf(new Buffer());
-    bool res(MarshalDeflate(cached_data, *buf));
+    Buffer* buf = new Buffer();
+    bool res = MarshalDeflate(cached_data, *buf);
 
     if (res) {
-        PyBuffer* pbuf(new PyBuffer(&buf, true));
+        PyBuffer* pbuf = new PyBuffer(&buf, true);
         _UpdateCache(objectID, pbuf);
     } else {
         SafeDelete(buf);
@@ -218,7 +217,7 @@ void CachedObjectMgr::UpdateCache(const PyRep *objectID, PyRep **in_cached_data)
 void CachedObjectMgr::_UpdateCache(const PyRep *objectID, PyBuffer *pbuf)
 {
     //this is the hard one..
-    CacheRecord *r(new CacheRecord());
+    CacheRecord *r = new CacheRecord();
     r->timestamp = GetFileTimeNow();
     r->objectID = objectID->Clone();
 
@@ -240,14 +239,14 @@ void CachedObjectMgr::_UpdateCache(const PyRep *objectID, PyBuffer *pbuf)
     _log(CACHE__INFO,"Registering new cached object with ID '%s' of length %lu with checksum 0x%x", str.c_str(), r->cache->content().size(), r->version);
 
     m_cachedObjects[str] = r;
-    PySafeDecRef(objectID);
+    //PySafeDecRef(objectID);
 }
 
 PyObject *CachedObjectMgr::MakeCacheHint(const std::string &objectID)
 {
     //this is sub-optimal, but it keeps things more consistent (in case StringCollapseVisitor ever gets more complicated)
     PyString* str = new PyString(objectID);
-    PyObject* obj(MakeCacheHint(str));
+    PyObject* obj = MakeCacheHint(str);
     PyDecRef(str);
     return obj;
 }
@@ -266,7 +265,7 @@ PyObject *CachedObjectMgr::GetCachedObject(const std::string &objectID)
 {
     //this is sub-optimal, but it keeps things more consistent (in case StringCollapseVisitor ever gets more complicated)
     PyString* str = new PyString(objectID);
-    PyObject* obj(GetCachedObject(str));
+    PyObject* obj = GetCachedObject(str);
     PyDecRef(str);
     return obj;
 }
@@ -413,8 +412,8 @@ bool CachedObjectMgr::SaveCachedToFile(const std::string &cacheDir, const PyRep 
     }
 
     if (fwrite(&itr->second->cache->content()[0], sizeof(uint8), header.length, f) != header.length) {
-        assert(false);
         fclose(f);
+        assert(false);
         return false;
     }
     fclose(f);

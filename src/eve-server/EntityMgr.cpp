@@ -24,6 +24,7 @@
     Rewrite:    Allan
 */
 
+
 #include "eve-server.h"
 
 #include "EVE_Mail.h"
@@ -54,14 +55,14 @@ m_procClient(nullptr),
 m_targTimer(0, true),
 m_stampTimer(0, true),
 m_minuteTimer(0, true),
-m_startTime(0),
-m_profileTime(0),
+m_shipTracking(sConfig.debug.UseShipTracking),
 m_npcs(0),
 m_stamp(1000),   /* arbitrary.  start at 1k.  in seconds.  used for destiny and client counters */
 m_minutes(0),
 m_connections(0),
 m_clientSeedID(0),
-m_shipTracking(sConfig.debug.UseShipTracking)
+m_startFileTime(0),
+m_profileTime(0)
 {
 }
 
@@ -70,7 +71,7 @@ EntityMgr::~EntityMgr() {
 }
 
 void EntityMgr::Initialize() {
-    m_startTime = GetFileTimeNow();
+    m_startFileTime = GetFileTimeNow();
 
     /* start the timers */
     m_targTimer.Start(500);     // testing targeting and scan probes at 2/sec
@@ -302,7 +303,7 @@ SystemManager* EntityMgr::FindOrBootSystem(uint32 systemID) {
 
 // cannot put add/remove station in header due to incomplete StationItemRef class
 void EntityMgr::AddStation(uint32 stationID, StationItemRef itemRef) {
-    m_stations[stationID] = std::move(itemRef);
+    m_stations[stationID] = itemRef;
 }
 
 void EntityMgr::RemoveStation(uint32 stationID) {

@@ -23,8 +23,8 @@ Items listed as "<font color=orange>Skeleton Code Only</font>" has a basic outli
 The server may not respond or only partially respond to these requests. You may get an error from these requests, and the server may crash.<BR><BR>
 Items listed as "<font color=yellow>Preliminary Implementation</font>" have a first draft of their specific code, possibably a step or two above skeleton code, and may not function properly or completely. <BR>
 There will be some response, like opening windows, but *should not* generate an error or crash the server.</font><BR><BR><BR>
-<font color=magenta>Server Version:</font>&nbsp;&nbsp;&nbsp;<font color=orange>0.85.37</font><BR>
-<font color=magenta>Latest Update:</font>&nbsp;&nbsp;&nbsp;<font color=green>17 June 2026</font><BR>
+<font color=magenta>Server Version:</font>&nbsp;&nbsp;&nbsp;<font color=orange>0.89.43</font><BR>
+<font color=magenta>Latest Update:</font>&nbsp;&nbsp;&nbsp;<font color=green>7 July 2026</font><BR>
 <font color=magenta>Page Status:</font>&nbsp;&nbsp;&nbsp;<font color=yellow>WIP</font><BR>
 <font color=magenta>Incomplete Data:</font>&nbsp;&nbsp;&nbsp;<font color=brown>Anything not listed as (<font color=green>Current</font>) is pending review.</font><BR><BR>
 <a href="https://scan.coverity.com/projects/zyendomani-alasiyaeve">
@@ -52,9 +52,9 @@ There will be some response, like opening windows, but *should not* generate an 
 <td style="width: 4%;">Status</td><td style="width: 26%;">Comments</td></tr>
 <tr><td> - Stable, Efficient Server Code<BR>
 <font color=yellow>Gained valuable insight while coding DroneAI.<BR>
-This led to much faster runtime than I expected, and will be updating all systems with these leanings.</font></td><td class="working">80%
+This led to much faster runtime than I expected, and will be updating all systems with these leanings.</font></td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>Constantly in Progress - monitoring & adjusting code for faster runtime. most segfaults eliminated<BR>Been working this code for >10y<BR>15Feb25</td></tr>
 <tr><td> - Memory Management<BR>
@@ -62,7 +62,7 @@ This led to much faster runtime than I expected, and will be updating all system
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=green>Final Testing</font><BR>17Jun26</td></tr>
+<td><font color=green>Final Testing - still leaks 204b in 1 error. very elusive</font><BR>17Jun26</td></tr>
 <tr><td> - Efficient, Accurate Packet Deciphering<BR><font color=yellow>NOTE: work restarted.</font></td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
@@ -611,7 +611,7 @@ Agent portraits are working in the agent finder.</td><td class="working">95%
 <td><font color=orange>Skeleton Code Only</font><BR>19Nov18</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2><span class="mw-headline" id="Missions"> Missions (<font color=green>Current</font>) - <font color=yellow>v0.45</font></span></h2>
+<h2><span class="mw-headline" id="Missions"> Missions (<font color=green>Current</font>) - <font color=yellow>v0.77</font></span></h2>
 &nbsp;&nbsp;&nbsp;&nbsp;<font color=yellow size=+1>NOTE: See forums for details on types and offers</font>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
@@ -687,7 +687,7 @@ Deadspace locations will have rats, either region-specific or wanderers</td><td 
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font><BR>
 <font color=red>Not Given out yet</font><BR>17Jun26</td></tr>
-<tr><td> - <font color=lime>Security Missions</font><BR>
+<tr><td> - <font color=lime>Security/Encounter Missions</font><BR>
 Destroy ships at given location in space.</td><td class="broken">15%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
@@ -1975,11 +1975,11 @@ Expiration, Failure or Denial forever blocks giving agent.<BR>
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=green>COMPLETE</font><BR>30Jan25</td></tr>
-<tr><td> - Orbit Object</td><td class="broken">0%
+<tr><td> - Orbit Object</td><td class="broken">40%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 40%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Completely Disabled</font><BR><font color=cyan>Combat much better now</font><BR>30Jan25</td></tr>
+<td><font color=yellow>Preliminary Implementation of new system</font><BR>30Jun26</td></tr>
 <tr><td> - Follow Object</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -2067,11 +2067,11 @@ Expiration, Failure or Denial forever blocks giving agent.<BR>
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=green>COMPLETE</font><BR>27Jun17</td></tr>
-<tr><td> - Can Orbit target</td><td class="broken">0%
+<tr><td> - Can Orbit target</td><td class="broken">40%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 40%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Completely Disabled</font><BR><font color=cyan>Combat much better now</font><BR>30Jan25</td></tr>
+<td><font color=yellow>Preliminary Implementation of new system</font><BR>30Jun26</td></tr>
 <tr><td> - Can Follow target</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -2149,7 +2149,7 @@ Expiration, Failure or Denial forever blocks giving agent.<BR>
 <td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=lime>Final Testing</font><BR>20Feb20</td></tr>
-<tr><td> - Activated modules produce Graphics Effects<BR>GFX methods rewrite</td><td class="working">95%
+<tr><td> - Activated modules produce Graphics Effects<BR><font color=yellow>&nbsp;&nbsp;&nbsp;GFX methods rewrite</font></td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
@@ -2268,7 +2268,7 @@ Expiration, Failure or Denial forever blocks giving agent.<BR>
 <td><font color=green>COMPLETE</font><BR>27Jun17</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Drones"> Drones (<font color=violet>PlayTesting</font> - <font color=green>Current</font>) - <font color=yellow>v1.05</font></span></h2>
+<h2> <span class="mw-headline" id="Drones"> Drones (<font color=violet>PlayTesting</font> - <font color=green>Current</font>) - <font color=yellow>v1.17</font></span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: #2222EE; width:85%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
@@ -2420,14 +2420,14 @@ Drone will search out and salvage wrecks belonging to you or your fleet.</td><td
 <td><font color=lime>Final Testing</font><BR>7Feb25</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="NPC_Combat_Spawning_AI"> NPC AI (<font color=yellow>Need Rewrite with insights gleaned from DroneAI</font> - <font color=green>Current</font>) - <font color=yellow>v0.59</font></span></h2>
+<h2> <span class="mw-headline" id="NPC_Combat_Spawning_AI"> NPC AI (<font color=lime>Begin Rewrite</font> - <font color=green>Current</font>) - <font color=yellow>v1.61</font></span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:62%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:81%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:62%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
-<td> &#160;<font color=red><b>61.3</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+<table style="background: transparent; width:81%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
+<td> &#160;<font color=red><b>80.9</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color=red><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
@@ -2435,61 +2435,61 @@ Drone will search out and salvage wrecks belonging to you or your fleet.</td><td
 <tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
-<tr><td> - NPC look for targets</td><td class="broken">50%
+<tr><td> - NPC look for targets</td><td class="broken">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 50%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=orange>Needs Update</font><BR>11Feb25</td></tr>
-<tr><td> - NPC engage when targeted (if idle)</td><td class="broken">75%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
-<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>31Jan25</td></tr>
-<tr><td> - NPC approach found targets</td><td class="broken">50%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 50%; background:#00DB00"></td>
-<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=orange>Needs Update</font><BR>11Feb25</td></tr>
-<tr><td> - NPC lock/engage/orbit targets</td><td class="broken">50%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 50%; background:#00DB00"></td>
-<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=orange>Needs Update</font><BR>11Feb25</td></tr>
-<tr><td> - NPC notice new targets within sight range, and engage weakest</td><td class="broken">50%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 50%; background:#00DB00"></td>
-<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=orange>Needs Update</font><BR>11Feb25</td></tr>
-<tr><td> - NPC special actions/call for help/retreat</td><td class="broken">10%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
-<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=red>NOT IMPLEMENTED</font><BR>30Nov15</td></tr>
-<tr><td> - Rats warp into Asteroid fields</td><td class="broken">95%
+<td><font color=orange>Needs Update</font><BR>7Jun26</td></tr>
+<tr><td> - NPC engage when targeted (if idle)</td><td class="broken">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=lime>Final Testing</font><BR>31Jan25</td></tr>
-<tr><td> - Rats warp out of Asteroid fields</td><td class="broken">50%
+<td><font color=lime>Final Testing</font><BR>7Jun26</td></tr>
+<tr><td> - NPC approach found targets</td><td class="broken">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 50%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=orange>Needs Update</font><BR>11Feb25</td></tr>
-<tr><td> - Rats find/harass Players in space</td><td class="broken">50%
+<td><font color=orange>Needs Update</font><BR>7Jun26</td></tr>
+<tr><td> - NPC lock/engage/orbit targets</td><td class="broken">80%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=orange>Needs Update</font><BR>7Jun26</td></tr>
+<tr><td> - NPC notice new targets within sight range, and engage weakest</td><td class="broken">70%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=orange>Needs Update</font><BR>7Jun26</td></tr>
+<tr><td> - NPC special actions/call for help/retreat</td><td class="broken">60%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 60%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=orange>Needs Update</font><BR>7Jun26</td></tr>
+<tr><td> - Rats warp into Asteroid fields</td><td class="working">95%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=lime>Final Testing</font><BR>7Jun26</td></tr>
+<tr><td> - Rats warp out of Asteroid fields</td><td class="working">80%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=orange>Needs Update</font><BR>7Jun26</td></tr>
+<tr><td> - Rats find/harass Players in space</td><td class="broken">60%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 50%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 60%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=orange>Needs Update</font><BR>11Feb25</td></tr>
+<td><font color=orange>Needs Update</font><BR>7Jun26</td></tr>
 <tr><td> - Rat Wreck Creation</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=lime>Final Testing</font><BR>31Jan25</td></tr>
+<td><font color=lime>Final Testing</font><BR>7Jun26</td></tr>
 <tr><td> - Rat Loot</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=lime>Final Testing</font><BR>31Jan25</td></tr>
+<td><font color=lime>Final Testing</font><BR>7Jun26</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="Science_and_Industry"> Science &amp; Industry (<font color=pink>Rewrite on hold</font>)</span></h2>
@@ -2621,7 +2621,7 @@ Drone will search out and salvage wrecks belonging to you or your fleet.</td><td
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=green>COMPLETE</font><BR>6Mar18</td></tr>
-<tr><td> - System Scanning with Probes  (See 'Scan Manager' Data Block below for details)</td><td class="working">90%
+<tr><td> - System Scanning with Probes<BR>(See 'Scan Manager' Data Block below for details)</td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
@@ -3439,7 +3439,7 @@ Recent SOV updates broke CC installation<BR>3Feb23</td></tr>
 <td><font color=lime>Complete</font> - <font color=pink>PlayTesting</font><BR>31Jan25</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Scan_Manager"> Scan Manager (<font color=green>Current</font>)</span></h2>
+<h2> <span class="mw-headline" id="Scan_Manager"> Scan Manager (<font color=green>Current</font>) - <font color=yellow>v0.43</font></span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: #2222EE; width:78%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
@@ -3518,14 +3518,14 @@ Recent SOV updates broke CC installation<BR>3Feb23</td></tr>
 <td><font color=red>NOT IMPLEMENTED</font><BR>2Feb20</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Civilian_Manager"> Civilian Manager (<font color=green>Current</font>)</span></h2>
+<h2> <span class="mw-headline" id="Civilian_Manager"> Civilian Manager (<font color=green>Current</font>) - <font color=yellow>v1.01</font></span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:6%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:95%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:8%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
-<td> &#160;<font color=red><b>5.8</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+<table style="background: transparent; width:95%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
+<td> &#160;<font color=red><b>95.8</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color=red><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
@@ -3533,36 +3533,37 @@ Recent SOV updates broke CC installation<BR>3Feb23</td></tr>
 <tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
-<tr><td> - Civilian Ship Creation</td><td class="broken">15%
+<tr><td> - Civilian Ship Creation</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Preliminary Implementation</font><BR>12Feb17</td></tr>
-<tr><td> - Civilian Ships "Undock" from station</td><td class="broken">10%
+<td><font color=green>COMPLETE</font><BR>9Jul26</td></tr>
+<tr><td> - Civilian Ships "Undock" from station</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=orange>Skeleton Code Only</font><BR>12Feb17</td></tr>
-<tr><td> - Civilian Ships "Dock" to station</td><td class="broken">0%
+<td><font color=green>COMPLETE</font><BR>9Jul26</td></tr>
+<tr><td> - Civilian Ships "Dock" to station</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=red>NOT IMPLEMENTED</font><BR>2Feb20</td></tr>
-<tr><td> - Civilian Ships Travel in System</td><td class="broken">0%
+<td><font color=green>COMPLETE</font><BR>9Jul26</td></tr>
+<tr><td> - Civilian Ships Travel in System</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=red>NOT IMPLEMENTED</font><BR>2Feb20</td></tr>
-<tr><td> - Civilian Ships Travel using Jump Gates</td><td class="broken">0%
+<td><font color=green>COMPLETE</font><BR>9Jul26</td></tr>
+<tr><td> - Civilian Ships Travel using Jump Gates</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=red>NOT IMPLEMENTED</font><BR>2Feb20</td></tr>
-<tr><td> - Trader Joe traveling with Civilian Ships</td><td class="broken">10%
+<td><font color=green>COMPLETE</font><BR>9Jul26</td></tr>
+<tr><td> - Trader Joe traveling with Civilian Ships</td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=orange>Skeleton Code Only</font><BR>2Feb20</td></tr>
+<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>
+Trader Joe travels, but still working on his market data<BR>9Jul26</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
 </table><BR><BR>

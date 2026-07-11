@@ -49,7 +49,8 @@ public:
     void                GetCategory(uint8 catID, Inv::CatData &into);
     void                GetGroup(uint16 grpID, Inv::GrpData &into);
     void                GetType(uint16 typeID, Inv::TypeData &into);
-    void                GetTypes(std::map<uint16, Inv::TypeData> &into);
+    void                GetTypes(std::unordered_map<uint16, Inv::TypeData> &into);
+    uint8               GetMetaLevel(uint16 typeID);
     const char*         GetAttrName(uint16 attrID);
     const char*         GetTypeName(uint16 typeID);     // not sure if this will be needed
     const char*         GetGroupName(uint16 grpID);
@@ -108,9 +109,9 @@ public:
     // return constellationID for given systemID
     uint32              GetSystemConstellation(uint32 stationID);
     // return vector of all systems in given region
-    void GetRegionSystems(uint32 regionID, std::vector<uint32>& into);
+    void                GetRegionSystems(uint32 regionID, std::vector<uint32>& into);
     // return vector of all systems in given constellation
-    void GetConstellationSystems(uint32 constellationID, std::vector<uint32>& into);
+    void                GetConstellationSystems(uint32 constellationID, std::vector<uint32>& into);
 
     // get system data for system via either systemID or stationID
     bool                GetSolarSystemData(uint32 locationID, SolarSystemData &into);
@@ -190,6 +191,13 @@ public:
 
 protected:
     void                Populate();
+    void                ProcessLootModifiers(uint8 classID, LootPool& pool);
+    void                InjectSleeperSalvage(LootPool& pool);
+    void LoadLoot();
+    void LoadSalvageTables();
+    std::vector<LootPool> FetchPoolsForGroup(uint32 groupID, bool isAdvanced, bool isCommander);
+    void GetLootFinal(float trueSec, uint32 shipClassID, std::vector<LootList>& lootList);
+
 
 private:
     PyTuple*                                            m_factionInfo;
@@ -205,37 +213,36 @@ private:
     DBRowDescriptor*                                    m_bpMatlHeader;
     GetFactionInfoRsp*                                  m_pFactionInfo;
 
-    std::map<uint16, Inv::CatData>                      m_catData;
-    std::map<uint16, Inv::GrpData>                      m_grpData;
-    std::map<uint16, Inv::TypeData>                     m_typeData;
-
-    std::map<uint16, PyDict*>                           m_bpMatlData;       // typeID/dict*
-    std::map<uint32, uint8>                             m_whRegions;        // regionID/classID
-    std::map<uint32, std::vector<uint32>>               m_whClassDestinations; //classID/typeID
-    std::map<uint32, std::vector<uint32>>               m_whClassSystems;   // classID/systemID
-    std::map<uint32, uint32>                            m_regions;          // regionID/ownerFactionID
-    std::map<uint32, uint32>                            m_ratRegions;       // regionID/ratFactionID
-    std::map<uint32, uint32>                            m_agentCorp;        // agentID/corpID
-    std::map<uint32, uint32>                            m_agentSystem;      // agentID/systemID
-    std::map<uint32, std::string>                       m_factionName;      // factionID/name
-    std::map<uint32, std::string>                       m_corpName;         // corpID/name
-    std::map<uint32, uint32>                            m_corpFaction;      // corpID/factionID
     std::map<uint32, uint8>                             m_stationCount;     // systemID/count
-    std::map<uint32, std::vector<uint32>>               m_stationList;      // systemID/data<stationID>
-    std::map<uint32, uint32>                            m_stationRegion;    // stationID/regionID
-    std::map<uint32, uint32>                            m_stationConst;     // stationID/constellationID
-    std::map<uint32, uint32>                            m_stationSystem;    // stationID/systemID
-    std::map<uint32, uint32>                            m_systemRegion;     // systemID/regionID
-    std::map<uint32, uint32>                            m_systemConst;      // systemID/constellationID
-    std::map<uint32, SolarSystemData>                   m_solSysData;       // systemID/data
-    std::map<uint32, uint8>                             m_factionRaces;     // factionID/raceID
-    std::map<uint16, EvERam::bpTypeData>                m_bpTypeData;       // typeID/data
-    std::map<uint16, uint8>                             m_moonGoo;          // typeID/rarity
-    std::map<uint16, std::string>                       m_skills;           // typeID/name
-    std::map<uint32, StaticData>                        m_staticData;       // itemID/data
-    std::map<uint16, Inv::AttrTypeData>                 m_attrTypeData;     // attrID/data
-    std::map<uint8, Char::AttrData>                     m_ancestryBonuses;  // ancestryID/data
-    std::map<uint8, Char::AttrData>                     m_bloodlineBonuses; // bloodlineID/data
+
+    std::unordered_map<uint16, Inv::CatData>            m_catData;
+    std::unordered_map<uint16, Inv::GrpData>            m_grpData;
+    std::unordered_map<uint16, Inv::TypeData>           m_typeData;
+
+    std::unordered_map<uint16, PyDict*>                 m_bpMatlData;       // typeID/dict*
+    std::unordered_map<uint32, uint8>                   m_whRegions;        // regionID/classID
+    std::unordered_map<uint32, std::vector<uint32>>     m_whClassDestinations; //classID/typeID
+    std::unordered_map<uint32, std::vector<uint32>>     m_whClassSystems;   // classID/systemID
+    std::unordered_map<uint32, uint32>                  m_regions;          // regionID/ownerFactionID
+    std::unordered_map<uint32, uint32>                  m_ratRegions;       // regionID/ratFactionID
+    std::unordered_map<uint32, uint32>                  m_agentCorp;        // agentID/corpID
+    std::unordered_map<uint32, uint32>                  m_agentSystem;      // agentID/systemID
+    std::unordered_map<uint32, std::string>             m_factionName;      // factionID/name
+    std::unordered_map<uint32, std::string>             m_corpName;         // corpID/name
+    std::unordered_map<uint32, uint32>                  m_corpFaction;      // corpID/factionID
+    std::unordered_map<uint32, std::vector<uint32>>     m_stationList;      // systemID/data<stationID>
+    std::unordered_map<uint32, uint32>                  m_stationRegion;    // stationID/regionID
+    std::unordered_map<uint32, uint32>                  m_stationConst;     // stationID/constellationID
+    std::unordered_map<uint32, uint32>                  m_stationSystem;    // stationID/systemID
+    std::unordered_map<uint32, SolarSystemData>         m_solSysData;       // systemID/data
+    std::unordered_map<uint32, uint8>                   m_factionRaces;     // factionID/raceID
+    std::unordered_map<uint16, EvERam::bpTypeData>      m_bpTypeData;       // typeID/data
+    std::unordered_map<uint16, uint8>                   m_moonGoo;          // typeID/rarity
+    std::unordered_map<uint16, std::string>             m_skills;           // typeID/name
+    std::unordered_map<uint32, StaticData>              m_staticData;       // itemID/data
+    std::unordered_map<uint16, Inv::AttrTypeData>       m_attrTypeData;     // attrID/data
+    std::unordered_map<uint8, Char::AttrData>           m_ancestryBonuses;  // ancestryID/data
+    std::unordered_map<uint8, Char::AttrData>           m_bloodlineBonuses; // bloodlineID/data
 
     std::multimap<uint16, EvERam::RamMaterials>         m_ramMatl;          // itemTypeID/data
     std::multimap<uint16, EvERam::RamRequirements>      m_ramReq;           // bpTypeID/data
@@ -265,6 +272,10 @@ private:
     /* loot data */
     std::multimap<uint32, LootGroup>                    m_LootGroupMap;     // typeID/data
     std::multimap<uint32, LootType>                     m_LootTypeMap;      // typeID/data
+    std::unordered_map<uint32, LootProfile>             m_ClassToProfileMap;
+    std::unordered_map<uint32, std::vector<LootPool>>   m_FactionToSalvageMap;
+    std::unordered_map<uint32, LootProfile>             m_TypeToProfileMap;  // Fast O(1) typeID lookup
+    std::unordered_map<uint32, LootProfile>             m_GroupToProfileMap; // Fallback O(1) groupID lookup
 
     /* for pricing methods */
     std::map<uint16, std::string>                       m_salvage;          // typeID/name

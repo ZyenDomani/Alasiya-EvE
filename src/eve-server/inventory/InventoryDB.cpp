@@ -128,7 +128,7 @@ bool InventoryDB::GetItemContents(uint32 itemID, EVEItemFlags flag, uint32 owner
         "  itemID"
         " FROM entity "
         " WHERE locationID=%u"
-        "  AND flag=%d"
+        "  AND flagID=%d"
         "  AND ownerID=%u",
         itemID, (int)flag, ownerID ) )
     {

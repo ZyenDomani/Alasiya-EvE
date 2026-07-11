@@ -66,7 +66,7 @@ void CynoModule::Activate(uint16 effectID, uint32 targetID, int16 repeat)
     // hack to disable ship movement here
     m_shipVelocity = pShipSE->DestinyMgr()->GetMaxVelocity();
     pShipSE->DestinyMgr()->Halt(true);
-    pShipSE->DestinyMgr()->SetFrozen(true);
+    pShipSE->DestinyMgr()->SkipTic(true);
 }
 
 void CynoModule::DeactivateCycle(bool abort)
@@ -79,7 +79,7 @@ void CynoModule::DeactivateCycle(bool abort)
     // hack to reinstate ship movement here
     // may have to reset/reapply all fx for ship movement
     pShipSE->GetSelf()->SetAttribute(AttrMaxVelocity, m_shipVelocity);
-    pShipSE->DestinyMgr()->SetFrozen(false);
+    pShipSE->DestinyMgr()->SkipTic(false);
 }
 
 bool CynoModule::CanActivate()
@@ -138,7 +138,7 @@ void CynoModule::CreateCyno()
         return;
 
     // Create Cyno field here
-    ItemData cData(EVEDB::invTypes::CynosuralFieldI, pClient->GetCharacterID(), m_sysMgr->GetID(), flagAutoFit);
+    ItemData cData(EVEItemTypes::CynosuralFieldI, pClient->GetCharacterID(), m_sysMgr->GetID(), flagAutoFit);
     InventoryItemRef cRef = sItemFactory.SpawnItem(cData);
 
     _log(MODULE__DEBUG, "Creating Cynosural field");

@@ -349,7 +349,7 @@ PyResult PlanetMgrBound::Handle_UserTransferCommodities(PyCallArgs &call) {
         items[PyRep::IntegerValue(itr->first)] = PyRep::IntegerValue(itr->second);
 
     PyList* list = call.tuple->GetItem(0)->AsList();
-    return m_colony->TransferCommodities(PyRep::IntegerValue(list->items.front()), PyRep::IntegerValue(list->items.back()), std::move(items));
+    return m_colony->TransferCommodities(PyRep::IntegerValue(list->items.front()), PyRep::IntegerValue(list->items.back()), items);
 }
 
 

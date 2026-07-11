@@ -28,7 +28,7 @@
 
 void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData& data, GenericModule* pMod/*nullptr*/)
 {
-    double profileStartTime(GetTimeUSeconds());
+    double profileStartTime = GetTimeUSeconds();
 
     if (is_log_enabled(EFFECTS__TRACE) and 0)
         _log(EFFECTS__TRACE, "FxProc::ParseExpression(): container: %s(%u) parsing %s ", \
@@ -301,7 +301,7 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
 
 void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShip, bool update/*false*/)
 {
-    double profileStartTime(GetTimeUSeconds());
+    double profileStartTime = GetTimeUSeconds();
 
     using namespace FX;
     //uint8 action = Action::dgmActInvalid;
@@ -327,7 +327,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                         itemRefVec.push_back(mod);
             } break;
             case Source::Skill: {    // source of this effect is skill, implant, or booster
-                if (cur.second.typeID == EVEDB::invTypes::Invalid) {    //invalid
+                if (cur.second.typeID == EVEItemTypes::Invalid) {    //invalid
                     _log(EFFECTS__WARNING, "FxProc::ApplyEffects(): Source::Skill - typeID is invalid");
                     continue;  // make error here
                 }

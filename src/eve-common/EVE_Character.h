@@ -77,10 +77,10 @@ namespace Char {
 
         namespace Weapon {
             enum {
-                Amarr           = 3634,
-                Caldari         = 3638,
-                Gallente        = 3640,
-                Minmatar        = 3636
+                Amarr           = 3634, //pulse lazor (energy)
+                Caldari         = 3638, //railgun (energy)
+                Gallente        = 3640, //electron blaster (hybrid)
+                Minmatar        = 3636  //autocannon (projectile)
             };
         }
     }

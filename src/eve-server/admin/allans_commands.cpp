@@ -344,16 +344,18 @@ PyResult Command_destinyvars(Client* pClient, CommandDB* db, PyServiceMgr* servi
     DestinyManager* dm = pClient->GetShipSE()->DestinyMgr();
     InventoryItemRef sRef = pClient->GetShipSE()->GetSelf();
 
-    GPoint heading(dm->GetHeading());
+    GVector heading = dm->GetVelocity();
 
     // test for args:   targ.
     if (args.argCount() == 2) {
         if (strcmp(args.arg(1).c_str(), "targ") == 0) {
             sRef = pClient->GetShipSE()->TargetMgr()->GetFirstTarget()->GetSelf();
             dm = pClient->GetShipSE()->TargetMgr()->GetFirstTarget()->GetShipSE()->DestinyMgr();
-            heading = dm->GetHeading();
+            heading = dm->GetVelocity();
         }
     }
+
+    heading.normalize();
 
     char reply[350];
     snprintf(reply, 350,
@@ -371,7 +373,7 @@ PyResult Command_destinyvars(Client* pClient, CommandDB* db, PyServiceMgr* servi
              "Heading: %.3f,%.3f,%.3f<br>", //21
              sRef->name(), sRef->itemID(),
              sRef->mass(), dm->GetAlignTime(),
-             dm->GetMaxVelocity(), (float)(dm->GetWarpSpeed() / 10),
+             sRef->GetAttribute(AttrMaxVelocity).get_float(), (float)(dm->GetWarpSpeed() / 10.0f),
              dm->GetWarpDropSpeed(), sRef->radius(), dm->GetCapNeed(),
              //sRef->GetAttribute(AttrAgility).get_double(),
              dm->GetAgility(),
@@ -473,7 +475,7 @@ PyResult Command_inventory(Client* pClient, CommandDB* db, PyServiceMgr* service
     str << "InventoryID %u(%p) (Item %p) has %u items.<br><br>"; //70
 
     if (IsSolarSystemID(inventoryID)) {
-        SystemEntity* pSE(nullptr);
+        SystemEntity* pSE = nullptr;
         SystemManager* sMgr = pClient->SystemMgr();
         for (auto &cur : invMap) {
             pSE = sMgr->GetEntityByID(cur.first);
@@ -994,7 +996,7 @@ PyResult Command_cargo(Client* pClient, CommandDB* db, PyServiceMgr* services, c
      */
 
     // check for pod...no cargo
-    if (pClient->GetShip()->typeID() == EVEDB::invTypes::Capsule) {
+    if (pClient->GetShip()->typeID() == EVEItemTypes::Capsule) {
         char reply[21];
         snprintf(reply, 21, "Your Pod's current cargo is you.<br>There is no room for anything else.");
         pClient->SendInfoModalMsg(reply);

@@ -24,8 +24,9 @@ static const uint8 marshaledNone[] = { 0x74, 0x04, 0x00, 0x00, 0x00, 0x4E, 0x6F,
 
 static const uint16 SHIP_PROCESS_TICK_MS = 5000;    // 5s
 
-static const GPoint NULL_ORIGIN(0,0,0);  // common place for a zero-value gpoint
-static const GVector NULL_ORIGIN_V(0.0,0.0,0.0);
+static const GPoint NULL_ORIGIN(0.0f,0.0f,0.0f);  // common place for a zero-value gpoint
+static const GPoint GPOINT_IDENTITY(0.0f,0.0f,1.0f);  // common place for a zero-value gpoint
+static const GVector NULL_ORIGIN_V(0.0f,0.0f,0.0f);
 //static const GHeading NULL_ORIGIN_H(0.0,0.0,0.0);
 
 static const float TIC_DURATION_IN_SECONDS(1000);       // not used yet

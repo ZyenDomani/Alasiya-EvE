@@ -78,8 +78,8 @@ StructureItemRef StructureItem::Spawn(ItemData &data)
         return StructureItemRef(nullptr);
     StructureItemRef sRef(StructureItem::Load(structureID));
     // check for customs offices and set global flag
-    if ((data.typeID == EVEDB::invTypes::InterbusCustomsOffice)
-    or (data.typeID == EVEDB::invTypes::PlanetaryCustomsOffice))
+    if ((data.typeID == EVEItemTypes::InterbusCustomsOffice)
+    or (data.typeID == EVEItemTypes::PlanetaryCustomsOffice))
     {
         sRef->SetAttribute(AttrIsGlobal, EvilOne);
     }

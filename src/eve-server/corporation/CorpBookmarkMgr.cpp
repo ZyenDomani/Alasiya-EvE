@@ -64,39 +64,49 @@ CorpBookmarkMgr::~CorpBookmarkMgr()
 }
 
 //  NOTE:  this service is only for corporate bookmarks
-
 PyResult CorpBookmarkMgr::Handle_GetBookmarks(PyCallArgs& call)
 {
     sLog.Cyan("CorpBookmarkMgr", "GetBookmarks()");
-    PyTuple *result = new PyTuple(2);
-    result->SetItem(0, m_db.GetBookmarks(call.client->GetCorporationID()));
-    result->SetItem(1, m_db.GetFolders(call.client->GetCorporationID()));
-    result->Dump(BOOKMARK__RSP_DUMP, "    ");
-    return result;
+    uint32 corporationID = call.client->GetCorporationID();
 
-    /*  segfaults with new memmgmt code testing  11Mar23
-    // first object is garbage...bad iterator somewhere?
-    PyRep* result(nullptr);
-    std::string method_name ("GetBookmarks_");
-    method_name += std::to_string(call.client->GetCorporationID());
+    std::string method_name = "GetBookmarks_" + std::to_string(corporationID);
     ObjectCachedMethodID method_id(GetName(), method_name.c_str());
-    //check to see if this method is in the cache already.
+
+    // 1. Check if this corporation's bookmark matrix is already registered in memory
     if (!m_manager->cache_service->IsCacheLoaded(method_id)) {
-        //this method is not in cache yet, load up the contents and cache it
-        PyTuple *tuple = new PyTuple(2);
-        tuple->SetItem(0, m_db.GetBookmarks(call.client->GetCorporationID()));
-        tuple->SetItem(1, m_db.GetFolders(call.client->GetCorporationID()));
-        result = tuple;
-        m_manager->cache_service->GiveCache(method_id, &result);
+        // Cache Miss: Construct the core data structures fresh from the database
+        PyTuple *dataTuple = new PyTuple(2);
+        dataTuple->SetItem(0, m_db.GetBookmarks(corporationID));
+        dataTuple->SetItem(1, m_db.GetFolders(corporationID));
+
+        // CRITICAL FIX: Cast directly to the base PyRep interface type
+        PyRep* cachePayload = dataTuple;
+
+        // Ensure the reference count balances so GiveCache doesn't delete it out from under us
+        PyIncRef(cachePayload);
+
+        // Hand the data block over to the central cache service registry storage mappings
+        m_manager->cache_service->GiveCache(method_id, &cachePayload);
+
+        // Safe reduction: Clear the intermediate initialization reference pointer
+        PySafeDecRef(cachePayload);
     }
 
-    //now we know its in the cache one way or the other, so build a
-    //cached object cached method call result.
-    result = m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id);
-    result->Dump(BOOKMARK__RSP_DUMP, "    ");
-    return result;
-    */
+    // 2. Cache Hit / Recovery: Reconstruct the official MachoNet client result envelope container
+    PyRep* cachedResult = m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id);
+
+    if (cachedResult == nullptr) {
+        sLog.Error("CorpBookmarkMgr", "Cache service failed to materialize result wrapper for Corp %u", corporationID);
+        return nullptr;
+    }
+
+    if (is_log_enabled(BOOKMARK__RSP_DUMP)) {
+        cachedResult->Dump(BOOKMARK__RSP_DUMP, "    ");
+    }
+
+    return cachedResult;
 }
+
 
 PyResult CorpBookmarkMgr::Handle_UpdateBookmark(PyCallArgs& call) {
     call.Dump(BOOKMARK__CALL_DUMP);

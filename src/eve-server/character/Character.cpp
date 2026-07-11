@@ -264,7 +264,7 @@ bool Character::_Load() {
     m_cloneRef = sItemFactory.GetItemRefFromID(m_db.GetCloneID(m_itemID));
     if (m_cloneRef.get() == nullptr) {
         sLog.Warning("Character::_Load","m_cloneRef == NULL for char %u", m_itemID);
-        ItemData iData(EVEDB::invTypes::CloneGradeAlpha, m_itemID, m_corpData.baseID, flagClone, 1);
+        ItemData iData(EVEItemTypes::CloneGradeAlpha, m_itemID, m_corpData.baseID, flagClone, 1);
             iData.customInfo="Active: ";
             iData.customInfo += m_charData.name;
             iData.customInfo += "(";
@@ -303,7 +303,7 @@ CharacterRef Character::Spawn(CharacterData& charData, CorpData& corpData) {
     }
 
     // create alpha-level clone for this character
-    ItemData iData(EVEDB::invTypes::CloneGradeAlpha, characterID, charData.locationID, flagClone, 1);
+    ItemData iData(EVEItemTypes::CloneGradeAlpha, characterID, charData.locationID, flagClone, 1);
         iData.customInfo="Active: ";
         iData.customInfo += charData.name;
         iData.customInfo += "(";
@@ -554,7 +554,7 @@ void Character::ResetChar() {
 
     }
 
-    UpdateClone(EVEDB::invTypes::CloneGradeAlpha);
+    UpdateClone(EVEItemTypes::CloneGradeAlpha);
 
     // what else needs to be reset here?
 
@@ -664,8 +664,8 @@ PyRep* Character::GetRAMSkills()
 
     //TODO:  i think we're missing skills here.
     PyDict* skillLevels = new PyDict();
-        skillLevels->SetItem(new PyInt(EVEDB::invTypes::ScientificNetworking), new PyInt(GetSkillLevel(EvESkill::ScientificNetworking)));
-        skillLevels->SetItem(new PyInt(EVEDB::invTypes::SupplyChainManagement), new PyInt(GetSkillLevel(EvESkill::SupplyChainManagement)));
+        skillLevels->SetItem(new PyInt(EVEItemTypes::ScientificNetworking), new PyInt(GetSkillLevel(EvESkill::ScientificNetworking)));
+        skillLevels->SetItem(new PyInt(EVEItemTypes::SupplyChainManagement), new PyInt(GetSkillLevel(EvESkill::SupplyChainManagement)));
 
     uint8 mLab = 1 + GetSkillLevel(EvESkill::LaboratoryOperation) + GetSkillLevel(EvESkill::AdvancedLaboratoryOperation);
     uint8 mSlot = 1 + GetSkillLevel(EvESkill::MassProduction) + GetSkillLevel(EvESkill::AdvancedMassProduction);
@@ -737,9 +737,16 @@ uint32 Character::GetTotalSP() {
     //  this will also update charData for current SP
     m_charData.skillPoints = 0;
     std::vector<InventoryItemRef> skills;
+    pInventory->GetItemsByFlag(flagSkillInTraining, skills);
     pInventory->GetItemsByFlag(flagSkill, skills);
-    for (auto &cur : skills)
+    for (auto &cur : skills) {
+        if (cur.get() == nullptr) {
+            sLog.Error("Char::GetTotalSP()", "Bad skill in list.");
+            continue;
+        }
+
         m_charData.skillPoints += cur->GetAttribute(AttrSkillPoints).get_uint32();    // much cleaner and more accurate    -allan
+    }
 
     return m_charData.skillPoints;
 }
@@ -1410,7 +1417,7 @@ void Character::AddImplant(uint8 slotID, InventoryItemRef iRef) {
             break;
     }
 
-    m_implantMap[slotID] = std::move(iRef);
+    m_implantMap[slotID] = iRef;
 }
 
 void Character::RemoveImplant(uint8 slotID) {

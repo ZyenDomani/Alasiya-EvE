@@ -41,8 +41,7 @@ void ManagerDB::GetGroupData(DBQueryResult& res)
     _log(DATABASE__RESULTS, "GetGroupData returned %lu items", res.GetRowCount());
 }
 
-void ManagerDB::GetTypeData(DBQueryResult& res)
-{
+void ManagerDB::GetTypeData(DBQueryResult& res) {
     if (!sDatabase.RunQuery(res,
         "SELECT"
         "  t.typeID,"
@@ -59,10 +58,33 @@ void ManagerDB::GetTypeData(DBQueryResult& res)
         "  t.published,"
         "  t.marketGroupID,"
         "  t.chanceOfDuplicating,"
-        "  m.metaGroupID"
+        "  m.metaGroupID,"
+        // 1 if matching row found in the joined set, 0 otherwise
+        "  IF(ref.typeID IS NOT NULL, 1, 0) AS isRefinable,"
+        "  IF(rec.typeID IS NOT NULL OR rec_alt.productTypeID IS NOT NULL, 1, 0) AS isRecyclable"
         " FROM invTypes AS t"
-        " LEFT JOIN invMetaTypes AS m USING (typeID)"))
+        " LEFT JOIN invMetaTypes AS m USING (typeID)"
+        // Subquery A: Pre-group refinables to a unique list of IDs
+        " LEFT JOIN ("
+        "   SELECT typeID FROM ramTypeRequirements WHERE extra = 0 GROUP BY typeID"
+        " ) AS ref ON t.typeID = ref.typeID"
+        // Subquery B: Pre-group first condition for recyclables (activityID = 6)
+        " LEFT JOIN ("
+        "   SELECT r.typeID FROM ramTypeRequirements r"
+        "   INNER JOIN invBlueprintTypes b ON r.typeID = b.blueprintTypeID"
+        "   WHERE r.extra = 1 AND r.damagePerJob = 1 AND r.activityID = 6"
+        "   GROUP BY r.typeID"
+        " ) AS rec ON t.typeID = rec.typeID"
+        // Subquery C: Pre-group second condition for recyclables (activityID = 1 via productTypeID)
+        " LEFT JOIN ("
+        "   SELECT b.productTypeID FROM ramTypeRequirements r"
+        "   INNER JOIN invBlueprintTypes b ON r.typeID = b.blueprintTypeID"
+        "   WHERE r.extra = 1 AND r.damagePerJob = 1 AND r.activityID = 1"
+        "   GROUP BY b.productTypeID"
+        " ) AS rec_alt ON t.typeID = rec_alt.productTypeID"))
+    {
         codelog(DATABASE__ERROR, "Error in GetTypeData query: %s.", res.error.c_str());
+    }
 
     _log(DATABASE__RESULTS, "GetTypeData returned %lu items", res.GetRowCount());
 }

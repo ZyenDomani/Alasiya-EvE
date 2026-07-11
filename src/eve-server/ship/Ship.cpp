@@ -1887,7 +1887,7 @@ std::string ShipItem::GetShipDNA()
      * "587:8863;1:8863;1:8863;1:499;1:578;1:1798;1:6485;1:2046;1:8325;1:31788;1:31800;1:31788;1::"
      *  need to figure out how to group modules for correct condensed counts
      */
-    if (typeID() == EVEDB::invTypes::Capsule) {
+    if (typeID() == EVEItemTypes::Capsule) {
         std::stringstream dna;
         dna << typeID() << ":";
         _log(SHIP__MESSAGE, "ShipDNA has compiled DNA of \"%s\" for %s(%u) ", dna.str().c_str(), name(), itemID());
@@ -1965,7 +1965,7 @@ void ShipItem::VerifyHoldType(EVEItemFlags flag, InventoryItemRef iRef, Client* 
             if (!HasAttribute(AttrHasShipMaintenanceBay)) {
                 throw CustomError("Your %s has no ship maintenance bay.", name());
             }
-            if (typeID() == EVEDB::invTypes::Rorqual)
+            if (typeID() == EVEItemTypes::Rorqual)
                 if ((iRef->groupID() != EVEDB::invGroups::MiningBarge)
                 and (iRef->groupID() != EVEDB::invGroups::Exhumer)
                 and (iRef->groupID() != EVEDB::invGroups::Industrial)
@@ -2413,7 +2413,7 @@ void ShipSE::Process() {
         return;
 
     if (m_processTimer.Check()) {
-        double profileStartTime(GetTimeUSeconds());
+        double profileStartTime = GetTimeUSeconds();
         // shield
         float Charge = m_self->GetAttribute(AttrShieldCharge).get_float();
         float Capacity = m_self->GetAttribute(AttrShieldCapacity).get_float();
@@ -2556,7 +2556,18 @@ void ShipSE::EncodeDestiny( Buffer& into) {
         head.posY = y();
         head.posZ = z();
         if (m_self->HasPilot()) {
-            head.flags = Ball::Flag::IsInteractive | Ball::Flag::IsFree;
+            // Setup baseline capability flags
+            uint8 baseFlags = Ball::Flag::IsFree | Ball::Flag::IsInteractive;
+            // --- DYNAMIC SLOT TRACKING INJECTION ---
+            // Verify if the ship is an active part of a fleet grouping configuration
+            if (m_self->GetPilot()->InFleet()) {
+                // Fetch their relative index position inside their specific Fleet Squad array.
+                uint8 slotID = 0; //m_self->GetPilot()->GetFleetMemberIndex(); // 0, 1, 2, 3...
+                // Shift the slot ID up into the upper 4 bits and merge with base flags
+                head.flags = baseFlags | (slotID << 4);
+            } else {
+                head.flags = baseFlags; // Solo ship defaults upper bits to 0 (Slot 0)
+            }
         } else {
             head.flags = Ball::Flag::IsFree;
         }
@@ -2587,12 +2598,14 @@ void ShipSE::EncodeDestiny( Buffer& into) {
                 warp.speed = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
                 // warp timing.  see ShipSE::EncodeDestiny() for notes/updates
                 if (m_destiny->IsWarping()) {
-                    warp.effectStamp = -1; //m_destiny->GetStateStamp();   //timestamp when warp started
+                    warp.effectStamp = m_destiny->GetStateStamp();   //timestamp when warp started
+                    warp.distance = -1.0;
+                    warp.trackingFlags = 23000.0;
                 } else {
                     warp.effectStamp = -1;
+                    warp.distance = 0;
+                    warp.trackingFlags = 0.0;   //4802252820405690112
                 }
-                warp.distance = -1.0;
-                warp.trackingFlags = 0;
             into.Append(warp);
         }  break;
         case Ball::Mode::FOLLOW: {
@@ -2669,7 +2682,7 @@ PyDict* ShipSE::MakeSlimItem() {
         slim->SetItemString("warFactionID",     IsFactionID(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
         slim->SetItemString("bounty",               new PyFloat(m_self->GetPilot() ? m_self->GetPilot()->GetBounty() : 0));
         slim->SetItemString("securityStatus",       new PyFloat(m_self->GetPilot() ? m_self->GetPilot()->GetSecurityRating() : 0.0));
-    if (m_self->typeID() == EVEDB::invTypes::Capsule) {
+    if (m_self->typeID() == EVEItemTypes::Capsule) {
         slim->SetItemString("launcherID",           new PyInt(m_podShipID));
         return slim;
     } else {

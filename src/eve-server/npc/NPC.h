@@ -136,6 +136,8 @@ public:
                                                         { m_squadTarget = pTarget; }
 
     uint16              GetID()                         { return m_squadID; }
+    uint8               GetFormID()                     { return m_formationID; }
+    float               GetSpacing()                    { return m_spacing; }
 
     // Formation Handles
     void                AssignLeader(NPC* pNPC)         { m_squadLeader = pNPC; }
@@ -146,6 +148,8 @@ private:
     Timer               m_formationBreakTimer;
     uint8               m_tacticalTier;
     uint32              m_squadID;
+    uint8               m_formationID;
+    float               m_spacing;
     NPC*                m_squadLeader;
     SystemEntity*       m_squadTarget; // The authoritative focus-fire target for this fleet spawn
     std::vector<NPC*>   m_members;     // Safe transient references to active grid rats

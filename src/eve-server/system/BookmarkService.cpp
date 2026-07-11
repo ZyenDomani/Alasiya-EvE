@@ -86,9 +86,13 @@ PyResult BookmarkService::Handle_GetBookmarks(PyCallArgs &call) {
 
 PyResult BookmarkService::Handle_CreateFolder(PyCallArgs &call) {
     call.Dump(BOOKMARK__CALL_DUMP);
-    /** @todo sanitize name */
     std::string name = PyRep::StringContent(call.tuple->GetItem( 0 ));
+    // Sanitization Guard Clause: Enforce matching 60-character boundary
+    if (name.length() > 60)
+        name = name.substr(0, 60);
 
+    /** @todo sanitize name */
+    
     uint32 ownerID = call.client->GetCharacterID();
     Rsp_CreateFolder result;
         result.ownerID = ownerID;
@@ -108,8 +112,13 @@ PyResult BookmarkService::Handle_UpdateFolder(PyCallArgs &call) {
         return PyStatic.NewFalse();
     }
 
+    std::string name = PyRep::StringContent(args.folderName);
+    // Sanitization Guard Clause: Enforce matching 60-character boundary
+    if (name.length() > 60)
+        name = name.substr(0, 60);
+
     /** @todo sanitize name */
-    if (!m_db.UpdateFolder(args.folderID, PyRep::StringContent(args.folderName)))
+    if (!m_db.UpdateFolder(args.folderID, name))
         return PyStatic.NewFalse();
 
     return PyStatic.NewTrue();
@@ -160,7 +169,7 @@ PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {
         data.folderID = PyRep::IntegerValueU32(call.byname.find("folderID")->second);
 
     if (IsPlayerItem(args.itemID)) {      // entity #'s above 140m are player-owned.  player is in ship
-        data.typeID = EVEDB::invTypes::SolarSystem;
+        data.typeID = EVEItemTypes::SolarSystem;
         data.point = call.client->GetShipSE()->GetPosition();       // Get x,y,z location.  bm type is coordinate as "spot in xxx system"
         data.locationID = call.client->GetLocationID();       // locationID of bm is current sol system
         data.itemID = data.locationID;      //  itemID = locationID for coord bm.  shows jumps, s/c/r in bm window, green in system
@@ -175,11 +184,11 @@ PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {
         data.locationID = call.client->GetSystemID();       // get sol system of current station
     } else {      // char is passing systemID from map.  char is marking a solar systemID for bm
         if (IsRegionID(args.itemID)) {
-            data.typeID = EVEDB::invTypes::Region;
+            data.typeID = EVEItemTypes::Region;
         } else if (IsConstellationID(args.itemID)) {
-            data.typeID = EVEDB::invTypes::Constellation;
+            data.typeID = EVEItemTypes::Constellation;
         } else if (sDataMgr.IsSolarSystem(args.itemID)) {
-            data.typeID = EVEDB::invTypes::SolarSystem;
+            data.typeID = EVEItemTypes::SolarSystem;
         }
         data.locationID = args.itemID;  // this is systemID from map
         data.itemID = data.locationID;      //  itemID = locationID for coord bm.  shows jumps, s/c/r in bm window, green in system
@@ -190,7 +199,7 @@ PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {
     // (bookmarkID, itemID, typeID, x, y, z, locationID)
     Rsp_BookmarkLocation result;
         result.bookmarkID  = data.bookmarkID;
-        result.itemID      = (data.typeID == EVEDB::invTypes::SolarSystem ? 0 : data.itemID);     // itemID = 0 when typeID is SolarSystem
+        result.itemID      = (data.typeID == EVEItemTypes::SolarSystem ? 0 : data.itemID);     // itemID = 0 when typeID is SolarSystem
         result.typeID      = data.typeID;
         result.x           = data.point.x;
         result.y           = data.point.y;
@@ -226,7 +235,7 @@ PyResult BookmarkService::Handle_BookmarkScanResult(PyCallArgs &call)
     data.creatorID = data.ownerID;
     data.created = GetFileTimeNow();
     data.locationID = args.locationID;
-    data.typeID = EVEDB::invTypes::SolarSystem;
+    data.typeID = EVEItemTypes::SolarSystem;
     data.point = ManagerDB::GetAnomalyPos(args.resultID);
 
     if (call.byname.find("folderID") != call.byname.end())

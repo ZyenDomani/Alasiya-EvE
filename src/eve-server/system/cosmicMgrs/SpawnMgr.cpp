@@ -83,7 +83,7 @@ void SpawnMgr::Process() {
     if (!m_initalized)
         return;
 
-    double profileStartTime(GetTimeUSeconds());
+    double profileStartTime = GetTimeUSeconds();
     // called by SystemManager::Process() for each system.  this will need to be fast.  (it is max 187us  feb25)
     //  check timers and call appropriate functions as needed.
 

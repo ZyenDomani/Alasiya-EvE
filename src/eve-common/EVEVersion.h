@@ -42,24 +42,23 @@ static const int32 EVEBirthday = 170472;
 //static std::string GIT_SHORT_HASH = std::string(GIT_COMMIT_HASH).erase(7, std::string::npos);
 //static std::string REVISION_STRING = std::string("0.72.75-") + std::string(GIT_BRANCH) + std::string("-") + GIT_SHORT_HASH;
 
-static const char* const EVEMU_REVISION = "0.88.97";
+static const char* const EVEMU_REVISION = "0.89.43";
 static const char* const EVEMU_BUILD_DATE = __DATE__;
 
 /*  Allan's Static Definitions */
 //static const char* const EVEMU_REVISION = "0.72.75";
 //static const char* const EVEMU_BUILD_DATE = "24 March 2023";
 /* match versions here with stated files for full support */
-static const float Config_Version = 12.8f; /* eve-server.xml and EveServerConfig.cpp */
-static const float Log_Version = 11.5f;    /* logtypes.h and log.ini */
+static const float Config_Version = 12.9f; /* eve-server.xml and EveServerConfig.cpp */
+static const float Log_Version = 11.6f;    /* logtypes.h and log.ini */
 /* AI versions for shitz-n-giggles */
 static const float Joe_Version = 0.25f;   /* MarketBot.xml and MarketBotConf.cpp */
 /* these  dont have separate config files ...yet */
 static const float NPC_AI_Version = 1.61f;
 static const float Drone_AI_Version = 1.17f;
-static const float Mission_Version = 0.47f;
+static const float Mission_Version = 0.77f;
 static const float Agent_Version = 0.75f;
-/* these arent used yet, but are placeholders for future expansion */
-static const float Civilian_AI_Version = 0.10f;
+static const float Civilian_AI_Version = 0.65f;
 static const float Sentry_AI_Version = 0.10f;
 static const float POS_AI_Version = 0.01f;
 static const float Scan_Version = 0.43f;

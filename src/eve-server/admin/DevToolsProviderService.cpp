@@ -74,7 +74,7 @@ PyResult DevToolsProviderService::Handle_ExceptionFluentExample (PyCallArgs& cal
     switch (arg.arg)
     {
         case 0:
-            throw UserError("SalvagingTooComplex").AddTypeID("type", EVEItemTypeID::itemTypeTrit);
+            throw UserError("SalvagingTooComplex").AddTypeID("type", Item::Type::Tritanium);
         case 1:
             throw UserError("SalvagingTooComplex").AddOwnerID("type", call.client->GetCharID());
         case 2:
@@ -90,9 +90,9 @@ PyResult DevToolsProviderService::Handle_ExceptionFluentExample (PyCallArgs& cal
         case 7:
             throw UserError("SalvagingTooComplex").AddAmountU("type", 150000);
         case 8:
-            throw UserError("SalvagingTooComplex").AddTypeDescription("type", EVEItemTypeID::itemTypeTrit);
+            throw UserError("SalvagingTooComplex").AddTypeDescription("type", EVEItemTypes::Tritanium);
         case 9:
-            throw UserError("SalvagingTooComplex").AddGroupID("type", EVEItemGroups::Clone);
+            throw UserError("SalvagingTooComplex").AddGroupID("type", EVEDB::invGroups::Clone);
         case 10:
             throw UserError("SalvagingTooComplex").AddA("type", "HELLO!");
         case 11:
@@ -126,6 +126,6 @@ PyResult DevToolsProviderService::Handle_ExceptionFluentExample (PyCallArgs& cal
         case 23:
             throw CustomError("This is a custom error, arguments: %s, %d", "Hello world!", 500);
         default:
-            throw UserError("SalvagingTooComplex").AddGroupDescription("type", EVEItemGroups::Clone);
+            throw UserError("SalvagingTooComplex").AddGroupDescription("type", EVEDB::invGroups::Clone);
     }
 }

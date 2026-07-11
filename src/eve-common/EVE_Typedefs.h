@@ -97,20 +97,15 @@ namespace Item {
     namespace Type {
         enum {
             JetCan              = 23,
-            Credits             = 29,
-            Trit                = 34,
+            Credit              = 29,
+            Tritanium           = 34,
             CivilianMiner       = 3651,
             TypeBillboard       = 11136
         };
     }
 }
 
-//List of eve item types which have special purposes in the game.
 typedef enum {
-    itemTypeJetCan      = 23,
-    itemTypeCredits     = 29,
-    itemTypeTrit        = 34,
-    itemCivilianMiner   = 3651,
     itemTypeBillboard   = 11136,
     AllianceTypeID      = 16159
 } EVEItemTypeID;

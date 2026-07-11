@@ -55,6 +55,8 @@ class MoonSE;
 class PlanetSE;
 class GateSE;
 
+class Civilian;
+
 class SystemManager
 {
 public:
@@ -169,6 +171,11 @@ public:
     // find all cans and wrecks in this system owned by calling char and set new fleetID
     void UpdateContainerFleetID(uint32 ownerID, uint32 fleetID);           // this will allow fleet salvagers to tractor wrecks and cans
 
+    // for new Civilian System
+    void AddCiv(Civilian* pCiv)                         { m_civilians.push_back(pCiv); }
+    // also handles deletion
+    void RemoveCiv(Civilian* pCiv);
+    void GetCivPath(SystemEntity* pOrig, SystemEntity* pDest);
 
 protected:
     /** @todo  this needs more work */
@@ -246,6 +253,13 @@ private:
     // for PI timing
     Timer m_minutetimer;
     uint32 m_minutes;
+
+    // for new Civilian System
+    void SpawnCivilian();
+
+    uint8 m_civDensity;
+    uint8 m_civSpawnTic;
+    std::vector<Civilian*> m_civilians;
 
     // check for null iterator.  this will need to be moved to a memory code file eventually.
     // unfortunately, this is very specific for which iterators it can check.  see notes in code.

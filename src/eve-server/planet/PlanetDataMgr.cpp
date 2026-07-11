@@ -68,25 +68,43 @@ void PlanetDataMgr::GetPlanetData(uint32 planetID, std::vector<uint16> &typeIDs)
         typeIDs.push_back(it->second);
 }
 
-// Encodes exactly 225 floats (representing 25 unique Order-2 SH Nodes) into a 1800-byte hex string
+// Highly optimized, zero-copy 1800-byte hex encoder for C++11
 std::string PlanetDataMgr::EncodeMultiNodeHexBuffer(const std::vector<float>& fullFloatArray) {
-    std::stringstream ss;
-    ss << std::hex << std::setfill('0') << std::uppercase;
+    // 225 floats * 4 bytes per float * 2 hex characters per byte = exactly 1800 characters
+    const size_t TARGET_CHAR_COUNT = 1800;
+    const size_t TARGET_FLOAT_COUNT = 225;
 
-    // Ensure the array measures exactly 225 floats to prevent database clipping or memory leaks
-    std::vector<float> verifiedArray = fullFloatArray;
-    verifiedArray.resize(225, 0.0f);
+    // Allocate the exact destination string memory upfront (This acts like reserve for strings!)
+    std::string hexResult;
+    hexResult.resize(TARGET_CHAR_COUNT, '0'); // Pre-fill with hex zeros
 
-    for (float val : verifiedArray) {
-        uint32_t binaryPattern = *reinterpret_cast<const uint32_t*>(&val);
-        ss << std::setw(2) << ((binaryPattern >> 0) & 0xFF)
-        << std::setw(2) << ((binaryPattern >> 8) & 0xFF)
-        << std::setw(2) << ((binaryPattern >> 16) & 0xFF)
-        << std::setw(2) << ((binaryPattern >> 24) & 0xFF);
+    // Static hex lookup table to bypass slow printf/stream formatting loops entirely
+    static const char hexChars[] = "0123456789ABCDEF";
+
+    // Stop at 225 or the actual size of the incoming array, whichever is smaller
+    size_t activeCount = std::min(fullFloatArray.size(), TARGET_FLOAT_COUNT);
+
+    size_t charIndex = 0;
+    for (size_t i = 0; i < activeCount; ++i) {
+        float val = fullFloatArray[i];
+
+        // Direct, safe aliasing of the float's IEEE-754 raw binary memory footprint
+        uint32_t binaryPattern;
+        std::memcpy(&binaryPattern, &val, sizeof(uint32_t)); // Cleaner/safer than reinterpret_cast on C++11
+
+        // Encode little-endian sequence directly into the string buffer characters
+        for (int byte = 0; byte < 4; ++byte) {
+            uint8_t currentByte = (binaryPattern >> (byte * 8)) & 0xFF;
+            hexResult[charIndex++] = hexChars[(currentByte >> 4) & 0x0F]; // High nibble
+            hexResult[charIndex++] = hexChars[currentByte & 0x0F];        // Low nibble
+        }
     }
 
-    return ss.str();
+    // If fullFloatArray was shorter than 225, the remaining positions in hexResult
+    // are already perfectly padded with '0' because we pre-allocated with '0' characters!
+    return hexResult;
 }
+
 
 const char* PlanetDataMgr::GetCommandName(int8 commandID)
 {
@@ -227,7 +245,7 @@ void PIDataMgr::Populate()
                 data.outputType = row.GetInt(1);
                 data.outputQty = row.GetInt(2);
             }
-            m_schematicData[row.GetInt(0)] = std::move(data);
+            m_schematicData[row.GetInt(0)] = data;
         }
     }
 

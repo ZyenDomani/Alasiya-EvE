@@ -61,39 +61,32 @@ CharUnboundMgrService::~CharUnboundMgrService() {
     delete m_dispatch;
 }
 
-void CharUnboundMgrService::GetCharacterData(uint32 characterID, CharacterData &characterData)
-{
+void CharUnboundMgrService::GetCharacterData(uint32 characterID, CharacterData &characterData) {
     CharacterDB::GetCharacterData(characterID, characterData);
 }
 
-PyResult CharUnboundMgrService::Handle_ValidateNameEx(PyCallArgs &call)
-{
+PyResult CharUnboundMgrService::Handle_ValidateNameEx(PyCallArgs &call) {
     return CharacterDB::ValidateCharNameRep(PyRep::StringContent(call.tuple->GetItem(0)));
 }
 
-PyResult CharUnboundMgrService::Handle_GetCharacterToSelect(PyCallArgs &call)
-{
+PyResult CharUnboundMgrService::Handle_GetCharacterToSelect(PyCallArgs &call) {
     return CharacterDB::GetCharSelectInfo(PyRep::IntegerValue(call.tuple->GetItem(0)));
 }
 
-PyResult CharUnboundMgrService::Handle_GetCharactersToSelect(PyCallArgs &call)
-{
+PyResult CharUnboundMgrService::Handle_GetCharactersToSelect(PyCallArgs &call) {
     return CharacterDB::GetCharacterList(call.client->GetUserID());
 }
 
-PyResult CharUnboundMgrService::Handle_DeleteCharacter(PyCallArgs &call)
-{
+PyResult CharUnboundMgrService::Handle_DeleteCharacter(PyCallArgs &call) {
     CharacterDB::DeleteCharacter(PyRep::IntegerValue(call.tuple->GetItem(0)));
     return nullptr;
 }
 
-PyResult CharUnboundMgrService::Handle_PrepareCharacterForDelete(PyCallArgs &call)
-{
+PyResult CharUnboundMgrService::Handle_PrepareCharacterForDelete(PyCallArgs &call) {
     return new PyLong(CharacterDB::PrepareCharacterForDelete(call.client->GetUserID(), PyRep::IntegerValue(call.tuple->GetItem(0))));
 }
 
-PyResult CharUnboundMgrService::Handle_CancelCharacterDeletePrepare(PyCallArgs &call)
-{
+PyResult CharUnboundMgrService::Handle_CancelCharacterDeletePrepare(PyCallArgs &call) {
     CharacterDB::CancelCharacterDeletePrepare(call.client->GetUserID(), PyRep::IntegerValue(call.tuple->GetItem(0)));
     return nullptr;
 }
@@ -132,8 +125,7 @@ PyResult CharUnboundMgrService::Handle_GetCharNewExtraCreationInfo(PyCallArgs &c
     return result;
 }
 
-PyResult CharUnboundMgrService::Handle_SelectCharacterID(PyCallArgs &call)
-{
+PyResult CharUnboundMgrService::Handle_SelectCharacterID(PyCallArgs &call) {
     CallSelectCharacterID arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
@@ -310,7 +302,6 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     }
 
     //spawn all the skills
-    uint8 skillLevel = 0;
     uint32 skillPoints = 0;
     for (auto &cur : startingSkills) {
         ItemData skillItem( cur.first, charRef->itemID(), charRef->itemID(), flagSkill );
@@ -322,9 +313,8 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
             continue;
         }
 
-        skillLevel = cur.second;
-        skill->SetAttribute(AttrSkillLevel, skillLevel, false);
-        skillPoints = skill->GetSPForLevel(skillLevel);
+        skill->SetAttribute(AttrSkillLevel, cur.second, false);
+        skillPoints = skill->GetSPForLevel(cur.second);
         skill->SetAttribute(AttrSkillPoints, skillPoints, false);
         skill->SaveItem();
         cdata.skillPoints += skillPoints;
@@ -332,7 +322,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
                                   GetFileTimeNow(),
                                     charRef->itemID(),
                                     cur.first,
-                                    skillLevel,
+                                    cur.second,
                                     skillPoints);
     }
 

@@ -606,7 +606,7 @@ PyResult ContractProxy::Handle_AcceptContract(PyCallArgs &call) {
                 std::string containerName = sItemFactory.GetSolarSystemRef(startSolarSystemID)->name();
                 containerName = containerName + " -> " + sItemFactory.GetSolarSystemRef(endSolarSystemID)->name() + "(" + std::to_string(volume) + "m3)";
 
-                ItemData itemData(EVEDB::invTypes::PlasticWrap, call.client->GetCharacterID(), locTemp, flagAutoFit);
+                ItemData itemData(EVEItemTypes::PlasticWrap, call.client->GetCharacterID(), locTemp, flagAutoFit);
                 itemData.name = containerName;
                 InventoryItemRef plasticWrap = sItemFactory.SpawnItem(itemData);
                 if (plasticWrap.get() != nullptr) {

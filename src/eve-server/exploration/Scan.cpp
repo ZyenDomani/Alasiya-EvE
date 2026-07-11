@@ -11,6 +11,7 @@
   */
 
 // w.i.p.
+//NOTE:  integrate pilot skills into ships being scanned.
 
 /* SCAN__ERROR
  * SCAN__WARNING

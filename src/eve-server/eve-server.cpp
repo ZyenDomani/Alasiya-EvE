@@ -472,7 +472,7 @@ int main( int argc, char* argv[] )
     } else {
         sLog.Warning("Bumping Mechanics","Disabled.");
     }
-    if (sConfig.server.LoadOldMissions) {
+    if (sConfig.mission.LoadOldMissions) {
         sLog.Green("Keep Old Missions","Enabled.");
     } else {
         sLog.Warning("Keep Old Missions","Disabled.");
@@ -993,7 +993,7 @@ int main( int argc, char* argv[] )
 
     /*
      * THE MAIN LOOP
-     * Everything except IO should happen in this loop, in this thread context.
+     * Everything except I/O should happen in this loop, in this thread context.
      */
     while (m_run) {
         Timer::SetCurrentTime();
@@ -1012,7 +1012,7 @@ int main( int argc, char* argv[] )
         /* do the stuff for thread sleeping */
         start = GetTickCount() - start;
         if (m_sleepTime > start)
-            std::this_thread::sleep_for(std::chrono::milliseconds(start));
+            std::this_thread::sleep_for(std::chrono::milliseconds(m_sleepTime - start));
     }
 
     /*
@@ -1032,50 +1032,47 @@ int main( int argc, char* argv[] )
     /** @note  these are order-dependent...
      */
     sLog.Warning("   ServerShutdown", "Main loop has stopped." );
-    sLog.Warning("   ServerShutdown", "Saving Items." );
     if (!sConsole.IsDbError())
-        sItemFactory.SaveItems();
+        ServiceDB::SetServerOnlineStatus(false);
     /* stop TCP listener */
     tcps.Close();
     sLog.Warning("   ServerShutdown", "TCP listener stopped." );
     /* stop Image Server */
     sImageServer.Stop();
     sLog.Warning("   ServerShutdown", "Image Server stopped." );
-    /* Close the statistics manager */
-    sStatMgr.Close();
-    /* Close the standings manager */
-    sStandingMgr.Close();
-    /* delete services */
-    //SafeDelete(pyServMgr.lsc_service);
-    //SafeDelete(pyServMgr.cache_service);
-    /* Close the service manager */
-    pyServMgr.Close();
     /* Close the MarketMgr */
     sMktMgr.Close();
     /* Close the LiveUpdateDB service */
     sLiveUpdateDB.Close();
+    /* Close the bulk data manager */
+    sBulkDB.Close();
     /* Close the station data manager */
     stDataMgr.Close();
     /* Close the map data manager */
     sMapData.Close();
-    sMissionDataMgr.Clear();
-    /* Close the bulk data manager */
-    sBulkDB.Close();
+    /* Close the static data manager */
+    //sDataMgr.Clear();
+    sDataMgr.Close();
+    /* Close the statistics manager */
+    sStatMgr.Close();
+    /* Close the standings manager */
+    sStandingMgr.Close();
+    sLog.Warning("   ServerShutdown", "Saving Items." );
+    if (!sConsole.IsDbError())
+        sItemFactory.SaveItems();
+    /* Close the entity list */
+    sEntityMgr.Close();
+    /* Close the service manager */
+    pyServMgr.Close();
+    /* Shut down the Item system */
+    sLog.Warning("   ServerShutdown", "Shutting down Item Factory." );
+    sItemFactory.Close();
     /* Close the bubble manager */
     sBubbleMgr.clear();
     /* Close the command dispatcher */
     command_dispatcher.Close();
     /* Stop Console Command Interpreter */
     //sConsole.Stop();
-    /* Close the entity list */
-    sEntityMgr.Close();
-    /* Shut down the Item system */
-    sLog.Warning("   ServerShutdown", "Shutting down Item Factory." );
-    sItemFactory.Close();
-    if (!sConsole.IsDbError())
-        ServiceDB::SetServerOnlineStatus(false);
-    /* Close the static data manager */
-    sDataMgr.Close();
     /* close the db handler */
     sLog.Warning("   ServerShutdown", "Closing DataBase Connection." );
     sDatabase.Close();
@@ -1084,9 +1081,9 @@ int main( int argc, char* argv[] )
     /* join open threads */
     sThread.EndThreads();
     sLog.Warning("   ServerShutdown", "Alasiya EvEmu is Offline.");
-    pthread_exit(nullptr);
     /* close logfile */
     //log_close_logfile();
+    pthread_exit(nullptr);
     return EXIT_SUCCESS;
 }
 

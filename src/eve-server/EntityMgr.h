@@ -132,11 +132,10 @@ public:
     bool GetTracking()                                  { return m_shipTracking; }
     void SetTracking(bool set=false)                    { m_shipTracking = set; }
 
-    void ResetStartTime()                               { m_startTime = GetFileTimeNow(); }
-    int64 GetStartTime()                                { return m_startTime; }
+    void ResetStartTime()                               { m_startFileTime = GetFileTimeNow(); }
+    int64 GetStartTime()                                { return m_startFileTime; }
     const char* GetUpTime();
     uint32 GetConnections()                             { return m_connections; }
-
 
     // new shit for replacing current crazy notification sending
     // this method will send notification to online members that have the role required for the notification sent.
@@ -171,9 +170,9 @@ protected:
 
 private:
     Client* m_procClient;
+    Timer m_targTimer;
     Timer m_stampTimer;
     Timer m_minuteTimer;
-    Timer m_targTimer;
 
     // connected clients (incomplete client class data)
     //  use this to delete Client*
@@ -205,7 +204,7 @@ private:
     uint32 m_connections;
     uint16 m_clientSeedID;
 
-    int64 m_startTime;
+    int64 m_startFileTime;
     int64 m_profileTime;
 };
 

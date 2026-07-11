@@ -345,7 +345,7 @@ void PlanetDB::LoadPins(uint32 colonyID, std::map<uint32, PI_Pin>& pins)
         if (pin.isStorage or pin.isProcess)
             LoadContents(row.GetUInt(0), pin.contents);
 
-        pins[row.GetUInt(0)] = std::move(pin);
+        pins[row.GetUInt(0)] = pin;
     }
 }
 

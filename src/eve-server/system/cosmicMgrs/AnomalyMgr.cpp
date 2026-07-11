@@ -243,25 +243,25 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/)
 
     switch(sig.dungeonType) {
         case Dungeon::Type::Gravimetric: { // 2
-            sig.sigTypeID = EVEDB::invTypes::CosmicSignature;
+            sig.sigTypeID = EVEItemTypes::CosmicSignature;
             sig.sigGroupID = EVEDB::invGroups::Cosmic_Signature;
             sig.scanGroupID = Scanning::Group::Signature;
             sig.scanAttributeID = AttrScanGravimetricStrength;
         } break;
         case Dungeon::Type::Magnetometric: { // 3,
-            sig.sigTypeID = EVEDB::invTypes::DeadspaceSignature;// need probes and exploring skills
+            sig.sigTypeID = EVEItemTypes::DeadspaceSignature;// need probes and exploring skills
             sig.sigGroupID = EVEDB::invGroups::Cosmic_Signature;
             sig.scanGroupID = Scanning::Group::Signature;
             sig.scanAttributeID = AttrScanMagnetometricStrength;
         } break;
         case Dungeon::Type::Radar: {       // 4,
-            sig.sigTypeID = EVEDB::invTypes::DeadspaceSignature;
+            sig.sigTypeID = EVEItemTypes::DeadspaceSignature;
             sig.sigGroupID = EVEDB::invGroups::Cosmic_Signature;
             sig.scanGroupID = Scanning::Group::Signature;
             sig.scanAttributeID = AttrScanRadarStrength;
         } break;
         case Dungeon::Type::Ladar: {       // 5,
-            sig.sigTypeID = EVEDB::invTypes::DeadspaceSignature;
+            sig.sigTypeID = EVEItemTypes::DeadspaceSignature;
             sig.sigGroupID = EVEDB::invGroups::Cosmic_Signature;
             sig.scanGroupID = Scanning::Group::Signature;
             sig.scanAttributeID = AttrScanLadarStrength;
@@ -269,7 +269,7 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/)
         case Dungeon::Type::Wormhole: {    // 6
             // enable WH to be warped to...they are deco only at this time.
             //  once working, these will be by probe only, and removed from anomaly list
-            sig.sigTypeID = EVEDB::invTypes::CosmicSignature;
+            sig.sigTypeID = EVEItemTypes::CosmicSignature;
             sig.sigGroupID = EVEDB::invGroups::Cosmic_Signature;
             sig.scanGroupID = Scanning::Group::Signature;
             sig.scanAttributeID = AttrScanAllStrength;  // Unknown
@@ -283,14 +283,14 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/)
             return;
         } break;
         case Dungeon::Type::Anomaly: {      // 7   simple combat sites
-            sig.sigTypeID = EVEDB::invTypes::CosmicAnomaly;
+            sig.sigTypeID = EVEItemTypes::CosmicAnomaly;
             sig.sigGroupID = EVEDB::invGroups::Cosmic_Anomaly;
             sig.scanGroupID = Scanning::Group::Anomaly;
             sig.scanAttributeID = AttrScanAllStrength;
             sig.sigStrength = 1.0f;
         } break;
         case Dungeon::Type::Mission: {      // 1
-            sig.sigTypeID = EVEDB::invTypes::CosmicSignature;
+            sig.sigTypeID = EVEItemTypes::CosmicSignature;
             sig.sigGroupID = EVEDB::invGroups::Cosmic_Signature;
             sig.scanGroupID = Scanning::Group::Signature;
             sig.scanAttributeID = AttrScanAllStrength;  // Unknown
@@ -300,7 +300,7 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/)
         case Dungeon::Type::Escalation:   // 9
         case Dungeon::Type::Unrated:       // 8
         case Dungeon::Type::Rated: { // 10
-            sig.sigTypeID = EVEDB::invTypes::DeadspaceSignature;
+            sig.sigTypeID = EVEItemTypes::DeadspaceSignature;
             sig.sigGroupID = EVEDB::invGroups::Cosmic_Signature;
             sig.scanGroupID = Scanning::Group::Signature;
             sig.scanAttributeID = AttrScanAllStrength;  // Unknown
@@ -492,7 +492,7 @@ void AnomalyMgr::AddSignal(SystemEntity* pSE, uint32 id/*0*/)
         case EVEDB::invCategories::Entity:
         case EVEDB::invCategories::Celestial:       //wrecks
         default:  {
-            sig.sigTypeID = EVEDB::invTypes::CosmicAnomaly;
+            sig.sigTypeID = EVEItemTypes::CosmicAnomaly;
             sig.sigGroupID = EVEDB::invGroups::Cosmic_Anomaly;
             sig.scanGroupID = Scanning::Group::Anomaly;
             sig.scanAttributeID = AttrScanAllStrength;  // Unknown

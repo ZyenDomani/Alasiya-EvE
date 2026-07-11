@@ -18,7 +18,7 @@ namespace EVEDB {
             Entity = 11,        // includes control bunkers
             Bonus = 14,         // trait bonus/handicap.  not sure how/if to use these.
             Skill = 16,
-            Commodity = 17,
+            Commodity = 17,     // logs, keys, tags, decryptors, personal effects, datacores, et. al.
             Drone = 18,         // player drones
             Implant = 20,
             Deployable = 22,

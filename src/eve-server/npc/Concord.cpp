@@ -94,7 +94,7 @@ Concord::~Concord() {
 void Concord::Process() {
     if (m_killed)
         return;
-    double profileStartTime(GetTimeUSeconds());
+    double profileStartTime = GetTimeUSeconds();
 
     m_AI->Process();
     /*   Base call to Process Movement  */
@@ -427,7 +427,7 @@ void ConcordAI::SetChasing(SystemEntity* pTarget) {
          m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
     // target out of range to attack/follow, but within npc sight range....use mwd/ab if equiped
     m_npc->DestinyMgr()->SetMaxVelocity(m_chaseSpeed);
-    m_npc->DestinyMgr()->Follow(pTarget, m_entityOrbitRange);  //try to get inside orbit range
+    m_npc->DestinyMgr()->FollowBall(pTarget, m_entityOrbitRange);  //try to get inside orbit range
     m_state = Chasing;
 }
 
@@ -437,7 +437,7 @@ void ConcordAI::SetFollowing(SystemEntity* pTarget) {
          m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
     // too close to chase, but to far to engage
     m_npc->DestinyMgr()->SetMaxVelocity(m_chaseSpeed / 2);
-    m_npc->DestinyMgr()->Follow(pTarget, m_entityOrbitRange);  //try to get inside orbit range
+    m_npc->DestinyMgr()->FollowBall(pTarget, m_entityOrbitRange);  //try to get inside orbit range
     m_state = Following;
 }
 
@@ -450,7 +450,7 @@ void ConcordAI::SetEngaged(SystemEntity* pTarget) {
     //   this sets orbit speed between cruise speed and quarter of max speed (whether mwb or ab)
     //   this will also enable this npc to have a variable speed, instead of fixed upon creation.
     m_npc->DestinyMgr()->SetMaxVelocity(MakeRandomFloat(m_cruiseSpeed, (m_chaseSpeed /4)));
-    m_npc->DestinyMgr()->InitOrbit(pTarget, m_entityOrbitRange);  //try to get inside orbit range
+    m_npc->DestinyMgr()->OrbitBall(pTarget, m_entityOrbitRange);  //try to get inside orbit range
     m_state = Engaged;
 }
 
@@ -473,7 +473,7 @@ void ConcordAI::SetSignaling(SystemEntity* pTarget) {
     //  start speedtanking while signaling.  (im sure this is cheating, but fuckem.)
     //  this state is only usable by higher-class npcs.
     m_npc->DestinyMgr()->SetMaxVelocity(MakeRandomFloat(m_cruiseSpeed, (m_chaseSpeed /2)));
-    m_npc->DestinyMgr()->InitOrbit(pTarget, m_entityOrbitRange);  //try to get inside orbit range
+    m_npc->DestinyMgr()->OrbitBall(pTarget, m_entityOrbitRange);  //try to get inside orbit range
     m_state = Signaling;
 }
 

@@ -42,6 +42,7 @@
  * 98m    PlayerCorps
  * 99m    Alliance
  * 100m    Station Office      ** corp officeID.  used for locationID of items in corp hangar, based on flag.
+ * 105m    Mailing Lists
  * 110m    temp SEs
  * 130m    Planet Structures (PinIDs)
  * 135m    Customs Offices (67253 planets)  ** 1004746013567 on live
@@ -139,7 +140,9 @@
 #define minPCCorporation        98000000        // player corps start here
 #define minAlliance             99000000        // alliances start here
 #define minOffice               100000000
-#define maxOffice               109999999
+#define maxOffice               104999999
+#define minMailList             105000000
+#define maxMailList             105999999
 #define minTempItemID           110000000
 #define minPIStructure          130000000       // Planet Structures
 #define minCustomsOffice        135000000

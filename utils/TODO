@@ -18,6 +18,9 @@ NOTE:  for calls that use internal methods that send a reply, model from InjectS
   which calls char::InjectSkillIntoBrain and returns a code for different errors used to customize reply to client
 
 
+  15:51:13 W MapService::Handle_GetIncursionGlobalReport(): size= 0
+
+
 current....
 find launchForCorp...see how 'closest planet' is determined for tower (m_system->GetClosestPlanetSE())
 test planet determination and check distance when launching customs office

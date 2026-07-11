@@ -184,7 +184,7 @@ PyResult Command_srvoptions(Client* pClient, CommandDB* db, PyServiceMgr* servic
     } else {
         sLog.Warning("Bumping Mechanics","Disabled.");
     }
-    if (sConfig.server.LoadOldMissions) {
+    if (sConfig.mission.LoadOldMissions) {
         sLog.Green("Keep Old Missions","Enabled.");
     } else {
         sLog.Warning("Keep Old Missions","Disabled.");

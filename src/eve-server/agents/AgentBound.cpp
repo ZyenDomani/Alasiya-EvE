@@ -586,7 +586,7 @@ PyResult AgentBound::Handle_GetMissionBriefingInfo(PyCallArgs &call) {
         keywords->SetItemString("objectiveDestinationID", new PyInt(offer.destinationID));
         keywords->SetItemString("objectiveDestinationSystemID", new PyInt(offer.destinationSystemID));
         if (offer.rewardISK) {
-            keywords->SetItemString("rewardTypeID", new PyInt(itemTypeCredits));
+            keywords->SetItemString("rewardTypeID", new PyInt(Item::Type::Credit));
             keywords->SetItemString("rewardQuantity", new PyInt(offer.rewardISK));
         } else {
             // wouldnt these be in 'extra' or ?
@@ -667,7 +667,7 @@ PyResult AgentBound::Handle_GetMissionKeywords(PyCallArgs &call) {
     keywords->SetItemString("objectiveDestinationID", new PyInt(offer.destinationID));
     keywords->SetItemString("objectiveDestinationSystemID", new PyInt(offer.destinationSystemID));
     if (offer.rewardISK) {
-        keywords->SetItemString("rewardTypeID", new PyInt(itemTypeCredits));
+        keywords->SetItemString("rewardTypeID", new PyInt(Item::Type::Credit));
         keywords->SetItemString("rewardQuantity", new PyInt(offer.rewardISK));
     } else {
         // wouldnt these be in 'extra' or ?
@@ -837,7 +837,7 @@ PyDict* AgentBound::GetMissionObjectiveInfo(Client* pClient, MissionOffer& offer
             //extra->SetItemString("specificItemID", PyStatic.NewNone());
             //extra->SetItemString("blueprintInfo", PyStatic.NewNone());
         PyTuple* normalRewards = new PyTuple(3);
-            normalRewards->SetItem(0, new PyInt(itemTypeCredits));
+            normalRewards->SetItem(0, new PyInt(Item::Type::Credit));
             normalRewards->SetItem(1, new PyInt(offer.rewardISK));
             normalRewards->SetItem(2, extra);
         normList->AddItem(normalRewards);
@@ -877,7 +877,7 @@ PyDict* AgentBound::GetMissionObjectiveInfo(Client* pClient, MissionOffer& offer
         } else {
             bonusRewards->SetItem(0, new PyLong(offer.bonusTime * EvE::Time::Minute));  // bonus time * minutes
         }
-            bonusRewards->SetItem(1, new PyInt(itemTypeCredits));   // bonus is *usually* isk.  for now, we'll keep it as isk (easier)
+            bonusRewards->SetItem(1, new PyInt(Item::Type::Credit));   // bonus is *usually* isk.  for now, we'll keep it as isk (easier)
             bonusRewards->SetItem(2, new PyInt(offer.bonusISK));
             bonusRewards->SetItem(3, extra);
         bonusList->AddItem(bonusRewards);
@@ -889,7 +889,7 @@ PyDict* AgentBound::GetMissionObjectiveInfo(Client* pClient, MissionOffer& offer
             //extra->SetItemString("blueprintInfo", PyStatic.NewNone());
         PyTuple* bonusRewards2 = new PyTuple(4);
             bonusRewards2->SetItem(0, new PyLong(2 * EvE::Time::Minute)); //20m
-            bonusRewards2->SetItem(1, new PyInt(itemTypeTrit));
+            bonusRewards2->SetItem(1, new PyInt(Item::Type::Tritanium));
             bonusRewards2->SetItem(2, new PyInt(offer.rewardISK));
             bonusRewards2->SetItem(3, extra);
         bonusList->AddItem(bonusRewards2);

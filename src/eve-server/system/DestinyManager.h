@@ -41,6 +41,8 @@ static const float WARP_ALIGNMENT = 6.0f;       //0.105 rad
 static const float VISUAL_STOP_THRESHOLD_SQ = 0.0025f;
 static const float HARD_STOP_THRESHOLD_SQ = 0.0001f;
 
+static const double SPACE_DRAG = 0.30000001192092896;
+
 // for testing only.  this isnt right.
 static const uint16 BUMP_DISTANCE = 50;     //in meters.  <= this is contact.
 
@@ -109,24 +111,22 @@ public:
     const GPoint &GetPosition() const                   { return m_position; }
     const GVector &GetVelocity() const                  { return m_shipVelocity; }
     float GetSpeedFraction()                            { return m_activeSpeedFraction; }
-    float GetSpeed()                                    { return (m_maxSpeed * m_activeSpeedFraction); }
+    float GetSpeed()                                    { return m_shipVelocity.length(); }
     int32 GetWarpSpeed()                                { return (int32)(m_shipWarpSpeed * 10); }
     uint32 GetTargetID()                                { return m_targetEntity.first; }
     SystemEntity* GetTargetEntity()                     { return m_targetEntity.second; }
     GPoint GetTargetPoint()                             { return m_targetPoint; }
-    float GetMaxVelocity()                              { return m_maxSpeed; }
     // is this right??
     float GetFollowDistance()                           { return (float)m_targetDistance; }
     uint32 GetStateStamp()                              { return m_stateStamp; }
-    GVector GetHeading()                                { return m_shipHeading; }
     double GetAgility()                                 { return m_agility; }   // this is only used by my GetShipVars command
     uint8 GetAlignTime()                                { return m_alignTime; } // this is only used by my GetShipVars command
     float GetWarpDropSpeed()                            { return m_speedToLeaveWarp; }
     double GetCapNeed()                                 { return m_warpCapacitorNeed; }
     uint8 GetBallMode()                                 { return m_ballMode; }
+    float GetMaxVelocity()                              { return m_maxSpeed; }
 
-    bool IsFrozen()                                     { return m_frozen; }
-    bool IsMoving()                                     { return (m_activeSpeedFraction > 0.05); }
+    bool IsMoving()                                     { return (m_activeSpeedFraction > 0.01); }
     bool IsGoto()                                       { return (m_ballMode == Destiny::Ball::Mode::GOTO); }
     bool IsStopped()                                    { return (m_ballMode == Destiny::Ball::Mode::STOP); }
     bool IsOrbiting()                                   { return (m_ballMode == Destiny::Ball::Mode::ORBIT); }
@@ -135,7 +135,7 @@ public:
     bool IsCloaked()                                    { return m_cloaked; }
     bool IsTractored()                                  { return m_tractored; }
     bool IsAutoPilot()                                  { return m_autoPilot; }
-    bool IsAligned(const GPoint &targetPoint);
+    bool IsAligned(GVector& targHeading);
 
     /* Configuration methods */
     void WebbedMe(InventoryItemRef modRef, bool apply=false);
@@ -153,13 +153,13 @@ public:
     void Eject();								// avoid numerous other redirect calls
     void EntityRemoved(SystemEntity* pSE);
     void SetCloak(bool set=false)                       { m_cloaked = set; }
-    void SetFrozen(bool set=false)                      { m_frozen = set; }
+    void SkipTic(bool set=true)                         { m_skipTic = set; }
     void SetAutoPilot(bool set=false)                   { m_autoPilot = set; }
-    void UpdateSpeedFraction(float speedPct=0);  // called only by Beyonce from CmdSetSpeedFraction()
 
     /* Local Movement */
-    void InitOrbit(SystemEntity* pSE, uint32 distance=0);
-    void Follow(SystemEntity* pSE, int32 distance=0);
+    void OrbitBall(SystemEntity* pSE, uint32 distance=0);
+    void FollowBall(SystemEntity* pSE, int32 distance=0);
+    void ApproachBall(SystemEntity* pSE);
     void AlignTo(SystemEntity* pSE);
     void GotoPoint(const GPoint &point);
     void GotoDirection(const GPoint &direction);
@@ -216,33 +216,21 @@ public:
 protected:
     bool ValidTarget();                 //performs common target checks
 
-    // since orbit is disabled, we are 'faking' velocity for tohit checks.  this stops movement, but allows velocity to remain
-    void Pause();
-
     // movement methods
     void MoveObject();                  //apply velocity to our position for this round of movement
-    void Orbit();
-    void Follow();                      //follow or approach object in space
     void BeginMovement();               //set initial variables for all movement (common code)
-    void UpdateVelocity(bool isMoving=false);
-
-    SystemEntity* const mySE;		//we do not own this.
-    SystemBubble* m_targBubble;         //we do not own this.
 
     uint8 m_ballMode;                   //current state of ball
     bool m_hasSentShipUpdates;
 
 	// things dictated by ship and skills
     double m_warpCapacitorNeed;         //in GJ     - capacitor charged needed to initiate warp
-    double m_spaceDrag;			// factor to apply space friction based on ship variables
 
     //things dictated by our entity's configuration:
     float m_maxSpeed;                   //in m/s
-    float m_maxSpeedSq;                 //square of max speed (faster comparison checks)
-    float m_alignTime;                  //in s      - time to change directions or enter warp
+    float m_alignTime;                  //in s      - no longer used
     float m_shipWarpSpeed;              //in au/s   x/3 = warp speed multiplier
-    float m_speedToLeaveWarp;           //in m/s    - this is set to 75% of m_maxShipSpeed
-    //float m_agilityCoefficient;         //
+    float m_speedToLeaveWarp;           //in m/s    - this is set to 75% of m_maxSpeed
 
     //User controlled information used by a state to determine what to do.
     bool m_stop;                        //used to denote Stop() has been called to avoid multiple stops (and associated decel)
@@ -250,8 +238,8 @@ protected:
     bool m_tractored;
     bool m_tractorPause;
 
-    uint32 m_stateStamp;                //statestamp of when current state began, in seconds
     int64 m_timeStamp;                  //timestamp of when current mode began, in filetime
+    uint32 m_stateStamp;                //statestamp of when current state began, in seconds
 
     float m_userSpeedFraction;          //fuzzy logic - user commanded percent of max speed
     float m_activeSpeedFraction;        //fuzzy logic - current percent of max speed
@@ -262,17 +250,20 @@ protected:
 
     GPoint m_position;                  //in m
     GPoint m_targetPoint;               //vector  point in space used as current destination
-    GPoint m_orbitNormal;
-    GVector m_shipHeading;              //direction ship is facing
+    GVector m_warpHeading;              //as stated
     GVector m_shipVelocity;             //current ship velocity
-    GVector m_targetHeading;            //direction from current to target
+    GVector m_targetHeading;            //direction to current target
     GVector m_targetVelocity;           //desired ship velocity
     std::pair<uint32, SystemEntity*> m_targetEntity;   //we do not own the SystemEntity*
 
 private:
+    SystemEntity* const mySE;           //we do not own this.
+    SystemBubble* m_targBubble;         //we do not own this.
+
+    bool m_moveDelay;                   // his is to try to sync destiny with client, as client has a delay when changing destiny states.
+    bool m_skipTic;                     // this is for objects that dont need to proc movement at this time
     bool m_autoPilot;                   // as stated
     bool m_alignTo;                     // once aligned, ship will stop
-    bool m_frozen;                      // hack to keep ship from moving when using modules that prevent movement
     bool m_paused;                      // used to fake orbit while keeping velocity but not actually move ship.
     bool m_posHack;                     //force position update
     float m_agility;                    //unitless?   - not sent to client
@@ -283,7 +274,21 @@ private:
     void Bump(SystemEntity* who);                  //math methods for determining direction and speed of bumped ships
     void Bounce(GVector direction, float speed);   //packet sending for ships after bounce
 
-    void MarkPoint(const GPoint& position, std::string& name, std::string& desc);
+    // new orbit variables
+    double m_expTerm;
+    double m_posScale;
+    GPoint m_orbitNormal;               // orbital plane normal
+    GVector m_orbitBasisZ;              // 0-deg vector
+    GVector m_orbitBasisX;              // 90-deg vector
+
+    // these will eventually be commands....
+    void RemoveAllMarkers();
+    void RemoveShipMarkers();
+    void RemoveOrbitMarkers();
+    void AddOrbitMarkers(float distance, GVector &center);
+    void MarkPoint(const GPoint& position, std::string& name, std::string& desc, bool orbit=false);
+    std::map<uint32, SystemEntity*> m_shipMarkers;           // ship position marker cans.  we do own these.
+    std::map<uint32, SystemEntity*> m_orbitMarkers;          // orbit ordinate marker cans.  we do own these.
 
     void SetAgilityInertia();
     void CalculateMaxOrbitSpeedFraction();
@@ -299,7 +304,7 @@ private:
     void WarpStop(int64 currentShipSpeed);
     void WarpUpdate(int64 currentShipSpeed, uint16 sec_into_warp, uint8 type);      // 0=error, 1=accel, 2=cruise, 3=decel
 
-    // trying update queue
+    // trying update queue (didnt work)
     std::vector<PyTuple*> m_updateQueue;
 
     // Variables used during Warp.

@@ -99,7 +99,7 @@ void NPC::Process() {
     if (m_killed)
         return;
 
-    double profileStartTime(GetTimeUSeconds());
+    double profileStartTime = GetTimeUSeconds();
 
     /*  Process AI before moving */
     m_AI->Process();
@@ -239,9 +239,15 @@ void NPC::EncodeDestiny(Buffer& into)
             warp.targZ = target.z;
             warp.speed = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
             // warp timing.  see Ship::EncodeDestiny() for notes/updates
-            warp.effectStamp = -1; //m_destiny->GetStateStamp();   //timestamp when warp started
-            warp.distance = -1.0;
-            warp.trackingFlags = 0;
+            if (m_destiny->IsWarping()) {
+                warp.effectStamp = m_destiny->GetStateStamp();   //timestamp when warp started
+                warp.distance = -1.0;
+                warp.trackingFlags = 23000.0;
+            } else {
+                warp.effectStamp = -1;
+                warp.distance = 0;
+                warp.trackingFlags = 0.0;   //4802252820405690112
+            }
             into.Append( warp );
         }  break;
         case Ball::Mode::FOLLOW: {
@@ -266,6 +272,16 @@ void NPC::EncodeDestiny(Buffer& into)
             go.y = target.y;
             go.z = target.z;
             into.Append( go );
+        }  break;
+        case Ball::Mode::FORMATION: {
+            // this implies squad
+            assert (m_squad != nullptr);
+            FORMATION_Struct form;
+            form.formationID = m_squad->GetFormID();
+            form.leaderID = m_squad->GetLeader()->GetID();
+            form.spacing = m_squad->GetSpacing();
+            form.syncIndex = 1;
+            into.Append(form);
         }  break;
         default: {
             STOP_Struct main;

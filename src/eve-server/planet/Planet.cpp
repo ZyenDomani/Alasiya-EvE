@@ -237,7 +237,7 @@ void PlanetSE::CreateCustomsOffice() {
      */
 
     //ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, uint32 _quantity, const char *_customInfo = "", bool _contraband = false);
-    uint16 typeID(EVEDB::invTypes::InterbusCustomsOffice);
+    uint16 typeID(EVEItemTypes::InterbusCustomsOffice);
     FactionData data = FactionData();
         data.ownerID = corpInterbus;
         data.factionID = 0; //factionInterBus;
@@ -245,7 +245,7 @@ void PlanetSE::CreateCustomsOffice() {
         data.corporationID = corpInterbus;
 
     if (m_system->GetSecurityRating() > 0.49) {
-        typeID = EVEDB::invTypes::PlanetaryCustomsOffice;
+        typeID = EVEItemTypes::PlanetaryCustomsOffice;
         data.ownerID = corpCONCORD;
         data.factionID = 0; //sDataMgr.GetRegionFaction(m_system->GetRegionID());
         data.allianceID = 0;

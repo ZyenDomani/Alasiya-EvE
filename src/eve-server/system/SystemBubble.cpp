@@ -121,7 +121,7 @@ void SystemBubble::Process() {
 //called from the bubble manager.
 //if any entity is no longer in their registered bubble, they are added to the vector for re-classification.
 void SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
-    SystemEntity* pSE(nullptr);
+    SystemEntity* pSE = nullptr;
     std::map<uint32, SystemEntity*>::iterator itr = m_dynamicEntities.begin();
     while (itr != m_dynamicEntities.end()) {
         pSE = itr->second;
@@ -213,10 +213,10 @@ void SystemBubble::Add(SystemEntity* pSE) {
 
         Client* pClient(pSE->GetPilot());
         // this is sent in state when undocking
-        if (!pClient->IsUndock())
-            SendAddBalls2(pSE);
+        //if (!pClient->IsUndock())
+        //    SendAddBalls2(pSE);
         if (!m_players.empty())
-            AddBallExclusive(pSE);  // adds new player to all players in bubble, if any
+            AddBallExclusive(pSE);  // adds new player to all players in bubble except self
 
         //check to see if any ships are using gfx.  if so, send all gfx to new ship
         for (auto &cur : m_activeModules)
@@ -227,7 +227,7 @@ void SystemBubble::Add(SystemEntity* pSE) {
         // and npcs, if any
         for (auto &cur : m_npcs) {
             cur.second->GetAI()->SendGFX(pClient);
-            // Notify all active rats in this bubble
+            // also, notify all active rats in this bubble
             cur.second->GetAI()->ShipArrived(pClient);
         }
 
@@ -706,9 +706,8 @@ void SystemBubble::SendAddBalls2(SystemEntity* to_who) {
 void SystemBubble::AddBallExclusive(SystemEntity* pSE) {
     if (!m_system->IsLoaded())
         return;
-    if (pSE->DestinyMgr() != nullptr)
-        if (pSE->DestinyMgr()->IsCloaked())
-            return;
+    if ((pSE->DestinyMgr() != nullptr) and (pSE->DestinyMgr()->IsCloaked()))
+        return;
 
     Buffer* destinyBuffer = new Buffer();
 
@@ -736,7 +735,7 @@ void SystemBubble::AddBallExclusive(SystemEntity* pSE) {
         Destiny::DumpUpdate(DESTINY__BALL_DECODE, &(addballs.state->content())[0], (uint32)addballs.state->content().size());
     //bubblecast the update
     PyTuple* t = addballs.Encode();
-    BubblecastDestinyUpdateExclusive(&t, "AddBall", pSE);
+    BubblecastDestinyUpdateExclusive(&t, "Single AddBall update", pSE);
     PySafeDecRef(t);
 }
 
@@ -855,18 +854,18 @@ void SystemBubble::SyncPos() {
                 du.z = dse.second->GetPosition().z;
             PyTuple* up = du.Encode();
             player.second->GetShipSE()->DestinyMgr()->SendSingleDestinyUpdate(&up);
-            PyDecRef(up);
+            //PyDecRef(up);
         }
 }
 
 void SystemBubble::CmdDropLoot() {
     for (auto &cur : m_npcs)
-            cur.second->CmdDropLoot();
+        cur.second->CmdDropLoot();
 }
 
 void SystemBubble::RemoveMarkers() {
     if (m_hasMarkers) {
-        SystemEntity* pSE(nullptr);
+        SystemEntity* pSE = nullptr;
         for (auto &cur : m_markers) {
             pSE = cur.second;
             pSE->Delete();

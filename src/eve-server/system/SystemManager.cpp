@@ -4,7 +4,8 @@
     ------------------------------------------------------------------------------------
     This file is part of EVEmu: EVE Online Server Emulator
     Copyright 2006 - 2016 The EVEmu Team
-    For the latest information visit https://evemu.dev
+    Copyright 2016 - 2026 Alasiya-EvE by Allan
+    For the latest implementation status visit http://eve.alasiya.net/?p=op_status
     ------------------------------------------------------------------------------------
     This program is free software; you can redistribute it and/or modify it under
     the terms of the GNU Lesser General Public License as published by the Free Software
@@ -85,6 +86,8 @@ m_activeGateSpawns(0),
 m_activeRoidSpawns(0),
 m_secValue(1.1f),
 m_minutes(0),
+m_civDensity(0),
+m_civSpawnTic(0),
 // zero-init our data containers
 m_data(SystemData()),
 m_killData(SystemKillData())
@@ -109,6 +112,10 @@ SystemManager::~SystemManager() {
     SafeDelete(m_anomMgr);
     SafeDelete(m_beltMgr);
     SafeDelete(m_spawnMgr);
+
+    for (auto &cur : m_civilians)
+        SafeDelete(cur);
+    m_civilians.clear();
 }
 
 bool SystemManager::BootSystem() {
@@ -154,6 +161,20 @@ bool SystemManager::BootSystem() {
     // load dynamic map data
     MapDB::LoadDynamicData(m_data.systemID, m_killData);
 
+    // Scale True Security to ensure low-sec/null-sec don't wipe out numbers completely
+    // High-Sec (1.0) -> Multiplier 1.0
+    // Low-Sec (0.1)  -> Multiplier 0.55
+    // Null-Sec (-1.0)-> Multiplier 0.0 (or forced minimum if you want smugglers!)
+    if (sConfig.cosmic.CiviliansEnabled) {
+        float secMultiplier = (m_data.security + 1.0f) / 2.0f;
+        if (secMultiplier < 0.1f)
+            secMultiplier = 0.0f; // Silence traffic in deep Null
+
+        m_civDensity = static_cast<uint8>(secMultiplier *
+                            (sConfig.cosmic.minCivConvoys +
+                            (MakeRandomUInt(sConfig.cosmic.minCivConvoys, sConfig.cosmic.maxCivConvoys))));
+    }
+
     //start minute timer
     m_minutetimer.Start(60000);
 
@@ -185,7 +206,7 @@ bool SystemManager::LoadCosmicMgrs()
 
 //called on 1Hz tic from EntityMgr.
 bool SystemManager::ProcessTic() {
-    double profileStartTime(GetTimeUSeconds());
+    double profileStartTime = GetTimeUSeconds();
 
     if (!m_deleteLater.empty()) {
         for (auto &cur : m_deleteLater)
@@ -237,6 +258,13 @@ bool SystemManager::ProcessTic() {
         ++m_minutes;  // not used at this time
         for (auto &cur : m_planetMap)
             cur.second->Process();
+
+        //on (x)m tic (config or system)
+        if (m_players and m_civDensity) {
+            // create spawns to density limits
+            if (m_civilians.size() < m_civDensity)
+                SpawnCivilian();
+        }
     }
 
     if (sConfig.debug.UseProfiling)
@@ -289,7 +317,7 @@ void SystemManager::UnloadSystem() {
 
     // remove all loaded entities
     std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin();
-    SystemEntity* pSE(nullptr);
+    SystemEntity* pSE = nullptr;
     while (itr != m_entities.end()) {
         if ((itr->first == 0) or (itr->second == nullptr)) {
             // this will catch entities we deleted earlier (roids, dungeons, etc)
@@ -360,7 +388,7 @@ bool SystemManager::LoadSystemStatics() {
         return false;
     }
 
-    SystemEntity* pSE(nullptr);
+    SystemEntity* pSE = nullptr;
     for (auto &cur : entities) {
         switch (cur.groupID) {
             case EVEDB::invGroups::Station: {
@@ -441,7 +469,7 @@ bool SystemManager::LoadSystemDynamics() {
         return false;
     }
 
-    SystemEntity* pSE(nullptr);
+    SystemEntity* pSE = nullptr;
     for (auto &cur : entityData) {
         pSE = DynamicEntityFactory::BuildEntity(*this, cur);
         if (pSE == nullptr) {
@@ -468,7 +496,7 @@ bool SystemManager::LoadPlayerDynamics() {
         return false;
     }
 
-    SystemEntity* pSE(nullptr);
+    SystemEntity* pSE = nullptr;
     for (auto &cur : entityData) {
         pSE = DynamicEntityFactory::BuildEntity(*this, cur);
         if (pSE == nullptr) {
@@ -684,7 +712,7 @@ void SystemManager::RemoveEntity(SystemEntity* pSE) {
     // Remove Entity's Item Ref from Solar System Dynamic Inventory:
     RemoveItemFromInventory(pSE->GetSelf());
     // remove entity from our maps
-    uint32 itemID(pSE->GetID());
+    uint32 itemID = pSE->GetID();
     m_entityChanged = true;
     m_entities.erase(itemID);
     m_ticEntities.erase(itemID);
@@ -941,7 +969,7 @@ uint32 SystemManager::GetRandBeltID() {
 
 void SystemManager::MakeSetState(const SystemBubble* pBubble,  SetState& into) const {
     using namespace Destiny;
-    Buffer* stateBuffer(new Buffer());
+    Buffer* stateBuffer = new Buffer();
 
     AddBall_header head = AddBall_header();
         head.packet_type = 0;   // 0 = full state   1 = balls
@@ -1021,9 +1049,6 @@ void SystemManager::MakeSetState(const SystemBubble* pBubble,  SetState& into) c
         _log( DESTINY__SETSTATE_DECODE, "    Decoded:" );
         Destiny::DumpUpdate( DESTINY__SETSTATE_DECODE, &( into.destiny_state->content() )[0], (uint32)into.destiny_state->content().size() );
     }
-
-    //cleanup
-    SafeDelete(stateBuffer);
 }
 
 void SystemManager::SendStaticBall(SystemEntity* pSE)
@@ -1089,7 +1114,8 @@ void SystemManager::RemoveItemFromInventory(InventoryItemRef iRef) {
     // just in case this is called from elsewhere (which it may be), make sure we remove entity from our map.
     auto itr = m_entities.find(iRef->itemID());
     if (itr != m_entities.end()) {
-        _log(ITEM__TRACE, "%s(%u): Removed from system manager for %s(%u)", iRef->name(), iRef->itemID(), m_data.name.c_str(), m_data.systemID);
+        _log(ITEM__TRACE, "%s(%u): Removed from system manager for %s(%u)", \
+                iRef->name(), iRef->itemID(), m_data.name.c_str(), m_data.systemID);
         m_entities.erase(itr);
     } else {
         _log(ITEM__WARNING, "%s(%u): Called RemoveEntity(), but they weren\'t found in system manager for %s(%u)", \
@@ -1354,7 +1380,7 @@ void SystemManager::ResetAsteroids() {
     m_beltMgr->ClearAll(true);
     /*
     std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin();
-    SystemEntity* pSE(nullptr);
+    SystemEntity* pSE = nullptr;
     while (itr != m_entities.begin()) {
         if (IsAsteroidID(itr->first)) {
             pSE = itr->second;
@@ -1369,6 +1395,28 @@ void SystemManager::ResetAsteroids() {
     m_entityChanged = true;
     */
 }
+
+void SystemManager::SpawnCivilian() {
+    /*  check for pirate spawn:  (for later)
+if pirate=true, create an actual faction npc to warp to anom/sig (will have to disable auto-attack for this)
+else send data to civMgr
+    */
+}
+
+void SystemManager::RemoveCiv(Civilian* pCiv) {
+    auto it = std::find(m_civilians.begin(), m_civilians.end(), pCiv);
+    if (it != m_civilians.end()) {
+        std::iter_swap(it, m_civilians.end() - 1);
+        SafeDelete(m_civilians.back());
+        m_civilians.pop_back();
+    }
+}
+
+void SystemManager::GetCivPath(SystemEntity* pOrig, SystemEntity* pDest) {
+    // method to get travel points for Civilian ships using system objects (gates/stations)
+}
+
+
 
 void SystemManager::UpdateContainerFleetID(uint32 ownerID, uint32 fleetID) {
     // this shouldnt hit very often, but may have a ton of objects to update...

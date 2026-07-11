@@ -70,6 +70,8 @@ public:
     void CharAttribTest();
     void UpdateCharOwners();
 
+    void GetSkills();
+    
     void WarpTest(uint8 type);
     int64  m_targetDistance;
     int64  m_accelDistance;

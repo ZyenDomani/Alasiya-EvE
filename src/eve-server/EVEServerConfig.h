@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    12.8
+    Version:    12.9
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -57,7 +57,6 @@ public:
         bool AllowNonPublished;
         bool FleetShareDelayed;
         bool BountyPayoutDelayed;
-        bool LoadOldMissions;
         bool AsteroidsOnDScan;
         bool CargoMassAdditive;
         bool LoadStaticRecyclable;
@@ -307,6 +306,9 @@ public:
         bool BumpEnabled;
         uint8 BeltRespawn;
         uint8 BeltGrowTime;
+        uint8 CivilianTic;
+        uint8 minCivConvoys;
+        uint8 maxCivConvoys;
         float roidRadiusMultiplier;
         float BeltGrowPct;
     } cosmic;
@@ -385,6 +387,7 @@ public:
 
     // From <mission>
     struct {
+        bool LoadOldMissions;
         uint8 OfferExpiryTime;
         uint8 AcceptExpiryTime;
         uint16 IskRewardLo;

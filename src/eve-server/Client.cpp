@@ -308,7 +308,7 @@ bool Client::SelectCharacter(int32 charID/*0*/) {
         // if we are in space, everything is set up at this point, so set ballpark
         //pShipSE->DestinyMgr()->SendSetState();
     } else {
-        if (m_ship->typeID() == EVEDB::invTypes::Capsule) {
+        if (m_ship->typeID() == EVEItemTypes::Capsule) {
             if (sConfig.server.NoobShipCheck) {
                 StationItemRef sRef = m_system->GetStationFromInventory(m_locationID);
                 if (sRef.get() == nullptr) {
@@ -890,7 +890,7 @@ void Client::DockToStation() {
     //Check if player is in pod and have no ships in hangar, in which case they get a rookie ship for free
     //  on live, SCC sends mail about the loss of the players ship, and offers a shiny, new, fully-fitted ship as replacement.  we dont....yet
     // this needs to be done before player is docked
-    if (m_ship->typeID() == EVEDB::invTypes::Capsule) {
+    if (m_ship->typeID() == EVEItemTypes::Capsule) {
         if (sConfig.server.NoobShipCheck) {
             StationItemRef sRef = m_system->GetStationFromInventory(m_dockStationID);
             if (sRef.get() == nullptr) {
@@ -1009,7 +1009,7 @@ void Client::BoardShip(ShipItemRef newShipRef)
 
     if (m_login) {
         _log(PLAYER__MESSAGE, "%s boarding active ship %u on login.", m_char->name(), newShipRef->itemID());
-    } else if (m_ship->typeID() == EVEDB::invTypes::Capsule) {
+    } else if (m_ship->typeID() == EVEItemTypes::Capsule) {
         m_ship->SetPosition(NULL_ORIGIN);
         m_ship->Move(m_system->GetID(), flagCapsule, true);
         m_ship->SetCustomInfo(nullptr);
@@ -1029,7 +1029,7 @@ void Client::Board(ShipSE* newShipSE)
 {
     CheckShipRef(newShipSE->GetShipItemRef());
 
-    if (m_ship->typeID() == EVEDB::invTypes::Capsule) {
+    if (m_ship->typeID() == EVEItemTypes::Capsule) {
         m_ship->SetPosition(NULL_ORIGIN);
         m_ship->Move(m_system->GetID(), flagCapsule, true);
         // cannot use DestroyShipSE() for this.  it removes current shipSE, with pilot, like pilot is leaving bubble.
@@ -1241,7 +1241,7 @@ void Client::PickAlternateShip() {
 
 void Client::CreateNewPod() {
     std::string pod_name = m_char->itemName() + "'s Capsule";
-    ItemData podItem(EVEDB::invTypes::Capsule, m_char->itemID(), locTemp, flagAutoFit, pod_name.c_str() );
+    ItemData podItem(EVEItemTypes::Capsule, m_char->itemID(), locTemp, flagAutoFit, pod_name.c_str() );
     m_pod = sItemFactory.SpawnShip( podItem );
     // make sure this is singleton
     m_pod->ChangeSingleton(true);
@@ -1292,7 +1292,7 @@ ShipItemRef Client::SpawnNewRookieShip(uint32 stationID) {
         sRef->Move(stationID, flagHangar);
     }
     // create and fit noob items in ship
-    ItemData mData(itemCivilianMiner, m_char->itemID(), locTemp, flagAutoFit);
+    ItemData mData(Item::Type::CivilianMiner, m_char->itemID(), locTemp, flagAutoFit);
     InventoryItemRef mRef = sItemFactory.SpawnItem(mData);
     if (mRef.get() != nullptr) {
         mRef->ChangeSingleton(true);
@@ -1306,7 +1306,7 @@ ShipItemRef Client::SpawnNewRookieShip(uint32 stationID) {
         wRef->Move(sRef->itemID(), flagHiSlot1);
         wRef->SetAttribute(AttrOnline, EvilOne, false);
     }
-    ItemData cData(itemTypeTrit, m_char->itemID(), locTemp, flagAutoFit, 100);
+    ItemData cData(Item::Type::Tritanium, m_char->itemID(), locTemp, flagAutoFit, 100);
     InventoryItemRef cRef = sItemFactory.SpawnItem(cData);
     if (cRef.get() != nullptr)
         cRef->Move(sRef->itemID(), flagCargoHold);
@@ -2107,7 +2107,7 @@ void Client::QueueDestinyEvent(PyTuple** event) {
     if (is_log_enabled(CLIENT__QUEUE_DUMP))
         (*event)->Dump(CLIENT__QUEUE_DUMP, "");
     m_destinyEventQueue->AddItem(*event);
-    PyDecRef(*event);
+    //PyDecRef(*event);
 }
 
 void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool IsSetState /*false*/) {
@@ -2153,7 +2153,7 @@ void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool
         m_destinyUpdateQueue->AddItem(act.Encode());
     }
 
-    PySafeDecRef(*update);
+    //PySafeDecRef(*update);
 }
 
 void Client::_SendQueuedUpdates() {
@@ -2217,7 +2217,8 @@ void Client::SendNotification(const char *notifyType, const char *idType, PyTupl
         notify.notifyType = notifyType;
         notify.remoteObject = 1;
         notify.args = (*payload);
-        PyIncRef(*payload);
+        //PyIncRef(*payload);
+        payload = nullptr;
 
     PyAddress dest;
     // are all of these 'Broadcast'?
@@ -2250,7 +2251,7 @@ void Client::SendNotification(const PyAddress &dest, EVENotificationStream &noti
     if (seq) {
         PyDict* dict = new PyDict();
         dict->SetItemString("sn", new PyInt(++m_nextNotifySequence));
-        packet->named_payload = std::move(dict);
+        packet->named_payload = dict;
     }
 
     if (is_log_enabled(CLIENT__NOTIFY_DUMP)) {
@@ -2468,7 +2469,7 @@ void Client::_SendCallReturn(const PyAddress& source, int64 callID, PyResult &rs
 
     packet->userid = GetUserID();
 
-    packet->payload = std::move(new PyTuple(1));
+    packet->payload = new PyTuple(1);
     packet->payload->SetItem(0, new PySubStream(rsp.ssResult));
     packet->named_payload = rsp.ssNamedResult;
 
@@ -2604,7 +2605,7 @@ void Client::_SendPingResponse(const PyAddress& source, int64 callID, int64 rece
 /************************************************************************/
 bool Client::Handle_CallReq(PyPacket* packet, PyCallStream* req)
 {
-    double profileStartTime(GetTimeUSeconds());
+    double profileStartTime = GetTimeUSeconds();
 
     PyCallable* dest(nullptr);
     if (packet->dest.service == "") {
@@ -2656,7 +2657,7 @@ bool Client::Handle_CallReq(PyPacket* packet, PyCallStream* req)
     if (sConfig.debug.UseProfiling)
         sProfiler.AddTime(Profile::clientCall, GetTimeUSeconds() - profileStartTime);
 
-    //SafeDelete(req);
+    SafeDelete(req);
     return true;
 }
 

@@ -66,6 +66,8 @@ private:
     std::multimap<uint8, CourierData> m_courier;        // level/data
     std::multimap<uint8, CourierData> m_courierImp;     // level/data
     std::multimap<uint8, CourierData> m_mining;         // level/data
+    std::multimap<uint8, MissionData> m_encounter;      // level/data
+    std::multimap<uint8, MissionData> m_encounterImp;   // level/data
     std::multimap<uint8, MissionData> m_missions;       // level/data
     std::multimap<uint8, MissionData> m_missionsImp;    // level/data
     std::multimap<uint32, MissionOffer> m_offers;       // charID/data     current mission offers by charID

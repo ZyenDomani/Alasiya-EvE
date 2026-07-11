@@ -958,7 +958,7 @@ void CorporationDB::GetMembersPaged(uint32 corpID, uint8 page, DBQueryResult& re
         //"  LEFT JOIN entity AS clone ON clone.ownerID = characterID"
         " WHERE corporationID = %u"
         " LIMIT %u", corpID, page * 10))
-        //"  AND clone.flag='400'"
+        //"  AND clone.flagID='400'"
         //"  AND clone.customInfo='active'"
     {
         codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
@@ -2409,7 +2409,7 @@ PyRep* CorporationDB::GetAssetInventory(uint32 corpID, EVEItemFlags locFlag, con
             if (!sDatabase.RunQuery(res,
                 " SELECT DISTINCT s.stationID AS locationID FROM entity AS e"
                 " LEFT JOIN staOffices AS s ON (s.itemID = e.locationID)"
-                " WHERE e.ownerID = %u AND e.flag IN %s"
+                " WHERE e.ownerID = %u AND e.flagID IN %s"
                 " AND e.locationID >= %u AND e.locationID <= %u", corpID, flags, minOffice, maxOffice))
             {
                 codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
@@ -2418,7 +2418,7 @@ PyRep* CorporationDB::GetAssetInventory(uint32 corpID, EVEItemFlags locFlag, con
         } break;
         case flagProperty: {  // in space...this will show items in containers, ships, POS, CO, etc.
             if (!sDatabase.RunQuery(res,
-                " SELECT DISTINCT locationID FROM entity WHERE ownerID = %u AND flag IN %s"
+                " SELECT DISTINCT locationID FROM entity WHERE ownerID = %u AND flagID IN %s"
                 " AND locationID >= %u AND locationID <= %u", corpID, flags, minPlayerItem, maxPlayerItem))
             {
                 codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
@@ -2447,7 +2447,7 @@ PyRep* CorporationDB::GetAssetInventoryForLocation(uint32 corpID, uint32 locatio
             " e.quantity AS stacksize, t.groupID, g.categoryID FROM entity AS e"
             " LEFT JOIN invTypes AS t USING (typeID)"
             " LEFT JOIN invGroups AS g USING (groupID)"
-            " WHERE e.ownerID = %u AND e.flag IN %s AND e.locationID = (SELECT itemID FROM staOffices WHERE stationID = %u AND corporationID = %u)",
+            " WHERE e.ownerID = %u AND e.flagID IN %s AND e.locationID = (SELECT itemID FROM staOffices WHERE stationID = %u AND corporationID = %u)",
             corpID, flags, locationID, corpID)) // quantity, contraband, x, y, z, customInfo
         {
             codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
@@ -2459,7 +2459,7 @@ PyRep* CorporationDB::GetAssetInventoryForLocation(uint32 corpID, uint32 locatio
             " e.quantity AS stacksize, t.groupID, g.categoryID FROM entity AS e"
             " LEFT JOIN invTypes AS t USING (typeID)"
             " LEFT JOIN invGroups AS g USING (groupID)"
-            " WHERE e.ownerID = %u AND e.flag IN %s AND e.locationID = (SELECT stationID FROM staOffices WHERE itemID = %u)",
+            " WHERE e.ownerID = %u AND e.flagID IN %s AND e.locationID = (SELECT stationID FROM staOffices WHERE itemID = %u)",
             corpID, flags, locationID))
         {
             codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
@@ -2471,7 +2471,7 @@ PyRep* CorporationDB::GetAssetInventoryForLocation(uint32 corpID, uint32 locatio
             " e.quantity AS stacksize, t.groupID, g.categoryID FROM entity AS e"
             " LEFT JOIN invTypes AS t USING (typeID)"
             " LEFT JOIN invGroups AS g USING (groupID)"
-            " WHERE e.ownerID = %u AND e.flag IN %s AND e.locationID = %u", corpID, flags, locationID))
+            " WHERE e.ownerID = %u AND e.flagID IN %s AND e.locationID = %u", corpID, flags, locationID))
         {
             codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
             return nullptr;

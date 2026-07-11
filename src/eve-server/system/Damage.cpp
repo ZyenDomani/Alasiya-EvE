@@ -95,7 +95,7 @@ chargeRef(InventoryItemRef(nullptr))
 }
 
 bool SystemEntity::ApplyDamage(Damage &damage) {
-    double profileStartTime(GetTimeUSeconds());
+    double profileStartTime = GetTimeUSeconds();
 
     if (is_log_enabled(DAMAGE__MESSAGE)) {
         if (damage.srcSE->IsNPCSE()) {

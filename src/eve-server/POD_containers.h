@@ -226,6 +226,28 @@ struct LootList {
     uint32 minDrop=0;
     uint32 maxDrop=0;
 };
+
+struct LootItem {
+    uint16 typeID;
+    uint16 minQuantity;
+    uint16 maxQuantity;
+    size_t weight;
+};
+
+struct LootPool {
+    uint32 poolID;
+    std::string poolType;
+    float calculatedDropChance;
+    bool rollAll;
+    std::vector<LootItem> items;
+};
+
+// Memory-cached runtime profile
+struct LootProfile {
+    uint32 profileID;
+    std::vector<LootPool> assignedPools;
+};
+
 /* POD structure for statistic data */
 struct StatisticData {
     bool changed=false;

@@ -42,6 +42,7 @@ Rewrite:    Allan
 Skill::Skill(uint32 _skillID, const ItemType& _type, const ItemData& _data)
 : InventoryItem(_skillID, _type, _data)
 {
+    _log(ITEM__TRACE, "Created SkillItem for %s(%u).", name(), itemID());
 }
 
 SkillRef Skill::Load( uint32 skillID)

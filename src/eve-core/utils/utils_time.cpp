@@ -25,6 +25,7 @@
 */
 
 #include <chrono>
+#include <cstdint>
 
 #include "eve-core.h"
 // #include "date.h"
@@ -44,15 +45,15 @@ const int64 Win32Time_Day = Win32Time_Hour*24;
 const int64 Win32Time_Month = Win32Time_Day*30;
 const int64 Win32Time_Year = Win32Time_Month*12;
 
+typedef std::chrono::duration<int64, std::ratio<1, 10000000>> duration_100ns;
+constexpr uint64_t FILETIME_EPOCH_OFFSET = 116444736000000000ULL;
+
 int64 UnixTimeToWin32Time( time_t sec, uint32 nsec ) {
-    return(
-        (((int64) sec) + SECS_BETWEEN_EPOCHS) * SECS_TO_100NS
-        + (nsec / 100)
-    );
+    return (static_cast<int64>(sec) + FILETIME_EPOCH_OFFSET + (nsec / 100));
 }
 
 void Win32TimeToUnixTime( int64 win32t, time_t &unix_time, uint32 &nsec ) {
-    win32t -= (SECS_BETWEEN_EPOCHS * SECS_TO_100NS);
+    win32t -= (FILETIME_EPOCH_OFFSET);
     nsec = (win32t % SECS_TO_100NS) * 100;
     win32t /= SECS_TO_100NS;
     unix_time = win32t;
@@ -85,11 +86,12 @@ int32 GetElapsedHours(int64 time)  // -allan
 
 int64 GetFileTimeNow() { // -allan
     // convert (double)system time to (int64)filetime.
-    double time = GetTimeMSeconds();
-    time /= 1000;   // to second
-    time += SECS_BETWEEN_EPOCHS;    // offset
-    time *= EvE::Time::Second; // to 100 uSeconds
-    return time;
+    using namespace std::chrono;
+    auto now = system_clock::now();
+    auto duration = now.time_since_epoch();
+
+    int64 epoch_interval = duration_cast<duration_100ns>(duration).count();
+    return epoch_interval + FILETIME_EPOCH_OFFSET;
 }
 
 //  NOTE  auto and std::chrono require C++11
@@ -97,29 +99,30 @@ int64 GetSteadyTime() {  // -allan
     // simulation of Windows GetTickCount()
     //  this returns milliseconds
     using namespace std::chrono;
-    auto duration = system_clock::now().time_since_epoch();     // return in nanoseconds
-    //int64 time = duration_cast<microseconds>(steady_clock::now().time_since_epoch()).count();
-    return duration_cast<milliseconds>(duration).count();
+    static const auto bootTime = high_resolution_clock::now();
+
+    auto current = high_resolution_clock::now();     // return in nanoseconds
+    return duration_cast<milliseconds>(current -  bootTime).count();
 }
 
 double GetTimeMSeconds() {  // -allan
     //  this returns milliseconds in microsecond resolution
     using namespace std::chrono;
-    /*
-    auto now = steady_clock::now();
-    duration_cast<microseconds>(steady_clock::now().time_since_epoch()).count();
-    */
-    auto duration = system_clock::now().time_since_epoch();     // return in nanoseconds
-    double time = duration_cast<microseconds>(duration).count();
-    return (time / 1000);
+    static const auto bootTime = high_resolution_clock::now();
+
+    auto current = high_resolution_clock::now();     // return in nanoseconds
+    int64 delta = duration_cast<microseconds>(current -  bootTime).count();
+    return static_cast<double>(delta) / 1000.0;
 }
 
 double GetTimeUSeconds() {  // -allan
     //  this returns microseconds in nanosecond resolution
     using namespace std::chrono;
-    auto duration = system_clock::now().time_since_epoch();     // return in nanoseconds
-    double time = duration_cast<nanoseconds>(duration).count();
-    return (time / 1000);
+    static const auto bootTime = high_resolution_clock::now();
+
+    auto current = high_resolution_clock::now();     // return in nanoseconds
+    int64 delta = duration_cast<nanoseconds>(current -  bootTime).count();
+    return static_cast<double>(delta) / 1000.0;
 }
 
 // Get current date/time, format is YYYY-MM-DD.HH:mm:ss
@@ -139,20 +142,20 @@ std::string GetUTimeTillNow(double fromTime)
 {
     double elapsed = GetTimeUSeconds() - fromTime;
     if (elapsed > 999999)
-        return sprintf("%0.4fs",elapsed / 1000000);
+        return sprintf("%0.4fs", elapsed / 1000000);
     else if (elapsed > 999)
-        return sprintf("%0.4fms",elapsed / 1000);
+        return sprintf("%0.4fms", elapsed / 1000);
     else
-        return sprintf("%0.4fus",elapsed);
+        return sprintf("%0.4fus", elapsed);
 }
 
 std::string GetMTimeTillNow(double fromTime)
 {
     double elapsed = GetTimeMSeconds() - fromTime;
     if (elapsed > 999)
-        return sprintf("%0.4fs",elapsed / 1000);
+        return sprintf("%0.4fs", elapsed / 1000);
     else
-        return sprintf("%0.4fms",elapsed);
+        return sprintf("%0.4fms", elapsed);
 }
 
 EvE::TimeParts GetTimeParts(int64 filetime/*0*/)
@@ -163,7 +166,7 @@ EvE::TimeParts GetTimeParts(int64 filetime/*0*/)
 
     // Calculate total days
     uint16 day = (time / 86400) +1;
-    uint16 seconds = fmod(time, 86400);
+    uint16 seconds = std::fmod(time, 86400);
 
     // year loop
     uint16 year = 1970;
@@ -192,7 +195,7 @@ EvE::TimeParts GetTimeParts(int64 filetime/*0*/)
                 ++month;
                 day -= 29;
             } else {
-                if (day -daysOfMonth[index] < 0)
+                if (day - daysOfMonth[index] < 0)
                     break;
                 ++month;
                 day -= daysOfMonth[index];
@@ -201,7 +204,7 @@ EvE::TimeParts GetTimeParts(int64 filetime/*0*/)
         }
     } else {
         while (true) {
-            if (day -daysOfMonth[index] < 0)
+            if (day - daysOfMonth[index] < 0)
                 break;
             day -= daysOfMonth[index];
             ++month;
@@ -231,9 +234,9 @@ EvE::TimeParts GetTimeParts(int64 filetime/*0*/)
     data.wd     = d.day_of_week();
     data.dy     = d.day_of_year();
     data.hour   = seconds / 3600;
-    data.min    = fmod(seconds, 3600) / 60;
-    data.sec    = fmod(fmod(seconds, 3600), 60);
-    data.ms     = fmod(time, 1000);
+    data.min    = std::fmod(seconds, 3600) / 60;
+    data.sec    = std::fmod(std::fmod(seconds, 3600), 60);
+    data.ms     = std::fmod(time, 1000);
 
     return data;
 }

@@ -49,7 +49,7 @@ EVETCPConnection::EVETCPConnection( Socket* sock, uint32 rIP, uint16 rPort )
 
 void EVETCPConnection::QueueRep( const PyRep* rep, bool compress/*true*/ )
 {
-    Buffer* pBuffer(new Buffer());
+    Buffer* pBuffer = new Buffer();
 
     // make room for length
     const Buffer::iterator<uint32> bufLen = pBuffer->end<uint32>();
@@ -61,7 +61,7 @@ void EVETCPConnection::QueueRep( const PyRep* rep, bool compress/*true*/ )
         return;
     }
 
-    bool success(false);
+    bool success = false;
     if (compress) {
         success = MarshalDeflate(rep, *pBuffer);
     } else {
@@ -78,13 +78,13 @@ void EVETCPConnection::QueueRep( const PyRep* rep, bool compress/*true*/ )
         sLog.Error( "Network", "Failed to marshal new packet." );
     }
 
-    PySafeDecRef(rep);
+    //PySafeDecRef(rep);
     SafeDelete( pBuffer );
 }
 
 PyRep* EVETCPConnection::PopRep()
 {
-    PyRep* res(nullptr);
+    PyRep* res = nullptr;
 
     MutexLock lock( mMInQueue );
     Buffer* packet = mInQueue.PopPacket();

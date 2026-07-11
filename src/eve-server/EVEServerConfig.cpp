@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    12.8
+    Version:    12.9
 */
 
 
@@ -60,7 +60,6 @@ EVEServerConfig::EVEServerConfig()
     server.FleetShareDelayed = false;
     server.BountyPayoutDelayed = false; // this system isnt working yet.  disable by default
     server.BountyPayoutTimer = 20/*m*/;
-    server.LoadOldMissions = false;
     server.AsteroidsOnDScan = false;
     server.CargoMassAdditive = false;
     server.LoadStaticRecyclable = false;
@@ -207,6 +206,9 @@ EVEServerConfig::EVEServerConfig()
     cosmic.WormHoleEnabled = false;
     cosmic.CiviliansEnabled = false;
     cosmic.BumpEnabled = false;
+    cosmic.CivilianTic = 60;
+    cosmic.minCivConvoys = 2;
+    cosmic.maxCivConvoys = 10;
 
     // exploring
     exploring.Gravametric = 5;
@@ -279,6 +281,7 @@ EVEServerConfig::EVEServerConfig()
     mission.OfferExpiryTime = 24;/*h*/
     mission.IskRewardLo = 11500;
     mission.IskRewardHi = 16500;
+    mission.LoadOldMissions = false;
 
     // database
     database.host = "localhost";
@@ -387,7 +390,6 @@ bool EVEServerConfig::ProcessServer(const TiXmlElement* ele) {
     AddValueParser("FleetShareDelayed",    server.FleetShareDelayed);
     AddValueParser("BountyPayoutDelayed",  server.BountyPayoutDelayed);
     AddValueParser("BountyPayoutTimer",    server.BountyPayoutTimer);
-    AddValueParser("LoadOldMissions",      server.LoadOldMissions);
     AddValueParser("AsteroidsOnDScan",     server.AsteroidsOnDScan);
     AddValueParser("CargoMassAdditive",    server.CargoMassAdditive);
     AddValueParser("LoadStaticRecyclable", server.LoadStaticRecyclable);
@@ -412,7 +414,6 @@ bool EVEServerConfig::ProcessServer(const TiXmlElement* ele) {
     RemoveParser("FleetShareDelayed");
     RemoveParser("BountyPayoutDelayed");
     RemoveParser("BountyPayoutTimer");
-    RemoveParser("LoadOldMissions");
     RemoveParser("AsteroidsOnDScan");
     RemoveParser("CargoMassAdditive");
     RemoveParser("LoadStaticRecyclable");
@@ -763,11 +764,14 @@ bool EVEServerConfig::ProcessCosmic(const TiXmlElement* ele) {
     AddValueParser("DungeonEnabled",       cosmic.DungeonEnabled);
     AddValueParser("BeltEnabled",          cosmic.BeltEnabled);
     AddValueParser("BeltRespawn",          cosmic.BeltRespawn);
-    AddValueParser("BeltGrowTime",           cosmic.BeltGrowTime);
-    AddValueParser("BeltGrowPct",           cosmic.BeltGrowPct);
+    AddValueParser("BeltGrowTime",         cosmic.BeltGrowTime);
+    AddValueParser("BeltGrowPct",          cosmic.BeltGrowPct);
     AddValueParser("roidRadiusMultiplier", cosmic.roidRadiusMultiplier);
     AddValueParser("WormHoleEnabled",      cosmic.WormHoleEnabled);
     AddValueParser("CiviliansEnabled",     cosmic.CiviliansEnabled);
+    AddValueParser("CivilianTic",          cosmic.CivilianTic);
+    AddValueParser("minCivConvoys",        cosmic.minCivConvoys);
+    AddValueParser("maxCivConvoys",        cosmic.maxCivConvoys);
     AddValueParser("BumpEnabled",          cosmic.BumpEnabled);
 
     const bool result = ParseElementChildren(ele);
@@ -782,6 +786,9 @@ bool EVEServerConfig::ProcessCosmic(const TiXmlElement* ele) {
     RemoveParser("roidRadiusMultiplier");
     RemoveParser("WormHoleEnabled");
     RemoveParser("CiviliansEnabled");
+    RemoveParser("CivilianTic");
+    RemoveParser("minCivConvoys");
+    RemoveParser("maxCivConvoys");
     RemoveParser("BumpEnabled");
 
     return result;
@@ -978,6 +985,7 @@ bool EVEServerConfig::ProcessMission(const TiXmlElement* ele) {
     AddValueParser("IskRewardHi",          mission.IskRewardHi);
     AddValueParser("OfferExpiryTime",      mission.OfferExpiryTime);
     AddValueParser("AcceptExpiryTime",     mission.AcceptExpiryTime);
+    AddValueParser("LoadOldMissions",      mission.LoadOldMissions);
 
     const bool result = ParseElementChildren(ele);
 
@@ -985,6 +993,7 @@ bool EVEServerConfig::ProcessMission(const TiXmlElement* ele) {
     RemoveParser("IskRewardHi");
     RemoveParser("OfferExpiryTime");
     RemoveParser("AcceptExpiryTime");
+    RemoveParser("LoadOldMissions");
 
     return result;
 }

@@ -230,13 +230,10 @@ const GPoint MapData::GetAnomalyPoint(uint32 systemID)
 }
 
 bool MapData::GetSystemJumps(uint8 step, uint32 sysID, std::multimap<uint8, uint32>& jumpMap) {
-    auto JumpItr = m_systemJumps.equal_range(sysID);
-    auto it = JumpItr.first;
-    if (it == JumpItr.second)
-        return false;
-    for (; it != JumpItr.second; ++it)
+    auto range = m_systemJumps.equal_range(sysID);
+    for (auto it = range.first; it != range.second; ++it)
         jumpMap.emplace(step, it->second);
-    return true;
+    return !jumpMap.empty();
 }
 
 void MapData::GetMissionDestination(Agent* pAgent, MissionOffer& offer) {
@@ -307,8 +304,8 @@ void MapData::GetMissionDestination(Agent* pAgent, MissionOffer& offer) {
             if (station || deadspace) {
                 // If we need a station but this system has no other stations, look 1 jump out
                 if (station && sDataMgr.GetStationCount(agentSystemID) < 2) {
-                    auto JumpItr = m_systemJumps.equal_range(agentSystemID);
-                    for (auto it = JumpItr.first; it != JumpItr.second; ++it) {
+                    auto range = m_systemJumps.equal_range(agentSystemID);
+                    for (auto it = range.first; it != range.second; ++it) {
                         if ((sDataMgr.GetSystemConstellation(it->second) == sDataMgr.GetSystemConstellation(agentSystemID))
                             && (sDataMgr.GetSystemRegion(it->second) == sDataMgr.GetSystemRegion(agentSystemID))) {
                             sysList.push_back(it->second);

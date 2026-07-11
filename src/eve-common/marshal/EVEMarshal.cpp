@@ -43,8 +43,8 @@ bool Marshal( const PyRep* rep, Buffer& into )
 
 bool MarshalDeflate( const PyRep* rep, Buffer& into, const uint32 deflationLimit )
 {
-    Buffer* data(new Buffer());
-    bool ret(false);
+    Buffer* data = new Buffer();
+    bool ret = false;
     if (Marshal(rep, *data)) {
         if ( data->size() >= deflationLimit ) {
             ret = DeflateData( *data, into );

@@ -769,7 +769,7 @@ void CharacterDB::GetCharacterDataMap(uint32 charID, std::map<std::string, int64
 
     uint32 stationID = characterDataMap["baseID"];
     if (!CharacterDB::GetCharHomeStation(charID, stationID)) {
-        ItemData iData(EVEDB::invTypes::CloneGradeAlpha, charID, stationID, flagClone, 1);
+        ItemData iData(EVEItemTypes::CloneGradeAlpha, charID, stationID, flagClone, 1);
             iData.customInfo="Active: ";
             iData.customInfo += row.GetText(17);
             iData.customInfo += "(";
@@ -1001,7 +1001,7 @@ uint32 CharacterDB::GetCloneID(uint32 charID) {
         "SELECT itemID"
         " FROM entity"
         " WHERE ownerID = %u"
-        "  AND flag=400",
+        "  AND flagID=400",
         charID))
     {
         _log(CHARACTER__ERROR, "Couldn't get clone data for char %u", charID );
@@ -1021,7 +1021,7 @@ bool CharacterDB::GetCharHomeStation(uint32 characterID, uint32 &stationID) {
         "SELECT locationID "
         " FROM entity"
         " WHERE ownerID = %u"
-        "  AND flag=400",
+        "  AND flagID=400",
         characterID ))
     {
         _log(CHARACTER__ERROR, "Couldn't get clone location for char %u", characterID );
@@ -1040,7 +1040,7 @@ bool CharacterDB::GetCharHomeStation(uint32 characterID, uint32 &stationID) {
 bool CharacterDB::ChangeCloneLocation(uint32 characterID, uint32 locationID)
 {
     DBQueryResult res;
-    if (!sDatabase.RunQuery(res.error, "UPDATE entity SET locationID=%u WHERE ownerID=%u AND flag=400", locationID, characterID)) {
+    if (!sDatabase.RunQuery(res.error, "UPDATE entity SET locationID=%u WHERE ownerID=%u AND flagID=400", locationID, characterID)) {
         _log(DATABASE__ERROR, "Failed to change location of clone for %u: %s.", characterID, res.error.c_str());
         return false;
     }
@@ -1219,11 +1219,7 @@ bool CharacterDB::GetSkillsByRace(uint32 raceID, std::map<uint32, uint8> &into) 
 
     DBResultRow row;
     while (res.GetRow(row)) {
-        if (into.find(row.GetUInt(0)) == into.end()) {
-            into[row.GetUInt(0)] = row.GetUInt(1);
-        } else {
-            into[row.GetUInt(0)] += row.GetUInt(1);
-        }
+        into[row.GetUInt(0)] += row.GetUInt(1);
         //check to avoid more than 5 levels of a skill
         if (into[row.GetUInt(0)] > 5)
             into[row.GetUInt(0)] = 5;
@@ -1791,7 +1787,7 @@ PyRep* CharacterDB::ListStations(uint32 ownerID, std::ostringstream& flagIDs, bo
                 "  LEFT JOIN invTypes USING (typeID)"
                 "  LEFT JOIN invGroups AS g USING (groupID)"
                 "  LEFT JOIN staOffices as o ON o.itemID = e.locationID"
-                " WHERE e.ownerID=%u AND e.flag IN (%s) AND g.categoryID = %u AND (e.locationID >= %u AND e.locationID <= %u)"
+                " WHERE e.ownerID=%u AND e.flagID IN (%s) AND g.categoryID = %u AND (e.locationID >= %u AND e.locationID <= %u)"
                 " GROUP BY locationID", ownerID, flagIDs.str().c_str(), EVEDB::invCategories::Blueprint, minOffice, maxOffice))
             {
                 codelog(SERVICE__ERROR, "Error in ListStations query: %s", res.error.c_str());
@@ -1803,7 +1799,7 @@ PyRep* CharacterDB::ListStations(uint32 ownerID, std::ostringstream& flagIDs, bo
                 " FROM entity AS e"
                 "  LEFT JOIN invTypes USING (typeID)"
                 "  LEFT JOIN invGroups AS g USING (groupID)"
-                " WHERE e.ownerID=%u AND e.flag IN (%s) AND g.categoryID = %u AND e.locationID <= %u"
+                " WHERE e.ownerID=%u AND e.flagID IN (%s) AND g.categoryID = %u AND e.locationID <= %u"
                 " GROUP BY locationID", ownerID, flagIDs.str().c_str(), EVEDB::invCategories::Blueprint, maxStation))
             {
                 codelog(SERVICE__ERROR, "Error in ListStations query: %s", res.error.c_str());
@@ -1817,7 +1813,7 @@ PyRep* CharacterDB::ListStations(uint32 ownerID, std::ostringstream& flagIDs, bo
                 "SELECT o.stationID, COUNT(e.itemID) as itemCount"
                 " FROM entity AS e"
                 "  LEFT JOIN staOffices as o ON o.itemID = e.locationID"
-                " WHERE e.ownerID=%u AND e.flag IN (%s) AND (e.locationID >= %u AND e.locationID <= %u)"
+                " WHERE e.ownerID=%u AND e.flagID IN (%s) AND (e.locationID >= %u AND e.locationID <= %u)"
                 " GROUP BY locationID", ownerID, flagIDs.str().c_str(), minOffice, maxOffice))
             {
                 codelog(SERVICE__ERROR, "Error in ListStations query: %s", res.error.c_str());
@@ -1826,7 +1822,7 @@ PyRep* CharacterDB::ListStations(uint32 ownerID, std::ostringstream& flagIDs, bo
         } else {
             if (!sDatabase.RunQuery(res,
                 "SELECT locationID AS stationID, COUNT(itemID) as itemCount"
-                " FROM entity WHERE ownerID=%u AND flag IN (%s) AND locationID <= %u"
+                " FROM entity WHERE ownerID=%u AND flagID IN (%s) AND locationID <= %u"
                 " GROUP BY locationID", ownerID, flagIDs.str().c_str(), maxStation))
             {
                 codelog(SERVICE__ERROR, "Error in ListStations query: %s", res.error.c_str());
@@ -1861,7 +1857,7 @@ PyRep* CharacterDB::ListStationItems(uint32 ownerID, uint32 stationID)
         "FROM entity AS e"
         "  LEFT JOIN invTypes USING (typeID)"
         "  LEFT JOIN invGroups AS g USING (groupID)"
-        "WHERE e.ownerID=%u AND e.locationID=%u AND e.flag=4",
+        "WHERE e.ownerID=%u AND e.locationID=%u AND e.flagID=4",
         ownerID, stationID))
     {
         codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
@@ -1929,7 +1925,7 @@ PyRep* CharacterDB::ListStationBlueprintItems(uint32 ownerID, uint32 stationID, 
             "  LEFT JOIN invTypes USING (typeID)"
             "  LEFT JOIN invGroups AS g USING (groupID)"
             "  LEFT JOIN invBlueprints AS b USING (itemID)"
-            " WHERE e.ownerID=%u AND e.locationID=%u AND e.flag=4 AND g.categoryID = %u",
+            " WHERE e.ownerID=%u AND e.locationID=%u AND e.flagID=4 AND g.categoryID = %u",
             ownerID, stationID, EVEDB::invCategories::Blueprint))
         {
             codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());

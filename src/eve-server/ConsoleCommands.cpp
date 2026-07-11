@@ -271,9 +271,9 @@ bool ConsoleCommand::Process() {
             } else if (strncmp(buf, "t", 1) == 0) {
                 Test();
             } else if (strncmp(buf, "f", 1) == 0) {
-				std::string args(buf);
-				if (args.length() > 1)
-    				FxProc(atoi(buf + 1));
+                std::string args(buf);
+                if (args.length() > 1)
+                    FxProc(atoi(buf + 1));
             } else if (strncmp(buf, "d", 1) == 0) {
                 uint8 maxCount = sConfig.server.MaxThreadReport;
                 uint8 count = sThread.Count();
@@ -400,7 +400,9 @@ void ConsoleCommand::Test()
     double start = GetTimeMSeconds();
 
     testing t;
-    t.CharAttribTest();
+    t.GetSkills();
+    
+    //t.CharAttribTest();
 
     //sMktMgr.GetCruPrices();
     //sLog.Blue("       MktPricing", "Base material Prices Updated");
