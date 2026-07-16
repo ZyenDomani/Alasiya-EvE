@@ -114,7 +114,7 @@ uint32 CargoContainer::CreateItemID( ItemData &data)
 
 void CargoContainer::Delete()
 {
-    if (typeID() == EVEItemTypes::PlanetaryLaunchContainer)
+    if (typeID() == EVEDB::invTypes::PlanetaryLaunchContainer)
         PlanetDB::DeleteLaunch(m_itemID);
 
     // if SE exists, remove from system before deleting item
@@ -180,10 +180,10 @@ void CargoContainer::RemoveItem(InventoryItemRef iRef)
         return;
 
     if (pInventory->IsEmpty()) {
-        if (typeID() == EVEItemTypes::PlanetaryLaunchContainer) {
+        if (typeID() == EVEDB::invTypes::PlanetaryLaunchContainer) {
             sLog.Warning( "CargoContainer::RemoveItem()", "Launch Container %u is empty and being deleted.", m_itemID );
             PlanetDB::UpdateLaunchStatus(m_itemID, PI::Cargo::Claimed);
-        } else if (typeID() == EVEItemTypes::CargoContainer) {
+        } else if (typeID() == EVEDB::invTypes::CargoContainer) {
             if (is_log_enabled(ITEM__MESSAGE))
                 sLog.Warning( "CargoContainer::RemoveItem()", "Cargo Container %u is empty and being deleted.", m_itemID );
         } else if (typeID() == Item::Type::JetCan) {
@@ -258,7 +258,7 @@ ContainerSE::ContainerSE(CargoContainerRef self, PyServiceMgr& services, SystemM
     m_ownerID = data.ownerID;
 
     if (!sDataMgr.IsStation(m_self->locationID())) { // should NEVER be true (SE object in station???)
-        if (m_self->typeID() == EVEItemTypes::PlanetaryLaunchContainer) {
+        if (m_self->typeID() == EVEDB::invTypes::PlanetaryLaunchContainer) {
             m_deleteTimer.Start(5 * EvE::Timer::Day);  //5d timer for PI launch.  should probably get this saved value from planet launches
         } else {
             m_deleteTimer.Start(sConfig.rates.WorldDecay * EvE::Timer::Minute);
@@ -351,7 +351,7 @@ void ContainerSE::EncodeDestiny(Buffer& into)
     into.Append( data );
     TROLL_Struct troll;
         troll.formationID = 0xFF;
-        troll.effectStamp = 0; //sEntityMgr.GetStamp();  // this isnt right
+        troll.delay = 10;
     into.Append( troll );
 
     _log(SE__DESTINY, "ContainerSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
@@ -583,9 +583,10 @@ void WreckSE::EncodeDestiny(Buffer& into) {
         data.maxSpeed = 1.0f;
         data.speedfraction = 1;
     into.Append( data );
+    // this isnt right..will be stop, then troll, then rigid
     TROLL_Struct troll;
         troll.formationID = 0xFF;
-        troll.effectStamp = 0; //sEntityMgr.GetStamp();  // this isnt right
+        troll.delay = 10;
     into.Append( troll );
     _log(SE__DESTINY, "WreckSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }

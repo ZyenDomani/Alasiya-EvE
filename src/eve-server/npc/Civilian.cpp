@@ -324,10 +324,10 @@ void Civilian::EncodeDestiny( Buffer& into) {
                 warp.targX = target.x;
                 warp.targY = target.y;
                 warp.targZ = target.z;
-                warp.speed = 150;       //ship warp speed x10
+                warp.warpFactor = 150;       //ship warp speed x10
                 warp.effectStamp = -1;
                 warp.distance = -1;
-                warp.trackingFlags = 0;
+                warp.warpInVelocity = 15000;
             into.Append(warp);
         }  break;
         case Civ::State::Undocking: {
@@ -353,7 +353,7 @@ void Civilian::EncodeDestiny( Buffer& into) {
                 form.formationID = m_formID;
                 form.leaderID = m_pLeader->GetID();
                 form.spacing = 800.0f;
-                form.syncIndex = 3;
+                form.slotID = 0;
             into.Append(form);
         }  break;
         default: {

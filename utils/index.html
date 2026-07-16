@@ -8,11 +8,8 @@
   <meta name="ROBOTS" content="NOINDEX, NOFOLLOW">
 </head>
 <body>
-<font color=red>MAJOR UPDATE</font><br>
-<font color=yellow>Orbit has been disabled!</font><font color=cyan> see <a href="http://eve.alasiya.net/phpBB3/viewtopic.php?f=42&t=267" target=_new>this post</a> for details</font><br><br>
-
-This is the updates page for Alasiya-EvE.<br>
-I will eventually make this a little more aesthetically pleasing  (maybe)<br><br>
+This is the updates page for Alasiya-EvE, sorted by branch push date.<br>
+I will (maybe/eventually) make this a little more aesthetically pleasing<br><br>
 <font color=teal>CURRENT TEST POINTS</font><br>
  - Courier Missions<br>
  - Drones (except delegate)<br>
@@ -20,10 +17,19 @@ I will eventually make this a little more aesthetically pleasing  (maybe)<br><br
  - Graphic Effects for modules, NPCs, and Drones (most working correctly)<br>
 <br>
 <font color=teal>NOTABLE UPDATES:</font><br>
+Current: 2026 (Fixes over the last year)<br>
+Major Memory Management Update: rewrote xmlp code, updated object ownership, corrected almost all leaks<br>
+Added ~330 Encounter Missions (still testing - not available yet)<br>
+Added Civilian System.  This is just fluff, but neat<br>
+New Destiny rewrite/updates have all movement tracking around 99%.<br>
+Updated NPC AI processing<br>
+Updates to ship tracking<br>
+Few fixes from outstanding TODO list<br>
+Last year - 2025<br>
 Rewrote standings, agent and mission code.  Agent greetings are now based on personal standing instead of random<br>
 Updated existing and added remaining 120 Courier missions for 151 total, including storyline/important missions which give faction rep<br>
 Drone System mostly complete and live.<br>
-Recent Destiny rewrites have movement tracking around 98% with client except orbit.<br>
+Recent Destiny rewrites have movement tracking around 95% with client except orbit.<br>
 The Implant system is implemented and working quite well.<br>
 <br>
 <font color=teal>NOTES:</font><br>
@@ -31,6 +37,42 @@ Constant lookout for bugs and other errors.<br>
 I am kinda working on my TODO list where I can.  As there is around 1000 lines, this will take a while<br>
 <br>
 UPDATES AND CHANGELOG:  (only major/significant updates are listed)<br>
+10Jul26 - Major Systems Update, Part 5<br>
+        Added/fixed agent portrait retrieval for all 10977 agents<br>
+        Civilian Code update<br>
+        Cache system update (faster server response times)<br>
+        Time/Timers update (faster iterations)<br>
+        Static Data update (faster load/get times)<br>
+        Found and fixed error in calculating skill points<br>
+        Notification system rewrite (notifications still inactive)<br>
+        Mailing List system rewrite (currently untested)<br>
+        Minor updates to all major system managers<br>
+        39 files with 3142 lines changed<br><br>
+27Jun26 - Major Systems Update, Part 4<br>
+        Begin LSC rewrite<br>
+        Another NPCAI Update<br>
+        Couple more PI updates<br>
+        39 files with 3142 lines changed<br><br>
+27Jun26 - Major Systems Update, Part 3<br>
+        Updated Destiny packet data for later additions<br>
+        Updated EntityMgr for faster processing<br>
+        Added ~330 Encounter Missions data (not available yet)<br>
+        More Planet and PI updates<br>
+        42 files with 974 lines changed<br><br>
+27Jun26 - Major Systems Update, Part 2<br>
+        Client ping rewrite<br>
+        Spawn system updates for better grouping<br>
+        More Destiny updates<br>
+        25 files with 1636 lines changed<br><br>
+19Jun26 - Major Systems Update, Part 1<br>
+        NPC AI update.  Smarter NPC tracking and targeting.<br>
+        Added Civilian Ships core code<br>
+        Initial Planet data update<br>
+        Begin implementing major Destiny rewrite<br>
+        26 files with 2285 lines changed<br><br>
+18Jun26 - Major Memory Update<br>
+        Finally fixed MemMgmt server-wide.  Server is down to a single memory error, leaking 204b.<br>
+        82 files and 5289 lines changed<br><br>
 07Mar25 - Found standings math error in client and fixed it<br>
         Major standings rewrite using completely new system.<br>
         Major Agent updates, including rewriting convo responses and adding multiple checks and other fixes<br>

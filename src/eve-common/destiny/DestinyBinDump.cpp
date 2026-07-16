@@ -151,7 +151,7 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
             data += sizeof(WARP_Struct);
             len -= sizeof(WARP_Struct);
             _log(into, "       formID: %u, TargPt: %.1f, %.1f, %.1f start: %i", b->formationID, b->targX, b->targY, b->targZ, b->effectStamp);
-            _log(into, "       distance: %.1f, trackingFlags: %.1f, warpSpeed: %i", b->distance, b->trackingFlags, b->speed);
+            _log(into, "       distance: %.1f, warpInVelocity: %.1f, warpFactor: %i", b->distance, b->warpInVelocity, b->warpFactor);
         } break;
         case Ball::Mode::ORBIT: {
             const ORBIT_Struct *b = (const ORBIT_Struct *) data;
@@ -176,7 +176,7 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
             const TROLL_Struct *b = (const TROLL_Struct *) data;
             data += sizeof(TROLL_Struct);
             len -= sizeof(TROLL_Struct);
-            _log(into, "       formID: %u, start: %i", b->formationID, b->effectStamp);
+            _log(into, "       formID: %u, delay: %i", b->formationID, b->delay);
         } break;
         case Ball::Mode::FIELD: {
             const FIELD_Struct *b = (const FIELD_Struct *) data;
@@ -194,7 +194,7 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
             const FORMATION_Struct *b = (const FORMATION_Struct *) data;
             data += sizeof(FORMATION_Struct);
             len -= sizeof(FORMATION_Struct);
-            _log(into, "       formID: %u, leaderID: %lli, spacing: %.1f, syncIndex: %i", b->formationID, b->leaderID, b->spacing, b->syncIndex);
+            _log(into, "       formID: %u, leaderID: %lli, spacing: %.1f, slotID: %i", b->formationID, b->leaderID, b->spacing, b->slotID);
         } break;
         default:
             _log(into, "Error: Unknown ball mode %u!", ballhead->mode);

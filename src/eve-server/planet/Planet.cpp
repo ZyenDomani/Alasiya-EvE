@@ -237,7 +237,7 @@ void PlanetSE::CreateCustomsOffice() {
      */
 
     //ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, uint32 _quantity, const char *_customInfo = "", bool _contraband = false);
-    uint16 typeID(EVEItemTypes::InterbusCustomsOffice);
+    uint16 typeID(EVEDB::invTypes::InterbusCustomsOffice);
     FactionData data = FactionData();
         data.ownerID = corpInterbus;
         data.factionID = 0; //factionInterBus;
@@ -245,7 +245,7 @@ void PlanetSE::CreateCustomsOffice() {
         data.corporationID = corpInterbus;
 
     if (m_system->GetSecurityRating() > 0.49) {
-        typeID = EVEItemTypes::PlanetaryCustomsOffice;
+        typeID = EVEDB::invTypes::PlanetaryCustomsOffice;
         data.ownerID = corpCONCORD;
         data.factionID = 0; //sDataMgr.GetRegionFaction(m_system->GetRegionID());
         data.allianceID = 0;
@@ -264,9 +264,9 @@ void PlanetSE::CreateCustomsOffice() {
     s = EvE::max(0.5f, EvE::min(s, 10.5f));
     double t = std::asin((warpInPoint.x / std::fabs(warpInPoint.x)) * (warpInPoint.z / std::sqrt(std::pow(warpInPoint.x, 2) + std::pow(warpInPoint.z, 2)))) + j;
     uint32 d = radius * (s + 1) + 1000000;
-    warpInPoint.x += (d * std::sin(t));
-    warpInPoint.y += (0.5f * radius * std::sin(j));
-    warpInPoint.z -= (d * std::cos(t));
+    warpInPoint.x += (d * EvE::Trig::FastSin(t));
+    warpInPoint.y += (0.5f * radius * EvE::Trig::FastSin(j));
+    warpInPoint.z -= (d * EvE::Trig::FastCos(t));
 
     // set new position in middle of grid
     int64 bubbleDia(BUBBLE_RADIUS_METERS * 2);

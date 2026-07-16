@@ -517,9 +517,9 @@ PyRep* ServiceDB::LookupKnownLocationsByGroup(const std::string & search, uint32
     return DBResultToRowset(res);
 }
 
-std::string ServiceDB::BuildInClause(std::vector<int32>& ids)  {
+std::string ServiceDB::BuildInClause(const std::vector<int32>& ids)  {
     if (ids.empty()) {
-        return "0"; // Safety fallback to prevent a fatal SQL syntax error "IN ()"
+        return ""; // Safety fallback to prevent a fatal SQL syntax error "IN ()"
     }
 
     std::ostringstream oss;

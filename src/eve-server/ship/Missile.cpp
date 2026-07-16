@@ -257,16 +257,19 @@ void Missile::HitTarget() {
 
     GPoint Vel = m_targetSE->GetVelocity();
     double V = Vel.length();
-    if (V <= 0)
-        V = 1;
+    if (V <= 0.0)
+        V = 1.0;
 
+    // Fix: Correct CCP exponent math using hardcoded ln(5) denominator multiplied by DRS
     double v1 = Sr/Er;
-    double v2 = pow(((Ev/V) * v1), (log(DRF) / log(DRS)));
+    double exponent = (std::log(DRF) / std::log(5.0)) * DRS;
+    double v2 = std::pow(((Ev / V) * v1), exponent);
 
     // apply damage modifier from char skills, if applicable
     d *= m_damageMod;
-    // apply missile damage formula to computed total damage
-    d *= EvE::min1(v1, v2);
+    // Fix: Clamp the multiplier to a maximum of 1.0 so damage never exceeds 100% base
+    double damageMultiplier = EvE::min1(EvE::min1(v1, v2), 1.0);
+    d *= damageMultiplier;
 
     m_targetSE->ApplyDamage(d);
     m_alive = false;

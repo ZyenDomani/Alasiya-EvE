@@ -57,7 +57,7 @@ namespace Destiny {
                 IsGlobal        = 0x02,   // Universally distributed lifecycle node
                 IsMassive       = 0x04,   // Subject to rigid body elastic boundary bumping
                 IsInteractive   = 0x08,   // Targetable UI spatial object selector
-                IsMoribund      = 0x10,   // Flagged for dynamic destruction sweep next tick
+                IsMoribund      = 0x10,   // Junk items queued for deletion
                 HasMiniBalls    = 0x40,   // Trailing array stream contains structural sub-shapes
             };
         }
@@ -153,7 +153,7 @@ struct MiniBall {
  * @note CONDITIONAL PAYLOAD: Streamed ONLY if (BallHeader::flags & Ball::Flag::HasMiniBalls)
  */
 struct MiniBallList {
-    uint16 count;                 // Dynamic quantity layout iterator count limit
+    uint16   count;               // Dynamic quantity layout iterator count limit
     MiniBall balls[1];            // Inline trailing contiguous data buffer
 };
 
@@ -171,8 +171,8 @@ struct GOTO_Struct {
 
 struct FOLLOW_Struct {
     uint8  formationID;
-    int64 followID;               // Target entity identifier to lock trajectories onto
-    float followRange;            // Safe tracking gap constraint distance parameter
+    int64  followID;              // Target entity identifier to lock trajectories onto
+    float  followRange;           // Safe tracking gap constraint distance parameter
 };
 
 struct STOP_Struct {
@@ -180,14 +180,15 @@ struct STOP_Struct {
 };
 
 struct WARP_Struct {
-    uint8  formationID;
+    uint8  formationID;           // Master layout shape profile index (for fleet warp alignments)
+    // Absolute destination terminal exit coordinates
     double targX;                 // Termination exit coordinates for warp drop
     double targY;
     double targZ;
-    int32 effectStamp;            // Initialization tick baseline timestamp for linear scaling
-    double distance;              // Reinterpreted from int64: Distance parameters (-1.0 = Default)
-    double trackingFlags;         // Reinterpreted from int64: Dynamic tracking parameters / flags
-    int32 speed;                  // Configured target speed tier factor setting
+    int32  effectStamp;           // while aligning <this=countdown> to force warp (anti-stuck fix).  set to current tic once warp starts
+    double distance;              // distance to drop out of warp (-1.0 = Default)
+    double warpInVelocity;        // max warp speed when ships enter new bubble
+    int32  warpFactor;            // warp speed x10
 };
 
 struct ORBIT_Struct {
@@ -198,42 +199,41 @@ struct ORBIT_Struct {
 
 struct MISSILE_Struct {
     uint8  formationID;
-    int64 targetID;               // Targeted object proxy tracker pointer
-    float followRange;            // Containment blast payload detonate radius scale
-    int64 ownerID;                // Launcher context identifier tracking parameter
-    int32 effectStamp;            // Launch initialization execution timestamp reference
-    double x;                     // Last known trajectory vector target metrics
+    int64  targetID;               // Targeted object proxy tracker pointer
+    float  followRange;            // Containment blast payload detonate radius scale
+    int64  ownerID;                // Launcher context identifier tracking parameter
+    int32  effectStamp;            // Launch initialization execution timestamp reference
+    double x;                      // Last known trajectory vector target metrics
     double y;
     double z;
 };
 
 struct MUSHROOM_Struct {
     uint8  formationID;
-    float maxRadius;              // Absolute boundary ceiling of explosive expansion volume
-    double waveFactor;            // Radial deployment speed wave factor multiplier
-    int32 effectStamp;            // Volumetric deployment timeline step execution stamp
-    int64 ownerID;                // Source tracking context attribution ID
+    float  maxRadius;              // Absolute boundary ceiling of explosive expansion volume
+    double waveFactor;             // Radial deployment speed wave factor multiplier
+    int32  effectStamp;            // Volumetric deployment timeline step execution stamp
+    int64  ownerID;                // Source tracking context attribution ID
 };
 
 struct TROLL_Struct {
     uint8  formationID;
-    int32 effectStamp;            // Creation timestamp; triggers RIGID mutation when threshold hit
+    int32  delay;                  // delay before triggering RIGID mutation (added to current ticstamp in client)
 };
 
 struct FIELD_Struct {
-    uint8  formationID;           // Static geometry boundary conditional checking payload
+    uint8  formationID;            // Static geometry boundary conditional checking payload
 };
 
 struct RIGID_Struct {
     uint8  formationID;
-    //uint16 visualStateKey;        // Optional state key; handles client mesh orientation overrides
 };
 
-struct FORMATION_Struct {		  // ONLY used by slaves with no other mode structure; linked via leaderID
-    uint8  formationID;			  // formation index (0=Point, 1=Sphere, 2=Plane, 3=Wall, 4=Arrow, etc).
-    int64 leaderID;               // formation leader (focus entity) tracking index
-    float spacing;                // see notes below
-    int32 syncIndex;              // see notes below
+struct FORMATION_Struct {	   // ONLY used by slaves with no other mode structure; linked via leaderID
+    uint8  formationID;		   // formation index (0=Point, 1=Sphere, 2=Plane, 3=Wall, 4=Arrow, etc).
+    int64  leaderID;               // formation leader (focus entity) tracking index
+    float  spacing;                // how much 'extra' padding between form points
+    int32  slotID;
 };
 
 #pragma pack()
@@ -243,36 +243,8 @@ struct FORMATION_Struct {		  // ONLY used by slaves with no other mode structure
   group separation spacing in meters in addition to <formation> outline spacing
    Tighter spacing for small rat combat units: 400.0
    Civilian suggestion:  500.0 - 1500.0
-
 */
 
-/*  syncIndex notes:
-Structural orchestration syncing index
-the syncIndex is a powerful tool to offload AI calculation straight to the player's computer
-
-tracker for the group's flight elasticity.
-Low Values (0 or 1):
-Tells the client to enforce a Rigid Formation. The ships move like a solid geometric block. If the leader turns 45 degrees,
-the entire fleet rotates in perfect synchronization. This is great for military patrols or visual parade flybys.
-Dynamic Values / State IDs (e.g., 2, 5, or custom ticks):
-Tells the client to switch to Loose Formation or Elastic Mode. The client's destiny rendering core will allow individual rat
-escorts to visually "drift" or lagoon away from their strict matrix slots when tracking a player, performing orbital loops,
-or executing weapon-alignment arcs.
-Micro-Warp Drive (MWD) & Warp In/Out Orchestration
-This is where the name "effectStamp" truly comes from.
-When a group of NPCs decides to execute a coordinated group warp-in or fire their Micro-Warp Drives simultaneously to close
-the gap on a player ship, the server increments this stamp.
-Visual Triggering:
-When the client catches an updated effectStamp value associated with a combat command state, it triggers the localized visual
-environment shaders natively on the player's GPU.
-The Result:
-It forces the entire rat wing to play their MWD blue-engine flash effect or warp-entry trails in perfect, unified visual lockstep,
-making the NPC squad look like a highly trained tactical unit
-
-By passing an syncIndex of 2 or higher, the frigate rats will smoothly orbit and break formation visuals naturally on the
-player's screen whenever combat commences, while still roughly maintaining their tactical group identity.
-
-*/
 
 } //end Destiny
 

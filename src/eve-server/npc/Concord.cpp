@@ -156,11 +156,11 @@ void Concord::EncodeDestiny(Buffer& into) {
                 warp.targX = target.x;
                 warp.targY = target.y;
                 warp.targZ = target.z;
-                warp.speed = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
+                warp.warpFactor = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
                 // warp timing.  see Ship::EncodeDestiny() for notes/updates
                 warp.effectStamp = -1; //m_destiny->GetStateStamp();   //timestamp when warp started
                 warp.distance = -1.0;
-                warp.trackingFlags = 0;
+                warp.warpInVelocity = 15000;
             into.Append( warp );
         }  break;
         case Ball::Mode::FOLLOW: {

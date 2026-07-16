@@ -7,6 +7,7 @@
  * @date:   30 Aug 2015
  */
 
+#include <cmath>
 #include "../eve-compat.h"
 
 // EvE uses the 3d left hand cartesian coordinate system, centered on star.
@@ -16,15 +17,45 @@ namespace EvE {
 
     namespace Trig {
 
-        const double E = 2.71828182845904523536028747135;
-        const double Pi = 3.1415926535897932384626433832795;
-        const double Pi2 = 6.28318530717958647692528676656;
-        const double RadiansInDegrees = 0.0174532925199432957692369076849;   //  pi/180
-        const double DegreesInRadians = 57.2957795130823208767981548141;   //  180/pi
+        // Global constants optimized for single-precision math hardware
+        const float E                   =  2.7182818f;
+        const float halfPi              =  1.57079632f;
+        const float Pi                  =  3.1415927f;
+        const float Pi2                 =  6.2831853f;
+        const float FivePiSq            = 49.34802202f; // 5 * PI^2
+        const float RadiansInDegrees    =  0.01745329f;   //  pi/180
+        const float DegreesInRadians    = 57.29577951f;   //  180/pi
 
         inline double Deg2Rad(double deg) { return (deg * RadiansInDegrees); }
         inline double Rad2Deg(double rad) { return (rad * DegreesInRadians); }
 
+
+        // High-speed, branchless Bhāskara I Sine approximation
+        inline float FastSin(float x) {
+            // 1. Map angle smoothly to the core [-PI, PI] domain without while loops
+            // This floating-point modulus keeps processing times flat even at -O0
+            x = x - (std::floor((x + Pi) * (1.0f / Pi2)) * Pi2);
+
+            // 2. Extract sign bit safely to make the rest of the math completely absolute
+            float sign = (x < 0.0f) ? -1.0f : 1.0f;
+            float absX = (x < 0.0f) ? -x : x;
+
+            // 3. Bhāskara I formula: 16x(PI - x) / (5PI^2 - 4x(PI - x))
+            float piMinusX = Pi - absX;
+            float numerator = 16.0f * absX * piMinusX;
+            float denominator = FivePiSq - (4.0f * absX * piMinusX);
+
+            return sign * (numerator / denominator);
+        }
+
+        // High-speed Bhāskara I Cosine approximation
+        inline float FastCos(float x) {
+            // cos(x) is mathematically identical to sin(x + PI/2)
+            return FastSin(x + halfPi);
+        }
+
+    }
+}
 
 
 /*
@@ -55,9 +86,6 @@ If elevation = pi/2, then the point is on the positive z-axis.
 
         //void Cart2Sph(GPoint pos, float& az, float& ele, float& radius) {        }
 
-
-    }
-}
 
 /*
  * def RayToPlaneIntersection(P, d, Q, n):

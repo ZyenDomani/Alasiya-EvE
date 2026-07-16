@@ -63,10 +63,14 @@ void BubbleManager::clear() {
 void BubbleManager::Process() {
     m_profileStartTime = GetTimeUSeconds();
 
+    bool bump = sConfig.cosmic.BumpEnabled;
     // this needs to be fast
     for (auto &cur : m_bubbles) {
         // process each bubble for spawns
         cur->Process();
+        //process collisions
+        if (bump)
+            cur->ProcessCollisions();
     }
 
     if (m_wanderTimer.Check()) {    //600s
@@ -343,7 +347,7 @@ void BubbleManager::GetBubbleCenterMarkers(std::vector<CosmicSignature>& anom) {
             sig.sigName = cSE->GetName();                       // result.DungeonName
             //sig.sigGroupID = EVEDB::invGroups::Cosmic_Anomaly;  // result.groupID
             sig.sigStrength = 1.0;
-            //sig.sigTypeID = EVEItemTypes::CosmicAnomaly;     // result.typeID
+            //sig.sigTypeID = EVEDB::invTypes::CosmicAnomaly;     // result.typeID
             sig.systemID = cur.first;
             sig.position = cSE->GetPosition();
             sig.scanAttributeID = AttrScanMagnetometricStrength;   // result.strengthAttributeID
@@ -368,7 +372,7 @@ void BubbleManager::GetBubbleCenterMarkers(uint32 systemID, std::vector<CosmicSi
             sig.sigName = cSE->GetName();
             //sig.sigGroupID = EVEDB::invGroups::Cosmic_Anomaly;
             sig.sigStrength = 1.0;
-            //sig.sigTypeID = EVEItemTypes::CosmicAnomaly;
+            //sig.sigTypeID = EVEDB::invTypes::CosmicAnomaly;
             sig.systemID = systemID;
             sig.position = cSE->GetPosition();
             sig.scanAttributeID = AttrScanMagnetometricStrength;

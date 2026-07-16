@@ -43,9 +43,6 @@ static const float HARD_STOP_THRESHOLD_SQ = 0.0001f;
 
 static const double SPACE_DRAG = 0.30000001192092896;
 
-// for testing only.  this isnt right.
-static const uint16 BUMP_DISTANCE = 50;     //in meters.  <= this is contact.
-
 
 namespace Destiny {
     namespace Ball {
@@ -243,7 +240,6 @@ protected:
 
     float m_userSpeedFraction;          //fuzzy logic - user commanded percent of max speed
     float m_activeSpeedFraction;        //fuzzy logic - current percent of max speed
-    float m_maxOrbitSpeedFraction;      //fuzzy logic - ship's max speed based on orbit data
 
     int64 m_targetDistance;             //in m  this is current distance to target
     int64 m_followDistance;             //in m  this is desired distance to target
@@ -268,30 +264,20 @@ private:
     bool m_posHack;                     //force position update
     float m_agility;                    //unitless?   - not sent to client
 
-    // Internal Collision Methods   -allan Nov 2015
-    bool m_bump;
-    void CheckBump();                              //iterate thru objects in current bubble to check for collisions
-    void Bump(SystemEntity* who);                  //math methods for determining direction and speed of bumped ships
-    void Bounce(GVector direction, float speed);   //packet sending for ships after bounce
-
     // new orbit variables
     double m_expTerm;
     double m_posScale;
-    GPoint m_orbitNormal;               // orbital plane normal
-    GVector m_orbitBasisZ;              // 0-deg vector
-    GVector m_orbitBasisX;              // 90-deg vector
 
     // these will eventually be commands....
+    void CreateShipMarker();
     void RemoveAllMarkers();
     void RemoveShipMarkers();
-    void RemoveOrbitMarkers();
-    void AddOrbitMarkers(float distance, GVector &center);
     void MarkPoint(const GPoint& position, std::string& name, std::string& desc, bool orbit=false);
     std::map<uint32, SystemEntity*> m_shipMarkers;           // ship position marker cans.  we do own these.
-    std::map<uint32, SystemEntity*> m_orbitMarkers;          // orbit ordinate marker cans.  we do own these.
 
     void SetAgilityInertia();
-    void CalculateMaxOrbitSpeedFraction();
+    void CalculateCrucibleOrbitTargetPoint();
+    GVector ResolveOrbitThrustForce(const GVector& target);
 
     // Internal Warp Methods
     float m_accelTime;

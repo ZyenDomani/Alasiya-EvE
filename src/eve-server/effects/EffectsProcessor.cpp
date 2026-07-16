@@ -327,7 +327,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                         itemRefVec.push_back(mod);
             } break;
             case Source::Skill: {    // source of this effect is skill, implant, or booster
-                if (cur.second.typeID == EVEItemTypes::Invalid) {    //invalid
+                if (cur.second.typeID == EVEDB::invTypes::Invalid) {    //invalid
                     _log(EFFECTS__WARNING, "FxProc::ApplyEffects(): Source::Skill - typeID is invalid");
                     continue;  // make error here
                 }

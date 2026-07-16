@@ -192,7 +192,7 @@ namespace Notify {
             WalletChange = 126,
             ItemUpdateStation = 127,
             ItemUpdateSystem = 128,
-            FactoryJob = 129            // factory jobs now have config option to add event to calendar.  this updates corp members 
+            FactoryJob = 129            // factory jobs now have config option to add event to calendar.  this updates corp members
         };
     }
 }

@@ -264,7 +264,7 @@ bool Character::_Load() {
     m_cloneRef = sItemFactory.GetItemRefFromID(m_db.GetCloneID(m_itemID));
     if (m_cloneRef.get() == nullptr) {
         sLog.Warning("Character::_Load","m_cloneRef == NULL for char %u", m_itemID);
-        ItemData iData(EVEItemTypes::CloneGradeAlpha, m_itemID, m_corpData.baseID, flagClone, 1);
+        ItemData iData(EVEDB::invTypes::CloneGradeAlpha, m_itemID, m_corpData.baseID, flagClone, 1);
             iData.customInfo="Active: ";
             iData.customInfo += m_charData.name;
             iData.customInfo += "(";
@@ -303,7 +303,7 @@ CharacterRef Character::Spawn(CharacterData& charData, CorpData& corpData) {
     }
 
     // create alpha-level clone for this character
-    ItemData iData(EVEItemTypes::CloneGradeAlpha, characterID, charData.locationID, flagClone, 1);
+    ItemData iData(EVEDB::invTypes::CloneGradeAlpha, characterID, charData.locationID, flagClone, 1);
         iData.customInfo="Active: ";
         iData.customInfo += charData.name;
         iData.customInfo += "(";
@@ -554,7 +554,7 @@ void Character::ResetChar() {
 
     }
 
-    UpdateClone(EVEItemTypes::CloneGradeAlpha);
+    UpdateClone(EVEDB::invTypes::CloneGradeAlpha);
 
     // what else needs to be reset here?
 
@@ -664,8 +664,8 @@ PyRep* Character::GetRAMSkills()
 
     //TODO:  i think we're missing skills here.
     PyDict* skillLevels = new PyDict();
-        skillLevels->SetItem(new PyInt(EVEItemTypes::ScientificNetworking), new PyInt(GetSkillLevel(EvESkill::ScientificNetworking)));
-        skillLevels->SetItem(new PyInt(EVEItemTypes::SupplyChainManagement), new PyInt(GetSkillLevel(EvESkill::SupplyChainManagement)));
+        skillLevels->SetItem(new PyInt(EVEDB::invTypes::ScientificNetworking), new PyInt(GetSkillLevel(EvESkill::ScientificNetworking)));
+        skillLevels->SetItem(new PyInt(EVEDB::invTypes::SupplyChainManagement), new PyInt(GetSkillLevel(EvESkill::SupplyChainManagement)));
 
     uint8 mLab = 1 + GetSkillLevel(EvESkill::LaboratoryOperation) + GetSkillLevel(EvESkill::AdvancedLaboratoryOperation);
     uint8 mSlot = 1 + GetSkillLevel(EvESkill::MassProduction) + GetSkillLevel(EvESkill::AdvancedMassProduction);

@@ -48,7 +48,7 @@
  * InventoryItem
  */
 InventoryItem::InventoryItem(uint32 _itemID, const ItemType& _type, const ItemData& _data)
-: RefObject(1),
+: RefObject(0),
 pAttributeMgr(new AttributeMgr(*this)),
 pInventory(nullptr),      // this is created/destroyed in derived classes as needed.
 m_data(_data),

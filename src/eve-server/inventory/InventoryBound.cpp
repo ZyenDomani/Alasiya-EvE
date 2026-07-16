@@ -525,7 +525,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                 } break;
                 case EVEDB::invGroups::Station_Services: {
                     // station offices, office and factory folders.
-                    if (m_self->typeID() == EVEItemTypes::Office) //office.  use corp donating checks
+                    if (m_self->typeID() == EVEDB::invTypes::Office) //office.  use corp donating checks
                         donating = true;
                 } break;
             }
@@ -574,7 +574,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
             continue;
         }
 
-        if (iRef->typeID() == EVEItemTypes::Bookmark) {
+        if (iRef->typeID() == EVEDB::invTypes::Bookmark) {
             // update this to keep owner/creator and other data
             iRef->Donate(m_ownerID, m_itemID, toFlag);
             continue;
@@ -886,7 +886,7 @@ PyResult InventoryBound::Handle_CreateBookmarkVouchers(PyCallArgs &call) {
         PyList::const_iterator itr = args.bmIDs->begin();
         for (; itr != args.bmIDs->end(); ++itr) {
             //ItemData ( typeID, ownerID, locationID, flag, quantity, customInfo, contraband)
-            ItemData iData(EVEItemTypes::Bookmark, call.client->GetCharacterID(), locTemp, flagAutoFit, 1, itoa(PyRep::IntegerValueU32(*itr)));
+            ItemData iData(EVEDB::invTypes::Bookmark, call.client->GetCharacterID(), locTemp, flagAutoFit, 1, itoa(PyRep::IntegerValueU32(*itr)));
             InventoryItemRef iRef = sItemFactory.SpawnItem( iData );
             if (iRef.get() == nullptr) {
                 codelog(ITEM__ERROR, "%s: Failed to spawn bookmark voucher for bmID %u", call.client->GetName(), PyRep::IntegerValueU32(*itr));

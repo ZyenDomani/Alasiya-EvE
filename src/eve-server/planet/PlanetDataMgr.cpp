@@ -25,6 +25,7 @@
 #include <iomanip>
 
 #include "../eve-server.h"
+#include "math/Trig.h"
 
 #include "EVEServerConfig.h"
 #include "inventory/ItemFactory.h"
@@ -419,9 +420,9 @@ uint32 PIDataMgr::GetProgramOutput(InventoryItemRef iRef, int64 cycleTime, int64
     uint32 qtyPerCycle = iRef->GetDefaultAttribute(AttrPinExtractionQuantity).get_uint32();
     float decayValue = qtyPerCycle / (1 + t * 1/*iRef->GetAttribute(AttrECUDecayFactor).get_float()*/);     // 1000
     float phaseShift = std::pow(qtyPerCycle, 0.7);   // 125.89254
-    float sinA = std::cos(phaseShift + t * 0.08333f);      // 0.96985
-    float sinB = std::cos(phaseShift / 2 + t * 0.2f);  // 0.98784
-    float sinC = std::cos(t * 0.5f);                   // 0.99457
+    float sinA = EvE::Trig::FastCos(phaseShift + t * 0.08333f);      // 0.96985
+    float sinB = EvE::Trig::FastCos(phaseShift / 2 + t * 0.2f);  // 0.98784
+    float sinC = EvE::Trig::FastCos(t * 0.5f);                   // 0.99457
     float sinStuff = (sinA + sinB + sinC) / 3;  // 0.98408
     sinStuff = EvE::max(sinStuff);
     float barHeight = decayValue * (1 + 1/*iRef->GetAttribute(AttrECUNoiseFactor).get_float()*/ * sinStuff);     //0.8
@@ -516,9 +517,9 @@ float PIDataMgr::ExtractAndDepletePlanetResource(std::string& io_dbBuffer, const
     std::vector<float> floatArray = DecodeHexBufferToFloats(io_dbBuffer);
     float totalExtractedYield(0.0f);
 
-    float pinX = std::cos(headPin.latitude) * std::cos(headPin.longitude);
-    float pinY = std::cos(headPin.latitude) * std::sin(headPin.longitude);
-    float pinZ = std::sin(headPin.latitude);
+    float pinX = EvE::Trig::FastCos(headPin.latitude) * EvE::Trig::FastCos(headPin.longitude);
+    float pinY = EvE::Trig::FastCos(headPin.latitude) * EvE::Trig::FastSin(headPin.longitude);
+    float pinZ = EvE::Trig::FastSin(headPin.latitude);
 
     // 1. Loop through all 25 structural nodes to compile total local density
     for (int nodeIdx = 0; nodeIdx < 25; ++nodeIdx) {

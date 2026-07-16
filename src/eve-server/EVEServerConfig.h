@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    12.9
+    Version:    12.10
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -119,6 +119,7 @@ public:
         float turretRoF;
         // Decay timer for wreck deletion (garbage collection)
         float NPCDecay;
+        uint8 DestinyTrollTime;
         uint8 DropItem;
         float DropMoney;
         uint8 DropSalvage;
@@ -380,6 +381,7 @@ public:
         bool DeleteTrackingCans;
         bool PositionHack;
         bool UseOrbit;
+        bool MarkOrbitNormals;
         uint16 ProfileTraceTime;
         uint32 AnomalyFaction;
         float ShipTrackingTime;

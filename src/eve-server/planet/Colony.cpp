@@ -944,7 +944,7 @@ PyRep* Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items
 	 * 5d timer
 	 */
     location.MakeRandomPointOnSphere(m_pSE->GetRadius() + 2000000);   //2000km orbit for launch can
-    ItemData canData(EVEItemTypes::PlanetaryLaunchContainer,
+    ItemData canData(EVEDB::invTypes::PlanetaryLaunchContainer,
                     m_client->GetCharacterID(),  // owner is Character
                     pSysMgr->GetID(),
                     flagAutoFit,
@@ -955,7 +955,7 @@ PyRep* Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items
     if (contRef.get() == nullptr) {
         contRef->Delete();
         if (m_client->CanThrow())
-            throw CustomError("Unable to spawn item of type %u.", EVEItemTypes::PlanetaryLaunchContainer);
+            throw CustomError("Unable to spawn item of type %u.", EVEDB::invTypes::PlanetaryLaunchContainer);
     }
 
     FactionData data = FactionData();

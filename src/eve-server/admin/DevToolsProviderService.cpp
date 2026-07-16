@@ -90,7 +90,7 @@ PyResult DevToolsProviderService::Handle_ExceptionFluentExample (PyCallArgs& cal
         case 7:
             throw UserError("SalvagingTooComplex").AddAmountU("type", 150000);
         case 8:
-            throw UserError("SalvagingTooComplex").AddTypeDescription("type", EVEItemTypes::Tritanium);
+            throw UserError("SalvagingTooComplex").AddTypeDescription("type", EVEDB::invTypes::Tritanium);
         case 9:
             throw UserError("SalvagingTooComplex").AddGroupID("type", EVEDB::invGroups::Clone);
         case 10:

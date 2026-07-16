@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    12.9
+    Version:    12.10
 */
 
 
@@ -98,6 +98,7 @@ EVEServerConfig::EVEServerConfig()
     rates.medalCreateCost = 5000000;
     rates.WorldDecay = 120 /*m*/;
     rates.NPCDecay = 90 /*m*/;
+    rates.DestinyTrollTime = 30; /*s*/
     rates.DropItem = 1;//N
     rates.DropMoney = 1.0;//N
     rates.DropSalvage = 1;//P
@@ -267,6 +268,7 @@ EVEServerConfig::EVEServerConfig()
     debug.UseProfiling = false;
     debug.PositionHack = false;
     debug.UseShipTracking = false;
+    debug.MarkOrbitNormals = false;
     debug.DeleteTrackingCans = true;
     debug.SpawnTest = false;
     debug.AnomalyFaction = 0;
@@ -477,6 +479,7 @@ bool EVEServerConfig::ProcessRates(const TiXmlElement* ele) {
     AddValueParser("medalCreateCost",      rates.medalCreateCost);
     AddValueParser("WorldDecay",           rates.WorldDecay);
     AddValueParser("NPCDecay",             rates.NPCDecay);
+    AddValueParser("DestinyTrollTime",     rates.DestinyTrollTime);
     AddValueParser("DropItem",             rates.DropItem);
     AddValueParser("DropMoney",            rates.DropMoney);
     AddValueParser("DropSalvage",          rates.DropSalvage);
@@ -514,6 +517,7 @@ bool EVEServerConfig::ProcessRates(const TiXmlElement* ele) {
     RemoveParser("medalCreateCost");
     RemoveParser("WorldDecay");
     RemoveParser("NPCDecay");
+    RemoveParser("DestinyTrollTime");
     RemoveParser("DropItem");
     RemoveParser("DropMoney");
     RemoveParser("DropSalvage");
@@ -906,6 +910,7 @@ bool EVEServerConfig::ProcessDebug(const TiXmlElement* ele) {
     AddValueParser("ProfileTraceTime",     debug.ProfileTraceTime);
     AddValueParser("ShipTrackingTime",     debug.ShipTrackingTime);
     AddValueParser("UseOrbit",             debug.UseOrbit);
+    AddValueParser("MarkOrbitNormals",     debug.MarkOrbitNormals);
 
     const bool result = ParseElementChildren(ele);
 
@@ -922,6 +927,7 @@ bool EVEServerConfig::ProcessDebug(const TiXmlElement* ele) {
     RemoveParser("ProfileTraceTime");
     RemoveParser("ShipTrackingTime");
     RemoveParser("UseOrbit");
+    RemoveParser("MarkOrbitNormals");
 
     return result;
 }

@@ -78,8 +78,8 @@ StructureItemRef StructureItem::Spawn(ItemData &data)
         return StructureItemRef(nullptr);
     StructureItemRef sRef(StructureItem::Load(structureID));
     // check for customs offices and set global flag
-    if ((data.typeID == EVEItemTypes::InterbusCustomsOffice)
-    or (data.typeID == EVEItemTypes::PlanetaryCustomsOffice))
+    if ((data.typeID == EVEDB::invTypes::InterbusCustomsOffice)
+    or (data.typeID == EVEDB::invTypes::PlanetaryCustomsOffice))
     {
         sRef->SetAttribute(AttrIsGlobal, EvilOne);
     }
@@ -646,8 +646,8 @@ void StructureSE::SetAnchor(Client *pClient, GPoint &pos)
         float rad(EvE::Trig::Deg2Rad(90));
 
         pos = m_moonSE->GetPosition();
-        pos.x += ((radius + dist) * std::sin(rad));
-        pos.z += ((radius + dist) * std::cos(rad));
+        pos.x += ((radius + dist) * EvE::Trig::FastSin(rad));
+        pos.z += ((radius + dist) * EvE::Trig::FastCos(rad));
 
         // set new position in middle of grid
         int64 bubbleDia(BUBBLE_RADIUS_METERS * 2);

@@ -23,6 +23,7 @@
 */
 
 #include "../eve-server.h"
+#include "math/Trig.h"
 
 #include "PyBoundObject.h"
 #include "PyServiceCD.h"
@@ -31,7 +32,7 @@
 #include "npc/Drone.h"
 #include "planet/CustomsOffice.h"
 #include "planet/Moon.h"
-#include <planet/Planet.h>
+#include "planet/Planet.h"
 #include "pos/Structure.h"
 #include "ship/ShipService.h"
 #include "system/Container.h"
@@ -182,7 +183,7 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
         throw CustomError("Something bad happened as you prepared to board the ship.");
     }
 
-    if (pShipSE->GetTypeID() == EVEItemTypes::Capsule) {
+    if (pShipSE->GetTypeID() == EVEDB::invTypes::Capsule) {
         codelog(ITEM__ERROR, "Empty Pod %u in space.  SystemID %u.", args.newShipID, pSysMgr->GetID());
         throw CustomError("You already have a pod.  These cannot be boarded manally.");
     }
@@ -959,9 +960,9 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                 s = EvE::max(0.5f, EvE::min(s, 10.5f));
                 double t = std::asin((warpInPoint.x / std::fabs(warpInPoint.x)) * (warpInPoint.z / std::sqrt(std::pow(warpInPoint.x, 2) + std::pow(warpInPoint.z, 2)))) + j;
                 uint32 d = radius * (s + 1) + 1000000;
-                warpInPoint.x += (d * std::sin(t));
-                warpInPoint.y += (0.5f * radius * std::sin(j));
-                warpInPoint.z -= (d * std::cos(t));
+                warpInPoint.x += (d * EvE::Trig::FastSin(t));
+                warpInPoint.y += (0.5f * radius * EvE::Trig::FastSin(j));
+                warpInPoint.z -= (d * EvE::Trig::FastCos(t));
 
                 // set new position in middle of grid
                 int64 bubbleDia(BUBBLE_RADIUS_METERS * 2);

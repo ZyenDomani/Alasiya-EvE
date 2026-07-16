@@ -4,7 +4,8 @@
     ------------------------------------------------------------------------------------
     This file is part of EVEmu: EVE Online Server Emulator
     Copyright 2006 - 2016 The EVEmu Team
-    For the latest information visit http://evemu.org
+    Copyright 2016 - 2026 Alasiya-EvE by Allan
+    For the latest implementation status visit http://eve.alasiya.net/?p=op_status
     ------------------------------------------------------------------------------------
     This program is free software; you can redistribute it and/or modify it under
     the terms of the GNU Lesser General Public License as published by the Free Software
@@ -21,6 +22,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        caytchen, groove
+    Update:     Allan & Gemini
 */
 
 // @TODO(groove) check characterIDs while doing moves to prevent
@@ -98,7 +100,7 @@ int MailDB::SendMail(int sender, std::vector<int>& toCharacterIDs, int toListID,
                                " INSERT INTO mailMessage "
                                " (senderID, toCharacterIDs, toListID, toCorpOrAllianceID, "
                                " title, body, sentDate) "
-                               " VALUES (%u, '%s', %d, %d, '%s', '%s', %lli)" ,
+                               " VALUES (%u, '%s', %i, %i, '%s', '%s', %lli)" ,
                                sender, toStr.c_str(), toListID, toCorpOrAllianceID, title.c_str(),
                                bodyEscaped.c_str(), Win32TimeNow()))
     {
@@ -769,27 +771,108 @@ void MailDB::SetMailingListDefaultAccess(int32 listID, int32 defaultAccess, int3
     }
 }
 
-void MailDB::DeleteMailingList(uint32 characterID, int32 listID)
-{
-    // nothing here yet.  wip
+
+
+/************  NOTIFICATION DB METHODS  ***********************/
+
+PyObject* MailDB::GetNotificationsByGroup(int32 characterID, int32 groupID) {
+    DBQueryResult res;
+    std::string typeFilter = GetNotificationTypesForGroup(groupID);
+
+    std::string queryStr;
+    if (groupID == Notify::Groups::Old) {
+        // "Old" tab typically shows all historically read/processed items across all type classifications
+        queryStr = "SELECT notificationID, typeID, senderID, receiverID, processed, created, data, deleted "
+        "FROM eveNotifications WHERE receiverID = %i AND processed = 1 AND deleted = 0";
+        if (!sDatabase.RunQuery(res, queryStr.c_str(), characterID)) return nullptr;
+    } else {
+        queryStr = "SELECT notificationID, typeID, senderID, receiverID, processed, created, data, deleted "
+        "FROM eveNotifications WHERE receiverID = %i AND typeID IN (%s) AND deleted = 0";
+        if (!sDatabase.RunQuery(res, queryStr.c_str(), characterID, typeFilter.c_str())) return nullptr;
+    }
+
+    return DBResultToRowset(res);
 }
-void MailDB::JoinMailingList(uint32 characterID, std::string name)
-{
-    // nothing here yet.  wip
+
+PyObject* MailDB::GetUnprocessedNotifications(int32 characterID) {
+    DBQueryResult res;
+    // Returns rows that fuel the client's unread badges counter engine
+    if (!sDatabase.RunQuery(res,
+        "SELECT notificationID, typeID, senderID, receiverID, processed, created, data, deleted "
+        "FROM eveNotifications WHERE receiverID = %i AND processed = 0 AND deleted = 0", characterID))
+    {
+        return nullptr;
+    }
+
+    return DBResultToRowset(res);
 }
-void MailDB::LeaveMailingList(uint32 characterID, int32 listID)
-{
-    // nothing here yet.  wip
+
+uint16 MailDB::GetUnprocessedNotificationCount(int32 characterID) {
+    DBQueryResult res;
+    // Returns rows that fuel the client's unread badges counter engine
+    if (!sDatabase.RunQuery(res,
+        "SELECT COUNT(notificationID) "
+        "FROM eveNotifications WHERE receiverID = %i AND processed = 0 AND deleted = 0", characterID))
+    {
+        return 0;
+    }
+
+    DBResultRow row;
+    if (!res.GetRow(row))
+        return 0;
+
+    return row.GetUInt16(0);
+
 }
-void MailDB::MailingListClearEntityAccess(int32 entity, int32 listID)
-{
-    // nothing here yet.  wip
+
+
+// High-Performance Bulk State Updates
+bool MailDB::UpdateNotificationProcessedState(int32 characterID, const std::vector<int32>& ids, int32 state) {
+    DBQueryResult res;
+    std::string joinedIDs = BuildInClause(ids);
+    return sDatabase.RunQuery(res, "UPDATE eveNotifications SET processed = %i WHERE receiverID = %i AND notificationID IN (%s)", state, characterID, joinedIDs.c_str());
 }
-void MailDB::MailingListSetEntityAccess(int32 entity, int32 access, int32 listID)
-{
-    // nothing here yet.  wip
+
+bool MailDB::UpdateGroupProcessedState(int32 characterID, int32 groupID, int32 state) {
+    DBQueryResult res;
+    std::string typeFilter = GetNotificationTypesForGroup(groupID);
+    return sDatabase.RunQuery(res, "UPDATE eveNotifications SET processed = %i WHERE receiverID = %i AND typeID IN (%s)", state, characterID, typeFilter.c_str());
 }
-void MailDB::MoveFromTrash(int32 messageID)
-{
-    // nothing here yet.  wip
+
+bool MailDB::UpdateAllProcessedState(int32 characterID, int32 state) {
+    DBQueryResult res;
+    return sDatabase.RunQuery(res, "UPDATE eveNotifications SET processed = %i WHERE receiverID = %i", state, characterID);
+}
+
+bool MailDB::UpdateNotificationDeletedState(int32 characterID, const std::vector<int32>& ids, int32 state) {
+    DBQueryResult res;
+    std::string joinedIDs = BuildInClause(ids);
+    return sDatabase.RunQuery(res, "UPDATE eveNotifications SET deleted = %i WHERE receiverID = %i AND notificationID IN (%s)", state, characterID, joinedIDs.c_str());
+}
+
+bool MailDB::UpdateGroupDeletedState(int32 characterID, int32 groupID, int32 state) {
+    DBQueryResult res;
+    std::string typeFilter = GetNotificationTypesForGroup(groupID);
+    return sDatabase.RunQuery(res, "UPDATE eveNotifications SET deleted = %i WHERE receiverID = %i AND typeID IN (%s)", state, characterID, typeFilter.c_str());
+}
+
+bool MailDB::UpdateAllDeletedState(int32 characterID, int32 state) {
+    DBQueryResult res;
+    return sDatabase.RunQuery(res, "UPDATE eveNotifications SET deleted = %i WHERE receiverID = %i", state, characterID);
+}
+
+// Common Database Helper - Maps a GroupID tab to its associated notification type IDs
+std::string MailDB::GetNotificationTypesForGroup(int32 groupID) {
+    switch (groupID) {
+        case Notify::Groups::Agents:     return "1, 2"; // Add any agent/mission type IDs here
+        case Notify::Groups::Bills:      return "4, 31, 32, 33, 34, 35, 36, 37"; // Bills / maintenance
+        case Notify::Groups::Corp:       return "2, 3, 16, 17, 18, 21, 22, 23, 24, 25, 26, 73, 74, 95, 96, 97, 125, 126, 129"; // Corp admin & your custom Alasiya role notifications
+        case Notify::Groups::Misc:       return "1"; // Base/LSC/Misc alerts
+        case Notify::Groups::Sov:        return "38, 39, 40, 41, 42, 43, 44, 45, 79, 81, 82"; // Sovereignty / Null-Sec politics
+        case Notify::Groups::Structures: return "20, 46, 47, 48, 75, 76, 77, 78, 93, 94"; // POS / Outposts / Station states
+        case Notify::Groups::War:        return "27, 28, 29, 30, 65, 66, 67, 68, 69, 70, 71, 72"; // Wars / Legal high-sec combat
+        case Notify::Groups::Contacts:   return "91, 92"; // Contact add / edit adjustments
+        case Notify::Groups::Old:        return ""; // Handled separately as a processed state filter
+        default:                         return "0";
+    }
 }

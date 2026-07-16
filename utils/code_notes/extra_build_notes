@@ -8,6 +8,11 @@ cd to `/srv/web/doc/Alasiya-EvE/Doxyfile`
 call `doxywizard Doxyfile`
 
 
+
+# Forces optimization levels only on high-frequency state calculation files
+set_source_files_properties(DestinyStateOrbit.cpp PROPERTIES COMPILE_FLAGS "-O2 -ffast-math")
+
+
 valgrind -- (full logging)
   valgrind -v --track-fds=yes --leak-check=full --show-leak-kinds=all --track-origins=yes --trace-children=yes --log-file="../logs/valgrind.log" ./eve-server
 

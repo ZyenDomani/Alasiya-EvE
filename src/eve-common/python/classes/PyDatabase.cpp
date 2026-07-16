@@ -208,7 +208,7 @@ CFilterRowSet::CFilterRowSet(DBRowDescriptor* rowDesc)
 }
 
 CFilterRowSet::~CFilterRowSet() {
-    sLog.Error("CFilterRowSet", "d'tor called.");
+    //sLog.Error("CFilterRowSet", "d'tor called.");
 }
 
 CRowSet* CFilterRowSet::NewRowset(PyRep* key) {

@@ -149,6 +149,10 @@ void SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
     //    ResetBubbleRatSpawn();
 }
 
+void SystemBubble::ProcessCollisions() {
+
+}
+
 void SystemBubble::Add(SystemEntity* pSE) {
     //if they are already in this bubble, do not continue.
     if (m_entities.find(pSE->GetID()) != m_entities.end()) {
@@ -632,6 +636,7 @@ void SystemBubble::SendAddBalls(SystemEntity* to_who) {
     }
 
     addballs.state = new PyBuffer(&destinyBuffer);
+    //SafeDelete(destinyBuffer);
 
     _log(DESTINY__MESSAGE, "SysBubble::SendAddBalls() to %s", pClient->GetName());
     if (is_log_enabled(DESTINY__BALL_DUMP))
@@ -721,9 +726,10 @@ void SystemBubble::AddBallExclusive(SystemEntity* pSE) {
     //encode destiny binary
     pSE->EncodeDestiny(*destinyBuffer);
     addballs.state = new PyBuffer(&destinyBuffer);
-	//encode damage state
+    //SafeDelete(destinyBuffer);
+    //encode damage state
     addballs.damageDict[ pSE->GetID() ] = pSE->MakeDamageState();
-	//encode SlimItem
+    //encode SlimItem
     addballs.slims = new PyList();
     addballs.slims->AddItem(new PyObject("foo.SlimItem", pSE->MakeSlimItem()));
 

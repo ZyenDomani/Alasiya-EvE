@@ -93,3 +93,36 @@ private:
 };
 
 #endif
+
+/*
+  Calculate how much raw damage from the package gets through the shield           *
+Damage DamageToShield = damage.MultiplyDup(
+    m_self->GetAttribute(AttrShieldKineticDamageResonance).get_float(),
+    m_self->GetAttribute(AttrShieldThermalDamageResonance).get_float(),
+    m_self->GetAttribute(AttrShieldEmDamageResonance).get_float(),
+    m_self->GetAttribute(AttrShieldExplosiveDamageResonance).get_float()
+    );
+
+    float shield_damage = DamageToShield.GetTotal();
+    float available_shield = m_self->GetAttribute(AttrShieldCharge).get_float();
+
+    if (shield_damage <= available_shield) {
+        // Shield tanks everything normally
+        total_damage += shield_damage;
+        m_self->SetAttribute(AttrShieldCharge, available_shield - shield_damage);
+    } else {
+        // Shields collapse!
+        // Calculate the percentage of the incoming resisted package that was soaked
+        float absorb_ratio = available_shield / shield_damage;
+        total_damage += available_shield;
+        m_self->SetAttribute(AttrShieldCharge, 0.0f);
+        // Turn it into a direct remainder multiplier
+        float remainder_factor = 1.0f - absorb_ratio;
+        // Fast, direct floating-point scaling
+        damage.kinetic   *= remainder_factor;
+        damage.thermal   *= remainder_factor;
+        damage.em        *= remainder_factor;
+        damage.explosive *= remainder_factor;
+    }
+    // Now 'damage' contains the exact raw profile remainder to pass directly to armor!
+*/

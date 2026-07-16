@@ -143,12 +143,9 @@ public:
 
     GaExpInl GaVec3 crossProduct(const GaVec3 &oth) const
     {
-        return GaVec3
-               (
-                   (y * oth.z) - (oth.y * z),
-                   (z * oth.x) - (oth.z * x),
-                   (x * oth.y) - (oth.x * y)
-               );
+        // Swapping the internal terms converts the right-handed math rule
+        // into a native Left-Handed Cartesian vector projection
+        return GaVec3((oth.y * z) - (y * oth.z), (oth.z * x) - (z * oth.x), (oth.x * y) - (x * oth.y));
     }
 
     //the cosine of the angle between the two vectors.
@@ -165,7 +162,10 @@ public:
     }
 
     GaExpInl GaFloat distance(const GaVec3& to) const {
-        return Math::squareRoot(pow((to.x - x), 2) + pow((to.y - y), 2) + pow((to.z - z), 2));
+        GaFloat _x = (to.x - x);
+        GaFloat _y = (to.y - y);
+        GaFloat _z = (to.z - z);
+        return Math::squareRoot((_x * _x) + (_y * _y) + (_z * _z));
     }
 
     // transform position to unit vector

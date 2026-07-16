@@ -2097,7 +2097,7 @@ void NPCAIMgr::LaunchMissile(uint16 typeID, SystemEntity* pTargetSE) {
     pMissile->DestinyMgr()->MakeMissile(pMissile);
 
     // tell target a missile has been launched at them.. (defender missile trigger for ship, tower, pos, npc, others?)
-    if (typeID != EVEItemTypes::DefenderI)  // but only if it's NOT a defender missile  (their target is another missile)
+    if (typeID != EVEDB::invTypes::DefenderI)  // but only if it's NOT a defender missile  (their target is another missile)
         pTargetSE->MissileLaunched(pMissile);
 }
 
@@ -2107,7 +2107,7 @@ void NPCAIMgr::MissileLaunched(Missile* pMissile) {
         chance += sConfig.npc.DefenderMissileChance;
     // check chance to shoot defender missile at incoming missile (working, ??/??/??)
     if (MakeRandomFloat() < chance)
-        LaunchMissile(EVEItemTypes::DefenderI, pMissile); // defender missile
+        LaunchMissile(EVEDB::invTypes::DefenderI, pMissile); // defender missile
     // TODO:  set and test for this every x {timeframe}?   no attribute for it
 }
 

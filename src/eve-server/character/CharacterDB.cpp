@@ -29,6 +29,7 @@
 #include "EVEServerConfig.h"
 #include "character/Character.h"
 #include "character/CharacterDB.h"
+#include "mail/MailDB.h"
 
 
 uint32 CharacterDB::NewCharacter(const CharacterData& data, const CorpData& corpData) {
@@ -399,7 +400,7 @@ void CharacterDB::AddEmployment(uint32 charID, uint32 corpID, uint32 oldCorpID/*
 PyRep *CharacterDB::GetCharSelectInfo(uint32 characterID) {
     //  this shows char on select screen....fixed/updated  -allan 20Jan15
     std::string shipName = "My Ship";
-    uint32 shipTypeID = 606;  //arbitrary default.
+    uint16 shipTypeID = 606;  //arbitrary default.
 
     DBQueryResult res;
     if (!sDatabase.RunQuery(res, "SELECT itemName, typeID FROM entity WHERE itemID = (SELECT shipID FROM chrCharacters WHERE characterID = %u)", characterID)) {
@@ -412,14 +413,14 @@ PyRep *CharacterDB::GetCharSelectInfo(uint32 characterID) {
             return PyStatic.NewNone();
 
         sDatabase.DoEscapeString(shipName, row.GetText(0));
-        shipTypeID = row.GetUInt(1);
+        shipTypeID = row.GetUInt16(1);
     }
 
     /** @todo  not sure how to implement these yet... */
     // these show on char portrait at top left on sel screen
-    uint32 unreadMailCount = 0;
-    uint32 upcomingEventCount = 0;
-    uint32 unprocessedNotifications = 0;
+    uint16 unreadMailCount = 0;
+    uint16 upcomingEventCount = 0;
+    uint16 unprocessedNotifications = MailDB::GetUnprocessedNotificationCount(characterID);
 
     //res.Reset();
     if (!sDatabase.RunQuery(res,
@@ -769,7 +770,7 @@ void CharacterDB::GetCharacterDataMap(uint32 charID, std::map<std::string, int64
 
     uint32 stationID = characterDataMap["baseID"];
     if (!CharacterDB::GetCharHomeStation(charID, stationID)) {
-        ItemData iData(EVEItemTypes::CloneGradeAlpha, charID, stationID, flagClone, 1);
+        ItemData iData(EVEDB::invTypes::CloneGradeAlpha, charID, stationID, flagClone, 1);
             iData.customInfo="Active: ";
             iData.customInfo += row.GetText(17);
             iData.customInfo += "(";

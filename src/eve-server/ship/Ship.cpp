@@ -1887,7 +1887,7 @@ std::string ShipItem::GetShipDNA()
      * "587:8863;1:8863;1:8863;1:499;1:578;1:1798;1:6485;1:2046;1:8325;1:31788;1:31800;1:31788;1::"
      *  need to figure out how to group modules for correct condensed counts
      */
-    if (typeID() == EVEItemTypes::Capsule) {
+    if (typeID() == EVEDB::invTypes::Capsule) {
         std::stringstream dna;
         dna << typeID() << ":";
         _log(SHIP__MESSAGE, "ShipDNA has compiled DNA of \"%s\" for %s(%u) ", dna.str().c_str(), name(), itemID());
@@ -1965,7 +1965,7 @@ void ShipItem::VerifyHoldType(EVEItemFlags flag, InventoryItemRef iRef, Client* 
             if (!HasAttribute(AttrHasShipMaintenanceBay)) {
                 throw CustomError("Your %s has no ship maintenance bay.", name());
             }
-            if (typeID() == EVEItemTypes::Rorqual)
+            if (typeID() == EVEDB::invTypes::Rorqual)
                 if ((iRef->groupID() != EVEDB::invGroups::MiningBarge)
                 and (iRef->groupID() != EVEDB::invGroups::Exhumer)
                 and (iRef->groupID() != EVEDB::invGroups::Industrial)
@@ -2595,31 +2595,31 @@ void ShipSE::EncodeDestiny( Buffer& into) {
                 warp.targX = target.x;
                 warp.targY = target.y;
                 warp.targZ = target.z;
-                warp.speed = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
+                warp.warpFactor = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
                 // warp timing.  see ShipSE::EncodeDestiny() for notes/updates
                 if (m_destiny->IsWarping()) {
                     warp.effectStamp = m_destiny->GetStateStamp();   //timestamp when warp started
                     warp.distance = -1.0;
-                    warp.trackingFlags = 23000.0;
+                    warp.warpInVelocity = 23000.0;
                 } else {
                     warp.effectStamp = -1;
                     warp.distance = 0;
-                    warp.trackingFlags = 0.0;   //4802252820405690112
+                    warp.warpInVelocity = 0.0;   //4802252820405690112
                 }
             into.Append(warp);
         }  break;
         case Ball::Mode::FOLLOW: {
             FOLLOW_Struct follow;
+                follow.formationID = 0xFF;
                 follow.followID = m_destiny->GetTargetID();
                 follow.followRange = m_destiny->GetFollowDistance();
-                follow.formationID = 0xFF;
             into.Append(follow);
         }  break;
         case Ball::Mode::ORBIT: {
             ORBIT_Struct orbit;
+                orbit.formationID = 0xFF;
                 orbit.targetID = m_destiny->GetTargetID();
                 orbit.followRange = m_destiny->GetFollowDistance();
-                orbit.formationID = 0xFF;
             into.Append(orbit);
         }  break;
         case Ball::Mode::GOTO: {
@@ -2682,7 +2682,7 @@ PyDict* ShipSE::MakeSlimItem() {
         slim->SetItemString("warFactionID",     IsFactionID(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
         slim->SetItemString("bounty",               new PyFloat(m_self->GetPilot() ? m_self->GetPilot()->GetBounty() : 0));
         slim->SetItemString("securityStatus",       new PyFloat(m_self->GetPilot() ? m_self->GetPilot()->GetSecurityRating() : 0.0));
-    if (m_self->typeID() == EVEItemTypes::Capsule) {
+    if (m_self->typeID() == EVEDB::invTypes::Capsule) {
         slim->SetItemString("launcherID",           new PyInt(m_podShipID));
         return slim;
     } else {

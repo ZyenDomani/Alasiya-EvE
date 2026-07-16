@@ -200,7 +200,7 @@ PyRep *SovereigntyDataMgr::GetAllianceBeacons(uint32 allianceID) //Get all beaco
         PyTuple* tuple = new PyTuple(3);
         tuple->SetItem(0, new PyInt(sData.solarSystemID));
         tuple->SetItem(1, new PyInt(sData.beaconID));
-        tuple->SetItem(2, new PyInt(EVEItemTypes::CynosuralGeneratorArray));
+        tuple->SetItem(2, new PyInt(EVEDB::invTypes::CynosuralGeneratorArray));
         list->AddItem(tuple);
     }
     return list;

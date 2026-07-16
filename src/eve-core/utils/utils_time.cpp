@@ -101,7 +101,7 @@ int64 GetSteadyTime() {  // -allan
     using namespace std::chrono;
     static const auto bootTime = high_resolution_clock::now();
 
-    auto current = high_resolution_clock::now();     // return in nanoseconds
+    auto current = high_resolution_clock::now();
     return duration_cast<milliseconds>(current -  bootTime).count();
 }
 
@@ -110,7 +110,7 @@ double GetTimeMSeconds() {  // -allan
     using namespace std::chrono;
     static const auto bootTime = high_resolution_clock::now();
 
-    auto current = high_resolution_clock::now();     // return in nanoseconds
+    auto current = high_resolution_clock::now();
     int64 delta = duration_cast<microseconds>(current -  bootTime).count();
     return static_cast<double>(delta) / 1000.0;
 }
@@ -120,7 +120,7 @@ double GetTimeUSeconds() {  // -allan
     using namespace std::chrono;
     static const auto bootTime = high_resolution_clock::now();
 
-    auto current = high_resolution_clock::now();     // return in nanoseconds
+    auto current = high_resolution_clock::now();
     int64 delta = duration_cast<nanoseconds>(current -  bootTime).count();
     return static_cast<double>(delta) / 1000.0;
 }

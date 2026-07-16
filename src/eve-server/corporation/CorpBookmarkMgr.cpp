@@ -170,8 +170,14 @@ PyResult CorpBookmarkMgr::Handle_UpdateFolder(PyCallArgs& call)
         return PyStatic.NewFalse();
     }
 
-    /** @todo sanitize name */
-    if (!m_db.UpdateFolder(args.folderID, PyRep::StringContent(args.folderName)))
+    std::string name;
+    sDatabase.DoEscapeString(name, PyRep::StringContent(args.folderName));
+
+    // Sanitization Guard Clause: Enforce matching 60-character boundary
+    if (name.length() > 60)
+        name = name.substr(0, 60);
+    
+    if (!m_db.UpdateFolder(args.folderID, name))
         return PyStatic.NewFalse();
 
     return PyStatic.NewTrue();
@@ -181,8 +187,13 @@ PyResult CorpBookmarkMgr::Handle_CreateFolder(PyCallArgs& call)
 {
     //folder = bookmarkMgr.CreateFolder(folderName)
     call.Dump(BOOKMARK__CALL_DUMP);
-    /** @todo sanitize name */
-    std::string name = PyRep::StringContent(call.tuple->GetItem( 0 ));
+
+    std::string name;
+    sDatabase.DoEscapeString(name, PyRep::StringContent(call.tuple->GetItem(0)));
+
+    // Sanitization Guard Clause: Enforce matching 60-character boundary
+    if (name.length() > 60)
+        name = name.substr(0, 60);
 
     uint32 ownerID = call.client->GetCorporationID();
     Rsp_CreateFolder result;

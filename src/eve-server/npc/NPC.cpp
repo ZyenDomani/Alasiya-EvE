@@ -237,16 +237,16 @@ void NPC::EncodeDestiny(Buffer& into)
             warp.targX = target.x;
             warp.targY = target.y;
             warp.targZ = target.z;
-            warp.speed = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
+            warp.warpFactor = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
             // warp timing.  see Ship::EncodeDestiny() for notes/updates
             if (m_destiny->IsWarping()) {
                 warp.effectStamp = m_destiny->GetStateStamp();   //timestamp when warp started
                 warp.distance = -1.0;
-                warp.trackingFlags = 23000.0;
+                warp.warpInVelocity = 23000.0;
             } else {
                 warp.effectStamp = -1;
                 warp.distance = 0;
-                warp.trackingFlags = 0.0;   //4802252820405690112
+                warp.warpInVelocity = 0.0;   //4802252820405690112
             }
             into.Append( warp );
         }  break;
@@ -280,7 +280,7 @@ void NPC::EncodeDestiny(Buffer& into)
             form.formationID = m_squad->GetFormID();
             form.leaderID = m_squad->GetLeader()->GetID();
             form.spacing = m_squad->GetSpacing();
-            form.syncIndex = 1;
+            form.slotID = 1;
             into.Append(form);
         }  break;
         default: {

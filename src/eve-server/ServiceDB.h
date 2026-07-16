@@ -75,7 +75,7 @@ public:
     // get corp hangar names for `.cargo` command
     static void GetCorpHangarNames(uint32 corpID, std::map<uint8, std::string> &hangarNames);
 
-    static std::string BuildInClause( std::vector<int32>& ids );
+    static std::string BuildInClause( const std::vector< int32 >& ids );
 
 
 protected:

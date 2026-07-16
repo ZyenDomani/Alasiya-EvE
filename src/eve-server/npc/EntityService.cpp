@@ -587,7 +587,7 @@ void EntityBound::CheckMisc(SystemEntity* pTarget, PyList* droneList, PyDict* er
         // what if we're commanding drone to attack char pod?
         if (pTarget->HasPilot()) {
             // for assist, guard, and delegating command
-            if (pTarget->GetShipSE()->GetTypeID() == EVEItemTypes::Capsule) {
+            if (pTarget->GetShipSE()->GetTypeID() == EVEDB::invTypes::Capsule) {
                 if (m_attack and sConfig.drone.GuardPod)
                     continue;
                 PyDict* data = new PyDict();

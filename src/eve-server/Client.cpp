@@ -308,7 +308,7 @@ bool Client::SelectCharacter(int32 charID/*0*/) {
         // if we are in space, everything is set up at this point, so set ballpark
         //pShipSE->DestinyMgr()->SendSetState();
     } else {
-        if (m_ship->typeID() == EVEItemTypes::Capsule) {
+        if (m_ship->typeID() == EVEDB::invTypes::Capsule) {
             if (sConfig.server.NoobShipCheck) {
                 StationItemRef sRef = m_system->GetStationFromInventory(m_locationID);
                 if (sRef.get() == nullptr) {
@@ -890,7 +890,7 @@ void Client::DockToStation() {
     //Check if player is in pod and have no ships in hangar, in which case they get a rookie ship for free
     //  on live, SCC sends mail about the loss of the players ship, and offers a shiny, new, fully-fitted ship as replacement.  we dont....yet
     // this needs to be done before player is docked
-    if (m_ship->typeID() == EVEItemTypes::Capsule) {
+    if (m_ship->typeID() == EVEDB::invTypes::Capsule) {
         if (sConfig.server.NoobShipCheck) {
             StationItemRef sRef = m_system->GetStationFromInventory(m_dockStationID);
             if (sRef.get() == nullptr) {
@@ -1009,7 +1009,7 @@ void Client::BoardShip(ShipItemRef newShipRef)
 
     if (m_login) {
         _log(PLAYER__MESSAGE, "%s boarding active ship %u on login.", m_char->name(), newShipRef->itemID());
-    } else if (m_ship->typeID() == EVEItemTypes::Capsule) {
+    } else if (m_ship->typeID() == EVEDB::invTypes::Capsule) {
         m_ship->SetPosition(NULL_ORIGIN);
         m_ship->Move(m_system->GetID(), flagCapsule, true);
         m_ship->SetCustomInfo(nullptr);
@@ -1029,7 +1029,7 @@ void Client::Board(ShipSE* newShipSE)
 {
     CheckShipRef(newShipSE->GetShipItemRef());
 
-    if (m_ship->typeID() == EVEItemTypes::Capsule) {
+    if (m_ship->typeID() == EVEDB::invTypes::Capsule) {
         m_ship->SetPosition(NULL_ORIGIN);
         m_ship->Move(m_system->GetID(), flagCapsule, true);
         // cannot use DestroyShipSE() for this.  it removes current shipSE, with pilot, like pilot is leaving bubble.
@@ -1241,7 +1241,7 @@ void Client::PickAlternateShip() {
 
 void Client::CreateNewPod() {
     std::string pod_name = m_char->itemName() + "'s Capsule";
-    ItemData podItem(EVEItemTypes::Capsule, m_char->itemID(), locTemp, flagAutoFit, pod_name.c_str() );
+    ItemData podItem(EVEDB::invTypes::Capsule, m_char->itemID(), locTemp, flagAutoFit, pod_name.c_str() );
     m_pod = sItemFactory.SpawnShip( podItem );
     // make sure this is singleton
     m_pod->ChangeSingleton(true);

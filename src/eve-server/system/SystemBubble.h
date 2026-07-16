@@ -89,6 +89,9 @@ public:
     void SetGate(uint32 gateID);
     void ResetBubbleRatSpawn();
 
+    /*  for new collision system */
+    void ProcessCollisions();
+
     bool IsIce()                                        { return (m_type == Bubble::Type::Ice); }
     bool IsBelt()                                       { return (m_type == Bubble::Type::Belt); }
     bool IsGate()                                       { return (m_type == Bubble::Type::Gate); }
