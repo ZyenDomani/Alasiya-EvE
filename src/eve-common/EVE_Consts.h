@@ -7,6 +7,9 @@
 
 #include <array>
 
+#include "../eve-core/eve-compat.h"
+#include "../eve-core/math/Vector3d.h"
+
 // define default home page for IGB
 const std::string HomePageURL = "http://eve.alasiya.net/";
 
@@ -22,36 +25,33 @@ static const char asciiList[]   = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ~!@#$%^&*
 /* marshaled Python string "None" */
 static const uint8 marshaledNone[] = { 0x74, 0x04, 0x00, 0x00, 0x00, 0x4E, 0x6F, 0x6E, 0x65 };
 
-static const uint16 SHIP_PROCESS_TICK_MS = 5000;    // 5s
+static const Vector3d NULL_ORIGIN(0.0,0.0,0.0);  // common place for a zero-value vector
 
-static const GPoint NULL_ORIGIN(0.0f,0.0f,0.0f);  // common place for a zero-value gpoint
-static const GPoint GPOINT_IDENTITY(0.0f,0.0f,1.0f);  // common place for a zero-value gpoint
-static const GVector NULL_ORIGIN_V(0.0f,0.0f,0.0f);
-//static const GHeading NULL_ORIGIN_H(0.0,0.0,0.0);
-
-static const float TIC_DURATION_IN_SECONDS(1000);       // not used yet
-
-static const uint32 minWarpDistance(150000);    // client and live defined as 150km
-
-static const float onlineModInSpace(0.75);     // onlining modules while NOT docked or using fitting services will take 75% of capacitor capacity.
+constexpr double Destiny_k      = 1000000.0;
+constexpr double Destiny_k2     = 1000000000000.0;        //Destiny_k * Destiny_k;
+constexpr double Destiny_ook    = 0.000001;       // 1.0 / Destiny_k;
+constexpr double Destiny_ook2   = 0.000000000001; // 1.0 / ( Destiny_k * Destiny_k );
 
 //   based on client code...
-static const int64 ONE_LIGHTYEAR = 9460000000000000;  // in meters
-static const int64 ONE_AU_IN_METERS = 149597870700;     // 1 astronomical unit in meters, per EVElopedia: http://wiki.eveonline.com/en/wiki/Astronomical_Unit
-static const int64 STATION_HANGAR_MAX_CAPACITY = 9000000000000000;  //per client
-static const int64 NEXT_DUNGEON_ROOM_DIST = 50000000000; // 50M meters as generic distance between rooms
-static const int64 MAX_MARKET_PRICE = 9223372036854;  //max int64/1000000  (9223372036854775807/1000000)
-static const int32 INCAPACITATION_DISTANCE = 250000;    // drone to ship max distance.  after this, drone goes Offline and is considered 'lost'
+constexpr float TIC_DURATION_IN_SECONDS = 1000;       // not used yet
+constexpr uint32 MIN_WARP_DISTANCE = 150000;    // client and live defined as 150km
+constexpr uint16 SHIP_PROCESS_TICK_MS = 5000;    // 5s
+constexpr double ORBITAL_PRECESSION = 0.001;
+constexpr int64 ONE_LIGHTYEAR = 9460000000000000;  // in meters
+constexpr int64 ONE_AU_IN_METERS = 149597870700;     // 1 astronomical unit in meters, per EVElopedia: http://wiki.eveonline.com/en/wiki/Astronomical_Unit
+constexpr double TEN_AU_IN_METERS = 1495978707000.0;
+constexpr int64 STATION_HANGAR_MAX_CAPACITY = 9000000000000000;  //per client
+constexpr int64 NEXT_DUNGEON_ROOM_DIST = 50000000000; // 50M meters as generic distance between rooms
+constexpr int64 MAX_MARKET_PRICE = 9223372036854;  //max int64/1000000  (9223372036854775807/1000000)
+constexpr int32 INCAPACITATION_DISTANCE = 250000;    // drone to ship max distance.  after this, drone goes Offline and is considered 'lost'
+
+constexpr float MODULE_ONLINE_IN_SPACE = 0.75;     // onlining modules while NOT docked or using fitting services will take 75% of capacitor capacity.
 
 // Cosmic Managers constants here  *not used yet*
-static const uint32 ASTEROID_GROWTH_INTERVAL_MS = 3600000;  /* this is grow check in ms (1d) */
-
-// gravitational constant (used for orbit math)
-static const double Gc = 0.000000000066725985;     //per client (changed from original 6.673e-11)
-static const double SMALL_NUMBER = 0.000000000000001;
+constexpr uint32 ASTEROID_GROWTH_INTERVAL_MS = 3600000;  /* this is grow check in ms (1d) */
 
 // constants for destiny movement checks
-static const float ASF_CHECK = 0.0011f;
+constexpr float ASF_CHECK = 0.0011f;
 
 // verify that NO ONE tries to use "ccp" in their name
 // also check for mysql commands among other dumb shit

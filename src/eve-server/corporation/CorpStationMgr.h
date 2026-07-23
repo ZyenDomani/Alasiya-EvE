@@ -48,7 +48,7 @@ protected:
     PyCallable_DECL_CALL(GetImprovementStaticData);
 
     //overloaded in order to support bound objects:
-    virtual PyBoundObject *CreateBoundObject(Client *pClient, const PyRep *bind_args);
+    virtual PyBoundObject *CreateBoundObject(Client* pClient, const PyRep *bind_args);
 
 };
 

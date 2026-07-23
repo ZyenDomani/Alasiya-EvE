@@ -133,7 +133,7 @@ CorpStationMgr::~CorpStationMgr() {
 }
 
 
-PyBoundObject *CorpStationMgr::CreateBoundObject(Client *pClient, const PyRep *bind_args) {
+PyBoundObject *CorpStationMgr::CreateBoundObject(Client* pClient, const PyRep *bind_args) {
     if (!bind_args->IsInt()) {
         codelog(SERVICE__ERROR, "%s Service: invalid bind argument type %s", GetName(), bind_args->TypeString());
         return nullptr;
@@ -196,7 +196,7 @@ PyResult CorpStationMgrIMBound::Handle_RentOffice(PyCallArgs &call) {
         return nullptr;
     }
 
-    Client* pClient(call.client);
+    Client* pClient = call.client;
 
     // see if corp has office in station already.
     if (pStationItem->GetOfficeID(pClient->GetCorporationID()))
@@ -220,7 +220,7 @@ PyResult CorpStationMgrIMBound::Handle_RentOffice(PyCallArgs &call) {
         //odata.name = CorporationDB::GetCorpName(pClient->GetCorporationID());
         odata.ticker = pClient->GetChar()->corpTicker();
         odata.corporationID = pClient->GetCorporationID();
-        odata.expiryTime = Win32TimeNow() + EvE::Time::Month;
+        odata.expiryTime = GetFileTimeNow() + EvE::Time::Month;
         odata.lockDown = false;
         odata.rentalFee = arg.arg;
         odata.typeID = 27;  // office typeID
@@ -317,7 +317,7 @@ PyResult CorpStationMgrIMBound::Handle_GetPotentialHomeStations(PyCallArgs &call
     // this is for station options for xfering clone
     //returns stationID,typeID,serviceMask
 
-    Client* pClient(call.client);
+    Client* pClient = call.client;
     std::vector<uint32> stVec;
     stVec.push_back(m_stationID);   // current station.  is this right?
     // first char home station always an option

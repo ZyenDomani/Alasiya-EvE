@@ -338,10 +338,10 @@ PyResult TradeBound::Handle_Add(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
-    uint32 flag(0);
+    uint32 flag = 0;
     if (call.byname.find("flag") != call.byname.cend())
         flag = PyRep::IntegerValueU32(call.byname.find("flag")->second);
-    uint32 qty(0);
+    uint32 qty = 0;
     if (call.byname.find("qty") != call.byname.cend())
         qty = PyRep::IntegerValue(call.byname.find("qty")->second);
 
@@ -402,7 +402,7 @@ PyResult TradeBound::Handle_MultiAdd(PyCallArgs &call) {
         return Handle_Abort(call);
     }
 
-    uint32 flag(0);
+    uint32 flag = 0;
     if (call.byname.find("flag") != call.byname.cend())
         flag = PyRep::IntegerValueU32(call.byname.find("flag")->second);
 
@@ -652,7 +652,7 @@ PyResult TradeService::Handle_InitiateTrade(PyCallArgs &call) {
     }
 
     // wtf is this ???
-    uint32 warID(0);
+    uint32 warID = 0;
     if (call.byname.find("warID") != call.byname.cend())
         warID = PyRep::IntegerValue(call.byname.find("warID")->second);
 

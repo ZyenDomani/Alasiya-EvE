@@ -202,7 +202,7 @@ PyResult LSCService::Handle_CreateChannel(PyCallArgs& call)
     if (call.byname.find("memberless") != call.byname.end())
         memberless = (call.byname.find("memberless")->second->AsInt()->value() ? true : false);
 
-    Client* pClient(call.client);
+    Client* pClient = call.client;
     ChannelCreateReply reply;
 
     // create/get channel info
@@ -230,10 +230,10 @@ PyResult LSCService::Handle_CreateChannel(PyCallArgs& call)
     if (!channel) {
         if (joinExisting) {
             _log(LSC__ERROR, "%s: Channel not found - %s", pClient->GetName(), name.arg.c_str());
-            reply.ChannelInfo = new PyInt(LSC::Error::errNoSuchChannel);
+            reply.ChannelInfo = new PyInt(LSC::Error::NoSuchChannel);
         } else if (create)  {
             _log(LSC__ERROR, "%s: Channel not created - %s", pClient->GetName(), name.arg.c_str());
-            reply.ChannelInfo = new PyInt(LSC::Error::errUnspecified);
+            reply.ChannelInfo = new PyInt(LSC::Error::Unspecified);
         } else {
             // make error here for !join and !create  (should never hit)
         }
@@ -253,7 +253,7 @@ PyResult LSCService::Handle_CreateChannel(PyCallArgs& call)
             reply.ChannelChars = channel->EncodeChannelChars();
             reply.ChannelMods = channel->EncodeChannelMods();
         } else {
-            reply.ChannelInfo = new PyInt(LSC::Error::errUnspecified);
+            reply.ChannelInfo = new PyInt(LSC::Error::Unspecified);
         }
         if (!temporary)
             m_db->UpdateSubscription(channel->GetChannelID(), pClient);
@@ -263,7 +263,7 @@ PyResult LSCService::Handle_CreateChannel(PyCallArgs& call)
         return reply.Encode();
     } else {
         _log(LSC__ERROR, "%s: Already joined Channel %i \"%s\".", pClient->GetName(), channel->GetChannelID(), channel->GetDisplayName().c_str());
-        reply.ChannelInfo = new PyInt(LSC::Error::errUnspecified);
+        reply.ChannelInfo = new PyInt(LSC::Error::Unspecified);
         if (is_log_enabled(LSC__RSP_DUMP))
             reply.Dump(LSC__RSP_DUMP);
         return reply.Encode();
@@ -925,7 +925,7 @@ void LSCService::SystemUnload(uint32 systemID, uint32 constID, uint32 regionID)
 }
 
 LSCChannel* LSCService::CreateChannel(int32 channelID, uint32 ownerID, const char *name, std::string motd, const char *password, const char *compkey,
-                                      LSC::Type type/*LSC::Type::normal*/, uint32 cspa/*0*/, int32 groupMessageID/*0*/, int32 channelMessageID/*0*/, bool memberless/*false*/,
+                                      uint8 type/*LSC::Type::normal*/, uint32 cspa/*0*/, int32 groupMessageID/*0*/, int32 channelMessageID/*0*/, bool memberless/*false*/,
                                       bool maillist/*false*/, bool temporary/*false*/, bool languageRestriction/*false*/) {
     // test for invalid channelID (alliance not implemented yet)
     if (channelID == 0)
@@ -958,7 +958,7 @@ void LSCService::CreateSystemChannel(int32 channelID)
     if (m_channels.find(channelID) != m_channels.end())
         return;
 
-    LSC::Type type = LSC::Type::normal;
+    uint8 type = LSC::Type::normal;
     std::string name= "", motd = "";
     int32 messageID = -1, grpMsgID = 0;
     uint32 ownerID = channelID;
@@ -1214,12 +1214,12 @@ void LSCService::SendMail(uint32 sender, const std::vector<int32> &recipients, c
     std::set<uint32> successful_recipients;
 
     notify.subject = subject;
-    notify.sentTime = Win32TimeNow();
+    notify.sentTime = GetFileTimeNow();
     notify.senderID = sender;
 
     // there's attachmentID and messageID... does this means a single message can contain multiple attachments?
     // eg. text/plain and text/html? we should be watching for this at reading mails...
-    // created should be creation time. But Win32TimeNow returns int64, and is stored as bigint(20),
+    // created should be creation time. But GetFileTimeNow returns int64, and is stored as bigint(20),
     // so change in the db is needed
     std::vector<int32>::const_iterator cur, end;
     cur = recipients.begin();

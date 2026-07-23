@@ -26,7 +26,7 @@ There will be some response, like opening windows, but *should not* generate an 
 <font color=magenta>Server Version:</font>&nbsp;&nbsp;&nbsp;<font color=orange>0.89.43</font><BR>
 <font color=magenta>Latest Update:</font>&nbsp;&nbsp;&nbsp;<font color=green>7 July 2026</font><BR>
 <font color=magenta>Page Status:</font>&nbsp;&nbsp;&nbsp;<font color=yellow>WIP</font><BR>
-<font color=magenta>Incomplete Data:</font>&nbsp;&nbsp;&nbsp;<font color=brown>Anything not listed as (<font color=green>Current</font>) is pending review.</font><BR><BR>
+<font color=magenta>Incomplete Data:</font>&nbsp;&nbsp;&nbsp;<font color=brown>Anything not listed as (<font color=green>Current</font>) is pending review/update/rewrite.</font><BR><BR>
 <a href="https://scan.coverity.com/projects/zyendomani-alasiyaeve">
   <img alt="Coverity Scan Build Status"
        src="https://scan.coverity.com/projects/27332/badge.svg"/>
@@ -56,7 +56,7 @@ This led to much faster runtime than I expected, and will be updating all system
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Constantly in Progress - monitoring & adjusting code for faster runtime. most segfaults eliminated<BR>Been working this code for >10y<BR>15Feb25</td></tr>
+<td>Constantly in Progress - monitoring & adjusting code for faster runtime. most segfaults eliminated<BR>Been working this code for >15y<BR>15Feb25</td></tr>
 <tr><td> - Memory Management<BR>
 <font color=green>Major MemMgmt upgrade/update</font></td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
@@ -355,7 +355,7 @@ This led to much faster runtime than I expected, and will be updating all system
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=pink>Testing</font><BR>2Mar25</td></tr>
+<td><font color=brown>Working</font> - <font color=olive>Testing</font><BR>2Mar25</td></tr>
 <tr><td> - Agent Corp to Character&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by missions and corp kills</font></td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
@@ -365,7 +365,7 @@ This led to much faster runtime than I expected, and will be updating all system
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=pink>Testing</font><BR>2Mar25</td></tr>
+<td><font color=brown>Working</font> - <font color=olive>Testing</font><BR>2Mar25</td></tr>
 <tr><td> - Agent Faction to Character&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by missions and faction kills</font></td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
@@ -375,12 +375,12 @@ This led to much faster runtime than I expected, and will be updating all system
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=pink>Testing</font><BR>2Mar25</td></tr>
+<td><font color=brown>Working</font> - <font color=olive>Testing</font><BR>2Mar25</td></tr>
 <tr><td> - Character to Character&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by PnP window</font></td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=pink>Testing</font><BR>2Mar25</td></tr>
+<td><font color=brown>Working</font> - <font color=olive>Testing</font><BR>2Mar25</td></tr>
 <tr><td> - Character to Player Corp&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by PnP window</font></td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
@@ -390,22 +390,22 @@ This led to much faster runtime than I expected, and will be updating all system
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=pink>Testing</font><BR>2Mar25</td></tr>
+<td><font color=brown>Working</font> - <font color=olive>Testing</font><BR>2Mar25</td></tr>
 <tr><td> - Player Corp to Player Corp&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by Corp Management window</font></td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=pink>Testing</font><BR>2Mar25</td></tr>
+<td><font color=brown>Working</font> - <font color=olive>Testing</font><BR>2Mar25</td></tr>
 <tr><td> - Alliance to Player Corp&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by Corp Management window</font></td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=orange>Skeleton Code Only</font><BR>2Feb20</td></tr>
+<td><font color=orange>Skeleton Code Only</font><BR><font color=pink>Alliances partially implemented</font><BR>2Feb20</td></tr>
 <tr><td> - Alliance to Alliance&nbsp;&nbsp;--&nbsp;&nbsp; <font color=green>Changed by Corp Management window</font></td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=orange>Skeleton Code Only</font><BR>2Feb20</td></tr>
+<td><font color=orange>Skeleton Code Only</font><BR><font color=pink>Alliances partially implemented</font><BR>2Feb20</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="NPC_Station_Services"> NPC Station Services (<font color=green>Current</font>)</span></h2>
@@ -562,7 +562,7 @@ This led to much faster runtime than I expected, and will be updating all system
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=pink>Testing</font><BR>2Mar25</td></tr>
+<td><font color=brown>Working</font> - <font color=olive>Testing</font><BR>2Mar25</td></tr>
 <tr><td> - Initiate conversation with agent</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
@@ -709,7 +709,7 @@ These missions give faction standings<br>Repeatable.</td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=pink>Testing</font><BR>
+<td><font color=brown>Working</font> - <font color=olive>Testing</font><BR>
 <font color=yellow>NOTE: Currently only Courier missions</font><BR>2Mar25</td></tr>
 <tr><td> - <font color=lime>Research Missions</font><BR>
 Special Missions given by Research Agents during ongoing research.</td><td class="broken">0%
@@ -972,6 +972,171 @@ Expiration, Failure or Denial forever blocks giving agent.<BR>
 <td><font color=red>NOT IMPLEMENTED</font><BR>2Feb20</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
+<h2> <span class="mw-headline" id="EvE_MailList"> Mailing Lists (<font color=yellow>New System</font>)</span></h2>
+<div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
+<table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
+<table style="background: #2222EE; width:5%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+</td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
+<table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
+<table style="background: transparent; width:5%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
+<td> &#160;<font color=red><b>5.0</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+</td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
+<table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
+<tr><td><font color=red><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
+<table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;">
+<tr><td style="width: 70&amp;;">Service/Action</td>
+<td style="width: 4%;">Status</td>
+<td style="width: 26%;">Comments</td></tr>
+<tr><td> - Create List</td><td class="broken">5%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 5%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=orange>Skeleton Code Only</font><BR>19Jul26</td></tr>
+<tr><td> - Add Members to List</td><td class="broken">5%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 5%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=orange>Skeleton Code Only</font><BR>19Jul26</td></tr>
+<tr><td> - Add Corporations to List</td><td class="broken">5%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 5%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=orange>Skeleton Code Only</font><BR>19Jul26</td></tr>
+<tr><td> - Add Alliances to List</td><td class="broken">5%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 5%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=orange>Skeleton Code Only</font><BR>19Jul26</td></tr>
+<tr><td> - Send Message to List</td><td class="broken">5%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 5%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=orange>Skeleton Code Only</font><BR>19Jul26</td></tr>
+<tr><td> - Read Message from List</td><td class="broken">5%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 5%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=orange>Skeleton Code Only</font><BR>19Jul26</td></tr>
+<tr><td> - Create/Update List Welcome Message</td><td class="broken">5%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 5%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=orange>Skeleton Code Only</font><BR>19Jul26</td></tr>
+<tr><td> - Join List</td><td class="broken">5%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 5%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=orange>Skeleton Code Only</font><BR>19Jul26</td></tr>
+<tr><td> - Leave List</td><td class="broken">5%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 5%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=orange>Skeleton Code Only</font><BR>19Jul26</td></tr>
+<tr><td> - Delete List</td><td class="broken">5%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 5%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=orange>Skeleton Code Only</font><BR>19Jul26</td></tr>
+<tr><td> - Get List Info</td><td class="broken">5%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 5%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=orange>Skeleton Code Only</font><BR>19Jul26</td></tr>
+<tr><td> - Kick Members from List (Player, Corp, Alliance)</td><td class="broken">5%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 5%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=orange>Skeleton Code Only</font><BR>19Jul26</td></tr>
+<tr><td> - Modify Members List Access (Read-Only, Create/Send to List)</td><td class="broken">5%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 5%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=orange>Skeleton Code Only</font><BR>19Jul26</td></tr>
+</table>
+<p><br style="clear:both;" /></p>
+<h2> <span class="mw-headline" id="EvE_Notify"> Notifications (<font color=yellow>New System</font>)</span></h2>
+<div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
+<table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
+<table style="background: #2222EE; width:5%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+</td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
+<table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
+<table style="background: transparent; width:5%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
+<td> &#160;<font color=red><b>5.0</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+</td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
+<table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
+<tr><td><font color=red><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
+<table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;">
+<tr><td style="width: 70&amp;;">Service/Action</td>
+<td style="width: 4%;">Status</td>
+<td style="width: 26%;">Comments</td></tr>
+<tr><td> - Notification Creation on Event</td><td class="broken">5%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 5%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=orange>Skeleton Code Only</font><BR>19Jul26</td></tr>
+<tr><td> - Notification Sent/Stored for Relevant Parties</td><td class="broken">5%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 5%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=orange>Skeleton Code Only</font><BR>19Jul26</td></tr>
+<tr><td> - Neocom Alert on New Notification</td><td class="broken">5%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 5%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=orange>Skeleton Code Only</font><BR>19Jul26</td></tr>
+<tr><td> - View Unprocessed Notifications</td><td class="broken">5%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 5%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=orange>Skeleton Code Only</font><BR>19Jul26</td></tr>
+<tr><td> - Mark Notifications as Read</td><td class="broken">5%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 5%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=orange>Skeleton Code Only</font><BR>19Jul26</td></tr>
+<tr><td> - Delete Notifications</td><td class="broken">5%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 5%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=orange>Skeleton Code Only</font><BR>19Jul26</td></tr>
+<tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Notification Group Types</h3></font></td></tr>
+<tr><td> - <font color=lime>Agent</font><BR>*Description and Data Here*</td><td class="broken">5%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 5%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=orange>Skeleton Code Only</font><BR>19Jul26</td></tr>
+<tr><td> - <font color=lime>Bill</font><BR>*Description and Data Here*</td><td class="broken">5%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 5%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=orange>Skeleton Code Only</font><BR>19Jul26</td></tr>
+<tr><td> - <font color=lime>Corp</font><BR>*Description and Data Here*</td><td class="broken">5%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 5%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=orange>Skeleton Code Only</font><BR>19Jul26</td></tr>
+<tr><td> - <font color=lime>Misc</font><BR>*Description and Data Here*</td><td class="broken">5%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 5%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=orange>Skeleton Code Only</font><BR>19Jul26</td></tr>
+<tr><td> - <font color=lime>Sovereignty</font><BR>*Description and Data Here*</td><td class="broken">5%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 5%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=orange>Skeleton Code Only</font><BR>19Jul26</td></tr>
+<tr><td> - <font color=lime>Structure</font><BR>*Description and Data Here*</td><td class="broken">5%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 5%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=orange>Skeleton Code Only</font><BR>19Jul26</td></tr>
+<tr><td> - <font color=lime>War</font><BR>*Description and Data Here*</td><td class="broken">5%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 5%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=orange>Skeleton Code Only</font><BR>19Jul26</td></tr>
+</table>
+<p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="Belt_Manager"> Calendar (<font color=green>Current</font>)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
@@ -1102,7 +1267,7 @@ Expiration, Failure or Denial forever blocks giving agent.<BR>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>11Dec18</td></tr>
+<td><font color=brown>Working</font> - <font color=olive>Testing</font><BR>11Dec18</td></tr>
 <tr><td> - Placing Buy Orders</td><td class="working">40%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 40%; background:#00DB00"></td>
@@ -2302,7 +2467,7 @@ Expiration, Failure or Denial forever blocks giving agent.<BR>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>8Feb25</td></tr>
+<td><font color=brown>Working</font> - <font color=olive>Testing</font><BR>8Feb25</td></tr>
 <tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Drone AI </h3></font></td></tr>
 <tr><td><font color=lime>Passive/Aggressive</font>   (toggle)<BR>
 <font color=magenta>Passive</font>: attack only upon command.<BR>
@@ -2311,7 +2476,7 @@ Expiration, Failure or Denial forever blocks giving agent.<BR>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>13Feb25</td></tr>
+<td><font color=brown>Working</font> - <font color=olive>Testing</font><BR>13Feb25</td></tr>
 <tr><td><font color=lime>Drone Destiny</font> - <font color=yellow>Drone-specific Implementation</font><BR>
 Drone movement is different than ships, so Destiny code is useless for them.<BR>
 Client will show drones orbiting, and server tracks accordingly</td><td class="working">95%
@@ -2324,19 +2489,19 @@ Engage the first target of the assigned ship.<BR>Will chase target in warp.</td>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=olive>Still Testing.</font><BR>14Feb25</td></tr>
+<td><font color=brown>Working</font> - <font color=olive>Testing</font><BR>14Feb25</td></tr>
 <tr><td><font color=lime>Assist</font>   (enables passive mode)<BR>
 Drone will engage assigned ship's target once an offensive module is activated on that target. <BR>
 Drone will continue attack until itself, target or assigned ship is popped, or commanded otherwise.</td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>11Feb25</td></tr>
+<td><font color=brown>Working</font> - <font color=olive>Testing</font><BR>11Feb25</td></tr>
 <tr><td><font color=lime>Guard</font>   (enables aggressive mode)<BR>Drone will retaliate towards any threat to assigned ship until commanded otherwise.</td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>11Feb25</td></tr>
+<td><font color=brown>Working</font> - <font color=olive>Testing</font><BR>11Feb25</td></tr>
 <tr><td><font color=lime>Mine</font><BR>Drone will mine assigned target until canceled, cargo full, or target depleted, then drop mined ore into assigned ship's cargo hold.</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
@@ -2957,7 +3122,7 @@ Recent SOV updates broke CC installation<BR>3Feb23</td></tr>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>20Dec17</td></tr>
+<td><font color=brown>Working</font> - <font color=olive>Testing</font><BR>20Dec17</td></tr>
 <tr><td> - Viewing Corp History</td><td class="broken">20%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 20%; background:#00DB00"></td>
@@ -3116,12 +3281,12 @@ Recent SOV updates broke CC installation<BR>3Feb23</td></tr>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>28Dec17</td></tr>
+<td><font color=brown>Working</font> - <font color=olive>Testing</font><BR>28Dec19</td></tr>
 <tr><td> - Managing Tower Field Access</td><td class="broken">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>28Dec19</td></tr>
+<td><font color=brown>Working</font> - <font color=olive>Testing</font><BR>28Dec19</td></tr>
 <tr><td> - Can Add/Remove Fuel and Strontium in Tower Holds</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
@@ -3146,7 +3311,7 @@ Recent SOV updates broke CC installation<BR>3Feb23</td></tr>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>28Dec17</td></tr>
+<td><font color=brown>Working</font> - <font color=olive>Testing</font><BR>28Dec17</td></tr>
 <tr><td> - Can Add/Remove Charges for Offensive Batteries</td><td class="working">50%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 50%; background:#00DB00"></td>
@@ -3250,7 +3415,7 @@ Recent SOV updates broke CC installation<BR>3Feb23</td></tr>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>2Feb20</td></tr>
+<td><font color=brown>Working</font> - <font color=olive>Testing</font><BR>2Feb20</td></tr>
 <tr><td> - Magnetometric Site Creation</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
@@ -3307,7 +3472,7 @@ Recent SOV updates broke CC installation<BR>3Feb23</td></tr>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>2Feb20</td></tr>
+<td><font color=brown>Working</font> - <font color=olive>Testing</font><BR>2Feb20</td></tr>
 <tr><td> - Mission Dungeon Creation</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
@@ -3327,7 +3492,7 @@ Recent SOV updates broke CC installation<BR>3Feb23</td></tr>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>2Feb20</td></tr>
+<td><font color=brown>Working</font> - <font color=olive>Testing</font><BR>2Feb20</td></tr>
 <tr><td> - Unrated Escalation Creation</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
@@ -3458,12 +3623,12 @@ Recent SOV updates broke CC installation<BR>3Feb23</td></tr>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>11Dec18</td></tr>
+<td><font color=brown>Working</font> - <font color=olive>Testing</font><BR>11Dec18</td></tr>
 <tr><td> - Anomaly Data compilation based on Probe Results</td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>11Dec18</td></tr>
+<td><font color=brown>Working</font> - <font color=olive>Testing</font><BR>11Dec18</td></tr>
 <tr><td> - Reporting of Compiled Data</td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
@@ -3473,7 +3638,7 @@ Recent SOV updates broke CC installation<BR>3Feb23</td></tr>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>11Dec18</td></tr>
+<td><font color=brown>Working</font> - <font color=olive>Testing</font><BR>11Dec18</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="WormHole_Manager"> WormHole Manager (<font color=green>Current</font>)</span></h2>
@@ -3510,7 +3675,7 @@ Recent SOV updates broke CC installation<BR>3Feb23</td></tr>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>12Feb17</td></tr>
+<td><font color=brown>Working</font> - <font color=olive>Testing</font><BR>12Feb17</td></tr>
 <tr><td> - Jumping thru WormHole</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
@@ -3562,8 +3727,8 @@ Recent SOV updates broke CC installation<BR>3Feb23</td></tr>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=teal>Working</font> - <font color=olive>Still Testing</font><BR>
-Trader Joe travels, but still working on his market data<BR>9Jul26</td></tr>
+<td><font color=brown>Working</font> - <font color=olive>Testing</font><BR>
+Trader Joe travels, but still working on his market hooks<BR>9Jul26</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
 </table><BR><BR>
@@ -3573,7 +3738,7 @@ Trader Joe travels, but still working on his market data<BR>9Jul26</td></tr>
 17 vga colors are aqua, black, blue, fuchsia, gray, green, lime, maroon, navy, olive, purple, red, silver, brown, white, and yellow
 COLOR				PHASE				ESTIMATED COMPLETION
 <green> 		COMPLETE						= 100%
-<lime>			Final Testing					= 95
+<lime>			Final Testing Phase 			= 95
 <lime/pink>		Complete - PlayTesting			= 90
 <brown/pink>	Mostly Complete - PlayTesting	= 85
 <brown/orange>	Mostly Complete - Still Glitchy	= 80
@@ -3584,11 +3749,20 @@ COLOR				PHASE				ESTIMATED COMPLETION
 <violet/olive>	Somewhat Working - Testing		= 50
 <yellow>		Needs More Testing				= 40
 <yellow/olive>	Mostly Non-Working - Testing	= 30
-<orange>		Hacked							= 25
-<red/magenta>	Broken - Needs Work				= 20
+<red/magenta>	Broken - Needs Work				= 25
+<orange>        Hacked                          = 20
 <yellow>		Preliminary Implementation		= 15
-<orange>		Skeleton Code Only				= 10
+<orange>		Skeleton Code Only				= 5
 <red>			NOT IMPLEMENTED					= 0
+
+<pink> Alliances partially implemented
+
+heading status
+<green> current
+<magenta> needs rewrite
+<violet> pending review
+<pink> on hold
+<yellow> new system
 
 
 green

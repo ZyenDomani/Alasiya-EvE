@@ -96,7 +96,7 @@ uint32 Skill::GetCurrentSP(Character* ch, int64 startTime/*0*/)
 
     /** @todo this isnt completely right.... */
     // at this point, the skill is in training.  calculate accumulated sp and return
-    uint32 delta(0);
+    uint32 delta = 0;
     uint32 timeElapsed((GetFileTimeNow() - startTime) / EvE::Time::Second);
 
     // skill in training - return updated SP based on elapsed training
@@ -207,7 +207,7 @@ void Skill::VerifySP() {
 }
 
 bool Skill::SkillPrereqsComplete(Character &ch) {
-    EvilNumber skillID(0);
+    EvilNumber skillID = 0;
     if (HasAttribute(AttrRequiredSkill1, skillID)) //Primary Skill
         if (GetAttribute(AttrRequiredSkill1Level) > ch.GetSkillLevel(skillID.get_uint32()))
             return false;
@@ -228,7 +228,7 @@ bool Skill::SkillPrereqsComplete(Character &ch) {
 }
 
 bool Skill::FitModuleSkillCheck(InventoryItemRef iRef, CharacterRef cRef) {
-    EvilNumber skillID(0);
+    EvilNumber skillID = 0;
     if (iRef->HasAttribute(AttrRequiredSkill1, skillID)) //Primary Skill
         if ( iRef->GetAttribute(AttrRequiredSkill1Level) > cRef->GetSkillLevel(skillID.get_uint32()))
             return false;

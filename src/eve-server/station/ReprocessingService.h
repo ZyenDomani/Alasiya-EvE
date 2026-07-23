@@ -43,7 +43,7 @@ protected:
 
     ReprocessingDB m_db;
 
-    virtual PyBoundObject* CreateBoundObject(Client *pClient, const PyRep *bind_args);
+    virtual PyBoundObject* CreateBoundObject(Client* pClient, const PyRep *bind_args);
 };
 
 class ReprocessingServiceBound
@@ -70,7 +70,7 @@ protected:
     float m_staEfficiency;
     float m_tax;
 
-    float CalcReprocessingEfficiency(const Client *pClient, InventoryItemRef item = InventoryItemRef(nullptr)) const;
+    float CalcReprocessingEfficiency(const Client* pClient, InventoryItemRef item = InventoryItemRef(nullptr)) const;
     float CalcTax(float standing) const;
     PyRep* GetQuote(uint32 itemID, Client* pClient);
 

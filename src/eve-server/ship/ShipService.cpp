@@ -4,7 +4,8 @@
     ------------------------------------------------------------------------------------
     This file is part of EVEmu: EVE Online Server Emulator
     Copyright 2006 - 2016 The EVEmu Team
-    For the latest information visit http://evemu.org
+    Copyright 2016 - 2026 Alasiya-EvE by Allan
+    For the latest implementation status visit http://eve.alasiya.net/?p=op_status
     ------------------------------------------------------------------------------------
     This program is free software; you can redistribute it and/or modify it under
     the terms of the GNU Lesser General Public License as published by the Free Software
@@ -127,7 +128,7 @@ ShipService::~ShipService() {
 }
 
 /** @todo do we need more data here?  */
-PyBoundObject *ShipService::CreateBoundObject(Client *pClient, const PyRep *bind_args) {
+PyBoundObject *ShipService::CreateBoundObject(Client* pClient, const PyRep *bind_args) {
     /*
      * 23:08:44 [ClientMsg] ShipService bind request
      * 23:08:44 [ClientMsg]      Tuple: 2 elements
@@ -154,7 +155,7 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
         return nullptr;
     }
 
-    Client* pClient(call.client);
+    Client* pClient = call.client;
 
     ShipSE* pShipSE(pClient->GetShipSE());
     if (pShipSE == nullptr)
@@ -198,7 +199,8 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
     if (!pShipSE->GetShipItemRef()->ValidateBoardShip(pClient->GetChar()))
         throw CustomError("You do not have the skills to fly a %s.", pShipSE->GetName());
 
-    float distance = pClient->GetShipSE()->GetPosition().distance(pShipSE->GetPosition());
+    Vector3d delta =  pShipSE->GetPosition() - pClient->GetShipSE()->GetPosition();
+    double distance = delta.Length();
     // fudge for radii ?
     if (distance > sConfig.world.shipBoardDistance)
         throw CustomError("You are too far from %s to board it.<br>You must be within %u meters to board this ship.",\
@@ -222,7 +224,7 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
     }
 
     //no arguments.
-    Client* pClient(call.client);
+    Client* pClient = call.client;
     /** @todo create and implement "Weapon Flag"....
      *      Weapon Flag --  the 60-sec timer started upon any offensive weapon activation
      *   this will be in client's criminaltimer object
@@ -271,7 +273,7 @@ PyResult ShipBound::Handle_LeaveShip(PyCallArgs &call)
     }
 
     //  sends itemID of ship to leave
-    Client* pClient(call.client);
+    Client* pClient = call.client;
     uint32 podID = pClient->GetPodID();
     ShipItemRef podRef = pClient->SystemMgr()->GetShipFromInventory(podID);
     if (podRef.get() == nullptr)
@@ -302,7 +304,7 @@ PyResult ShipBound::Handle_ActivateShip(PyCallArgs &call) {
         return nullptr;
     }
 
-    Client* pClient(call.client);
+    Client* pClient = call.client;
     ShipItemRef newShipRef = sItemFactory.GetShipRef(args.newShipID);
     if (newShipRef.get() == nullptr) {
         sLog.Error("ShipBound::Handle_ActivateShip()", "%s: Failed to get new ship %u.", pClient->GetName(), args.newShipID);
@@ -339,7 +341,7 @@ PyResult ShipBound::Handle_Undock(PyCallArgs &call) {
         throw CustomError("Something bad happened as you prepared to undock the ship.");
     }
 
-    Client* pClient(call.client);
+    Client* pClient = call.client;
     ShipItemRef pShip = pClient->GetShip();
     if (pShip.get() == nullptr) {
         sLog.Error("ShipBound::Handle_ActivateShip()", "%s: Failed to get ship item.", pClient->GetName());
@@ -387,7 +389,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
         return nullptr;
     }
 
-    Client* pClient(call.client);
+    Client* pClient = call.client;
     SystemManager* pSysMgr = pClient->SystemMgr();
     if (pSysMgr == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
@@ -400,17 +402,17 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
     //used for LaunchUpgradePlatformWarning
     // args.ignoreWarning
 
-    uint8 qty(0);
-    uint32 itemID(0);
+    uint8 qty = 0;
+    uint32 itemID = 0;
     double radius(pShip->radius());
 
-    bool dropped(false), shipDrop(false);
+    bool dropped = false, shipDrop = false;
     InventoryItemRef iRef(nullptr);
     PyDict* dict = new PyDict();
-    for (uint32 i(0); i < PyToDropList->size(); ++i) {
+    for (uint32 i = 0; i < PyToDropList->size(); ++i) {
         dropped = false;
         PyList* list = new PyList();
-        GPoint location(pShip->position());
+        Vector3d location(pShip->position());
         location.MakeRandomPointOnSphereLayer(500,1500);
         qty = PyToDropList->items[i]->AsTuple()->items[1]->AsInt()->value();
         itemID = PyToDropList->items[i]->AsTuple()->items[0]->AsInt()->value();
@@ -502,7 +504,11 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
 
                 // Move item from cargo bay to space: (and send OnItemChange packet)
                 iRef->Move(pClient->GetLocationID(), flagAutoFit, true);
-                iRef->SetPosition(location + iRef->radius() + radius);
+                radius += iRef->radius();
+                location.x += radius;
+                location.y += radius;
+                location.z += radius;
+                iRef->SetPosition(location);
                 iRef->ChangeOwner(entity.ownerID);
 
                 entity.position = iRef->position();
@@ -641,7 +647,11 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
 
                 // Move item from cargo bay to space: (and send OnItemChange packet)
                 iRef->Move(pClient->GetLocationID(), flagAutoFit, true);
-                iRef->SetPosition(location + iRef->radius() + radius);
+                radius += iRef->radius();
+                location.x += radius;
+                location.y += radius;
+                location.z += radius;
+                iRef->SetPosition(location);
                 iRef->ChangeOwner(entity.ownerID);
 
                 entity.position = iRef->position();
@@ -700,7 +710,7 @@ PyResult ShipBound::Handle_Scoop(PyCallArgs &call) {
         return nullptr;
     }
 
-    Client* pClient(call.client);
+    Client* pClient = call.client;
     SystemManager* pSysMgr(pClient->SystemMgr());
     if (pSysMgr == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no system manager.", pClient->GetName());
@@ -769,7 +779,7 @@ PyResult ShipBound::Handle_ScoopDrone(PyCallArgs &call) {
     // per patch notes, if ship is too far to scoop, it will automagically travel closer till drone is within range, then scoop and stop
 
     PyDict* errorDict = new PyDict();
-    Client* pClient(call.client);
+    Client* pClient = call.client;
     SystemEntity* pDroneSE(nullptr);
     InventoryItemRef iRef(nullptr);
     SystemManager* pSysMgr(pClient->SystemMgr());
@@ -837,7 +847,7 @@ void ShipBound::CheckScoop(SystemManager* sysMgr, PyList* itemList, PyDict* erro
      *    these will have to be coded like drone errors in entityservice.cpp
      */
 
-    uint32 itemID(0);
+    uint32 itemID = 0;
     SystemEntity* pSE = nullptr;
     InventoryItemRef iRef(nullptr);
     PyList::const_iterator itr = itemList->begin();
@@ -881,7 +891,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
         return nullptr;
     }
 
-    Client* pClient(call.client);
+    Client* pClient = call.client;
     if (!pClient->IsInSpace()) {
         _log(SERVICE__ERROR, "%s: Trying to jettison items when not in space!", pClient->GetName());
         return nullptr;
@@ -889,7 +899,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
 
     SystemManager* pSysMgr(pClient->SystemMgr());
     //Get location of our ship
-    GPoint location(pClient->GetShipSE()->GetPosition());
+    Vector3d location(pClient->GetShipSE()->GetPosition());
 
     InventoryItemRef cRef(nullptr), iRef(nullptr);
     CargoContainerRef jcRef(nullptr), ccRef(nullptr);
@@ -946,13 +956,14 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                 // get planet
                 PlanetSE* pPlanet = pSysMgr->GetClosestPlanetSE(location);
                 // verify distance
-                uint32 distance(pPlanet->GetPosition().distance(sRef->position()));
+                Vector3d delta =  pPlanet->GetPosition() - sRef->position();
+                double distance = delta.Length();
                 // TODO:  distance check here...must be <100k?   100k - radius - ship < 25k?
                 // set planet in CO data
                 sRef->SetCustomInfo(std::to_string(pPlanet->GetID()).c_str());
                 // get warpInPoint for planet
                 int32 radius(pPlanet->GetRadius());
-                GPoint warpInPoint(pPlanet->GetPosition());
+                Vector3d warpInPoint = pPlanet->GetPosition();
                 srandom(pPlanet->GetID());  //this is the only place random() is used....other random functions use rand() as it's non-repeatable.
                 int rand = random();
                 double j = (((rand / RAND_MAX) - 1.0f) / 3.0f);
@@ -965,10 +976,10 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                 warpInPoint.z -= (d * EvE::Trig::FastCos(t));
 
                 // set new position in middle of grid
-                int64 bubbleDia(BUBBLE_RADIUS_METERS * 2);
-                int64 xGrid(floor(warpInPoint.x / bubbleDia));
-                int64 yGrid(floor(warpInPoint.y / bubbleDia));
-                int64 zGrid(floor(warpInPoint.z / bubbleDia));
+                int64 bubbleDia = (BUBBLE_RADIUS_METERS * 2);
+                int64 xGrid = (floor(warpInPoint.x / bubbleDia));
+                int64 yGrid = (floor(warpInPoint.y / bubbleDia));
+                int64 zGrid = (floor(warpInPoint.z / bubbleDia));
                 warpInPoint.x = (xGrid * bubbleDia + BUBBLE_RADIUS_METERS);
                 warpInPoint.y = (yGrid * bubbleDia + BUBBLE_RADIUS_METERS);
                 warpInPoint.z = (zGrid * bubbleDia + BUBBLE_RADIUS_METERS);
@@ -1136,7 +1147,7 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
     if (call.tuple->empty())
         return nullptr;
 
-    bool t3Ship(false);
+    bool t3Ship = false;
     std::vector<int32> itemIDList;
     PyList* subSystemList(nullptr);
     if (call.byname.find("subSystems") != call.byname.end()) {

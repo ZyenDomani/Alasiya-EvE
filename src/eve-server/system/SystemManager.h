@@ -136,17 +136,17 @@ public:
     void MakeSetState(const SystemBubble* pBubble, SetState& into) const;
 
     uint32 GetRandBeltID();
-    uint32 GetClosestPlanetID(const GPoint& myPos);
+    uint32 GetClosestPlanetID(const Vector3d& myPos);
 
     // system bounty timer system.  20m delay
     void AddBounty(uint32 charID, BountyData& data);
 
-    MoonSE*     GetClosestMoonSE(const GPoint& myPos);
-    PlanetSE*   GetClosestPlanetSE(const GPoint& myPos);
-    StargateSE* GetClosestGateSE(const GPoint& myPos);
+    MoonSE*     GetClosestMoonSE(const Vector3d& myPos);
+    PlanetSE*   GetClosestPlanetSE(const Vector3d& myPos);
+    StargateSE* GetClosestGateSE(const Vector3d& myPos);
 
     // this returns entities in range for display on dscan.
-    void DScan(int64 range, const GPoint& position, std::vector< SystemEntity* >& vector);
+    void DScan(int64 range, const Vector3d& position, std::vector< SystemEntity* >& vector);
     // this returns entities in system for display on Groove's Entity Map in client
     PyRep* GetCurrentEntities();
     // this returns entities in system for display on ship scanner when enabled.

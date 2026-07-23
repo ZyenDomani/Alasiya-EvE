@@ -82,7 +82,7 @@ protected:
     PyObject *_BuildCachedReturn(PySubStream **result, const char *sessionInfo, CacheCheckTime check);
 
     //you MUST overload this factory method if you offer any bound services:
-    virtual PyBoundObject* CreateBoundObject(Client *pClient, const PyRep *bind_args);
+    virtual PyBoundObject* CreateBoundObject(Client* pClient, const PyRep *bind_args);
 
     //some service-level remote calls, need to be reworked:
     virtual PyResult Handle_MachoResolveObject(PyCallArgs &call);

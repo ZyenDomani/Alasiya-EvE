@@ -57,7 +57,7 @@ namespace Destiny {
             double accelDist;           //in m
             double cruiseDist;          //in m
             double decelDist;           //in m
-            GVector warp_vector;        //target direction based on ship's initial position
+            Vector3d warp_vector;        //target direction based on ship's initial position
         };
 
         struct stateStamp {  // not used.
@@ -105,16 +105,16 @@ public:
 
     /* Informational query functions: */
     //  functions to return protected variables for SystemBubble exclusive WarpTo updates and other methods that need Destiny Variables
-    const GPoint &GetPosition() const                   { return m_position; }
-    const GVector &GetVelocity() const                  { return m_shipVelocity; }
+    const Vector3d &GetPosition() const                 { return m_position; }
+    const Vector3d &GetVelocity() const                 { return m_shipVelocity; }
     float GetSpeedFraction()                            { return m_activeSpeedFraction; }
-    float GetSpeed()                                    { return m_shipVelocity.length(); }
-    int32 GetWarpSpeed()                                { return (int32)(m_shipWarpSpeed * 10); }
+    double GetSpeed()                                   { return m_shipVelocity.Length(); }
+    int32 GetWarpSpeed()                                { return static_cast<int32>(m_shipWarpSpeed * 10); }
     uint32 GetTargetID()                                { return m_targetEntity.first; }
     SystemEntity* GetTargetEntity()                     { return m_targetEntity.second; }
-    GPoint GetTargetPoint()                             { return m_targetPoint; }
+    Vector3d GetTargetPoint()                           { return m_targetPoint; }
     // is this right??
-    float GetFollowDistance()                           { return (float)m_targetDistance; }
+    double GetFollowDistance()                          { return static_cast<double>(m_targetDistance); }
     uint32 GetStateStamp()                              { return m_stateStamp; }
     double GetAgility()                                 { return m_agility; }   // this is only used by my GetShipVars command
     uint8 GetAlignTime()                                { return m_alignTime; } // this is only used by my GetShipVars command
@@ -132,13 +132,13 @@ public:
     bool IsCloaked()                                    { return m_cloaked; }
     bool IsTractored()                                  { return m_tractored; }
     bool IsAutoPilot()                                  { return m_autoPilot; }
-    bool IsAligned(GVector& targHeading);
+    bool IsAligned(Vector3d& targHeading);
 
     /* Configuration methods */
-    void WebbedMe(InventoryItemRef modRef, bool apply=false);
+    void WebbedMe();
     // reset speed variables and bubblecast ship's AB/MWD modified speed (module activate/deactivate)
-    void SpeedBoost(ModuleItemRef mRef, bool deactivate=false);
-    void SetPosition(const GPoint& pt, bool update=false);
+    void SpeedBoost(bool deactivate=false);
+    void SetPosition(const Vector3d& pt, bool update=false);
     void SetMaxVelocity(uint16 maxVelocity);
     void UpdateShipVariables();
     // set all movement vars for missile and add to system
@@ -158,8 +158,8 @@ public:
     void FollowBall(SystemEntity* pSE, int32 distance=0);
     void ApproachBall(SystemEntity* pSE);
     void AlignTo(SystemEntity* pSE);
-    void GotoPoint(const GPoint &point);
-    void GotoDirection(const GPoint &direction);
+    void GotoPoint(const Vector3d &point);
+    void GotoDirection(const Vector3d &direction);
     void SetSpeedFraction(float fraction=1.0f);
 
     /* TractorBeam */
@@ -167,11 +167,11 @@ public:
     void TractorBeamStart(SystemEntity* pShipSE, EvilNumber speed);
 
     /* Larger movement */
-    void WarpTo( const GPoint& destPoint, int32 distance = 0, bool autoPilot = false, SystemEntity* pSE = nullptr );
+    void WarpTo( const Vector3d& destPoint, int32 distance = 0, bool autoPilot = false, SystemEntity* pSE = nullptr );
 
     //Destiny Update stuff:
     PyResult AttemptDockOperation();
-    void Undock(GPoint dir);
+    void Undock(Vector3d dir);
     void SetUndockSpeed();
     void DockingAccepted();
     void SendSetState() const;
@@ -214,7 +214,6 @@ protected:
     bool ValidTarget();                 //performs common target checks
 
     // movement methods
-    void MoveObject();                  //apply velocity to our position for this round of movement
     void BeginMovement();               //set initial variables for all movement (common code)
 
     uint8 m_ballMode;                   //current state of ball
@@ -235,7 +234,7 @@ protected:
     bool m_tractored;
     bool m_tractorPause;
 
-    int64 m_timeStamp;                  //timestamp of when current mode began, in filetime
+    double m_timeStamp;                 //timestamp of when current mode began, using GetTimeMSeconds()
     uint32 m_stateStamp;                //statestamp of when current state began, in seconds
 
     float m_userSpeedFraction;          //fuzzy logic - user commanded percent of max speed
@@ -244,12 +243,12 @@ protected:
     int64 m_targetDistance;             //in m  this is current distance to target
     int64 m_followDistance;             //in m  this is desired distance to target
 
-    GPoint m_position;                  //in m
-    GPoint m_targetPoint;               //vector  point in space used as current destination
-    GVector m_warpHeading;              //as stated
-    GVector m_shipVelocity;             //current ship velocity
-    GVector m_targetHeading;            //direction to current target
-    GVector m_targetVelocity;           //desired ship velocity
+    Vector3d m_position;                  //in m
+    Vector3d m_targetPoint;               //vector  point in space used as current destination
+    Vector3d m_warpHeading;              //as stated
+    Vector3d m_shipVelocity;             //current ship velocity
+    Vector3d m_targetHeading;            //direction to current target
+    Vector3d m_targetVelocity;           //desired ship velocity
     std::pair<uint32, SystemEntity*> m_targetEntity;   //we do not own the SystemEntity*
 
 private:
@@ -262,22 +261,27 @@ private:
     bool m_alignTo;                     // once aligned, ship will stop
     bool m_paused;                      // used to fake orbit while keeping velocity but not actually move ship.
     bool m_posHack;                     //force position update
-    float m_agility;                    //unitless?   - not sent to client
+    double m_agility;                   // something about m/s  not quite sure yet
 
-    // new orbit variables
-    double m_expTerm;
-    double m_posScale;
+    // new movement data
+    double m_expTerm;                   // e^(-dt/tau)   [tau = mass * inertiaMod / 1000000.0f]
+    double m_posScale;                  // tau * (1.0 - m_expTerm)
+    double m_timeFactor;
+    void Integrate();
+    void CalculateFollowPoint();
+    void CalculateFormationPoint();
+    void GotoVelocity();
+    void OrbitVelocity();
+    Vector3d RotateVectorByEntityOrientation(const Vector3d& localVec, SystemEntity* leader);
 
     // these will eventually be commands....
     void CreateShipMarker();
     void RemoveAllMarkers();
     void RemoveShipMarkers();
-    void MarkPoint(const GPoint& position, std::string& name, std::string& desc, bool orbit=false);
+    void MarkPoint(const Vector3d& position, std::string& name, std::string& desc, bool orbit=false);
     std::map<uint32, SystemEntity*> m_shipMarkers;           // ship position marker cans.  we do own these.
 
     void SetAgilityInertia();
-    void CalculateCrucibleOrbitTargetPoint();
-    GVector ResolveOrbitThrustForce(const GVector& target);
 
     // Internal Warp Methods
     float m_accelTime;

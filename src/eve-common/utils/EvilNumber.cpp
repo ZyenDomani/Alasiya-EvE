@@ -163,7 +163,7 @@ int64 EvilNumber::get_long()
 
 int32 EvilNumber::get_int()
 {
-    int32 value(0);
+    int32 value = 0;
     if (mType == evil_number_float) {
         value = (int32)floor(fVal);
     } else {
@@ -175,7 +175,7 @@ int32 EvilNumber::get_int()
 
 uint32 EvilNumber::get_uint32()
 {
-    uint32 value(0);
+    uint32 value = 0;
     if (mType == evil_number_float) {
         value = (uint32)floor(fVal);
     } else {

@@ -110,7 +110,7 @@ InvBrokerService::~InvBrokerService() {
 }
 
 
-PyBoundObject* InvBrokerService::CreateBoundObject(Client *pClient, const PyRep *bind_args) {
+PyBoundObject* InvBrokerService::CreateBoundObject(Client* pClient, const PyRep *bind_args) {
     InvBroker_BindArgs args;
     if (!args.Decode(bind_args)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode bind args.", GetName());
@@ -398,7 +398,7 @@ PyResult InvBrokerBound::Handle_SetLabel(PyCallArgs &call) {
      * {'FullPath': u'UI/Messages', 'messageID': 258479, 'label': u'SetNameShipMustBePilotBody'}(u'You can only rename ships that you are currently piloting.', None, None)
      */
 
-    bool error(false);
+    bool error = false;
     /** @todo if owner is corp, make sure char has permissions to rename corp items  */
     if (IsPlayerCorp(iRef->ownerID())) {
         if (iRef->ownerID() != call.client->GetCorporationID()) {

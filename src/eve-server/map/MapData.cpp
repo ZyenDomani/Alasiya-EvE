@@ -94,48 +94,52 @@ void MapData::Populate()
 
 // todo:  these celestials should be in static data
 void MapData::GetPlanets(uint32 systemID) {
-    uint8 total(0);
-    std::vector<DBGPointEntity> planetIDs;
+    uint8 total = 0;
+    std::vector<DBVector3dEntity> planetIDs;
     MapDB::GetPlanets(systemID, planetIDs, total);
 }
 
 // todo:  these celestials should be in static data
 void MapData::GetMoons(uint32 systemID) {
-    uint8 total(0);
-    std::vector<DBGPointEntity> moonIDs;
+    uint8 total = 0;
+    std::vector<DBVector3dEntity> moonIDs;
     MapDB::GetMoons(systemID, moonIDs, total);
 }
 
 // todo:  these celestials should be in static data
-const GPoint MapData::GetRandPointOnPlanet(uint32 systemID) {
-    uint8 total(0);
-    std::vector<DBGPointEntity> planetIDs;
+const Vector3d MapData::GetRandPointOnPlanet(uint32 systemID) {
+    uint8 total = 0;
+    std::vector<DBVector3dEntity> planetIDs;
     MapDB::GetPlanets(systemID, planetIDs, total);
 
     if (planetIDs.empty())
         return NULL_ORIGIN;
 
     uint16 i = MakeRandomUInt(0, total - 1);
-    return (planetIDs[i].position + planetIDs[i].radius + 50000);
+    Vector3d randPoint = planetIDs[i].position;
+    randPoint.MakeRandomPointOnSphere(planetIDs[i].radius + 50000);
+    return randPoint;
 }
 
 // todo:  these celestials should be in static data
-const GPoint MapData::GetRandPointOnMoon(uint32 systemID) {
-    uint8 total(0);
-    std::vector<DBGPointEntity> moonIDs;
+const Vector3d MapData::GetRandPointOnMoon(uint32 systemID) {
+    uint8 total = 0;
+    std::vector<DBVector3dEntity> moonIDs;
     MapDB::GetMoons(systemID, moonIDs, total);
 
     if (moonIDs.empty())
         return NULL_ORIGIN;
 
     uint16 i = MakeRandomUInt(0, total - 1);
-    return (moonIDs[i].position + moonIDs[i].radius + 10000);
+    Vector3d randPoint = moonIDs[i].position;
+    randPoint.MakeRandomPointOnSphere(moonIDs[i].radius + 10000);
+    return randPoint;
 }
 
 // todo:  these celestials should be in static data
 uint32 MapData::GetRandPlanet(uint32 systemID) {
-    uint8 total(0);
-    std::vector<DBGPointEntity> planetIDs;
+    uint8 total = 0;
+    std::vector<DBVector3dEntity> planetIDs;
     MapDB::GetPlanets(systemID, planetIDs, total);
 
     if (planetIDs.empty())
@@ -146,18 +150,18 @@ uint32 MapData::GetRandPlanet(uint32 systemID) {
 }
 
 // todo:  these celestials should be in static data
-const GPoint MapData::Get2RandPlanets(uint32 systemID) {
-    uint8 total(0);
-    std::vector<DBGPointEntity> planetIDs;
+const Vector3d MapData::Get2RandPlanets(uint32 systemID) {
+    uint8 total = 0;
+    std::vector<DBVector3dEntity> planetIDs;
     MapDB::GetPlanets(systemID, planetIDs, total);
     /** @todo finish this */
     return NULL_ORIGIN;
 }
 
 // todo:  these celestials should be in static data
-const GPoint MapData::Get3RandPlanets(uint32 systemID) {
-    uint8 total(0);
-    std::vector<DBGPointEntity> planetIDs;
+const Vector3d MapData::Get3RandPlanets(uint32 systemID) {
+    uint8 total = 0;
+    std::vector<DBVector3dEntity> planetIDs;
     MapDB::GetPlanets(systemID, planetIDs, total);
     /** @todo finish this */
 
@@ -166,8 +170,8 @@ const GPoint MapData::Get3RandPlanets(uint32 systemID) {
 
 // todo:  these celestials should be in static data
 uint32 MapData::GetRandMoon(uint32 systemID) {
-    uint8 total(0);
-    std::vector<DBGPointEntity> moonIDs;
+    uint8 total = 0;
+    std::vector<DBVector3dEntity> moonIDs;
     MapDB::GetMoons(systemID, moonIDs, total);
 
     if (moonIDs.empty())
@@ -177,7 +181,7 @@ uint32 MapData::GetRandMoon(uint32 systemID) {
     return moonIDs[i].itemID;
 }
 
-const GPoint MapData::GetRandPointInSystem(uint32 systemID, int64 distance/*0*/) {
+const Vector3d MapData::GetRandPointInSystem(uint32 systemID, int64 distance/*0*/) {
     // get system max diameter, verify distance is within system.
     SolarSystemData data = SolarSystemData();
     sDataMgr.GetSolarSystemData(systemID, data);
@@ -194,7 +198,7 @@ const GPoint MapData::GetRandPointInSystem(uint32 systemID, int64 distance/*0*/)
     double theta = MakeRandomFloat(0, (EvE::Trig::Pi * 2));
 
     // set x,z based on random angle and distance from origin
-    GPoint pos(NULL_ORIGIN);
+    Vector3d pos = NULL_ORIGIN;
     pos.x = distance * cos(theta);
     pos.z = distance * sin(theta);
 
@@ -206,25 +210,25 @@ const GPoint MapData::GetRandPointInSystem(uint32 systemID, int64 distance/*0*/)
     return pos;
 }
 
-const GPoint MapData::GetAnomalyPoint(SystemManager* pSys)
+const Vector3d MapData::GetAnomalyPoint(SystemManager* pSys)
 {
-    uint8 total(0);
-    std::vector<DBGPointEntity> planetIDs;
+    uint8 total = 0;
+    std::vector<DBVector3dEntity> planetIDs;
     MapDB::GetPlanets(pSys->GetID(), planetIDs, total);
 
     SystemEntity* pSE(pSys->GetSE(planetIDs[MakeRandomUInt(0, total - 1)].itemID));
 
-    GPoint pos(pSE->GetPosition());
+    Vector3d pos = pSE->GetPosition();
     pos.MakeRandomPointOnSphereLayer(ONE_AU_IN_METERS / 3, ONE_AU_IN_METERS * 4);
     return pos;
 }
 
-const GPoint MapData::GetAnomalyPoint(uint32 systemID)
+const Vector3d MapData::GetAnomalyPoint(uint32 systemID)
 {
-    uint8 total(0);
-    std::vector<DBGPointEntity> planetIDs;
+    uint8 total = 0;
+    std::vector<DBVector3dEntity> planetIDs;
     MapDB::GetPlanets(systemID, planetIDs, total);
-    GPoint pos(planetIDs[MakeRandomInt(0, total - 1)].position);
+    Vector3d pos = planetIDs[MakeRandomInt(0, total - 1)].position;
     pos.MakeRandomPointOnSphereLayer(ONE_AU_IN_METERS / 3, ONE_AU_IN_METERS * 4);
     return pos;
 }
@@ -240,7 +244,7 @@ void MapData::GetMissionDestination(Agent* pAgent, MissionOffer& offer) {
     uint8 destRange(pAgent->GetLevel());
     if (pAgent->GetTypeID() != Agents::Type::Tutorial)
         ++destRange;
-    bool station(true), ship(false), deadspace(false);    // will have to tweak this later for particular mission events
+    bool station = true, ship = false, deadspace = false;    // will have to tweak this later for particular mission events
 
     // determine distance based on preset range from db or in some cases, mission type and agent level
     switch(offer.typeID) {
@@ -296,7 +300,7 @@ void MapData::GetMissionDestination(Agent* pAgent, MissionOffer& offer) {
         return;
     }
 
-    bool run(true);
+    bool run = false;
     std::vector<uint32> sysList;
     switch(destRange) {
         case 0:

@@ -133,7 +133,7 @@ PyResult AccountService::Handle_GetCashBalance(PyCallArgs &call) {
     if (call.tuple->size() > 0)
         isCorp = PyRep::IntegerValue(call.tuple->GetItem(0));
 
-    double balance(0);
+    double balance = 0;
     int16 accountKey(call.client->GetCorpAccountKey());
     if (call.byname.find("accountKey") != call.byname.end())
         accountKey = PyRep::IntegerValueU32(call.byname.find("accountKey")->second);
@@ -276,7 +276,7 @@ void AccountService::TransferFunds(uint32 fromID, uint32 toID, double amount, st
         fromCurrency = Account::CreditType::MPLEX;
     }
 
-    double newBalanceFrom(0), newBalanceTo(0);
+    double newBalanceFrom(0), newBalanceTo = 0;
     Client* pClientFrom(nullptr);
     if (IsCharacterID(fromID)) {
         pClientFrom = sEntityMgr.FindClientByCharID(fromID);
@@ -290,7 +290,7 @@ void AccountService::TransferFunds(uint32 fromID, uint32 toID, double amount, st
         }
         AccountDB::AddJournalEntry(fromID, entryTypeID, fromID, toID, fromCurrency, fromKey, -amount, newBalanceFrom, reason, referenceID);
     } else if (IsPlayerCorp(fromID)) {
-        uint32 userID(0);
+        uint32 userID = 0;
         if (pClient != nullptr)
             userID = pClient->GetCharacterID();
         HandleCorpTransaction(fromID, entryTypeID, userID?userID:fromID, toID, fromCurrency, fromKey, -amount, reason, referenceID);
@@ -318,7 +318,7 @@ void AccountService::TransferFunds(uint32 fromID, uint32 toID, double amount, st
         }
         AccountDB::AddJournalEntry(toID, entryTypeID, fromID, toID, toCurrency, toKey, amount, newBalanceTo, reason, referenceID);
     } else if (IsPlayerCorp(toID)) {
-        uint32 userID(0);
+        uint32 userID = 0;
         if (pClient != nullptr)
             userID = pClient->GetCharacterID();
         HandleCorpTransaction(toID, entryTypeID, fromID, userID?userID:toID, toCurrency, toKey, amount, reason, referenceID);
@@ -344,8 +344,8 @@ void AccountService::TransferFunds(uint32 fromID, uint32 toID, double amount, st
         if (sConfig.server.BountyPayoutDelayed)
             if (amount < sConfig.rates.TaxedAmount)  // is amount worth taxing?  default is 75k
                 return;
-    float tax(0);
-    uint32 corpID(0);
+    float tax = 0;
+    uint32 corpID = 0;
     if (pClientTo != nullptr) {
         tax = pClientTo->GetCorpTaxRate() * amount;
         corpID = pClientTo->GetCorporationID();

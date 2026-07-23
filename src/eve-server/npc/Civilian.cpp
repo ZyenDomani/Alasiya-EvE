@@ -33,7 +33,7 @@ m_itemID(itemID),
 m_corpID(0),
 m_pos(NULL_ORIGIN),
 m_heading(NULL_ORIGIN),
-m_velocity(NULL_ORIGIN_V),
+m_velocity(NULL_ORIGIN),
 m_pLeader(nullptr),
 m_type(sItemFactory.GetType(typeID)),
 m_origSE(nullptr),
@@ -77,9 +77,8 @@ void Civilian::Process() {
         } break;
         case Civ::State::Departing: {
             m_state = Civ::State::Stopping;
-            GVector targHeading(m_origSE->GetPosition(), m_destSE->GetPosition());
-            targHeading.normalize();
-            m_heading = targHeading;
+            Vector3d targHeading = m_destSE->GetPosition() - m_origSE->GetPosition();
+            m_heading = targHeading.Normalize();
             Warp(m_destSE);
             // Calculate align time based on ship vars
             m_timeLeft = GetAlignTime() - 8;
@@ -127,9 +126,8 @@ void Civilian::Stop() {
 }
 
 void Civilian::SetVectors() {
-    GVector targHeading(m_origSE->GetPosition(), m_destSE->GetPosition());
-    targHeading.normalize();
-    m_heading = targHeading;
+    Vector3d targHeading = m_destSE->GetPosition() - m_origSE->GetPosition();
+    m_heading = targHeading.Normalize();
 
     // what and where?
     if (IsEven(MakeRandomInt()) and !m_origSE->SysBubble()->IsEmpty()) {
@@ -314,13 +312,13 @@ void Civilian::EncodeDestiny( Buffer& into) {
         data.velX = m_velocity.x;
         data.velY = m_velocity.y;
         data.velZ = m_velocity.z;
-        data.speedfraction = (m_velocity.length() / data.maxSpeed);
+        data.speedfraction = (m_velocity.Length() / data.maxSpeed);
     into.Append(data);
     switch (m_state) {
         case Civ::State::Departing: {
-            GPoint target = m_destSE->GetPosition();
+            Vector3d target = m_destSE->GetPosition();
             WARP_Struct warp;
-                warp.formationID = 0xFF;
+                warp.formationID = -1;
                 warp.targX = target.x;
                 warp.targY = target.y;
                 warp.targZ = target.z;
@@ -331,18 +329,18 @@ void Civilian::EncodeDestiny( Buffer& into) {
             into.Append(warp);
         }  break;
         case Civ::State::Undocking: {
-            GPoint target = m_pos + (m_heading * 1.0e10);
+            Vector3d target = m_pos + (m_heading * 1.0e10);
             GOTO_Struct go;
-                go.formationID = 0xFF;
+                go.formationID = -1;
                 go.x = target.x;
                 go.y = target.y;
                 go.z = target.z;
             into.Append(go);
         }  break;
         case Civ::State::Arriving: {
-            GPoint target = m_destSE->GetPosition();
+            Vector3d target = m_destSE->GetPosition();
             GOTO_Struct go;
-                go.formationID = 0xFF;
+                go.formationID = -1;
                 go.x = target.x;
                 go.y = target.y;
                 go.z = target.z;
@@ -358,7 +356,7 @@ void Civilian::EncodeDestiny( Buffer& into) {
         }  break;
         default: {
             STOP_Struct main;
-                main.formationID = 0xFF;
+                main.formationID = -1;
             into.Append( main );
         } break;
     }

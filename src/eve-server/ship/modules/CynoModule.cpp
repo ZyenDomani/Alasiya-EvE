@@ -89,9 +89,12 @@ bool CynoModule::CanActivate()
 
     if (pShipSE->SysBubble()->HasTower()) {
         TowerSE* ptSE = pShipSE->SysBubble()->GetTowerSE();
-        if (ptSE->HasForceField())
-            if (pShipSE->GetPosition().distance(ptSE->GetPosition()) < ptSE->GetSOI())
+        if (ptSE->HasForceField()) {
+            Vector3d delta =  ptSE->GetPosition() - pShipSE->GetPosition();
+            double dist = delta.Length();
+            if (dist < ptSE->GetSOI())
                 throw UserError("NoCynoInPOSShields");
+        }
     }
 
     /** @todo check for active cyno jammer */
@@ -121,7 +124,7 @@ bool CynoModule::CanActivate()
 uint32 CynoModule::DoCycle()
 {
     // i really dont like this, but cant get it to work anywhere else...
-    uint32 retVal(0);
+    uint32 retVal = 0;
     if (retVal = ActiveModule::DoCycle())
         if (m_firstRun) {
             m_firstRun = false;
@@ -144,7 +147,7 @@ void CynoModule::CreateCyno()
     _log(MODULE__DEBUG, "Creating Cynosural field");
 
     cSE = new ItemSystemEntity(cRef, pClient->services(), m_sysMgr);
-    GPoint location(pShipSE->GetPosition());
+    Vector3d location(pShipSE->GetPosition());
     location.MakeRandomPointOnSphere(1500.0f + cRef->type().radius());
     cSE->SetPosition(location);
     cRef->SaveItem();
@@ -157,7 +160,7 @@ void CynoModule::SendOnJumpBeaconChange(bool active/*false*/) {
         //Send ProcessSovStatusChanged Notification
         _log(MODULE__DEBUG, "Sending OnJumpBeaconChange (active = %s)", active ? "true" : "false");
 
-        uint32 fieldID(0);
+        uint32 fieldID = 0;
         if (cSE != nullptr)
             fieldID = cSE->GetID();
 

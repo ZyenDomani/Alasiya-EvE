@@ -71,7 +71,7 @@ PyResult NotificationMgrService::Handle_GetByGroupID(PyCallArgs &call) {
 
     PyObject* rowsetResult = MailDB::GetNotificationsByGroup(characterID, groupID);
     if (!rowsetResult) {
-        return new PyTuple(0); // Safely return empty tuple instead of nullptr to prevent client exceptions
+        return PyStatic.mtTuple();
     }
 
     return rowsetResult;
@@ -83,7 +83,7 @@ PyResult NotificationMgrService::Handle_GetUnprocessed(PyCallArgs &call) {
     // Client invokes this to count or load notifications where processed = 0
     PyObject* rowsetResult = MailDB::GetUnprocessedNotifications(characterID);
     if (!rowsetResult) {
-        return new PyTuple(0);
+        return PyStatic.mtTuple();
     }
     return rowsetResult;
 }

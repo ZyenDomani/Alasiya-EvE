@@ -28,19 +28,19 @@ float TurretFormulas::GetToHit(ShipItemRef shipRef, TurretModule* pMod, SystemEn
         return 0;
     uint32 falloff = pMod->GetAttribute(AttrFalloff).get_uint32();
     float range = pMod->GetAttribute(AttrMaxRange).get_float();
-    float distance = shipRef->position().distance(pTarget->GetPosition());
+    Vector3d delta =  pTarget->GetPosition() - shipRef->position();
+    double distance = delta.Length();
     _log(DAMAGE__TRACE, "Turret::GetToHit - distance:%.2f, range:%u, falloff:%u", distance, range, falloff);
 
     // calculate transversal from other data
-    GVector lineOfSight = pTarget->GetPosition() - shipRef->position();
-    GVector losNormalized = lineOfSight.normalize();
-    GVector relativeVelocity = pTarget->GetVelocity() - shipRef->GetPilot()->GetShipSE()->GetVelocity();
+    Vector3d lineOfSight = pTarget->GetPosition() - shipRef->position();
+    Vector3d relativeVelocity = pTarget->GetVelocity() - shipRef->GetPilot()->GetShipSE()->GetVelocity();
     // Isolate radial velocity component (along the line of sight)
-    float radialV = relativeVelocity.dotProduct(losNormalized);
+    double radialV = relativeVelocity.dotProduct(lineOfSight);
     // Transversal velocity vector is total relative velocity minus the radial component
-    GVector transversalVector = relativeVelocity - (losNormalized * radialV);
-    float transversalV = transversalVector.length();
-    float angularVel = transversalV / distance;
+    Vector3d transversalVector = relativeVelocity - (lineOfSight * radialV);
+    double transversalV = transversalVector.Length();
+    double angularVel = transversalV / distance;
     float targSig = pTarget->GetSelf()->GetAttribute(AttrSignatureRadius).get_float();
     float sigRes = pMod->GetAttribute(AttrOptimalSigRadius).get_float();
     float trackSpeed = pMod->GetAttribute(AttrTrackingSpeed).get_float();
@@ -93,21 +93,21 @@ float TurretFormulas::GetNPCToHit(NPC* pNPC, SystemEntity* pTarget) {
     uint16 sigRes = pNPC->GetSelf()->GetAttribute(AttrOptimalSigRadius).get_uint32();
     uint16 range = pNPC->GetAI()->GetOptimalRange();
     uint32 falloff = pNPC->GetAI()->GetFalloff();
-    float distance = pNPC->GetPosition().distance(pTarget->GetPosition());
-    float trackSpeed = pNPC->GetAI()->GetTrackingSpeed();
+    Vector3d delta =  pTarget->GetPosition() - pNPC->GetPosition();
+    double distance = delta.Length();
+    double trackSpeed = pNPC->GetAI()->GetTrackingSpeed();
     float targSig = pTarget->GetSelf()->GetAttribute(AttrSignatureRadius).get_float();
     _log(DAMAGE__TRACE_NPC, "NPC::GetToHit - distance:%.2f, range:%.u, falloff:%u", distance, range, falloff);
 
     // calculate transversal from other data
-    GVector lineOfSight = pTarget->GetPosition() - pNPC->GetPosition();
-    GVector losNormalized = lineOfSight.normalize();
-    GVector relativeVelocity = pTarget->GetVelocity() - pNPC->GetVelocity();
+    Vector3d lineOfSight = pTarget->GetPosition() - pNPC->GetPosition();
+    Vector3d relativeVelocity = pTarget->GetVelocity() - pNPC->GetVelocity();
     // Isolate radial velocity component (along the line of sight)
-    float radialV = relativeVelocity.dotProduct(losNormalized);
+    float radialV = relativeVelocity.dotProduct(lineOfSight);
     // Transversal velocity vector is total relative velocity minus the radial component
-    GVector transversalVector = relativeVelocity - (losNormalized * radialV);
-    float transversalV = transversalVector.length();
-    float angularVel = transversalV / distance;
+    Vector3d transversalVector = relativeVelocity - (lineOfSight * radialV);
+    double transversalV = transversalVector.Length();
+    double angularVel = transversalV / distance;
     _log(DAMAGE__TRACE_NPC, "NPC::GetToHit - transversalV:%.3f, angularVel:%.3f tracking:%.3f, targetSig:%.1f, sigRes:%u", \
                 transversalV, angularVel, trackSpeed, targSig, sigRes);
 
@@ -140,16 +140,17 @@ float TurretFormulas::GetDroneToHit(DroneSE* pDrone, SystemEntity* pTarget) {
         return 0;
     InventoryItemRef dRef = pDrone->GetSelf();
     float falloff(dRef->GetAttribute(AttrFalloff).get_float());
-    float distance(pDrone->GetPosition().distance(pTarget->GetPosition()));
-    GVector vector = pTarget->GetVelocity() - pDrone->GetVelocity();
-    float transversalV(vector.length());
-    float a(transversalV / (distance * dRef->GetAttribute(AttrTrackingSpeed).get_float()));
-    float b(dRef->GetAttribute(AttrOptimalSigRadius).get_float() / pTarget->GetSelf()->GetAttribute(AttrSignatureRadius).get_float());
+    Vector3d delta =  pTarget->GetPosition() - pDrone->GetPosition();
+    double distance = delta.Length();
+    Vector3d vector = pTarget->GetVelocity() - pDrone->GetVelocity();
+    double transversalV = vector.Length();
+    double a = (transversalV / (distance * dRef->GetAttribute(AttrTrackingSpeed).get_float()));
+    float b = (dRef->GetAttribute(AttrOptimalSigRadius).get_float() / pTarget->GetSelf()->GetAttribute(AttrSignatureRadius).get_float());
     float c = (a * b) * (a * b);
-    float d(EvE::max(distance - dRef->GetAttribute(AttrEntityAttackRange).get_float(), 0.0f));
+    double d(EvE::max(distance - dRef->GetAttribute(AttrEntityAttackRange).get_float(), 0.0f));
     float e = (d / falloff) * (d / falloff);
-    float ChanceToHit(std::pow(0.5, c + e));
-    float rNum(MakeRandomFloat(0.0, 1.0));
+    float ChanceToHit = (std::pow(0.5, c + e));
+    float rNum = (MakeRandomFloat(0.0, 1.0));
     if (rNum <= sConfig.rates.DroneCritChance)
         return 3.0f;
     if (rNum < ChanceToHit)
@@ -163,9 +164,10 @@ float TurretFormulas::GetSentryToHit(Sentry* pSentry, SystemEntity* pTarget) {
         return 0;
     float sigRes = pSentry->GetSelf()->GetAttribute(AttrOptimalSigRadius).get_float();
     float falloff = pSentry->GetSelf()->GetAttribute(AttrFalloff).get_float();
-    float distance = pSentry->GetPosition().distance(pTarget->GetPosition());
+    Vector3d delta =  pTarget->GetPosition() - pSentry->GetPosition();
+    double distance = delta.Length();
     float targSig = pTarget->GetSelf()->GetAttribute(AttrSignatureRadius).get_float();
-    float a = (pTarget->GetVelocity().length() / (distance * pSentry->GetSelf()->GetAttribute(AttrTrackingSpeed).get_float()));
+    double a = (pTarget->GetVelocity().Length() / (distance * pSentry->GetSelf()->GetAttribute(AttrTrackingSpeed).get_float()));
     float b = (sigRes / targSig);
     float modifier = 1.0f;
     if ((a < 1) and (b > 1)) {

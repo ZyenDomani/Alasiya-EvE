@@ -151,7 +151,7 @@ PlanetMgrService::~PlanetMgrService() {
     delete m_dispatch;
 }
 
-PyBoundObject* PlanetMgrService::CreateBoundObject(Client *pClient, const PyRep *bind_args) {
+PyBoundObject* PlanetMgrService::CreateBoundObject(Client* pClient, const PyRep *bind_args) {
     /* sends planetID */
     _log(PLANET__INFO, "PlanetMgrService bind request for:");
     bind_args->Dump(PLANET__INFO, "    ");

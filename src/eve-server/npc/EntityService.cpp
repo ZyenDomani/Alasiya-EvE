@@ -441,7 +441,7 @@ PyResult EntityBound::Handle_CmdUnanchor(PyCallArgs &call) {
 
 void EntityBound::CheckTarget(SystemEntity* pTarget, PyList* droneList, PyDict* errorDict) {
     // check for valid target
-    uint32 droneID(0);
+    uint32 droneID = 0;
     PyList::const_iterator itr = droneList->begin();
     for ( ; itr != droneList->end(); ++itr) {
         droneID = PyRep::IntegerValueU32(*itr);
@@ -502,14 +502,18 @@ void EntityBound::CheckTarget(SystemEntity* pTarget, PyList* droneList, PyDict* 
         }
 
         // this will limit drone targets to m_controlDistance   set to distance from target    config option?
-        bool distCheck(false);
+        bool distCheck = false;
+        Vector3d delta = pTarget->GetPosition() - pSE->GetPosition();
+        double dist = delta.Length();
         if (sConfig.drone.StrictDistance) {
             // is target within ship's command distance?   this maintains drone completely within ship's control distance
-            distCheck = ((pSE->GetPosition().distance(pTarget->GetPosition()) - pTarget->GetRadius()) > pSE->GetDroneSE()->GetControlDistance());
+            distCheck = ((dist - pTarget->GetRadius()) > pSE->GetDroneSE()->GetControlDistance());
         } else {
             // is drone within ship's command distance?
             //as long as drone is able to receive and respond to commands, allow autonomous operation outside control distance
-            distCheck = ((pSE->GetPosition().distance(pSE->GetDroneSE()->GetAI()->GetAssignedShipSE()->GetPosition())) > pSE->GetDroneSE()->GetControlDistance());
+            delta = pSE->GetDroneSE()->GetAI()->GetAssignedShipSE()->GetPosition() - pSE->GetPosition();
+            dist = delta.Length();
+            distCheck = (dist > pSE->GetDroneSE()->GetControlDistance());
         }
 
         if (distCheck) {
@@ -526,27 +530,39 @@ void EntityBound::CheckTarget(SystemEntity* pTarget, PyList* droneList, PyDict* 
 
 void EntityBound::CheckTower(SystemEntity* pTarget, PyList* droneList, PyDict* errorDict) {
     // Control Tower checks
+    Vector3d delta;
+    double dist = 0.0;
     PyList::const_iterator itr = droneList->begin();
     for ( ; itr != droneList->end(); ++itr) {
         if (pTarget->SysBubble()->HasTower()) {
             TowerSE* ptSE = pTarget->SysBubble()->GetTowerSE();
             if (ptSE->HasForceField()) {
-                if (m_delegate and (ptSE->GetPosition().distance(m_shipSE->GetPosition()) - m_shipSE->GetRadius()) < ptSE->GetSOI()) {
-                    // controller in field
-                    PyTuple* error = new PyTuple(2);
-                    error->SetItem(0, new PyString("EntityDelegateInsideField"));
-                    error->SetItem(1, PyStatic.NewNone());  // not sure if this is acceptable
-                    errorDict->SetItem(new PyInt(PyRep::IntegerValueU32(*itr)), error);
-                    continue;
+                if (m_delegate) {
+                    delta = ptSE->GetPosition() - m_shipSE->GetPosition();
+                    dist = delta.Length();
+                    dist -= m_shipSE->GetRadius();
+                    if (dist < ptSE->GetSOI()) {
+                        // controller in field
+                        PyTuple* error = new PyTuple(2);
+                        error->SetItem(0, new PyString("EntityDelegateInsideField"));
+                        error->SetItem(1, PyStatic.NewNone());  // not sure if this is acceptable
+                        errorDict->SetItem(new PyInt(PyRep::IntegerValueU32(*itr)), error);
+                        continue;
+                    }
                 }
-                if (m_attack and (pTarget->GetPosition().distance(ptSE->GetPosition()) - ptSE->GetRadius()) < ptSE->GetSOI()) {
-                    // target in field
-                    PyDict* data = new PyDict();
-                    data->SetItemString("target", new PyInt(pTarget->GetID()));
-                    PyTuple* error = new PyTuple(2);
-                    error->SetItem(0, new PyString("DeniedDroneTargetForceField"));     //barred from entering
-                    error->SetItem(1, data);
-                    errorDict->SetItem(new PyInt(PyRep::IntegerValueU32(*itr)), error);
+                if (m_attack) {
+                    delta = ptSE->GetPosition() - pTarget->GetPosition();
+                    dist = delta.Length();
+                    dist -= ptSE->GetRadius();
+                    if (dist < ptSE->GetSOI()) {
+                        // target in field
+                        PyDict* data = new PyDict();
+                        data->SetItemString("target", new PyInt(pTarget->GetID()));
+                        PyTuple* error = new PyTuple(2);
+                        error->SetItem(0, new PyString("DeniedDroneTargetForceField"));     //barred from entering
+                        error->SetItem(1, data);
+                        errorDict->SetItem(new PyInt(PyRep::IntegerValueU32(*itr)), error);
+                    }
                 }
             }
         }
@@ -563,7 +579,7 @@ void EntityBound::CheckMisc(SystemEntity* pTarget, PyList* droneList, PyDict* er
      *    char not in capsule
      *    char does not currently have control
      */
-    uint32 droneID(0);
+    uint32 droneID = 0;
     PyList::const_iterator itr = droneList->begin();
     for ( ; itr != droneList->end(); ++itr) {
         droneID = PyRep::IntegerValueU32(*itr);
@@ -621,7 +637,7 @@ void EntityBound::CheckSkills(SystemEntity* pTarget, PyList* droneList, PyDict* 
         return;
 
     // this is only for Delegate
-    uint32 droneID(0);
+    uint32 droneID = 0;
     PyList::const_iterator itr = droneList->begin();
     for ( ; itr != droneList->end(); ++itr) {
         droneID = PyRep::IntegerValueU32(*itr);

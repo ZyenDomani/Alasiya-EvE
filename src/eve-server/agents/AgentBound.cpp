@@ -112,9 +112,9 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
     std::string response = "";
     Character* pChar(call.client->GetChar().get());
     uint8 actionID(PyRep::IntegerValueU32(args.arg));
-    bool missionQuit(false);
-    bool missionCompleted(false);
-    bool missionDeclined(false);
+    bool missionQuit = false;
+    bool missionCompleted = false;
+    bool missionDeclined = false;
 
     PyTuple* agentSays(new PyTuple(2));
     // dialog is button info
@@ -414,7 +414,7 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
             missionDeclined = true;
             MissionOffer offer = MissionOffer();
             m_agent->GetOffer(pChar->itemID(), offer);
-            int64 timeleft(0);  // must send, but not used in this instance
+            int64 timeleft = 0;  // must send, but not used in this instance
             if (m_agent->IsDeclineCooldown(pChar, timeleft))
                 sStandingMgr.UpdateStandings(call.client->GetChar().get(), m_agent, Standings::MissionDeclined, offer.name, offer.important);
             m_agent->DeclineOffer(pChar);
@@ -611,7 +611,7 @@ PyResult AgentBound::Handle_GetMissionBriefingInfo(PyCallArgs &call) {
         }
         //TODO:  once char decline data is complete, check it here.  if char declined from this agent in last 4 hours,
         //      time goes into "decline time".  if not, send -1 which shows the default msg about 4h decline standings hit
-        int64 timeLeft(0);
+        int64 timeLeft = 0;
         if (m_agent->IsDeclineCooldown(call.client->GetChar().get(), timeLeft)) {
             // declined a mission <4h ago.  send time left to player
             briefingInfo->SetItemString("Decline Time", new PyLong(timeLeft));

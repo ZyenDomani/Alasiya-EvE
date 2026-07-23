@@ -99,7 +99,7 @@ PyPackedRow* SystemDB::GetSolarSystemPackedRow(uint32 systemID) {
     return DBRowToPackedRow(row);
 }
 
-GPoint SystemDB::GetSolarSystemPosition(uint32 systemID) {
+Vector3d SystemDB::GetSolarSystemPosition(uint32 systemID) {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         "SELECT x,y,z"
@@ -113,9 +113,9 @@ GPoint SystemDB::GetSolarSystemPosition(uint32 systemID) {
     _log(DATABASE__RESULTS, "GetSolarSystemPosition returned %lu items", res.GetRowCount());
 
     DBResultRow row;
-    GPoint point(NULL_ORIGIN);
+    Vector3d point(NULL_ORIGIN);
     if (res.GetRow(row))
-        point = GPoint(row.GetDouble(0), row.GetDouble(1), row.GetDouble(2));
+        point = Vector3d(row.GetDouble(0), row.GetDouble(1), row.GetDouble(2));
 
     return point;
 }
@@ -187,7 +187,7 @@ bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         entry.typeID        = row.GetUInt16(3);
         entry.groupID       = row.GetUInt16(4);
         entry.categoryID    = row.GetUInt8(5);
-        GPoint pos(row.GetDouble(6), row.GetDouble(7), row.GetDouble(8));
+        Vector3d pos(row.GetDouble(6), row.GetDouble(7), row.GetDouble(8));
         entry.position      = pos;
         entry.planetID      = atoi(row.GetText(9));
 
@@ -258,7 +258,7 @@ bool SystemDB::LoadPlayerDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         entry.ownerID       = row.GetInt(3);
         entry.groupID       = row.GetUInt(4);
         entry.categoryID    = row.GetUInt(5);
-        GPoint pos(row.GetDouble(6), row.GetDouble(7), row.GetDouble(8));
+        Vector3d pos(row.GetDouble(6), row.GetDouble(7), row.GetDouble(8));
         entry.position      = pos;
 
         if (IsCorpID(entry.ownerID)) {

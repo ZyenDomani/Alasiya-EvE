@@ -257,7 +257,7 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
 
     if (args.bid and (args.itemID == 0)) {  //buy
         // check for corp usage and get standings with station owners
-        float fStanding(0), cStanding(0);
+        float fStanding(0), cStanding = 0;
         if (args.useCorp) {
             // it is.  perform checks and set needed variables for corp use
             if (!IsPlayerCorp(call.client->GetCorporationID())) {
@@ -436,9 +436,9 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
         //is this standing order or immediate?
         if (args.duration == 0) {
             // immediate - loop to search and fill buy orders at or above asking price until qty depleted or no orders found
-            bool search(true);
-            uint32 orderID(0);
-            int32 origQty(args.quantity);
+            bool search = true;
+            uint32 orderID = 0;
+            int32 origQty = args.quantity;
             while (args.quantity and search) {
                 orderID = m_db.FindBuyOrder(args);
                 if (orderID) {

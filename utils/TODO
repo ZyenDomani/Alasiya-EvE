@@ -19,6 +19,7 @@ NOTE:  for calls that use internal methods that send a reply, model from InjectS
 
 
   15:51:13 W MapService::Handle_GetIncursionGlobalReport(): size= 0
+eve\client\script\ui\shared\neocom\journal.py:1209:            report = sm.RemoteSvc('map').GetIncursionGlobalReport()
 
 
 current....
@@ -26,6 +27,11 @@ find launchForCorp...see how 'closest planet' is determined for tower (m_system-
 test planet determination and check distance when launching customs office
   - complete code for proper init when launched
 when PI started on planet, check for customs office and create interbus customs office if planet doesnt have one
+
+jettison customs office causes segfault
+  - m_planetSE = m_system->GetPlanet(m_oData.planetID)->GetPlanetSE();
+    this is also wrong, as GetPlanet should return PlanetSE, not default SE
+
 
 *******************************************************
 *******************************************************
@@ -39,18 +45,13 @@ when PI started on planet, check for customs office and create interbus customs 
 subsequent chars not added to existing char's local chat (but new chars have existing chars in chat)
 
 same acct can be logged in multiple times
-
-jettison customs office causes segfault
-  - m_planetSE = m_system->GetPlanet(m_oData.planetID)->GetPlanetSE();
-    this is also wrong, as GetPlanet should return PlanetSE, not default SE
-
 work on buglist, integrate this list in there where i can (in order)
     - modules/fitting  ...  see 'module system coding' below for list of current problems
     - drones  ... mostly done.  see notes below for more info
     - corp  ...  multiple systems incomplete
     - mail/notifications  ... needs rewrite.  there is still multiple mail db tables.  pick one.
     - lsc  ... probably needs complete rewrite.  see below
-    - missions  - still have a long way to go here.  courier is >95% and ready to move to next group
+    - missions  - still have a long way to go here.  courier is ~95% and ready to move to next group
     - calendar - mostly working.  only goes back 12 months in client
     - contracts  ... davinci coded this working system on official.  quick lookover shows multiple db hits that will need optimizing
     - cosmic systems  ... POC working.  will need more work.  James did a lot of WH work on official.  current status u/k
@@ -66,13 +67,6 @@ also check containers for contents and remove/deny before repack
 check insurance payouts.   rounds full ship value up
     - this will need base prices fixed
 
-char creation - figure certs and set skills accordingly
-    - currently, most new chars dont qualify for any certs.
-    - they should at least have a starter profession cert
-    - this will take more thought and time
-    write method to pull skill data and print.  will use this as base then modify as needed.
-
-
 many unimplemented salvage error msgs noted in prospector.h
   - current code is working POC and not many checks made at this time
 
@@ -80,13 +74,6 @@ many unimplemented salvage error msgs noted in prospector.h
 *******************************************************
 **********  liveupdates code improvements ... hi priority
 update all 16 references to www.eveonline.com and create pages on server to respond properly
-add agent portraits to server and update 'backupurl' in server code
-  - portraits are downloaded.  need to add to server and update
-
-still need to host agent photos...
-  search client code for xxxx and use liveupdates to replace to my server
-23:49:09 C       ImageServer:  GetImage() called. Cat: Character, id: 3014016, size:50
-23:49:09 W      Image Server:  RedirectLocation() called for http://images.evetech.net/Character/3014016_50.jpg.
 
 *******************************************************
 *******************************************************
@@ -102,21 +89,11 @@ PyString("UI/Agents/DefaultMessages/NoMission1")
 quantity is off (in db) on some items (purchased or gifted)
   - see items around 140027931
 
-rewrite wreck creation tables.  wrecks are in invTypes table and listed as s/m/l +few extras
-   use npc ship groupID to determine faction and size
 
 update this to use static data instead of db hits:  ~8k rows
 StationSvc::Handle_GetSolarSystem
 
 replace all (<type>)(<math result>) c-type casting to use static_cast<type>(<math result>)
-
-remove GPoint/GVector code and just write my own using int64
-  positioning is whole numbers, but large (distances in space use meters, mostly in the billions)
-  simple arithmetic on floats only used for au
-  float/double precision not wanted or needed for positioning and int64 math is faster
-  go thru destiny and use int64 instead of double
-  go thru all position data and use int64 instead of double
-        except on math calls where precision is required (turn, orbit)
 
 npc ai - update for better ai. add advanced ai for advanced ship classes   -priority level: med-hi  wip
 NOTE:  copy idea from drones (state/actions) using lessons gleaned
@@ -144,9 +121,6 @@ entire Inv codebase is slow.  loading chars (and their inventory) is biggest bot
 
 InventoryItem - multiple remove calls....trace and fix
 
-go thru entire codebase and determine where variable precision is needed and adjust accordingly (float/double - int/uint/8/16/32/64)
-    radius() doesnt need to be double  (43 matches in 26 files)
-
 remove station/static queries from InventoryDB
 remove *lsc_service and *cache_service from PyServiceMgr
     - lsc_service may be singleton.  channels should remain dynamic...will have to look into this more
@@ -163,7 +137,6 @@ client login screen...these all need code to show data
 CharacterDB::GetCharSelectInfo
     upcomingEventCount:
     unreadMailCount:
-    unprocessedNotifications:
     alliance*
 
 fleet boosts - apply directly to ship/modules when calculated  (maybe try to use fxproc to apply, as ccp designed it)
@@ -292,20 +265,6 @@ is DataClasses.h used?  will it be?
   - its refd in pos code, but not used yet
 
 
-npc loot data needs rework
-  - currently writing hauler loot
-  - use this as template for other loot data
-loot is determined as follows:
-make list of possible lootItemGroups from lootGroup based on ship groupID
-roll random on each lootItemGroups from chances in lootGroup list for inclusion
-roll random for metaLevel modified by system secStatus
-make list of potential items from lootItemGroup and metaLevel
-roll random for each item in above list and add to lootVec
-add successful items to lootVec
--- npc loot chance in lootGroup and lootItemGroup is wonky
-get one random item from lootVec and add to final lootList
-
-
 *******************************************************
 *******************************************************
 **********  attributes and dogma...med/low priority
@@ -344,10 +303,6 @@ review all classes to add rule of 5 or =delete as required
     - PyRep Classes  all c'tor =delete'd
     - InventoryItem done?  (copy, move c'tor assert'd.  assign =delete'd   -- no hits on any yet)
     - others?)
-21:59:58 [ServerInit] BootSystem() - Booted system 30000053
-21:59:58 W Inv::UpdateFlag: this is used...finish code here
-21:59:58 W Inv::UpdateFlag: this is used...finish code here
-21:59:58 [PlayerTrace] Allan(90000000): Added to system manager for Ibaria(30000053) - 1 clients now in system. count true
 
 *******************************************************
 *******************************************************
@@ -359,12 +314,6 @@ memory management MUCH better now!!
 remove "Notify*" from notify names....implement better naming convention (see above)
 
 <elementDef name="GodmaError"><!-- more to this than template has here.  fix later  -->
-
-client initial connect packets are wonky....maybe missing some and/or more than we are currently using (not the only one)
-
-initial handshake packets may need work due to missing data.
-see file:///home/allan/Desktop/eve_packets/aknor/crucible/1.5.4/03272012-02-13-aknor_jaden_crucible-login_inspace_154.log
-    and maybe others  (this one is missing some data due to sniffer hiccup)
 
 there is a lot more to machonet than we currently have coded/working....
     - narrowcast is for notification types of "broadcast" using "bcast_idtype"
@@ -466,12 +415,13 @@ finish DestinyManager::SendCloakFx()
 
 client/script/ui/shared/neocom/locationInfoSvc.py
     this file has data for some items we dont have info/data/code for yet
+    includes facWar systemStatus info, w-space info, sov info, 
 
 asteroid/belt grow
   - idea is roids' gravity will accumulate more ore in areas unmolested by ships...after 6h or so
      more/less based on sysSec?
   test around 5% or so (per hour?  that would work well for starters)
-  entire belt at once;  per belt or per roid? or per system?
+  entire belt at once;  per belt? per roid? per system?  i'd think belt is best
   basic code in place, but system incomplete
 
 all the *Timers in client are actually SetTime +1s
@@ -513,7 +463,7 @@ arbitrator, osprey, scythe, vexor
 .inventory command
   - 10000000001 (office) - has no name
 
-check james' alliance code for proper functionality...not sure about some of those variables
+check james' alliance code for proper functionality...not sure about some of those variables or calls
 
 base price estimator code 95% complete.
 few prices wrong and not in crucible mkt data dump
@@ -528,18 +478,9 @@ AuditLogSecureContainer types not coded (data coded in EvE_Inventory.h)
 skill training...
     2x training bonus for new chars (<30d)
 move skills to separate db table
-last skill in queue doesnt complete properly.  throws error in client also
-
 
 journal msgs need to be implemented (wip)
 
-standings
-    - this is singleton (sStandingMgr)
-    - this currently isnt used correctly...update db online...fix to do all standings calc's and updates
-    - basic standings hit db on every call.  probably way too much for static data
-    - reproc/ram to remove individual standing code in favor of common code (evemath::standing?)
-    - faction/corp standings should be static for npc groups
-    - need to write standings code for corps and finish for others (char, agents)
 
 TransportClosed error msgs located in common/python/pypacket.h
 
@@ -548,9 +489,6 @@ go thru all updated effect data and look for 'improved' ship data to update ours
     - updated barges from current live patch (hot tanks)
 current fx data in db incomplete at best.  missing multiple items/defs
 seems like fx system isnt as complete as i thought, and there are more interconnected workings than i have coded/working
-namely, inertiaMod and agility shit (which is driving me nuts atm)  (not enough info here....dunno what i was talking about)
-effects processing incomplete....this may be much more complete than i implied here, mostly because i forgot how it worked when looking over it.
-    - must have skills skillLvl working somehow to implement proper agility processing...maybe not.
     NOTE:  fxProc is working very well with all available data
 
 15:30:42 [Attr Error] AttributeMap::SetAttribute() - Something sent NaN or Inf for Attr 351 on 'Abandon' Tracking Disruptor I(140023209). Returning without modifying.
@@ -576,11 +514,6 @@ customInfo is actually used in client
 20:41:06 [SvcMsg] Delivered message from 1000132 to recipient 90000000
     - ins mail working.  need contractID, expiry date, and few other things...
     -- this does NOT work....mailDB table is mailMessage.  this was saved in eveMail
-
-system mail not working.  this would be nice to have, as many systems could(will) use it    -priority level: low
-entire mail/notification system needs looking over, maybe rewrite to allow OnNotificationReceived sent from mail, as it should be.    -priority level: low-med
-mailDB needs much love.
-
 
 add cache calls/data for systems that use it after debugging and testing completed
     - bookmarks
@@ -638,7 +571,6 @@ pi working.  currently rewriting process code  -priority level: lo
 dungeons - complete current wip code   -priority level: med-hi
 dungeon mgr - factionID of "region sov" needs to be written to determine region sov holder (set to rogue drones at this time)   -priority level: low-med
     - figure out how to determine LCO in dungeon and spawn rats/waves near objects instead of middle of bubble
-dungeon deco items need better placement
 dungeon editor work:  (may not put much time in this system...)
 (OnDESelectionChanged)   not sure how/when/why this would be called
 
@@ -787,10 +719,6 @@ npc->rclick->gm menu->view attribs?
 *****************  uk calls
   ** none at this time **  (all known calls coded, albeit some only skeleton)
 
-  do i want to put unfinished/unimplemented calls here?  not really...
-  there are a lot, and will take a while to complete that list.
-
-
 *******************************************************
 *******************************************************
 *****************  db shit
@@ -832,16 +760,19 @@ trader joe (market bot)
     - fleet of ships (haulers, escorts) moving thru systems (universe wide?  multiple traders?)
     - market updates only at station fleet docked in
     - accurate travel times
-    - can be attacked, but VERY tough.  will call reinforcements (arrival time tbd)
-    - items in haulers for sale at docked station (random)  remove item from hauler when order placed.
+
     - add data/info to getmultiownersex call
     - is this single fleet or multiple?
     - only in active systems?  update market in systems that have been active in x timeframe?
-    - (advanced)  accept/deliver contracts?  would be interesting, but not easy.
+    - (advanced)  accept/deliver contracts?  would be interesting, but not easy. 
+for later?  will require removal from civ class to implement, then tracking as player/npc ship
+    - can be attacked, but VERY tough.  will call reinforcements (arrival time tbd)
+    - items in haulers for sale at docked station (random)  remove item from hauler when order placed.
 
 
 owner notes and owner labels incomplete
 implement remaining UIDs as noted in EVE_Defines.h  (later)
+
 contraband.
 however, there are skills related to it, once implemented  (but not published)
 skillSmuggling = 3448, // Trade Proficiency at laying low and avoiding unwanted attention. From a base of 90%, each level of skill reduces by 10% the likelihood of being scanned while transporting contraband.
@@ -872,8 +803,6 @@ GM/WM slash commands arent parsed in server (rclick '/create this type'....etc)
 update console commands to use complete words instead of first (or single) letter
     - this will enable greater command control and passing of arguments
 
-object cache system still not understood or fully utilized. (part of bulkdata shit)
-entire system needs lookover.
 
 rework bulkdata code.
 the current code is hacked to send bulk data in segments.  live uses *some other form* of data, which *MAY* be our cache files.
@@ -882,7 +811,7 @@ as this is still beyond me, it may take a while.
 till then, we'll have to used the hacked system.
 after all, it works
 
-figure out how to colorize _log() msgs to console   -priority level: low
+figure out how to colorize _log() msgs to console?   -priority level: low
 
 CmdStargateJump has multiple client-side msgs that would be fun to implement (system shut down due to traffik, closed from congestion, etc)
   these are found in Handle_CmdStargateJump
@@ -894,6 +823,7 @@ ideas for holoscreen in CQ:
     - relevant system data for player's current system
     - others?
     - more?
+*** if system has rogue drones, 'bleed' misc data onto holoscreen/billboard
 
 need timer/var for after cloak for targeting (cannot target x sec after uncloak - currently no delay)
 
@@ -905,7 +835,6 @@ else src/*/*.h files
 create data needed for killboard, and integrate killboard into site  -priority level: low
     - page started.  data non-existent  will use src/eve-core/killboard/
 
-player agent/error msgs - pool of msgs adjusted for character secstatus or standings with corp/sov holder, a la sphereScript's speech files
 
 when cynos are implemented, remember to update mapDynamicData for counts on both fields and generators
   - official::staging has working cyno code
@@ -934,9 +863,6 @@ make EACS and E-UNI corps as tribute (static)?
 *******************************************************
 *****************  ideas for later
 
-asteroid belt formations other than the crescent
-  noted in beltmgr.cpp
-  other ideas/notes in same place
 
 Creating a new bomb type that when it is carried in cargo and the ship is destroyed it triggers a bomb explosion.
 In high sec, the Tengu should have a chance of spontaneous self destruction when undocking.
@@ -949,10 +875,7 @@ add chat for system commands?  have commands send to cmd window instead of notif
 finish player command "srvoptions" to show current server settings in client notification
   - most code is there.  just incomplete
 
-****  make safe save method to verify and save data on segfault
-    -- nah...just fix all the segfaults
-
-aggressionMgr - this obj is system-wide, per system.  bound object could(should) be used for all clients in system
+aggressionMgr - this obj is system-wide, per system.  bound object should be used for all clients in system
     - should create instance on system boot, then pass that instance to clients when requested.
     - possible global static instance?  any way to make global and keep track of everything?
     ** remove from /character/* and put in /system/*
@@ -981,8 +904,7 @@ need to figure out how to load/queue assets for chars (on login or w/e)
     - this is needed for complete asset menu entries
 
 integrate UTF8 into code (or make my own class)
-   - same with zlib and gangsta
-   - is zlib even used??  it is now...
+   - same with zlib
 
 update ValidateAddItem() to return >0 on error and use enums to determine/display error (see char::injectskillintobrain)
     - there are many methods with this name.  i dont remember which one i was referring to here.
@@ -995,11 +917,11 @@ speaking of charges, how about a freight charge when moving large amounts of stu
      would this be docking charge?  no, that's akin to a full service gas station.  fill 'er up, check oil, wash windows, etc.
      based on standings with station owner?  ofc!
 
-boosters can&will damage/kill character (see description of 'Crash')
+boosters can & will damage/kill character (see description of 'Crash')
 others cause multiple other effects.  is this something we can implement/exploit?  most definitely...but later.
 
 
-integrate jeremie's liveintel code?
+integrate jeremie's liveintel code?   probably not...unsure
 https://github.com/jeremieroy/EVELiveIntel
 
 
@@ -1007,6 +929,8 @@ https://github.com/jeremieroy/EVELiveIntel
 *******************************************************
 ********************************
 website updates:
+
+LOTS of php game calls for billboards to add/implement
 
 add version #s to site
 

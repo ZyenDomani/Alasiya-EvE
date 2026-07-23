@@ -51,7 +51,7 @@ struct BmData {
     uint32 folderID;
     uint32 creatorID;
     int64 created;
-    GPoint point;
+    Vector3d point;
     std::string memo;
     std::string note;
 };

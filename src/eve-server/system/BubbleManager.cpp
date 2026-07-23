@@ -4,7 +4,8 @@
     ------------------------------------------------------------------------------------
     This file is part of EVEmu: EVE Online Server Emulator
     Copyright 2006 - 2016 The EVEmu Team
-    For the latest information visit http://evemu.org
+    Copyright 2016 - 2026 Alasiya-EvE by Allan
+    For the latest implementation status visit http://eve.alasiya.net/?p=op_status
     ------------------------------------------------------------------------------------
     This program is free software; you can redistribute it and/or modify it under
     the terms of the GNU Lesser General Public License as published by the Free Software
@@ -143,8 +144,7 @@ void BubbleManager::CheckBubble(SystemEntity* pSE) {
     Add(pSE);
 }
 
-void BubbleManager::RemoveEmpty()
-{
+void BubbleManager::RemoveEmpty() {
     std::list<SystemBubble*>::iterator itr = m_bubbles.begin();
     while (itr != m_bubbles.end()) {
         if ((*itr)->IsEmpty()) {
@@ -166,13 +166,13 @@ void BubbleManager::Add(SystemEntity* pSE, bool isPostWarp /*false*/) {
     if (pSE->GetPosition().isZero())
         pSE->DestinyMgr()->SetPosition(sMapData.GetRandPointOnPlanet(pSE->SystemMgr()->GetID()));
 
-    GPoint center(pSE->GetPosition());
+    Vector3d center = pSE->GetPosition();
     if (isPostWarp) {
         // Calculate new bubble's center based on entity's velocity and current position
         NewBubbleCenter(pSE->GetVelocity(), center);
     }
 
-    SystemBubble* pBubble(GetBubble(pSE->SystemMgr(), center));
+    SystemBubble* pBubble = GetBubble(pSE->SystemMgr(), center);
     if (pBubble == nullptr) {
         _log(BUBBLE__ERROR, "BubbleManager::Add(): GetBubble() returned nullptr for %s:%u, at (%.2f, %.2f, %.2f).", \
                     pSE->SystemMgr()->GetName(), pSE->SystemMgr()->GetID(), center.x, center.y, center.z );
@@ -197,9 +197,13 @@ void BubbleManager::Add(SystemEntity* pSE, bool isPostWarp /*false*/) {
     pBubble->Add(pSE);
 }
 
-void BubbleManager::NewBubbleCenter(GVector shipVelocity, GPoint& newCenter) {
-    shipVelocity.normalize();
-    newCenter += (shipVelocity * (BUBBLE_RADIUS_METERS * 0.5f));
+void BubbleManager::NewBubbleCenter(Vector3d shipVelocity, Vector3d& newCenter) {
+    // check this...is this right?  create at 1/2 radius?
+    shipVelocity.Normalize();
+    float dist = BUBBLE_RADIUS_METERS * 0.5f;
+    newCenter.x += (shipVelocity.x * dist);
+    newCenter.y += (shipVelocity.y * dist);
+    newCenter.z += (shipVelocity.z * dist);
 }
 
 void BubbleManager::Remove(SystemEntity* pSE) {
@@ -220,7 +224,7 @@ SystemBubble* BubbleManager::FindBubble(SystemEntity* pSE) const {
     return FindBubble(pSE->SystemMgr()->GetID(), pSE->GetPosition());
 }
 
-SystemBubble* BubbleManager::FindBubble(uint32 systemID, const GPoint& position) const {
+SystemBubble* BubbleManager::FindBubble(uint32 systemID, const Vector3d& position) const {
     // Finds a range containing all elements whose key is k.
     // pair<iterator, iterator> equal_range(const key_type& k)
     _log(BUBBLE__DEBUG, "BubbleManager::FindBubble() - Searching point %.1f, %.1f, %.1f in system %u.", \
@@ -235,25 +239,31 @@ SystemBubble* BubbleManager::FindBubble(uint32 systemID, const GPoint& position)
     return nullptr;
 }
 
-SystemBubble* BubbleManager::GetBubble(SystemManager* sysMgr, const GPoint& position)
-{
-    SystemBubble* pBubble(FindBubble(sysMgr->GetID(), position));
+SystemBubble* BubbleManager::GetBubble(SystemManager* sysMgr, const Vector3d& position) {
+    SystemBubble* pBubble = FindBubble(sysMgr->GetID(), position);
     if (pBubble == nullptr)
         pBubble = MakeBubble(sysMgr, position);
 
     return pBubble;
 }
 
-SystemBubble* BubbleManager::MakeBubble(SystemManager* sysMgr, GPoint position) {
+SystemBubble* BubbleManager::MakeBubble(SystemManager* sysMgr, Vector3d position) {
     // determine if new center (pos) is within 2x radius of another bubble center. (overlap)
+    Vector3d dir, centerPt;
     auto range = m_sysBubbleMap.equal_range(sysMgr->GetID());
     for (auto itr = range.first; itr != range.second; ++itr) {
         if (itr->second->IsOverlap(position)) {
-            GVector dir(itr->second->GetCenter(), position);
-            dir.normalize();
+            dir = itr->second->GetCenter();
+            dir.x -= position.x;
+            dir.y -= position.y;
+            dir.z -= position.z;
+            dir.Normalize();
             _log(BUBBLE__DEBUG, "BubbleManager::MakeBubble()::IsOverlap() - dir: %.3f,%.3f,%.3f", dir.x, dir.y, dir.z);
             // move pos away from center
-            position = itr->second->GetCenter() + (dir * (BUBBLE_RADIUS_METERS * 2));
+            centerPt = itr->second->GetCenter();
+            position.x = centerPt.x + (dir.x * (BUBBLE_RADIUS_METERS * 2));
+            position.y = centerPt.y + (dir.y * (BUBBLE_RADIUS_METERS * 2));
+            position.z = centerPt.z + (dir.z * (BUBBLE_RADIUS_METERS * 2));
             break;
         }
     }
@@ -269,16 +279,14 @@ SystemBubble* BubbleManager::MakeBubble(SystemManager* sysMgr, GPoint position) 
     return pBubble;
 }
 
-SystemBubble* BubbleManager::FindBubbleByID(uint16 bubbleID)
-{
+SystemBubble* BubbleManager::FindBubbleByID(uint16 bubbleID) {
     std::map<uint32, SystemBubble*>::iterator itr = m_bubbleIDMap.find(bubbleID);
     if (itr != m_bubbleIDMap.end())
         return itr->second;
     return nullptr;
 }
 
-void BubbleManager::ClearSystemBubbles(uint32 systemID)
-{
+void BubbleManager::ClearSystemBubbles(uint32 systemID) {
     auto range = m_sysBubbleMap.equal_range(systemID);
     for (auto itr = range.first; itr != range.second; ++itr) {
         m_bubbles.remove(itr->second);
@@ -288,8 +296,7 @@ void BubbleManager::ClearSystemBubbles(uint32 systemID)
     m_sysBubbleMap.erase(systemID);
 }
 
-void BubbleManager::RemoveBubble(uint32 systemID, SystemBubble* pSB)
-{
+void BubbleManager::RemoveBubble(uint32 systemID, SystemBubble* pSB) {
     auto range = m_sysBubbleMap.equal_range(systemID);
     for (auto itr = range.first; itr != range.second; ++itr)
         if (itr->second == pSB) {
@@ -302,24 +309,22 @@ void BubbleManager::RemoveBubble(uint32 systemID, SystemBubble* pSB)
 }
 
 /* for beltmgr */
-void BubbleManager::AddSpawnID(uint16 bubbleID, uint32 spawnID)
-{
+void BubbleManager::AddSpawnID(uint16 bubbleID, uint32 spawnID) {
     m_spawnIDs.emplace(bubbleID, spawnID);
 }
 
-void BubbleManager::RemoveSpawnID(uint16 bubbleID, uint32 spawnID)
-{
+void BubbleManager::RemoveSpawnID(uint16 bubbleID, uint32 spawnID) {
     // is this right??
     auto range = m_spawnIDs.equal_range(bubbleID);
-    for (auto itr = range.first; itr != range.second; ++itr )
+    for (auto itr = range.first; itr != range.second; ++itr) {
         if (itr->second == spawnID) {
             m_spawnIDs.erase(itr);
             return;
         }
+    }
 }
 
-uint32 BubbleManager::GetBeltID(uint16 bubbleID)
-{
+uint32 BubbleManager::GetBeltID(uint16 bubbleID) {
     std::map<uint16, uint32>::iterator itr = m_spawnIDs.find(bubbleID);
     if (itr == m_spawnIDs.end())
         return 0;
@@ -335,7 +340,7 @@ uint32 BubbleManager::GetBubbleCount(uint32 systemID) {
 }
 
 void BubbleManager::GetBubbleCenterMarkers(std::vector<CosmicSignature>& anom) {
-    ContainerSE* cSE(nullptr);
+    ContainerSE* cSE = nullptr;
     for (auto &cur : m_sysBubbleMap) {
         cSE = cur.second->GetCenterMarker();
         if (cSE == nullptr)
@@ -359,7 +364,7 @@ void BubbleManager::GetBubbleCenterMarkers(std::vector<CosmicSignature>& anom) {
 }
 
 void BubbleManager::GetBubbleCenterMarkers(uint32 systemID, std::vector<CosmicSignature>& anom) {
-    ContainerSE* cSE(nullptr);
+    ContainerSE* cSE = nullptr;
     auto range = m_sysBubbleMap.equal_range(systemID);
     for (auto itr = range.first; itr != range.second; ++itr) {
         cSE = itr->second->GetCenterMarker();

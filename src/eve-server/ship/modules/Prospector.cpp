@@ -169,7 +169,7 @@ void Prospector::DropSalvage() {
     if (atoi(m_targetSE->GetSelf()->customInfo().c_str()) == factionUnknown)
         drone = true;
 
-    uint8 drop(0);
+    uint8 drop = 0;
     switch (m_accessChance) {       // drop qty * rate in config
         case  30: drop = 1; break;  //  1 to 4
         case  20: drop = 2; break;  //  2 to 8

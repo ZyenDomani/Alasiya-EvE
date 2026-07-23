@@ -1,0 +1,9 @@
+/**
+ * SwarmSE.h
+ *      this class is for rogue drones
+ *
+ * @Author:     Allan
+ * @Version:    1.03
+ * @AI Version: 0.95
+ * @Date:       14Jul26  (copied from NPC.h)
+ */

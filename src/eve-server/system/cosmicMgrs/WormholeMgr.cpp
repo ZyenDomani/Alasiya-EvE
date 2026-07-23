@@ -104,12 +104,12 @@ void WormholeMgr::Create(CosmicSignature& sig, uint32 exitSystemID/*0*/, uint32 
     sig.sigStrength = 0.1;
 
     //Destination for non-exit wormholes
-    uint32 destSystem(0);
+    uint32 destSystem = 0;
     CelestialObjectRef iRef;
 
     // For exit wormholes (k162)
     if (exitSystemID != 0) {
-        GPoint pos(sig.position);
+        Vector3d pos(sig.position);
         ItemData wData(Item::Wormhole::K162, sig.ownerID, sig.systemID, flagAutoFit, sig.sigName.c_str(), pos);
         iRef = sItemFactory.SpawnWormhole(wData);
         if (iRef.get() == nullptr)
@@ -130,7 +130,7 @@ void WormholeMgr::Create(CosmicSignature& sig, uint32 exitSystemID/*0*/, uint32 
         sig.sigName = whType->name();
         sig.sigTypeID = whType->id();
 
-        GPoint pos(sig.position);
+        Vector3d pos(sig.position);
         ItemData wData(whType->id(), sig.ownerID, sig.systemID, flagAutoFit, sig.sigName.c_str(), pos);
 
         iRef = sItemFactory.SpawnWormhole(wData);
@@ -256,7 +256,7 @@ void WormholeMgr::CreateExit(SystemManager* pFromSys, uint32 exitSystemID, uint3
     CelestialObjectRef iRef;
     CelestialObjectRef sRef;
 
-    GPoint pos(sig.position);
+    Vector3d pos(sig.position);
     ItemData wData(Item::Wormhole::K162, sig.ownerID, sig.systemID, flagAutoFit, sig.sigName.c_str(), pos);
     iRef = sItemFactory.SpawnWormhole(wData);
     if (iRef.get() == nullptr)

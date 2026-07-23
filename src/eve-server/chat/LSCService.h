@@ -54,7 +54,7 @@ public:
 
     PyResult ExecuteCommand(Client *from, const char *msg);
 
-    void CharacterLogin(Client *pClient);
+    void CharacterLogin(Client* pClient);
     void SendServerMOTD(Client* pClient);
 
     void CreateSystemChannel(int32 channelID);
@@ -102,7 +102,7 @@ private:
     // iterate thru entire list and string::comp for name
     LSCChannel *GetChannelByName(std::string  channelName);
     LSCChannel *CreateChannel(int32 channelID, uint32 ownerID, const char* name, std::string motd, const char* password, const char* compkey,
-                              LSC::Type type = LSC::Type::normal, uint32 cspa = 0, int32 groupMessageID = 0, int32 channelMessageID = 0,
+                              uint8 type = LSC::Type::normal, uint32 cspa = 0, int32 groupMessageID = 0, int32 channelMessageID = 0,
                               bool memberless = false, bool maillist = false, bool temporary = false, bool languageRestriction = false);
 
 };

@@ -112,7 +112,6 @@ sql/tables_old/
 # misc shit
 sql/tables.tar.gz
 sql/testScripts/
-src/eve-core/math/
 utils/liveupdategen/tmp
 utils/liveupdategen/patches/disabled
 utils/liveupdategen/patches/to fix

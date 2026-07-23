@@ -170,7 +170,7 @@ public:
     // default constructor:
     ItemData( const char *_name = "", uint16 _typeID = 0, uint32 _ownerID = ownerSystem, uint32 _locationID = locTemp,
               EVEItemFlags _flag = flagAutoFit, bool _contraband = false, bool _singleton = false, int32 _quantity = 0,
-              const GPoint &_position = NULL_ORIGIN, const char *_customInfo = "");
+              const Vector3d &_position = NULL_ORIGIN, const char *_customInfo = "");
 
     // non-singleton constructor:
     ItemData( uint16 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, int32 _quantity,
@@ -178,7 +178,7 @@ public:
 
     // Singleton constructor:
     ItemData( uint16 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, const char *_name = "",
-              const GPoint &_position = NULL_ORIGIN, const char *_customInfo = "", bool _contraband = false);
+              const Vector3d &_position = NULL_ORIGIN, const char *_customInfo = "", bool _contraband = false);
 
     // Content:
     bool            contraband :1;
@@ -188,7 +188,7 @@ public:
     uint32          ownerID;
     uint32          locationID;
     int32           quantity;
-    GPoint          position;
+    Vector3d          position;
     std::string     name;
     std::string     customInfo;
 };

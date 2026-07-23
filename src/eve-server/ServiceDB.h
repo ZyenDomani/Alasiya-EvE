@@ -28,6 +28,8 @@
 #define __SERVICEDB_H_INCL__
 
 #include "eve-server.h"
+
+#include "../eve-common/EVE_Cosmic.h"
 #include "POD_containers.h"
 
 /**

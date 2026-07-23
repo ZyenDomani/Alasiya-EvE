@@ -193,7 +193,7 @@ void Missile::EncodeDestiny(Buffer& into)
     into.Append( data );
     MISSILE_Struct miss;
         miss.ownerID = m_ownerID;
-        miss.formationID = 0xFF;
+        miss.formationID = -1;
         miss.effectStamp = m_destiny->GetStateStamp();
         miss.targetID = m_targetSE->GetID();
         miss.followRange = m_destiny->GetFollowDistance();
@@ -255,8 +255,8 @@ void Missile::HitTarget() {
     double DRF = m_self->GetAttribute(AttrAoeDamageReductionFactor).get_float(); // Damage Reduction Factor
     double DRS = m_self->GetAttribute(AttrAoeDamageReductionSensitivity).get_float(); // Damage Reduction Sensitivity
 
-    GPoint Vel = m_targetSE->GetVelocity();
-    double V = Vel.length();
+    Vector3d Vel = m_targetSE->GetVelocity();
+    double V = Vel.Length();
     if (V <= 0.0)
         V = 1.0;
 

@@ -114,7 +114,7 @@ void SuperWeapon::StopCycle(bool abort)
     OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;
-        shipEff.timeNow = Win32TimeNow();
+        shipEff.timeNow = GetFileTimeNow();
         shipEff.start = 0;
         shipEff.active = 0;
         shipEff.environment = ge.Encode();
@@ -232,7 +232,7 @@ void SuperWeapon::_ShowCycle()
     OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;
-        shipEff.timeNow = Win32TimeNow();
+        shipEff.timeNow = GetFileTimeNow();
         shipEff.start = 1;
         shipEff.active = 1;
         shipEff.environment = ge.Encode();

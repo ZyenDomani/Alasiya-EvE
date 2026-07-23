@@ -33,8 +33,8 @@
 
 
 DroneAIMgr::DroneAIMgr(DroneSE* pdSE)
-: m_heading(NULL_ORIGIN_V),
-m_velocity(NULL_ORIGIN_V),
+: m_heading(NULL_ORIGIN),
+m_velocity(NULL_ORIGIN),
 targSE(nullptr),
 fTargSE(nullptr),
 mySE(pdSE),
@@ -225,8 +225,8 @@ void DroneAIMgr::Process() {
             return;
     }
 
-    bool move(true);
-    double timeStamp(0);
+    bool move = true;
+    double timeStamp = 0;
 
     // keep timer in seconds.
     timeStamp = ((GetTimeMSeconds() - m_moveTime) * 0.001);
@@ -243,12 +243,16 @@ void DroneAIMgr::Process() {
     //  NOTE:  it does not...drones at orbit around home will routinely wander 250k away (must .syncloc to recall)
 
     //  there are a lot of distance checks here.  compute distance once.
-    uint32 targDistance(0);
-    uint32 shipDistance(mySE->GetPosition().distance(shipSE->GetPosition()));
+    double targDistance = 0;
+    Vector3d delta = shipSE->GetPosition() - mySE->GetPosition();
+    double shipDistance = delta.Length();
     shipDistance -= shipSE->GetRadius();
     // should we check for targDistance==0 in here?
-    if (targSE != nullptr)
-        targDistance = mySE->GetPosition().distance(targSE->GetPosition() - targSE->GetRadius());
+    if (targSE != nullptr) {
+        delta = targSE->GetPosition() - mySE->GetPosition();
+        targDistance = delta.Length();
+        targDistance -= targSE->GetRadius();
+    }
 
     switch(m_state) {
         case DroneAI::State::Idle: {
@@ -1268,7 +1272,7 @@ void DroneAIMgr::Target(SystemEntity* pTargetSE) {
 
     // all is good, set new target
     targSE = pTargetSE;
-    bool chase(false);  // chase ref isnt used for drones
+    bool chase = false;  // chase ref isnt used for drones
     if (!mySE->TargetMgr()->StartTargeting(pTargetSE,
                                             mySE->GetSelf()->GetAttribute(AttrScanSpeed).get_uint32(),
                                             (uint8)mySE->GetSelf()->GetAttribute(AttrMaxLockedTargets).get_uint32(),
@@ -1282,7 +1286,7 @@ void DroneAIMgr::Target(SystemEntity* pTargetSE) {
     }
 
     // zero-out the heading
-    m_heading = NULL_ORIGIN_V;
+    m_heading = NULL_ORIGIN;
 
     // test  do we need to set timer here?
 }
@@ -1436,11 +1440,12 @@ void DroneAIMgr::OrbitTarget() {
      */
 
     // are we outside of control distance and idling back to our ship?
-    bool idle(false);
+    bool idle = false;
 
     // get current target so we can calculate distance to set targetID and speed properly
-    int32 targetID(0);
-    int64 distance(0);
+    uint32 targetID = 0;
+    double distance = 0.0;
+    Vector3d delta;
     // target depends on which way we going
     switch (m_action) {
         case DroneAI::Action::Idle:           // no target
@@ -1454,13 +1459,12 @@ void DroneAIMgr::OrbitTarget() {
                 case DroneAI::State::Assisting:
                 case DroneAI::State::ReturnBay:
                 case DroneAI::State::ReturnHome: {
-                    distance = mySE->GetPosition().distance(shipSE->GetPosition());
+                    delta = shipSE->GetPosition() - mySE->GetPosition();
+                    distance = delta.Length();
                     distance -= shipSE->GetRadius();
                     targetID = shipSE->GetID();
                     // update heading
-                    GVector targHeading(mySE->GetPosition(), shipSE->GetPosition());
-                    targHeading.normalize();
-                    m_heading = targHeading;
+                    m_heading = delta.Normalize();
                     // are we outside of control distance and idling back to our ship?
                     if (!mySE->InControlDistance())
                         idle = true;
@@ -1472,13 +1476,12 @@ void DroneAIMgr::OrbitTarget() {
                 case DroneAI::State::Operating:
                 case DroneAI::State::Repairing:
                 case DroneAI::State::Approaching: {     // im gonna go with "Approaching Target" here....
-                    distance = mySE->GetPosition().distance(targSE->GetPosition());
+                    delta = targSE->GetPosition() - mySE->GetPosition();
+                    distance = delta.Length();
                     distance -= targSE->GetRadius();
                     targetID = targSE->GetID();
                     // update heading
-                    GVector targHeading(mySE->GetPosition(), targSE->GetPosition());
-                    targHeading.normalize();
-                    m_heading = targHeading;
+                    m_heading = delta.Normalize();
                 } break;
                 // this should never hit
                 case DroneAI::State::Invalid:
@@ -1491,24 +1494,22 @@ void DroneAIMgr::OrbitTarget() {
         case DroneAI::Action::AccelToTarget:
         case DroneAI::Action::DecelToTarget: {
             // target is target
-            distance = mySE->GetPosition().distance(targSE->GetPosition());
+            delta = targSE->GetPosition() - mySE->GetPosition();
+            distance = delta.Length();
             distance -= targSE->GetRadius();
             targetID = targSE->GetID();
             // update heading
-            GVector targHeading(mySE->GetPosition(), targSE->GetPosition());
-            targHeading.normalize();
-            m_heading = targHeading;
+            m_heading = delta.Normalize();
         } break;
         case DroneAI::Action::AccelToShip:
         case DroneAI::Action::DecelToShip: {
             // target is assigned ship
-            distance = mySE->GetPosition().distance(shipSE->GetPosition());
+            delta = targSE->GetPosition() - mySE->GetPosition();
+            distance = delta.Length();
             distance -= shipSE->GetRadius();
             targetID = shipSE->GetID();
             // update heading
-            GVector targHeading(mySE->GetPosition(), shipSE->GetPosition());
-            targHeading.normalize();
-            m_heading = targHeading;
+            m_heading = delta.Normalize();
             // are we outside of control distance and idling back to our ship?
             if (!mySE->InControlDistance())
                 idle = true;
@@ -1516,12 +1517,12 @@ void DroneAIMgr::OrbitTarget() {
         case DroneAI::Action::DecelToStop: {
             // at this point, we're idle and decel, so no target...should we have one?
             // this is for target gone or drone Incapacitated
-            m_heading = NULL_ORIGIN_V;
+            m_heading = NULL_ORIGIN;
             _log(DRONE__AI_TRACE, "%s - OrbitTarget() called.  decel to stop", mySE->GetName());
         } break;
         case DroneAI::Action::Invalid: {
             // this shouldnt hit.
-            m_heading = NULL_ORIGIN_V;
+            m_heading = NULL_ORIGIN;
             _log(DRONE__AI_TRACE, "%s - OrbitTarget() called.  idle or invalid.", mySE->GetName());
         }
     }
@@ -2115,7 +2116,7 @@ void DroneAIMgr::SendTrueState(int8 state) {
 }
 
 bool DroneAIMgr::IsIdle() {
-    bool idle(false);
+    bool idle = false;
     // check state and action...
     switch (m_state) {
         case DroneAI::State::ReturnBay: {
@@ -2274,36 +2275,50 @@ float DroneAIMgr::GetSpeedFraction() {
 }
 
 bool DroneAIMgr::InProxmityDistance(SystemEntity* pTargetSE) {
-    double dist(mySE->GetPosition().distance(pTargetSE->GetPosition()) - pTargetSE->GetRadius());
+    Vector3d delta = pTargetSE->GetPosition() - mySE->GetPosition();
+    double dist = delta.Length();
+    dist -= pTargetSE->GetRadius();
     return (dist < m_proximityDistance);
 }
 
 bool DroneAIMgr::InActionDistance(SystemEntity* pTargetSE) {
-    double dist(mySE->GetPosition().distance(pTargetSE->GetPosition()) - pTargetSE->GetRadius());
+    Vector3d delta = pTargetSE->GetPosition() - mySE->GetPosition();
+    double dist = delta.Length();
+    dist -= pTargetSE->GetRadius();
     return (dist < sConfig.drone.InteractDistace);
 }
 
 bool DroneAIMgr::InOrbitDistance(SystemEntity* pTargetSE) {
-    double dist(mySE->GetPosition().distance(pTargetSE->GetPosition()) - pTargetSE->GetRadius());
+    Vector3d delta = pTargetSE->GetPosition() - mySE->GetPosition();
+    double dist = delta.Length();
+    dist -= pTargetSE->GetRadius();
     return (dist < m_orbitDistance);
 }
 bool DroneAIMgr::InFalloffDistance(SystemEntity* pTargetSE) {
-    double dist(mySE->GetPosition().distance(pTargetSE->GetPosition()) - pTargetSE->GetRadius());
+    Vector3d delta = pTargetSE->GetPosition() - mySE->GetPosition();
+    double dist = delta.Length();
+    dist -= pTargetSE->GetRadius();
     return (dist < m_falloffDistance);
 }
 
 bool DroneAIMgr::InEngageDistance(SystemEntity* pTargetSE) {
-    double dist(mySE->GetPosition().distance(pTargetSE->GetPosition()) - pTargetSE->GetRadius());
+    Vector3d delta = pTargetSE->GetPosition() - mySE->GetPosition();
+    double dist = delta.Length();
+    dist -= pTargetSE->GetRadius();
     return (dist < m_engageDistance);
 }
 
 bool DroneAIMgr::InChaseDistance(SystemEntity* pTargetSE) {
-    double dist(mySE->GetPosition().distance(pTargetSE->GetPosition()) - pTargetSE->GetRadius());
+    Vector3d delta = pTargetSE->GetPosition() - mySE->GetPosition();
+    double dist = delta.Length();
+    dist -= pTargetSE->GetRadius();
     return (dist < m_chaseDistance);
 }
 
 bool DroneAIMgr::InMaxDistance(SystemEntity* pTargetSE) {
-    double dist(mySE->GetPosition().distance(pTargetSE->GetPosition()) - pTargetSE->GetRadius());
+    Vector3d delta = pTargetSE->GetPosition() - mySE->GetPosition();
+    double dist = delta.Length();
+    dist -= pTargetSE->GetRadius();
     return (dist < m_maxDistance);
 }
 
@@ -2311,7 +2326,7 @@ bool DroneAIMgr::InMaxDistance(SystemEntity* pTargetSE) {
 // destiny methods below...
 
 void DroneAIMgr::Stop() {
-    m_velocity = NULL_ORIGIN_V;
+    m_velocity = NULL_ORIGIN;
     UpdatePosition();
     m_moveTime = 0;
     if (is_log_enabled(DRONE__MOVE))
@@ -2338,7 +2353,7 @@ void DroneAIMgr::Pause() {
     if (m_chaseDistance < 1000) {
         if (mySE->GetGroupID() != EVEDB::invGroups::Mining_Drone) {
             // stationary drones
-            m_velocity = NULL_ORIGIN_V;
+            m_velocity = NULL_ORIGIN;
         } else {
             // mining drones
             m_velocity = m_heading * m_maxSpeed;
@@ -2378,13 +2393,17 @@ void DroneAIMgr::Move(double timeStamp) {
         return;
     }
 
-    uint32 targDistance(0);
-    uint32 shipDistance(mySE->GetPosition().distance(shipSE->GetPosition()));
+    uint32 targDistance = 0;
+    Vector3d delta = shipSE->GetPosition() - mySE->GetPosition();
+    double shipDistance = delta.Length();
     shipDistance -= shipSE->GetRadius();
-    if (targSE != nullptr)
-        targDistance = mySE->GetPosition().distance(targSE->GetPosition() - targSE->GetRadius());
+    if (targSE != nullptr) {
+        delta = targSE->GetPosition() - mySE->GetPosition();
+        targDistance = delta.Length();
+        targDistance -= targSE->GetRadius();
+    }
 
-    _log(DRONE__AI_TRACE, "Move() - %s(%u):  %s(%s) - targDistance: %u, shipDistance: %u", \
+    _log(DRONE__AI_TRACE, "Move() - %s(%u):  %s(%s) - targDistance: %u, shipDistance: %0.1f", \
                 mySE->GetName(), mySE->GetID(), GetStateName(m_state), GetActionName(m_action), targDistance, shipDistance);
 
     // after seeing drones haul ass out of bubble, lets do sanity checks....
@@ -2405,7 +2424,7 @@ void DroneAIMgr::Move(double timeStamp) {
 
     // if we're still traveling, we will need to do accel/decel and keep track of timestamps like destiny does
     // some drones have accel/decel times > 5s
-    bool accel(false), decel(false), stop(false);
+    bool accel = false, decel = false, stop = false;
 
     // lets do some fkn distance checks to stop movement, please.
     // determine current action
@@ -2428,11 +2447,12 @@ void DroneAIMgr::Move(double timeStamp) {
                 accel = true;
             } else if (shipDistance < m_orbitDistance) {
                 // we're within orbit.  set position and stop movement
-                GVector head(shipSE->GetPosition(), mySE->GetPosition());
-                head.normalize();
-                GVector velocity(head * m_orbitDistance);
-                GPoint pos(shipSE->GetPosition());
-                pos += velocity;
+                Vector3d head = shipSE->GetPosition() - mySE->GetPosition();
+                head.Normalize();
+                Vector3d pos = shipSE->GetPosition();
+                pos.x += (head.x * m_orbitDistance);
+                pos.y += (head.y * m_orbitDistance);
+                pos.z += (head.z * m_orbitDistance);
                 mySE->SetPosition(pos);
                 m_moveTime = 0;
                 _log(DRONE__AI_TRACE, "Move() - within orbit distance. pausing");
@@ -2457,11 +2477,12 @@ void DroneAIMgr::Move(double timeStamp) {
                 accel = true;
             } else if (shipDistance < m_orbitDistance) {
                 // we're within orbit.  set position and stop movement
-                GVector head(shipSE->GetPosition(), mySE->GetPosition());
-                head.normalize();
-                GVector velocity(head * m_orbitDistance);
-                GPoint pos(shipSE->GetPosition());
-                pos += velocity;
+                Vector3d head = shipSE->GetPosition() - mySE->GetPosition();
+                head.Normalize();
+                Vector3d pos = shipSE->GetPosition();
+                pos.x += (head.x * m_orbitDistance);
+                pos.y += (head.y * m_orbitDistance);
+                pos.z += (head.z * m_orbitDistance);
                 mySE->SetPosition(pos);
                 m_moveTime = 0;
                 _log(DRONE__AI_TRACE, "Move() - within orbit distance. pausing");
@@ -2490,11 +2511,12 @@ void DroneAIMgr::Move(double timeStamp) {
                 accel = true;
             } else if (targDistance < m_orbitDistance) {
                 // we're within orbit.  set position and stop movement
-                GVector head(targSE->GetPosition(), mySE->GetPosition());
-                head.normalize();
-                GVector velocity(head * m_orbitDistance);
-                GPoint pos(targSE->GetPosition());
-                pos += velocity;
+                Vector3d head = targSE->GetPosition() - mySE->GetPosition();
+                head.Normalize();
+                Vector3d pos = targSE->GetPosition();
+                pos.x += (head.x * m_orbitDistance);
+                pos.y += (head.y * m_orbitDistance);
+                pos.z += (head.z * m_orbitDistance);
                 mySE->SetPosition(pos);
                 m_moveTime = 0;
                 _log(DRONE__AI_TRACE, "Move() - within orbit distance. pausing");
@@ -2518,11 +2540,12 @@ void DroneAIMgr::Move(double timeStamp) {
                 accel = true;
             } else if (targDistance < m_orbitDistance) {
                 // we're within orbit.  set position and stop movement
-                GVector head(targSE->GetPosition(), mySE->GetPosition());
-                head.normalize();
-                GVector velocity(head * m_orbitDistance);
-                GPoint pos(targSE->GetPosition());
-                pos += velocity;
+                Vector3d head = targSE->GetPosition() - mySE->GetPosition();
+                head.Normalize();
+                Vector3d pos = targSE->GetPosition();
+                pos.x += (head.x * m_orbitDistance);
+                pos.y += (head.y * m_orbitDistance);
+                pos.z += (head.z * m_orbitDistance);
                 mySE->SetPosition(pos);
                 m_moveTime = 0;
                 _log(DRONE__AI_TRACE, "Move() - within orbit distance. pausing");
@@ -2551,7 +2574,7 @@ void DroneAIMgr::Move(double timeStamp) {
 
     _log(DRONE__AI_TRACE, "Move() - accel: %s, decel: %s, stop: %s", accel?"true":"false", decel?"true":"false", stop?"true":"false");
 
-    int32 speed(0);
+    int32 speed = 0;
     // check to see if our target has moved.  if so, update position accordingly
     if ((timeStamp > m_accelTime) or (m_timeFraction > 0.9f)) {
         // full speed reached
@@ -2594,23 +2617,28 @@ void DroneAIMgr::Move(double timeStamp) {
             mySE->GetName(), mySE->GetID(), (accel ? "Accel" : (decel ? "Decel" : "Steady")), \
             speed, m_timeFraction, m_activeSpeedFraction);
 
-    m_velocity = m_heading * speed;
+    m_velocity.x = m_heading.x * speed;
+    m_velocity.y = m_heading.y * speed;
+    m_velocity.z = m_heading.z * speed;
     UpdatePosition(false);
 }
 
 void DroneAIMgr::MoveDrone(SystemEntity* pTargetSE) {
-    GVector head(pTargetSE->GetPosition(), mySE->GetPosition());
-    head.normalize();
-    GVector posOffset(head * (m_orbitDistance - 100));
-    GPoint pos(pTargetSE->GetPosition());
-    pos += posOffset;
+    Vector3d head = pTargetSE->GetPosition() - mySE->GetPosition();
+    head.Normalize();
+    Vector3d pos = pTargetSE->GetPosition();
+    pos.x += (head.x * (m_orbitDistance - 100));
+    pos.y += (head.y * (m_orbitDistance - 100));
+    pos.z += (head.z * (m_orbitDistance - 100));
     mySE->SetPosition(pos);
 }
 
 void DroneAIMgr::UpdatePosition(bool update/*false*/) {
     // basic position updating - variables updated elsewhere
-    GVector pos(mySE->GetPosition());
-    pos += m_velocity;
+    Vector3d pos = mySE->GetPosition();
+    pos.x += m_velocity.x;
+    pos.y += m_velocity.y;
+    pos.z += m_velocity.z;
     mySE->SetPosition(pos);
 
     if (sEntityMgr.GetTracking())
@@ -2667,7 +2695,7 @@ void DroneAIMgr::SendGFX(Client* pClient/*nullptr*/) {
     //  NOTE: drones are called 'entities' in client; EVE_Effects has 'entityxxx' for gfx...may not be used like this.
     uint16 gfxID(iRef->GetAttribute(AttrGfxTurretID).get_uint32());
 
-    bool active(false), start(false), repeat(false);
+    bool active = false, start = false, repeat = false;
     if (m_action == DroneAI::Action::Engaged) {
         if (iRef->groupID() != EVEDB::invGroups::Mining_Drone)
             repeat = true;
@@ -2721,7 +2749,7 @@ void DroneAIMgr::SetState(int8 stateID/*-1*/) {
     m_state = stateID;
 }
 
-void DroneAIMgr::MarkPoint(const GPoint& position) {
+void DroneAIMgr::MarkPoint(const Vector3d& position) {
     std::string name = "drone marker", desc = "";
     // create jetcan to visualize point in space
     ItemData idata(23, ownerSystem, mySE->GetLocationID(), flagAutoFit, name.c_str(), position, desc.c_str());

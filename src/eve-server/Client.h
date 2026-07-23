@@ -183,7 +183,7 @@ public:
     void DockToStation();
     void PickAlternateShip();
     void ResetAfterPodded();
-    void ResetAfterPopped(GPoint& position);  //  delete killed ship, reset player to pod, add pod to system
+    void ResetAfterPopped(Vector3d& position);  //  delete killed ship, reset player to pod, add pod to system
     void Eject();       // only called in space
     void Board(ShipSE* newShipSE); // only called when in space
     void BoardShip(ShipItemRef newShipRef); // only called when docked
@@ -204,15 +204,15 @@ public:
     void WarpOut();
     void EnterSystem(uint32 systemID);     // only called by gm command, and only if (bubble == null)
     // this will accept null coords and adjust position to random moon
-    void MoveToLocation(uint32 location, const GPoint &pt);
-    void MoveToPosition(const GPoint &pt);
+    void MoveToLocation(uint32 location, const Vector3d &pt);
+    void MoveToPosition(const Vector3d &pt);
     void MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag);
     void SetCloakTimer(uint32 time=Player::Timer::Default);     // send time=0 to disable
     void SetInvulTimer(uint32 time=Player::Timer::Default);     // send time=0 to disable
     void SetUncloakTimer(uint32 time=Player::Timer::Default);     // send time=0 to disable
     void SetBallParkTimer(uint32 time=Player::Timer::Default);     // send time=0 to disable
     void SetStateTimer(int8 state, uint32 time=Player::Timer::Default);     // send time=0 to disable
-    void SetDestiny(const GPoint& pt, bool update=false);
+    void SetDestiny(const Vector3d& pt, bool update=false);
     ShipItemRef SpawnNewRookieShip(uint32 stationID);
     void LoadStationHangar(uint32 stationID);
     void AddLoadedHangar(uint32 stationID);
@@ -220,9 +220,9 @@ public:
 
     //destiny stuff...
     void SetDockStationID(uint32 stationID)             { m_dockStationID = stationID; };
-    void SetDockPoint(GPoint &pt)                       { m_dockPoint = pt; }
+    void SetDockPoint(Vector3d &pt)                       { m_dockPoint = pt; }
     uint32 GetDockStationID()                           { return m_dockStationID; };
-    GPoint GetDockPoint()                               { return m_dockPoint; }
+    Vector3d GetDockPoint()                               { return m_dockPoint; }
     bool InPod()                                        { return (m_ship->groupID() == EVEDB::invGroups::Capsule); }
     bool IsInSpace()                                    { return sDataMgr.IsSolarSystem(m_locationID); }
     bool IsDocked()                                     { return sDataMgr.IsStation(m_locationID); }
@@ -372,7 +372,7 @@ protected:
     bool m_packaged;        // used to correctly package updates into a PackagedAction list
     bool m_portrait;        // used to verify new char pic received
     bool m_scanProbe;       // scanning with probes
-    bool m_bubbleWait;
+    bool m_bubbleWait;          // tells destiny/ballpark to expect another update for this bubble on this tic
     bool m_setStateSent;
     bool m_sessionChangeActive; // used to delay actions requiring destiny updates
 
@@ -399,10 +399,10 @@ protected:
     Timer m_sessionTimer;    // used to prevent multiple session changes from occurring too fast
     Timer m_ballparkTimer;   // this is to properly send SetState data after a delay (cant do it correctly otherwise)
 
-    // this is GPoint on jump and dock heading on undock
-    GPoint m_movePoint;
+    // this is Vector3d on jump and dock heading on undock
+    Vector3d m_movePoint;
     // dock location in space (absolute)
-    GPoint m_dockPoint;
+    Vector3d m_dockPoint;
 
     std::set<LSCChannel*>   m_channels;         //we do not own these.
     std::map<uint32, bool>  m_stationHangars;   // hangarID/bool

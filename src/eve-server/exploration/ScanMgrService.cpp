@@ -49,7 +49,7 @@ class ScanBound
 public:
     PyCallable_Make_Dispatcher(ScanBound)
 
-    ScanBound(PyServiceMgr *mgr, Client *pClient)
+    ScanBound(PyServiceMgr *mgr, Client* pClient)
     : PyBoundObject(mgr),
     m_dispatch(new Dispatcher(this)),
     m_client(pClient)

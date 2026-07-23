@@ -37,7 +37,7 @@ class Concord
 : public DynamicSystemEntity
 {
 public:
-    Concord(SystemManager* system, PyServiceMgr& services, InventoryItemRef self, const GPoint& position, ConcordSpawnMgr* spawnMgr);
+    Concord(SystemManager* system, PyServiceMgr& services, InventoryItemRef self, const Vector3d& position, ConcordSpawnMgr* spawnMgr);
 
     virtual ~Concord();
 

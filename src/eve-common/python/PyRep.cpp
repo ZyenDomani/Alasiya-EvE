@@ -332,7 +332,7 @@ int32 PyLong::hash() const
 
 #define LONG_BIT_PyLong_SHIFT    (8*sizeof(long) - PyLong_SHIFT)
 
-    long x(0);
+    long x = 0;
     int i(8), sign(1);
 
     /* This is designed so that Python ints and longs with the
@@ -392,8 +392,8 @@ int32 PyFloat::hash() const
 
     double v(mValue);
     double intpart(0.0), fractpart(0.0);
-    int expo(0);
-    long hipart(0), x(0);        /* x is the final hash value */
+    int expo = 0;
+    long hipart(0), x = 0;        /* x is the final hash value */
     /* This is designed so that Python numbers of different types
     * that compare equal hash to the same value; otherwise comparisons
     * of mapping keys will turn out weird.
@@ -652,7 +652,7 @@ PyTuple::PyTuple(size_t item_count) : PyRep(PyRep::PyTypeTuple), items(item_coun
 PyTuple* PyTuple::Clone() const {
     //sLog.Magenta("PyTuple()", "Clone.");
     PyTuple* tuple(new PyTuple(items.size()));
-    for (size_t i(0); i < items.size(); ++i)
+    for (size_t i = 0; i < items.size(); ++i)
         tuple->SetItem(i, items[i]->Clone());
 
     return tuple;
@@ -708,7 +708,7 @@ PyList* PyList::Clone() const
 {
     //sLog.Magenta("PyList()", "Clone.");
     PyList* list(new PyList(items.size()));
-    for (size_t i(0); i < items.size(); ++i)
+    for (size_t i = 0; i < items.size(); ++i)
         list->SetItem(i, items[i]->Clone());
 
     return list;

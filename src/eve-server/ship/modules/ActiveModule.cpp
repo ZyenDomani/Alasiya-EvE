@@ -479,11 +479,11 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     switch (groupID()) {
         case EVEDB::invGroups::Afterburner:
         case EVEDB::invGroups::Microwarpdrive: {
-            m_destinyMgr->SpeedBoost(m_modRef);
+            m_destinyMgr->SpeedBoost();
         } break;
         case EVEDB::invGroups::Stasis_Web: {
             if (m_targetSE != nullptr)
-                m_targetSE->DestinyMgr()->WebbedMe(m_modRef, true);
+                m_targetSE->DestinyMgr()->WebbedMe();
         } break;
     }
     /*def OnSpecialFX
@@ -789,11 +789,11 @@ void ActiveModule::DeactivateCycle(bool abortCycle/*false*/)
         } break;
         case EVEDB::invGroups::Afterburner:
         case EVEDB::invGroups::Microwarpdrive: {
-            m_destinyMgr->SpeedBoost(m_modRef, true);
+            m_destinyMgr->SpeedBoost(true);
         } break;
         case EVEDB::invGroups::Stasis_Web: {
             if (m_targetSE != nullptr)
-                m_targetSE->DestinyMgr()->WebbedMe(m_modRef, false);
+                m_targetSE->DestinyMgr()->WebbedMe();
         } break;
         case EVEDB::invGroups::Survey_Scanner: {
             if (abortCycle) {
@@ -809,9 +809,11 @@ void ActiveModule::DeactivateCycle(bool abortCycle/*false*/)
             // when roids are spawned, BeltMgr sets this bubble "IsBelt = true", even in anomalies
             if (m_bubble->IsBelt()) {
                 float m_range = GetAttribute(AttrSurveyScanRange).get_float();
-                float distance = 0;
+                Vector3d delta;
+                double distance;
                 for (auto pASE : vList) {
-                    distance = m_shipRef->position().distance(pASE->GetPosition());
+                    delta =  pASE->GetPosition() - m_shipRef->position();
+                    distance = delta.Length();
                     distance -= pASE->GetRadius();
                     distance -= m_shipRef->radius(); // do we need this one here?
                     if (distance < m_range) {
@@ -1148,7 +1150,7 @@ bool ActiveModule::CanActivate() {
         switch (groupID()) {
             case Tractor_Beam: {
                 /** @todo  add checks for other items vs cap tractors and maybe some items for small tractors */
-                bool allowed(false);
+                bool allowed = false;
                 if (m_targetSE->IsWreckSE()) {
                     allowed = true;
                 } else if (m_targetSE->IsContainerSE()) {
@@ -1247,7 +1249,8 @@ bool ActiveModule::CanActivate() {
             } break;
         }
 
-        float distance = m_shipRef->position().distance(m_targetSE->GetPosition());
+        Vector3d delta =  m_targetSE->GetPosition() - m_shipRef->position();
+        double distance = delta.Length();
         distance -= m_targetSE->GetRadius();
 
         _log(MODULE__MESSAGE, "Activate::RangeTest - distance between %s and target %s: %.1f.  range of %s is %.1f", \
@@ -1275,7 +1278,7 @@ void ActiveModule::SendGFX(bool abortCycle/*false*/, Client* pClient/*nullptr*/)
         return;
     }
 
-    bool active(false), start(false);
+    bool active = false, start = false;
 
     if (m_modRef->groupID() == EVEDB::invGroups::Super_Weapon) {
         // this will enable a ONE-SHOT event in client.  is the only one that uses this
@@ -1301,7 +1304,7 @@ void ActiveModule::SendGFX(bool abortCycle/*false*/, Client* pClient/*nullptr*/)
 
     // modules send their actual start time, even when !start
     // exceptions are missiles and turrets
-    bool useStartTime(true);
+    bool useStartTime = true;
     switch (m_effectID) {
         case EvE::GFXID::projectileFired:
         case EvE::GFXID::targetAttack:
@@ -1537,7 +1540,8 @@ void ActiveModule::LaunchMissile()
         return;
     }
 
-    float distance = pMissile->GetSelf()->position().distance(m_targetSE->GetPosition());
+    Vector3d delta =  m_targetSE->GetPosition() - pMissile->GetPosition();
+    double distance = delta.Length();
     float missileSpeed = pMissile->GetSelf()->GetAttribute(AttrMaxVelocity).get_float();
     float travelTime = (distance/missileSpeed);
     if (travelTime < 1)
@@ -1571,7 +1575,7 @@ void ActiveModule::LaunchProbe()
         return;
     }
 
-    GPoint pos(m_shipRef->position());
+    Vector3d pos(m_shipRef->position());
     pos.MakeRandomPointOnSphere(MakeRandomFloat(500 + m_shipRef->radius(), 1500 + m_shipRef->radius()));
 
     //ItemData(uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, uint32 _quantity);

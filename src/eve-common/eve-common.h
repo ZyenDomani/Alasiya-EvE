@@ -49,8 +49,7 @@
 #include "log/LogNew.h"
 #include "log/logsys.h"
 // math
-#include "math/gpoint.h"
-//#include "math/Trig.h"
+#include "math/Vector3d.h"
 // memory
 #include "memory/RefPtr.h"
 // network

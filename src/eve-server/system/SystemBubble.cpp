@@ -4,7 +4,8 @@
  *    ------------------------------------------------------------------------------------
  *    This file is part of EVEmu: EVE Online Server Emulator
  *    Copyright 2006 - 2016 The EVEmu Team
- *    For the latest information visit http://evemu.org
+ *    Copyright 2016 - 2026 Alasiya-EvE by Allan
+ *    For the latest implementation status visit http://eve.alasiya.net/?p=op_status
  *    ------------------------------------------------------------------------------------
  *    This program is free software; you can redistribute it and/or modify it under
  *    the terms of the GNU Lesser General Public License as published by the Free Software
@@ -42,7 +43,7 @@
 #include "system/cosmicMgrs/BeltMgr.h"
 
 
-SystemBubble::SystemBubble(SystemManager* pSystem, const GPoint& center, double radius)
+SystemBubble::SystemBubble(SystemManager* pSystem, const Vector3d& center, double radius)
 : m_tcuSE(nullptr), m_sbuSE(nullptr), m_ihubSE(nullptr), m_towerSE(nullptr),
 m_system(pSystem), m_center(center), m_radius(radius),
 m_centerSE(nullptr), m_hasMarkers(false),m_hasBubble(false),
@@ -249,17 +250,18 @@ void SystemBubble::Add(SystemEntity* pSE) {
     m_dynamicEntities[pSE->GetID()] = pSE;
 
     if (is_log_enabled(BUBBLE__DEBUG)) {
-        GPoint startPoint(pSE->GetPosition());
-        GVector direction(startPoint, NULL_ORIGIN);
-        double rangeToStar = direction.length();
-        rangeToStar /= ONE_AU_IN_METERS;
-        _log(BUBBLE__DEBUG, "SysBubble::Add() - Added entity %u to bubble %u.  Dist to center: %.2f", \
-                pSE->GetID(), m_bubbleID, m_center.distance(pSE->GetPosition()));
+        Vector3d delta =  NULL_ORIGIN - pSE->GetPosition();
+        double distance = delta.Length();
+        distance /= ONE_AU_IN_METERS;
+        _log(BUBBLE__DEBUG, "SysBubble::Add() - Added entity %u to bubble %u.", \
+                pSE->GetID(), m_bubbleID);
         _log(BUBBLE__DEBUG, "SysBubble::Add() - Distance to Star %.2f AU.  %lu/%lu Entities in bubble %u",\
-                rangeToStar, m_entities.size(), m_dynamicEntities.size(), m_bubbleID);
-    } else {
+                distance, m_entities.size(), m_dynamicEntities.size(), m_bubbleID);
+    } else if (is_log_enabled(BUBBLE__TRACE)) {
+        Vector3d delta =  m_center - pSE->GetPosition();
+        double distance = delta.Length();
         _log(BUBBLE__TRACE, "SysBubble::Add() - Added entity %u to bubble %u.  Dist to center: %.2f", \
-                pSE->GetID(), m_bubbleID, m_center.distance(pSE->GetPosition()));
+                pSE->GetID(), m_bubbleID, distance);
     }
 }
 
@@ -501,12 +503,16 @@ uint32 SystemBubble::GetSystemID() {
     return m_system->GetID();
 }
 
-bool SystemBubble::InBubble(const GPoint& pt, bool inWarp/*false*/) const {
-    return (m_center.distance(pt) < m_radius);
+bool SystemBubble::InBubble(const Vector3d& pt, bool inWarp/*false*/) const {
+    Vector3d delta =  m_center - pt;
+    double distance = delta.Length();
+    return (distance < m_radius);
 }
 
-bool SystemBubble::IsOverlap(const GPoint& pt) const {
-    return (m_center.distance(pt) < (m_radius * 2));
+bool SystemBubble::IsOverlap(const Vector3d& pt) const {
+    Vector3d delta =  m_center - pt;
+    double distance = delta.Length();
+    return (distance < (m_radius * 2));
 }
 
 void SystemBubble::PrintEntityList() {
@@ -515,7 +521,7 @@ void SystemBubble::PrintEntityList() {
         return;
     }
 
-    bool found(false);
+    bool found = false;
     std::vector<SystemEntity*> SElist;
     // load all entities visible in this bubble
     for (auto &cur : m_entities)
@@ -897,7 +903,7 @@ void SystemBubble::MarkCenter()
     MarkBubble(m_center, str, desc, true);
 
     // create jetcan to mark bubble x
-    GPoint center = m_center;
+    Vector3d center = m_center;
     center.x += BUBBLE_RADIUS_METERS - 5;
     str.clear();
     str = "Bubble #";
@@ -959,7 +965,7 @@ void SystemBubble::MarkCenter()
     m_hasMarkers = true;
 }
 
-void SystemBubble::MarkBubble(const GPoint& position, std::string& name, std::string& desc, bool center/*false*/)
+void SystemBubble::MarkBubble(const Vector3d& position, std::string& name, std::string& desc, bool center/*false*/)
 {
     // create new container item
     ItemData idata(23, ownerSystem, m_system->GetID(), flagAutoFit, name.c_str(), position, desc.c_str());

@@ -34,7 +34,7 @@ Concord::Concord(
      SystemManager* system,
      PyServiceMgr& services,
      InventoryItemRef self,
-     const GPoint& position,
+     const Vector3d& position,
      ConcordSpawnMgr* spawnMgr )
  : DynamicSystemEntity(this, system, self),
  m_system(system),
@@ -150,9 +150,9 @@ void Concord::EncodeDestiny(Buffer& into) {
     into.Append( data );
     switch (mode) {
         case Ball::Mode::WARP: {
-            GPoint target = m_destiny->GetTargetPoint();
+            Vector3d target = m_destiny->GetTargetPoint();
             WARP_Struct warp;
-                warp.formationID = 0xFF;
+                warp.formationID = -1;
                 warp.targX = target.x;
                 warp.targY = target.y;
                 warp.targZ = target.z;
@@ -167,20 +167,20 @@ void Concord::EncodeDestiny(Buffer& into) {
             FOLLOW_Struct follow;
                 follow.followID = m_destiny->GetTargetID();
                 follow.followRange = m_destiny->GetFollowDistance();
-                follow.formationID = 0xFF;
+                follow.formationID = -1;
             into.Append( follow );
         }  break;
         case Ball::Mode::ORBIT: {
             ORBIT_Struct orbit;
                 orbit.targetID = m_destiny->GetTargetID();
                 orbit.followRange = m_destiny->GetFollowDistance();
-                orbit.formationID = 0xFF;
+                orbit.formationID = -1;
             into.Append( orbit );
         }  break;
         case Ball::Mode::GOTO: {
-            GPoint target = m_destiny->GetTargetPoint();
+            Vector3d target = m_destiny->GetTargetPoint();
             GOTO_Struct go;
-                go.formationID = 0xFF;
+                go.formationID = -1;
                 go.x = target.x;
                 go.y = target.y;
                 go.z = target.z;
@@ -188,7 +188,7 @@ void Concord::EncodeDestiny(Buffer& into) {
         }  break;
         default: {
             STOP_Struct main;
-                main.formationID = 0xFF;
+                main.formationID = -1;
             into.Append( main );
         } break;
     }
@@ -480,9 +480,9 @@ void ConcordAI::SetSignaling(SystemEntity* pTarget) {
 void ConcordAI::CheckDistance(SystemEntity* pSE)
 {
     //rewrote distance checks for correct logic this time
-    GVector usToThem(m_npc->GetPosition(), pSE->GetPosition());
+    Vector3d usToThem(m_npc->GetPosition(), pSE->GetPosition());
     //double dist = m_npc->GetPosition().distance(pSE->GetPosition());     // this throws occasional errors (segfault)
-    double dist = usToThem.length();
+    double dist = usToThem.Length();
     if (dist > m_entityAttackRange) {
         _log(CONCORD__AI_TRACE, "%s(%u): CheckDistance: %s(%u) is too far away (%.1fm).  Return to Idle.", \
              m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID(), dist);

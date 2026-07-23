@@ -29,17 +29,17 @@
 #include "map/MapDB.h"
 
 
-void MapDB::GetPlanets(uint32 systemID, std::vector<DBGPointEntity> &planetIDs, uint8 &total) {
+void MapDB::GetPlanets(uint32 systemID, std::vector<DBVector3dEntity> &planetIDs, uint8 &total) {
     // groupID = 7
     DBQueryResult res;
     sDatabase.RunQuery(res, "SELECT itemID, x, y, z, radius FROM mapDenormalize WHERE solarSystemID = %u AND groupID = 7", systemID);
 
     DBResultRow row;
     while(res.GetRow(row)) {
-        DBGPointEntity entry = DBGPointEntity();
+        DBVector3dEntity entry = DBVector3dEntity();
         entry.idx = total;
         entry.itemID = row.GetUInt(0);
-        entry.position = GPoint (
+        entry.position = Vector3d (
             row.GetDouble(1),
                                  row.GetDouble(2),
                                  row.GetDouble(3)
@@ -50,17 +50,17 @@ void MapDB::GetPlanets(uint32 systemID, std::vector<DBGPointEntity> &planetIDs, 
     }
 }
 
-void MapDB::GetMoons(uint32 systemID, std::vector<DBGPointEntity> &moonIDs, uint8 &total) {
+void MapDB::GetMoons(uint32 systemID, std::vector<DBVector3dEntity> &moonIDs, uint8 &total) {
     // groupID = 8
     DBQueryResult res;
     sDatabase.RunQuery(res, "SELECT itemID, x, y, z, radius FROM mapDenormalize WHERE solarSystemID = %u AND groupID = 8", systemID);
 
     DBResultRow row;
     while(res.GetRow(row)) {
-        DBGPointEntity entry = DBGPointEntity();
+        DBVector3dEntity entry = DBVector3dEntity();
         entry.idx = total;
         entry.itemID = row.GetUInt(0);
-        entry.position = GPoint (
+        entry.position = Vector3d (
             row.GetDouble(1),
                                  row.GetDouble(2),
                                  row.GetDouble(3)
@@ -71,7 +71,7 @@ void MapDB::GetMoons(uint32 systemID, std::vector<DBGPointEntity> &moonIDs, uint
     }
 }
 
-void MapDB::GetBelts(uint32 systemID, std::vector< DBGPointEntity > &beltIDs, uint8 &total)
+void MapDB::GetBelts(uint32 systemID, std::vector< DBVector3dEntity > &beltIDs, uint8 &total)
 {
     // groupID = 9
     DBQueryResult res;
@@ -79,10 +79,10 @@ void MapDB::GetBelts(uint32 systemID, std::vector< DBGPointEntity > &beltIDs, ui
 
     DBResultRow row;
     while(res.GetRow(row)) {
-        DBGPointEntity entry = DBGPointEntity();
+        DBVector3dEntity entry = DBVector3dEntity();
         entry.idx = total;
         entry.itemID = row.GetUInt(0);
-        entry.position = GPoint (
+        entry.position = Vector3d (
             row.GetDouble(1),
                                  row.GetDouble(2),
                                  row.GetDouble(3)
@@ -94,7 +94,7 @@ void MapDB::GetBelts(uint32 systemID, std::vector< DBGPointEntity > &beltIDs, ui
     }
 }
 
-void MapDB::GetGates(uint32 systemID, std::vector< DBGPointEntity > &gateIDs, uint8 &total)
+void MapDB::GetGates(uint32 systemID, std::vector< DBVector3dEntity > &gateIDs, uint8 &total)
 {
     // groupID = 10
     DBQueryResult res;
@@ -102,10 +102,10 @@ void MapDB::GetGates(uint32 systemID, std::vector< DBGPointEntity > &gateIDs, ui
 
     DBResultRow row;
     while(res.GetRow(row)) {
-        DBGPointEntity entry = DBGPointEntity();
+        DBVector3dEntity entry = DBVector3dEntity();
         entry.idx = total;
         entry.itemID = row.GetUInt(0);
-        entry.position = GPoint (
+        entry.position = Vector3d (
             row.GetDouble(1),
                                  row.GetDouble(2),
                                  row.GetDouble(3)

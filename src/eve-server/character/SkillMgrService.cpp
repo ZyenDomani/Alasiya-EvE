@@ -45,7 +45,7 @@ SkillMgrService::~SkillMgrService() {
     delete m_dispatch;
 }
 
-PyBoundObject *SkillMgrService::CreateBoundObject(Client *pClient, const PyRep *bind_args) {
+PyBoundObject *SkillMgrService::CreateBoundObject(Client* pClient, const PyRep *bind_args) {
     _log(CLIENT__MESSAGE, "SkillMgrService bind request for:");
     bind_args->Dump(CLIENT__MESSAGE, "    ");
 

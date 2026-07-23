@@ -165,7 +165,7 @@ public:
     void                        Anchor();
     void                        Offline();
     void                        PullAnchor();
-    void                        SetAnchor(Client* pClient, GPoint& pos);
+    void                        SetAnchor(Client* pClient, Vector3d& pos);
     void                        Activate(int32 effectID);
     void                        Deactivate(int32 effectID);
     void                        GetEffectState(PyList& into);
@@ -219,7 +219,7 @@ protected:
     uint32                      m_delayTime;
 
     // for orbital infrastructure (customs office and moon miner)
-    GVector                     m_rotation;             /* direction to planet (for correct orientation) */
+    Vector3d                     m_rotation;             /* direction to planet (for correct orientation) */
     uint32                      m_anchorPointID;
 
 private:

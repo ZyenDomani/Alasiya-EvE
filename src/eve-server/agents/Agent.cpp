@@ -838,7 +838,7 @@ bool Agent::CanUseAgent(Client* pClient) {
     if (charBonus > 0.0f)
         charChr = EvEMath::Agent::EffectiveStanding(charChr, charBonus);
 
-    bool rsp(true);
+    bool rsp = true;
     float required(EvEMath::Agent::RequiredStanding(m_agentData.level, m_agentData.quality));
 
     // for agents > l1, ANY standing < -2, denies availability

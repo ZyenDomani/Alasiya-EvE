@@ -9,7 +9,7 @@
 #ifndef _EVEMU_SYSTEM_COSMICMGRS_MANAGERDB_H
 #define _EVEMU_SYSTEM_COSMICMGRS_MANAGERDB_H
 
-
+#include "EVE_Cosmic.h"
 #include "EVE_Dungeon.h"
 #include "EVE_Inventory.h"
 #include "EVE_Scanning.h"
@@ -98,7 +98,7 @@ public:
     void GetAnomaliesBySystem(uint32 systemID, DBQueryResult& res);
     void GetSystemAnomalies(uint32 systemID, DBQueryResult& res);
     void GetSystemAnomalies(uint32 systemID, std::vector< CosmicSignature >& sigs);
-    static GPoint GetAnomalyPos(std::string& string);
+    static Vector3d GetAnomalyPos(std::string& string);
 
     /* wormhole manager */
     static void GetWHSystemClass(DBQueryResult& res);

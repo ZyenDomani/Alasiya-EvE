@@ -1279,7 +1279,7 @@ void InventoryItem::SetCustomInfo(const char *ci) {
         SaveItem();
 }
 
-void InventoryItem::SetPosition(const GPoint& pos) {
+void InventoryItem::SetPosition(const Vector3d& pos) {
     if (m_data.position == pos)
         return;
 

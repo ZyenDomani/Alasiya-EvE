@@ -350,7 +350,7 @@ void ContainerSE::EncodeDestiny(Buffer& into)
         data.speedfraction = 1;
     into.Append( data );
     TROLL_Struct troll;
-        troll.formationID = 0xFF;
+        troll.formationID = -1;
         troll.delay = 10;
     into.Append( troll );
 
@@ -585,7 +585,7 @@ void WreckSE::EncodeDestiny(Buffer& into) {
     into.Append( data );
     // this isnt right..will be stop, then troll, then rigid
     TROLL_Struct troll;
-        troll.formationID = 0xFF;
+        troll.formationID = -1;
         troll.delay = 10;
     into.Append( troll );
     _log(SE__DESTINY, "WreckSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);

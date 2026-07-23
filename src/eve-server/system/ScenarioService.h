@@ -73,7 +73,7 @@ protected:
     PyCallable_DECL_CALL(GetBallAndSlimItemFromObjectID);
 
     //overloaded in order to support bound objects:
-    //virtual PyBoundObject *CreateBoundObject(Client *pClient, const PyRep *bind_args);
+    //virtual PyBoundObject *CreateBoundObject(Client* pClient, const PyRep *bind_args);
 };
 
 #endif

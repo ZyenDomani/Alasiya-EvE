@@ -121,7 +121,7 @@ bool AttributeMgr::Save() {
     if (IsStaticItem(mItem.itemID()) or IsTempItem(mItem.itemID()))
         return true;
 
-    bool save(false);
+    bool save = false;
     std::vector<Inv::AttrData> attribs;
     AttrMapItr itr = mAttributes.begin(), end = mAttributes.end();
     if (IsCharacterID(mItem.itemID())) {
@@ -154,7 +154,7 @@ bool AttributeMgr::Save() {
             }
         }
     } else {
-        bool skill(false), damage(false), owner(false), module(false);
+        bool skill = false, damage = false, owner = false, module = false;
         switch (mItem.categoryID()) {
             case EVEDB::invCategories::Asteroid:    // asteroids and blueprints are NOT saved here
             case EVEDB::invCategories::Blueprint: {
@@ -530,7 +530,7 @@ void AttributeMgr::SaveShipState()
     // start the insert into command.
     Inserts << "REPLACE INTO entity_attributes ";
     Inserts << " (itemID, attributeID, valueInt, valueFloat) VALUES";
-    bool save(false);
+    bool save = false;
     AttrMap::iterator cur = mAttributes.find(AttrCapacitorCharge);
     if (cur != mAttributes.end()) {
         save = true;

@@ -65,7 +65,7 @@ public:
     /* virtual functions default to base class and overridden as needed */
     virtual void        Killed(Damage &fatal_blow);
     virtual void        Abandon();     // reset all owner info and bubblecast new data
-    virtual const GVector& GetVelocity()                { return m_AI->GetVelocity(); }
+    virtual const Vector3d& GetVelocity()                { return m_AI->GetVelocity(); }
     // our ship has added a new target
     virtual void   TargetAdded(SystemEntity* pTargetSE);
     // this is call to inform us of yellowbox

@@ -62,10 +62,10 @@ INCLUDE( "DetectScm" )
 # override the setup.
 #
 # Switch to the C++11 standard (required)
-SET( CMAKE_CXX_FLAGS "-std=gnu++11 -mtune=native -march=native -Werror=return-type -ggdb ${CMAKE_CXX_FLAGS}" )
+SET( CMAKE_CXX_FLAGS "-std=gnu++11 -mtune=native -march=nocona -ffast-math -mfpmath=sse -msse3 -Werror=return-type -ggdb ${CMAKE_CXX_FLAGS}" )
 # SET( CMAKE_CXX_FLAGS "-Wall -Wextra -Weffc++ -Wconversion -Wdouble-promotion ${CMAKE_CXX_FLAGS}" )
-#
-# -pg (for using gprof) -ggdb (gdb-specific additions for debug) -pedantic (warning if code isnt standargs-compliant)
+#  -msse4.1 -march=harpertown  <<--  main server
+# -pg (for using gprof) -ggdb (gdb-specific additions for debug) -pedantic (warning if code isnt standards-compliant)
 
 #SET( CMAKE_CXX_FLAGS "-fsanitize=address  ${CMAKE_CXX_FLAGS}" )
 # -fsanitize=thread -fsanitize=undefined
@@ -161,7 +161,7 @@ BUILD_PACKAGE( "ZLIB" )
 
 FIND_PACKAGE( "Threads" REQUIRED )
 
-ADD_SUBDIRECTORY( "dep/gangsta" )
+#ADD_SUBDIRECTORY( "dep/gangsta" )
 ADD_SUBDIRECTORY( "dep/utils" )
 
 SET( CMAKE_NET_LIBS

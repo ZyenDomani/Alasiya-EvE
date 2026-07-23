@@ -290,23 +290,19 @@ PyResult KeeperService::Handle_ActivateAccelerationGate(PyCallArgs &call) {
         return nullptr;
     }
 
-    Client *pClient(call.client);
+    Client* pClient = call.client;
 
     SystemEntity* pSE = pClient->SystemMgr()->GetEntityByID(arg.arg);
-    if (pSE != nullptr)
-        if (pSE->DestinyMgr() != nullptr)
-            pSE->DestinyMgr()->SendGFX10(arg.arg, "effects.WarpGateEffect");
+    if ((pSE != nullptr) and (pSE->DestinyMgr() != nullptr))
+        pSE->DestinyMgr()->SendGFX10(arg.arg, "effects.WarpGateEffect");
 
-        double distance = MakeRandomFloat(5, 25) * ONE_AU_IN_METERS;
-    GPoint currentPosition(pClient->GetShipSE()->GetPosition());
-    GPoint deltaPosition;
-    deltaPosition.x = MakeRandomFloat(-1.0, 1.0) * distance;
-    deltaPosition.y = MakeRandomFloat(-1.0, 1.0) * distance;
-    deltaPosition.z = MakeRandomFloat(-2.0, 2.0) * ONE_AU_IN_METERS;
-    GPoint warpToPoint(currentPosition+deltaPosition);              // Make a warp-in point variable
-    GVector vectorToDestination(currentPosition, warpToPoint);
-    int32 distanceToDestination = vectorToDestination.length();
-    pClient->GetShipSE()->DestinyMgr()->WarpTo(warpToPoint, distanceToDestination);
+    double distance = MakeRandomFloat(5, 25) * ONE_AU_IN_METERS;
+    Vector3d warpToPoint;
+    warpToPoint.x = MakeRandomFloat(-1.0, 1.0) * distance;
+    warpToPoint.y = MakeRandomFloat(-1.0, 1.0) * distance;
+    warpToPoint.z = MakeRandomFloat(-2.0, 2.0) * ONE_AU_IN_METERS;
+
+    pClient->GetShipSE()->DestinyMgr()->WarpTo(warpToPoint);
 
     /* return error msg from this call, if applicable, else nodeid and timestamp */
     return new PyLong(GetFileTimeNow());

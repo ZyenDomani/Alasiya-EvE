@@ -149,7 +149,7 @@ bool ServiceDB::IncrementLoginCount( uint32 accountID )
 
 uint32 ServiceDB::CreateNewAccount( const char* login, const char* pass, const char* passHash, int64 role )
 {
-    uint32 accountID(0);
+    uint32 accountID = 0;
     uint32 clientID(sEntityMgr.GetClientSeed());
 
     DBerror err;

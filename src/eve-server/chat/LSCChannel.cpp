@@ -69,7 +69,7 @@ PyRep *LSCChannelMod::Encode() {
     return line.Encode();
 }
 
-LSCChannel::LSCChannel(LSCService* svc, int32 channelID, LSC::Type type, uint32 ownerID, const char* displayName, const char* comparisonKey, std::string motd,
+LSCChannel::LSCChannel(LSCService* svc, int32 channelID, uint8 type, uint32 ownerID, const char* displayName, const char* comparisonKey, std::string motd,
                        bool memberless, const char* password, bool mailingList, uint32 cspa, bool temporary, bool languageRestriction, int32 groupMessageID, int32 channelMessageID)
 : m_service(svc),
   m_ownerID(ownerID),
@@ -85,9 +85,10 @@ LSCChannel::LSCChannel(LSCService* svc, int32 channelID, LSC::Type type, uint32 
   m_temporary(temporary),
   m_languageRestriction(languageRestriction),
   m_groupMessageID(groupMessageID),
-  m_channelMessageID(channelMessageID)
+  m_channelMessageID(channelMessageID),
+  m_mode(LSC::Mode::Speaker)    // default mode '3' for enabling all speakers....i dont think this is right...
 {
-    m_mode = LSC::Mode::chConversationalist;    // default mode '3' for enabling all speakers (till i figure out how to correctly set/change later)
+
     _log(LSC__CHANNELS, "Creating channel %u - \"%s\"", m_channelID, (m_displayName == "") ? ((m_comparisonKey == "") ? "null" : m_comparisonKey.c_str()) : m_displayName.c_str());
 }
 
@@ -115,7 +116,7 @@ bool LSCChannel::JoinChannel(Client* pClient) {
         std::make_pair(
             pClient->GetCharacterID(),
             LSCChannelChar( this, pClient->GetCorporationID(), pClient->GetCharacterID(), pClient->GetCharName(), pClient->GetAllianceID(), pClient->GetWarFactionID(), pClient->GetAccountRole(), 0,\
-            (m_ownerID == pClient->GetCharacterID() ? LSC::Mode::chCreator : LSC::Mode::chConversationalist))
+            (m_ownerID == pClient->GetCharacterID() ? LSC::Mode::Creator : LSC::Mode::Speaker))
         )
     );
     pClient->ChannelJoined( this );
@@ -137,7 +138,7 @@ bool LSCChannel::JoinChannel(Client* pClient) {
     return true;
 }
 
-void LSCChannel::LeaveChannel(Client *pClient)
+void LSCChannel::LeaveChannel(Client* pClient)
 {
     if (sConsole.IsShutdown())
         return;

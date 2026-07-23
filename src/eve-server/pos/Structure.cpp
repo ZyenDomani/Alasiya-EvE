@@ -391,9 +391,8 @@ void StructureSE::Init()
             m_loaded = false;
             return;
         }
-        GVector dir(m_self->position(), m_moonSE->GetPosition());
-        dir.normalize();
-        m_rotation = dir;
+        Vector3d dir = m_moonSE->GetPosition() - m_self->position();
+        m_rotation = dir.Normalize();
     } else if (m_platform) {
         // need to verify m_planetSE isnt null at this point.
         if (m_planetSE == nullptr) {
@@ -401,9 +400,8 @@ void StructureSE::Init()
             m_loaded = false;
             return;
         }
-        GVector dir(m_self->position(), m_planetSE->GetPosition());
-        dir.normalize();
-        m_rotation = dir;
+        Vector3d dir = m_planetSE->GetPosition() - m_self->position();
+        m_rotation = dir.Normalize();
     }
 
     // all POS have 1h duration
@@ -585,7 +583,7 @@ void StructureSE::Drop(SystemBubble *pBubble)
  * {'FullPath': u'UI/Messages', 'messageID': 259215, 'label': u'OnlineRequiredAnchorBody'}(u'The {item} can only be brought online when it is firmly anchored. It cannot be brought online while unanchored, unanchoring or while anchoring.', None, {u'{item}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'item'}})
  *
  */
-void StructureSE::SetAnchor(Client *pClient, GPoint &pos)
+void StructureSE::SetAnchor(Client* pClient, Vector3d &pos)
 {
     if (m_data.state > EVEPOS::StructureState::Unanchored)
     {
@@ -666,7 +664,8 @@ void StructureSE::SetAnchor(Client *pClient, GPoint &pos)
                  GetName(), m_data.itemID, pos.x, pos.y, pos.z, m_moonSE->GetName());
     } else if (m_sbu) {
         //verify anchor distance from stargate
-        uint32 distance(m_gateSE->GetPosition().distance(m_self->position()));
+        Vector3d delta = m_self->position() - m_gateSE->GetPosition();
+        double distance = delta.Length();
         //uint32 anchorMin(m_self->GetAttribute(AttrAnchorDistanceMin).get_uint32());
         uint32 anchorMax(m_self->GetAttribute(AttrAnchorDistanceMax).get_uint32());
 
@@ -704,8 +703,9 @@ void StructureSE::SetAnchor(Client *pClient, GPoint &pos)
     } else if (m_platform) {
         //  will these be used here??
         //verify anchor distance from planet
-        uint32 distance(m_planetSE->GetPosition().distance(m_self->position()));
-        // is there an attrib for this?
+        Vector3d delta =  m_planetSE->GetPosition() - m_self->position();
+        double distance = delta.Length();
+        // is there an attrib for this?  yes
         uint32 anchorMax = ((uint32)m_planetSE->GetRadius() + 150000000);
 
         if (distance > anchorMax) {
@@ -1094,11 +1094,11 @@ void StructureSE::EncodeDestiny(Buffer &into)
     */
     if (head.mode == Ball::Mode::RIGID) {
         RIGID_Struct main;
-        main.formationID = 0xFF;
+        main.formationID = -1;
         into.Append(main);
     } else if (head.mode == Ball::Mode::STOP) {
         STOP_Struct main;
-        main.formationID = 0xFF;
+        main.formationID = -1;
         into.Append(main);
     }
 
@@ -1225,7 +1225,7 @@ void StructureSE::Killed(Damage &damage)
         m_bubble->SetTowerSE(nullptr);
 
     uint32 killerID = 0;
-    Client *pClient(nullptr);
+    Client* pClient(nullptr);
     SystemEntity *killer = damage.srcSE;
 
     if (killer->HasPilot()) {
@@ -1317,7 +1317,7 @@ void StructureSE::Killed(Damage &damage)
             AwardSecurityStatus(m_self, pClient->GetChar().get()); // this awards secStatusChange for npcs in empire space
     }
 
-    GPoint wreckPosition = m_destiny->GetPosition();
+    Vector3d wreckPosition = m_destiny->GetPosition();
     if (wreckPosition.isNaN()) {
         sLog.Error("StructureSE::Killed()", "Wreck Position is NaN");
         return;

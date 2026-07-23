@@ -322,7 +322,7 @@ void StationSE::EncodeDestiny(Buffer& into)
         head.flags = /*Ball::Flag::HasMiniBalls |*/ Ball::Flag::IsGlobal | Ball::Flag::IsMassive;
     into.Append( head );
     RIGID_Struct main;
-        main.formationID = 0xFF;
+        main.formationID = -1;
     into.Append( main );
 
 /** @todo miniballs is broken and needs work...
@@ -362,14 +362,14 @@ void StationSE::UnloadStation()
 
 /*
 static const int num_hack_sentry_locs = 8;
-GPoint hack_sentry_locs[num_hack_sentry_locs] = {
-    GPoint(35000.0f, 35000.0f, 35000.0f),
-    GPoint(35000.0f, 35000.0f, -35000.0f),
-    GPoint(35000.0f, -35000.0f, 35000.0f),
-    GPoint(35000.0f, -35000.0f, -35000.0f),
-    GPoint(-35000.0f, 35000.0f, 35000.0f),
-    GPoint(-35000.0f, 35000.0f, -35000.0f),
-    GPoint(-35000.0f, -35000.0f, 35000.0f),
-    GPoint(-35000.0f, -35000.0f, -35000.0f)
+Vector3d hack_sentry_locs[num_hack_sentry_locs] = {
+    Vector3d(35000.0f, 35000.0f, 35000.0f),
+    Vector3d(35000.0f, 35000.0f, -35000.0f),
+    Vector3d(35000.0f, -35000.0f, 35000.0f),
+    Vector3d(35000.0f, -35000.0f, -35000.0f),
+    Vector3d(-35000.0f, 35000.0f, 35000.0f),
+    Vector3d(-35000.0f, 35000.0f, -35000.0f),
+    Vector3d(-35000.0f, -35000.0f, 35000.0f),
+    Vector3d(-35000.0f, -35000.0f, -35000.0f)
 };
 */

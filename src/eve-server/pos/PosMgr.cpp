@@ -670,7 +670,7 @@ PyResult PosMgrBound::Handle_AnchorStructure(PyCallArgs &call) {
     if (pTSE == nullptr)
         return PyStatic.NewNone();
 
-    GPoint pos(args.posX, args.posY, args.posZ);
+    Vector3d pos(args.posX, args.posY, args.posZ);
     pTSE->SetAnchor(call.client, pos);
 
     // auto warp to new POS position?  config option?

@@ -69,8 +69,8 @@ struct LogTypeStatus
 //expose a read-only pointer
 extern const LogTypeStatus* log_type_info;
 
-#define is_log_enabled( type ) \
-    ( log_type_info[ ( type ) ].enabled )
+#define is_log_enabled(type) \
+    ( __builtin_expect(log_type_info[(type)].enabled, 0))
 
 extern void log_enable( LogType t );
 extern void log_disable( LogType t );

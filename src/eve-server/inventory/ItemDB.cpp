@@ -188,7 +188,7 @@ uint32 ItemDB::NewItem(const ItemData &data) {
         return 0;  // make error here?
 
     DBerror err;
-    uint32 uid(0);
+    uint32 uid = 0;
 
     std::string nameEsc, customInfoEsc;
     sDatabase.DoEscapeString(nameEsc, data.name);
@@ -269,7 +269,7 @@ void ItemDB::SaveItems(std::vector<Inv::SaveData>& data)
     Inserts << "INSERT INTO entity";
     Inserts << " (itemID, typeID, ownerID, locationID, flagID, contraband, singleton, quantity, x, y, z, customInfo)";
     Inserts << " VALUES ";
-    bool save(false);
+    bool save = false;
     for (auto &cur : data) {
         if (cur.position.isNaN() or cur.position.isInf()) {
             _log(PHYSICS__WARNING, "ItemDB::SaveItems() - %u has invalid position", cur.itemID);
@@ -320,7 +320,7 @@ void ItemDB::SaveAttributes(bool isChar, std::vector<Inv::AttrData>& data)
         Inserts << "INSERT INTO entity_attributes";
         Inserts << " (itemID, attributeID, valueInt, valueFloat)";
     }
-    bool first(true);
+    bool first = true;
     for (auto &cur : data) {
         if (first) {
             Inserts << " VALUES ";

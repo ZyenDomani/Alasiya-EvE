@@ -327,7 +327,7 @@ void RamMethods::HangarRolesCheck(Client* const pClient, int16 flagID)
 
 void RamMethods::LocationRolesCheck(Client*const pClient, const CorpPathElement &data)
 {
-    int64 roles(0);
+    int64 roles = 0;
     // this will verify corp roles at location
     uint32 stationID(data.officeFolderID - STATION_OFFICE_OFFSET);
     if (stationID == pClient->GetCorpHQ()) {
@@ -557,7 +557,7 @@ void RamMethods::EncodeMissingMaterials(const std::vector<EvERam::RequiredItem> 
     GetBOMItems( bomLocation, items );
 
     //now do the check
-    uint32 qtyReq(0);
+    uint32 qtyReq = 0;
     for (auto &cur : reqItems) {
         qtyReq = cur.quantity;
         if (!cur.isSkill) {

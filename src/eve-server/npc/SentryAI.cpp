@@ -95,7 +95,7 @@ void SentryAI::Process() {
             if (m_beginFindTarget.Check()) {
                 std::vector<Client*> clientVec;
                 clientVec.clear();
-                DestinyManager* pDestiny(nullptr);
+                DestinyManager* pDestiny = nullptr;
                 m_npc->SysBubble()->GetPlayers(clientVec); // what about player drones?  yes...later
                 /** @todo  this needs work
                 for (auto &cur : clientVec) {
@@ -175,7 +175,8 @@ void SentryAI::SetSignaling(SystemEntity* pTarget) {
 
 void SentryAI::CheckDistance(SystemEntity* pTarget)
 {
-    double dist = m_npc->GetPosition().distance(pTarget->GetPosition());
+    Vector3d delta = pTarget->GetPosition() - m_npc->GetPosition();
+    double dist = delta.Length();
     if ((dist > m_sightRange) and (!m_npc->TargetMgr()->IsTargetedBy(pTarget))) {
         _log(NPC__AI_TRACE, "%s(%u): CheckDistance: %s(%u) is too far away (%.1fm).  Return to Idle.", \
                 m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID(), dist);

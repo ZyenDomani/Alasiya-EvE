@@ -41,7 +41,7 @@ ClassEncodeGenerator::ClassEncodeGenerator( FILE* outputFile )
 bool ClassEncodeGenerator::ProcessElementDef( const TiXmlElement* field )
 {
     //  new switch to (dis)allow encoding.    -xmlp bloat wip
-    bool encode(true);
+    bool encode = true;
     const char* encode_str = field->Attribute("encode");
     if (encode_str != nullptr)
         encode = str2<bool>(encode_str);

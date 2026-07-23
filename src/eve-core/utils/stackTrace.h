@@ -506,7 +506,7 @@ void getSymbolInfo(const char     *executableFileName,
     assert(addresses != NULL);
     assert(symbolFunction != NULL);
 
-    for (uint8_t i(0); i < addressCount; i++)
+    for (uint8_t i = 0; i < addressCount; i++)
     {
         fileMatchInfo.found   = false;
         fileMatchInfo.address = addresses[i];
@@ -661,7 +661,7 @@ void freeSymbolInfoLines(char *lines[], uint lineCount)
 {
     assert(lines != NULL);
 
-    for (uint8_t i(0); i < lineCount; ++i)
+    for (uint8_t i = 0; i < lineCount; ++i)
     {
         assert(lines[i] != NULL);
         free(lines[i]);
@@ -688,7 +688,7 @@ void callStackTrace(const char* argv)
     // get symbols and print stack trace
     printf("Stack trace:\n");
     lineCount = getSymbolInfoLines(argv,(const void**)stackTrace,stackTraceCount,lines,MAX_LINES);
-    for (uint8_t i(0); i < lineCount; ++i)
+    for (uint8_t i = 0; i < lineCount; ++i)
         printf("  %s\n",lines[i]);
 
     freeSymbolInfoLines(lines,lineCount);

@@ -311,7 +311,9 @@ void ProbeSE::UpdateProbe(ProbeData& data)
     m_rangeStep = data.rangeStep;
     m_destination = data.dest;
 
-    float time(1), dist = GetPosition().distance(m_destination);
+    float time = 1;
+    Vector3d delta = m_destination - GetPosition();
+    double dist = delta.Length();
     if (dist < 100) {
         time = 0.5f;
     } else if (dist > BUBBLE_RADIUS_METERS){
@@ -335,7 +337,9 @@ void ProbeSE::RecoverProbe(PyList* list)
     if (m_client == nullptr)
         return;
     m_destination = m_shipRef->position() + 250;
-    float time(1), dist = GetPosition().distance(m_destination);
+    float time = 1;
+    Vector3d delta = m_destination - GetPosition();
+    double dist = delta.Length();
     if (dist > BUBBLE_RADIUS_METERS){
         float wsm = m_self->GetAttribute(AttrWarpSpeedMultiplier).get_float() * (ONE_AU_IN_METERS /4);
         time = EvE::max(dist / wsm, 1);

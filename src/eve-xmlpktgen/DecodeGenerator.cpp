@@ -40,7 +40,7 @@ ClassDecodeGenerator::ClassDecodeGenerator(FILE* outputFile)
 bool ClassDecodeGenerator::ProcessElementDef(const TiXmlElement* field)
 {
     //  new switch to (dis)allow decoding.    -xmlp bloat wip
-    bool decode(true);
+    bool decode = true;
     const char* decode_str = field->Attribute("decode");
     if (decode_str != nullptr)
         decode = str2<bool>(decode_str);
@@ -867,7 +867,7 @@ bool ClassDecodeGenerator::ProcessListInt(const TiXmlElement* field)
         "    }\n\n"
         "    const PyList* %s(%s->AsList());\n"
         "    PyList::const_iterator %s_cur = %s->begin(), %s_end = %s->end();\n"
-        "    for (uint16 %s_index(0); %s_cur != %s_end; %s_cur++, %s_index++) {\n"
+        "    for (uint16 %s_index = 0; %s_cur != %s_end; %s_cur++, %s_index++) {\n"
         "        if (!(*%s_cur)->IsInt()) {\n"
         "            _log(XMLP__DECODE_ERROR, \"Decode %s failed: Element %%u in list %s is not an integer: %%s\", %s_index, (*%s_cur)->TypeString());\n"
         "            return false;\n"
@@ -914,7 +914,7 @@ bool ClassDecodeGenerator::ProcessListLong(const TiXmlElement* field)
         "    }\n\n"
         "    const PyList* %s(%s->AsList());\n"
         "    PyList::const_iterator %s_cur = %s->begin(), %s_end = %s->end();\n"
-        "    for (uint16 %s_index(0); %s_cur != %s_end; %s_cur++, %s_index++) {\n"
+        "    for (uint16 %s_index = 0; %s_cur != %s_end; %s_cur++, %s_index++) {\n"
         "        if ((*%s_cur)->IsLong()) {\n"
         "            %s.push_back(PyRep::IntegerValue(*%s_cur));\n"
         "        } else {\n"
@@ -961,7 +961,7 @@ bool ClassDecodeGenerator::ProcessListStr(const TiXmlElement* field)
         "    }\n\n"
         "    const PyList* %s(%s->AsList());\n"
         "    PyList::const_iterator %s_cur = %s->begin(), %s_end = %s->end();\n"
-        "    for (uint32 %s_index(0); %s_cur != %s_end; %s_cur++, %s_index++) {\n"
+        "    for (uint32 %s_index = 0; %s_cur != %s_end; %s_cur++, %s_index++) {\n"
         "        if (!(*%s_cur)->IsString()) {\n"
         "            _log(XMLP__DECODE_ERROR, \"Decode %s failed: Element %%u in list %s is not a string: %%s\", %s_index, (*%s_cur)->TypeString());\n"
         "            return false;\n"
@@ -1052,7 +1052,7 @@ bool ClassDecodeGenerator::ProcessDictInline(const TiXmlElement* field)
     //now generate the "found" flags for each expected element.
     const TiXmlNode* i(nullptr);
 
-    uint8 count(0);
+    uint8 count = 0;
     while ((i = field->IterateChildren(i))) {
         if (i->Type() == TiXmlNode::TINYXML_ELEMENT) {
             const TiXmlElement* ele = i->ToElement();
@@ -1230,7 +1230,7 @@ bool ClassDecodeGenerator::ProcessDictRaw(const TiXmlElement* field)
         "    }\n\n"
         "    const PyDict* %s(%s->AsDict());\n"
         "    PyDict::const_iterator %s_cur = %s->begin(), %s_end = %s->end();\n"
-        "    for (uint16 %s_index(0); %s_cur != %s_end; %s_cur++, %s_index++) {\n"
+        "    for (uint16 %s_index = 0; %s_cur != %s_end; %s_cur++, %s_index++) {\n"
         "        if (!%s_cur->first->Is%s()) {\n"
         "            _log(XMLP__DECODE_ERROR, \"Decode %s failed: Key %%u in dict %s is not %s: %%s\", %s_index, %s_cur->first->TypeString());\n"
         "            return false;\n"
@@ -1287,7 +1287,7 @@ bool ClassDecodeGenerator::ProcessDictInt(const TiXmlElement* field)
         "    }\n\n"
         "    const PyDict* %s(%s->AsDict());\n"
         "    PyDict::const_iterator %s_cur = %s->begin(), %s_end = %s->end();\n"
-        "    for (uint16 %s_index(0); %s_cur != %s_end; %s_cur++, ++%s_index) {\n"
+        "    for (uint16 %s_index = 0; %s_cur != %s_end; %s_cur++, ++%s_index) {\n"
         "        if (!%s_cur->first->IsInt()) {\n"
         "            _log(XMLP__DECODE_ERROR, \"Decode %s failed: Key %%u in dict %s is not an integer: %%s\", %s_index, %s_cur->first->TypeString());\n"
         "            return false;\n"
@@ -1332,7 +1332,7 @@ bool ClassDecodeGenerator::ProcessDictStr(const TiXmlElement* field)
         "    }\n\n"
         "    const PyDict* %s(%s->AsDict());\n"
         "    PyDict::const_iterator %s_cur = %s->begin(), %s_end = %s->end();\n"
-        "    for (uint16 %s_index(0); %s_cur != %s_end; %s_cur++, ++%s_index) {\n"
+        "    for (uint16 %s_index = 0; %s_cur != %s_end; %s_cur++, ++%s_index) {\n"
         "        if (!%s_cur->first->IsString()) {\n"
         "            _log(XMLP__DECODE_ERROR, \"Decode %s failed: Key %%u in dict %s is not a string: %%s\", %s_index, %s_cur->first->TypeString());\n"
         "            return false;\n"

@@ -43,7 +43,7 @@ PyRep* CalendarDB::SaveNewEvent(uint32 ownerID, Call_CreateEventWithInvites& arg
     data = GetTimeParts(args.startDateTime);
 
     DBerror err;
-    uint32 eventID(0);
+    uint32 eventID = 0;
     if (args.duration) {
         if (!sDatabase.RunQueryLID(err, eventID,
             "INSERT INTO sysCalendarEvents(ownerID, creatorID, eventDateTime, eventDuration, importance,"
@@ -69,7 +69,7 @@ PyRep* CalendarDB::SaveNewEvent(uint32 ownerID, Call_CreateEventWithInvites& arg
     }
 
     if (!args.invitees->empty()) {
-        bool comma(false);
+        bool comma = false;
         std::ostringstream str;
         PyList* list = args.invitees->AsList();
         PyList::const_iterator itr = list->begin(), end = list->end();
@@ -110,7 +110,7 @@ PyRep* CalendarDB::SaveNewEvent(uint32 ownerID, uint32 creatorID, Call_CreateEve
     EvE::TimeParts data = EvE::TimeParts();
     data = GetTimeParts(args.startDateTime);
 
-    uint32 eventID(0);
+    uint32 eventID = 0;
     DBerror err;
     if (args.duration) {
         if (!sDatabase.RunQueryLID(err, eventID,
@@ -146,7 +146,7 @@ uint32 CalendarDB::SaveSystemEvent(uint32 ownerID, uint32 creatorID, int64 start
     EvE::TimeParts data = EvE::TimeParts();
     data = GetTimeParts(startDateTime);
 
-    uint32 eventID(0);
+    uint32 eventID = 0;
     DBerror err;
     if (!sDatabase.RunQueryLID(err, eventID,
         "INSERT INTO sysCalendarEvents(ownerID, creatorID, eventDateTime, autoEventType,"

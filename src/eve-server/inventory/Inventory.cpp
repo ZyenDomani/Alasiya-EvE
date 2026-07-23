@@ -373,11 +373,11 @@ std::vector<InventoryItemRef> Inventory::SortVector(std::vector<InventoryItemRef
     if (itemVec.size() < 2)
         return itemVec;
 
-    uint16 count(0);
+    uint16 count = 0;
     double start(GetTimeUSeconds());
 
     //begin basic sort
-    bool done(false);
+    bool done = false;
     InventoryItemRef tmp(nullptr);
 
     while(!done) { //check if sorted
@@ -517,7 +517,7 @@ bool Inventory::IsEmptyByFlag(EVEItemFlags flag) const {
 uint32 Inventory::GetItemsByFlagRange(EVEItemFlags lowflag, EVEItemFlags highflag, std::vector<InventoryItemRef> &items) const
 {
     // i dont yet see a better way to do this one...
-    uint32 count(0);
+    uint32 count = 0;
     for (auto &cur : mContents)
         if (cur.second->flag() >= lowflag && cur.second->flag() <= highflag) {
             items.push_back(cur.second);
@@ -540,7 +540,7 @@ uint32 Inventory::GetItemsByFlagSet(std::set<EVEItemFlags> flags, std::vector<In
 
 bool Inventory::ContainsTypeQty(uint16 typeID, uint32 qty/*0*/) const
 {
-    uint32 count(0);
+    uint32 count = 0;
     for (auto &cur : mContents) {
         if (cur.second->typeID() == typeID ) {
             if (cur.second->quantity() >= qty) {
@@ -556,7 +556,7 @@ bool Inventory::ContainsTypeQty(uint16 typeID, uint32 qty/*0*/) const
 
 bool Inventory::ContainsTypeQtyByFlag(uint16 typeID, EVEItemFlags flag, uint32 qty) const
 {
-    uint32 count(0);
+    uint32 count = 0;
     std::vector<InventoryItemRef> itemVec;
     if (GetItemsByFlag(flag, itemVec) < 1)
         return false;

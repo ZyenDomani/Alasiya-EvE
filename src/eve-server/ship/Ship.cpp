@@ -1281,7 +1281,7 @@ void ShipItem::HeatDamageCheck(GenericModule* pMod)
         uint8 flag = pMod->flag();
 
         // determine modules to damage and add to list
-        uint32 moduleID(0);
+        uint32 moduleID = 0;
 
         //modVec.push_back(moduleID);
     }
@@ -1422,6 +1422,7 @@ void ShipItem::LinkAllWeapons()
 
 void ShipItem::LinkWeaponLoop(std::list<GenericModule*>& weaponList)
 {
+    bool match = false;
     double start = GetTimeUSeconds();
     GenericModule* master(nullptr);
     std::list< GenericModule*>::iterator itr = weaponList.begin();
@@ -1434,7 +1435,7 @@ void ShipItem::LinkWeaponLoop(std::list<GenericModule*>& weaponList)
             itr = weaponList.erase(itr);
         } else if (master == nullptr) {
             // lets check if this module will match a master already in list before making new master...
-            bool match(false);
+            match = false;
             for (auto &item : m_linkedWeapons)
                 if (item.first->typeID() == (*itr)->typeID()) {
                     //master = item.first;
@@ -1727,7 +1728,7 @@ void ShipItem::LoadWeaponGroups()
     DBQueryResult* res = new DBQueryResult();
     ShipDB::LoadWeaponGroups(m_itemID, *res);
 
-    bool error(false);
+    bool error = false;
     GenericModule* pMaster(nullptr);
     GenericModule* pSlave(nullptr);
     DBResultRow row;
@@ -2278,8 +2279,8 @@ bool ShipItem::ValidateBoardShip(CharacterRef character) {
 
 bool ShipItem::ValidateItemSpecifics(InventoryItemRef iRef)
 {
-    bool result(false);
-    EvilNumber fitID(0);
+    bool result = false;
+    EvilNumber fitID = 0;
     uint16 groupID(type().groupID());
     // If a ship group restriction is specified, the item must be able to fit to at least one ship group.
     _log(SHIP__TRACE, "ShipItem::ValidateItemSpecifics - Beginning the group validation for %s(%u):", iRef->name(), iRef->itemID());
@@ -2589,9 +2590,9 @@ void ShipSE::EncodeDestiny( Buffer& into) {
     into.Append(data);
     switch (mode) {
         case Ball::Mode::WARP: {
-            GPoint target = m_destiny->GetTargetPoint();
+            Vector3d target = m_destiny->GetTargetPoint();
             WARP_Struct warp;
-                warp.formationID = 0xFF;
+                warp.formationID = -1;
                 warp.targX = target.x;
                 warp.targY = target.y;
                 warp.targZ = target.z;
@@ -2600,7 +2601,7 @@ void ShipSE::EncodeDestiny( Buffer& into) {
                 if (m_destiny->IsWarping()) {
                     warp.effectStamp = m_destiny->GetStateStamp();   //timestamp when warp started
                     warp.distance = -1.0;
-                    warp.warpInVelocity = 23000.0;
+                    warp.warpInVelocity = 13000.0;
                 } else {
                     warp.effectStamp = -1;
                     warp.distance = 0;
@@ -2610,22 +2611,22 @@ void ShipSE::EncodeDestiny( Buffer& into) {
         }  break;
         case Ball::Mode::FOLLOW: {
             FOLLOW_Struct follow;
-                follow.formationID = 0xFF;
+                follow.formationID = -1;
                 follow.followID = m_destiny->GetTargetID();
                 follow.followRange = m_destiny->GetFollowDistance();
             into.Append(follow);
         }  break;
         case Ball::Mode::ORBIT: {
             ORBIT_Struct orbit;
-                orbit.formationID = 0xFF;
+                orbit.formationID = -1;
                 orbit.targetID = m_destiny->GetTargetID();
                 orbit.followRange = m_destiny->GetFollowDistance();
             into.Append(orbit);
         }  break;
         case Ball::Mode::GOTO: {
-            GPoint target = m_destiny->GetTargetPoint();
+            Vector3d target = m_destiny->GetTargetPoint();
             GOTO_Struct go;
-                go.formationID = 0xFF;
+                go.formationID = -1;
                 go.x = target.x;
                 go.y = target.y;
                 go.z = target.z;
@@ -2633,7 +2634,7 @@ void ShipSE::EncodeDestiny( Buffer& into) {
         }  break;
         default: {
             STOP_Struct main;
-                main.formationID = 0xFF;
+                main.formationID = -1;
             into.Append( main );
         } break;
     }
@@ -2789,7 +2790,7 @@ bool ShipSE::LaunchDrone(InventoryItemRef dRef) {
     pDrone->Init();
 
     // this will launch drone (orbitDistance - 100m) from ship.  ai will adjust if needed
-    GPoint position(GetPosition());
+    Vector3d position(GetPosition());
     position.MakeRandomPointOnSphere(pDrone->GetAI()->GetOrbitDistance() - 50.0);
     dRef->SetPosition(position);
     dRef->SaveItem();

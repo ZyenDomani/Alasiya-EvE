@@ -352,7 +352,7 @@ std::string EvE::sh(std::string cmd)
  */
 void EvE::traceStackLN(void)
 {
-    uint8  i(0), nptrs(0);
+    uint8  i(0), nptrs = 0;
     void *buffer[150];
     char **strings;
 
@@ -384,7 +384,7 @@ void EvE::traceStackLN(void)
 
 void EvE::traceStack(void)
 {
-    uint8 i(0), nptrs(0);
+    uint8 i(0), nptrs = 0;
     void *buffer[150];
     char **strings;
 

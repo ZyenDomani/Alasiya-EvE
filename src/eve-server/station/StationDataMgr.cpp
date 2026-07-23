@@ -89,8 +89,8 @@ void StationDataMgr::Populate()
         } else {
             sData.serviceMask = 0;
         }
-        sData.position                  = GPoint(row.GetDouble(1),row.GetDouble(2),row.GetDouble(3));
-        sData.dockOrientation           = GVector(row.GetDouble(4),row.GetDouble(5),row.GetDouble(6));
+        sData.position                  = Vector3d(row.GetDouble(1),row.GetDouble(2),row.GetDouble(3));
+        sData.dockOrientation           = Vector3d(row.GetDouble(4),row.GetDouble(5),row.GetDouble(6));
         sData.dockingCostPerVolume      = row.GetFloat(7);
         sData.maxShipVolumeDockable     = row.GetUInt(8);
         sData.officeSlots               = row.GetUInt(9);
@@ -113,8 +113,8 @@ void StationDataMgr::Populate()
         sData.systemID                  = row.GetUInt(26);
         sData.constellationID           = row.GetUInt(27);
         sData.regionID                  = row.GetUInt(28);
-        sData.dockEntry                 = GPoint(row.GetDouble(29),row.GetDouble(30),row.GetDouble(31));
-        sData.dockPosition              = GPoint(row.GetDouble(29) + row.GetDouble(1),
+        sData.dockEntry                 = Vector3d(row.GetDouble(29),row.GetDouble(30),row.GetDouble(31));
+        sData.dockPosition              = Vector3d(row.GetDouble(29) + row.GetDouble(1),
                                                  row.GetDouble(30) + row.GetDouble(2),
                                                  row.GetDouble(31) + row.GetDouble(3));
         m_stationData.emplace(row.GetInt(0), sData);

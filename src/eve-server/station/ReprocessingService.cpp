@@ -61,7 +61,7 @@ ReprocessingService::~ReprocessingService() {
     delete m_dispatch;
 }
 
-PyBoundObject *ReprocessingService::CreateBoundObject(Client *pClient, const PyRep *bind_args) {
+PyBoundObject *ReprocessingService::CreateBoundObject(Client* pClient, const PyRep *bind_args) {
     if (!bind_args->IsInt()) {
         _log(SERVICE__ERROR, "%s: Non-integer bind argument '%s'", pClient->GetName(), bind_args->TypeString());
         return nullptr;
@@ -130,7 +130,7 @@ PyResult ReprocessingServiceBound::Handle_GetOptionsForItemTypes(PyCallArgs &cal
 }
 
 PyResult ReprocessingServiceBound::Handle_GetReprocessingInfo(PyCallArgs &call) {
-    Client *pClient = call.client;
+    Client* pClient = call.client;
     Rsp_GetReprocessingInfo rsp;
         rsp.standing = sStandingMgr.GetEffectiveStanding(m_stationCorpID, pClient->GetChar().get());
         rsp.tax = CalcTax(rsp.standing);
@@ -203,9 +203,9 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
         sRamMthd.HangarRolesCheck(call.client, args.flag);
     }
     
-    uint32 full(0); 
-    uint32 qtyLeft(0);
-    uint32 quantity(0);
+    uint32 full = 0; 
+    uint32 qtyLeft = 0;
+    uint32 quantity = 0;
     float efficiency(0.0f);
     InventoryItemRef iRef(nullptr);
     float tax(CalcTax(GetStanding(call.client)));

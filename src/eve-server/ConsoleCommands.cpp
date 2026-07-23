@@ -132,7 +132,7 @@ bool ConsoleCommand::Process() {
                 }
             } else if (strncmp(buf, "s", 1) == 0) {
                 std::string state = "";
-                int64 threads(0);
+                int64 threads = 0;
                 uint8 aThreads = std::thread::hardware_concurrency();
                 float vm(0.0f), rss(0.0f), user(0.0f), kernel(0.0f);
                 Status(state, threads, vm, rss, user, kernel);
@@ -190,7 +190,7 @@ bool ConsoleCommand::Process() {
                 sLog.Warning("       Build Date", " %s", EVEMU_BUILD_DATE );
                 //  memory
                 std::string state = "";
-                int64 threads(0);
+                int64 threads = 0;
                 uint8 aThreads = std::thread::hardware_concurrency();
                 float vm(0.0f), rss(0.0f), user(0.0f), kernel(0.0f);
                 Status(state, threads, vm, rss, user, kernel);
@@ -360,9 +360,9 @@ void ConsoleCommand::Status(std::string& state, int64& threads, float& vm_usage,
 {
     // the fields we want
     std::string ignore = "", run_state = "";
-    int64 num_threads(0);  //this is saved from OS as long decimal....*sigh*  gotta allocate long int for it or weird shit happens.
-    int64 vsize(0);      //in bytes
-    int64 rss(0);			//in pages
+    int64 num_threads = 0;  //this is saved from OS as long decimal....*sigh*  gotta allocate long int for it or weird shit happens.
+    int64 vsize = 0;      //in bytes
+    int64 rss = 0;			//in pages
     float utime(0.0f), stime(0.0f);
 
     // stat seems to give the most reliable results
@@ -401,7 +401,7 @@ void ConsoleCommand::Test()
 
     testing t;
     t.GetSkills();
-    
+
     //t.CharAttribTest();
 
     //sMktMgr.GetCruPrices();
@@ -419,7 +419,7 @@ void ConsoleCommand::Test()
 
 void ConsoleCommand::UpdateStatus() {
 	std::string state = "";
-	int64 threads(0);
+	int64 threads = 0;
 	float vm(0.0f), rss(0.0f), user(0.0f), kernel(0.0f);
 	Status(state, threads, vm, rss, user, kernel);
     if (sConfig.debug.IsTestServer)

@@ -133,8 +133,8 @@ PyResult RepairSvcBound::Handle_RepairItems(PyCallArgs &call) {
      */
 
     InventoryItemRef iRef(nullptr);
-    double cost(0), total(0);
-    uint32 damage(0);
+    double cost(0), total = 0;
+    uint32 damage = 0;
     std::vector<InventoryItemRef> itemRefVec;
     PyList::const_iterator itr = args.itemIDs->begin(), end = args.itemIDs->end();
     for (; itr != end; itr++) {
@@ -237,7 +237,7 @@ PyResult RepairSvcBound::Handle_GetDamageReports(PyCallArgs &call) {
     }
 
     PyDict* dict = new PyDict();
-    Client* pClient(call.client);
+    Client* pClient = call.client;
     StationItemRef sRef = pClient->SystemMgr()->GetStationFromInventory(m_locationID);
     Inventory* pInv = sRef->GetMyInventory();
     float standing(sStandingMgr.GetEffectiveStanding(sRef->ownerID(), pClient->GetChar().get()));
@@ -332,7 +332,7 @@ PyResult RepairService::Handle_UnasembleItems(PyCallArgs &call) {
     PyList *pList(nullptr);
     PyTuple *tuple(nullptr);
     InventoryItemRef iRef(nullptr);
-    uint32 itemID(0); //,locationID = 0,  itemLoc = 0;
+    uint32 itemID = 0; //,locationID = 0,  itemLoc = 0;
 
     if (args.list->size() > 0)
         ;  // skipChecks is populated....do something constructive here

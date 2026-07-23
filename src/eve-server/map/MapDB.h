@@ -44,10 +44,10 @@ public:
 
     /* for MapData class */
     static void GetSystemJumps(DBQueryResult& res);
-    static void GetGates(uint32 systemID, std::vector<DBGPointEntity>& gateIDs, uint8& total);
-    static void GetBelts(uint32 systemID, std::vector<DBGPointEntity>& beltIDs, uint8& total);
-    static void GetMoons(uint32 systemID, std::vector<DBGPointEntity>& moonIDs, uint8& total);
-    static void GetPlanets(uint32 systemID, std::vector<DBGPointEntity>& planetIDs, uint8& total);
+    static void GetGates(uint32 systemID, std::vector<DBVector3dEntity>& gateIDs, uint8& total);
+    static void GetBelts(uint32 systemID, std::vector<DBVector3dEntity>& beltIDs, uint8& total);
+    static void GetMoons(uint32 systemID, std::vector<DBVector3dEntity>& moonIDs, uint8& total);
+    static void GetPlanets(uint32 systemID, std::vector<DBVector3dEntity>& planetIDs, uint8& total);
 
 
     /* clear system dynamic data on server start */

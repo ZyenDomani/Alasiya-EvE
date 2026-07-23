@@ -208,7 +208,7 @@ void testing::WarpTest(uint8 type) {
 
     InitWarp();
 
-    uint8 curTime(0);
+    uint8 curTime = 0;
     while (1 /*curTime < wState.warpTime*/) {
         if (wState.accel) {
             WarpAccel(curTime);
@@ -235,7 +235,7 @@ void testing::WarpTest(uint8 type) {
 void testing::InitWarp() {
     //  150km - 15s, 1mkm - 23s, 1au - 29s base + ship's wsm
     double decelTime(1.0f), cruiseTime(0.0f);
-    int64 accelDistance(0), decelDistance(0), cruiseDistance(0);
+    int64 accelDistance(0), decelDistance(0), cruiseDistance = 0;
     int64 warpSpeedInMeters(m_shipWarpSpeed * ONE_AU_IN_METERS);
     // set times and distances based on target distance
     if (m_targetDistance < (warpSpeedInMeters * 3)) {
@@ -269,8 +269,8 @@ void testing::InitWarp() {
 
     decelTime = m_decelTime;
     double speed(0.0f);
-    bool run(true);
-    uint16 step(0);
+    bool run = true;
+    uint16 step = 0;
     while (run) {
         speed = exp(--decelTime);
         ++step;
@@ -279,7 +279,7 @@ void testing::InitWarp() {
         }
     }
 
-    double distance(0.0f);
+    double distance = 0.0;
     while (step > 0) {
         distance += exp(decelTime++);
         --step;
@@ -602,11 +602,11 @@ void testing::NumberTest() {
     // time ops with diff variable types.  30k iterations
     float f(0.01f), ft(0.0f);
     double d(0.01), dt(0.0);
-    int i(0), it(0);
-    uint32 u(0), ut(0);
-    int64 b(0), bt(0);
+    int i(0), it = 0;
+    uint32 u(0), ut = 0;
+    int64 b(0), bt = 0;
 
-    uint32 run(0);
+    uint32 run = 0;
 
     double start(GetTimeUSeconds());
     while (run < 30000) {
@@ -757,9 +757,9 @@ void testing::UpdateDungeons() {
     DBerror err;
     DBQueryResult res;
     DBResultRow row;
-    uint8 typeID(0);
-    uint32 factionID(0);
-    uint8 archetypeID(0);
+    uint8 typeID = 0;
+    uint32 factionID = 0;
+    uint8 archetypeID = 0;
     sDatabase.RunQuery(res, "SELECT templateID, templateName, dunRoomID FROM dunTemplates");
     while (res.GetRow(row)) {
         std::string name = row.GetText(1);

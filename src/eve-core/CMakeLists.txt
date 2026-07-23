@@ -27,11 +27,6 @@ SET( database_SOURCE
      "${TARGET_SOURCE_DIR}/database/dbcore.cpp"
      "${TARGET_SOURCE_DIR}/database/dbtype.cpp" )
 
-SET( error_INCLUDE
-     "${TARGET_INCLUDE_DIR}/error/ErrorHandler.h" )
-SET( error_SOURCE
-     "${TARGET_SOURCE_DIR}/error/ErrorHandler.cpp" )
-
 SET( log_INCLUDE
      "${TARGET_INCLUDE_DIR}/log/LogNew.h"
      "${TARGET_INCLUDE_DIR}/log/logsys.h"
@@ -41,9 +36,8 @@ SET( log_SOURCE
      "${TARGET_SOURCE_DIR}/log/logsys.cpp" )
 
 SET( math_INCLUDE
-     "${TARGET_INCLUDE_DIR}/math/gpoint.h"
+     "${TARGET_INCLUDE_DIR}/math/Vector3d.h"
      "${TARGET_INCLUDE_DIR}/math/Trig.h" )
-     #"${TARGET_INCLUDE_DIR}/math/Vec3.h" )
 SET( math_SOURCE
      #"${TARGET_SOURCE_DIR}/math/Vec3.cpp"
      )
@@ -110,7 +104,6 @@ SET( utils_SOURCE
 #####################
 SOURCE_GROUP( "src"            FILES ${INCLUDE} )
 SOURCE_GROUP( "src\\database"  FILES ${database_INCLUDE} )
-#SOURCE_GROUP( "src\\error"     FILES ${error_INCLUDE} )
 SOURCE_GROUP( "src\\log"       FILES ${log_INCLUDE} )
 SOURCE_GROUP( "src\\math"      FILES ${math_INCLUDE} )
 SOURCE_GROUP( "src\\memory"    FILES ${memory_INCLUDE} )
@@ -120,7 +113,6 @@ SOURCE_GROUP( "src\\utils"     FILES ${utils_INCLUDE} )
 
 SOURCE_GROUP( "src"            FILES ${SOURCE} )
 SOURCE_GROUP( "src\\database"  FILES ${database_SOURCE} )
-#SOURCE_GROUP( "src\\error"     FILES ${error_SOURCE} )
 SOURCE_GROUP( "src\\log"       FILES ${log_SOURCE} )
 SOURCE_GROUP( "src\\math"      FILES ${math_SOURCE} )
 #SOURCE_GROUP( "src\\memory"    FILES ${memory_SOURCE} )
@@ -131,7 +123,6 @@ SOURCE_GROUP( "src\\utils"     FILES ${utils_SOURCE} )
 ADD_LIBRARY( "${TARGET_NAME}"
              ${INCLUDE}           ${SOURCE}
              ${database_INCLUDE}  ${database_SOURCE}
-             #${error_INCLUDE}     ${error_SOURCE}
              ${log_INCLUDE}       ${log_SOURCE}
              ${math_INCLUDE}      ${math_SOURCE}
              ${memory_INCLUDE}    #${memory_SOURCE}
@@ -145,14 +136,12 @@ TARGET_BUILD_PCH( "${TARGET_NAME}"
 TARGET_INCLUDE_DIRECTORIES( "${TARGET_NAME}"
                             ${Boost_INCLUDE_DIRS}
                             ${MYSQL_INCLUDE_DIRS}
-                            ${GANGSTA_INCLUDE_DIRS}
                             ${TINYXML_INCLUDE_DIRS}
                             "${ZLIB_INCLUDE_DIR}"
                             "${TARGET_INCLUDE_DIR}" )
 TARGET_LINK_LIBRARIES( "${TARGET_NAME}"
                        ${Boost_LIBRARIES}
                        ${MYSQL_LIBRARIES}
-                       ${GANGSTA_LIBRARIES}
                        ${TINYXML_LIBRARIES}
                        "${ZLIB_LIBRARY}"
                        ${CMAKE_NET_LIBS}

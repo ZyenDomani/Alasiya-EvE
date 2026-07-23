@@ -33,7 +33,7 @@ static const uint32 BUBBLE_RADIUS_METERS = 250000;       // EVE retail uses 250k
 static const uint32 BUBBLE_HYSTERESIS_METERS = 5000;     // How far out of the existing bubble a ship needs to fly before being placed into a new or different bubble
 
 class SystemBubble;
-class GPoint;
+class Vector3d;
 
 //the purpose of this object is to make a nice container for
 //any of the optimized space searching algorithms which we
@@ -61,14 +61,14 @@ public:
     void Add(SystemEntity* pSE, bool isPostWarp = false);
     //call to find the bubble containing the SystemEntity specified, if no bubble does, return NULL
     SystemBubble* FindBubble(SystemEntity* pSE) const;
-    //call to find the bubble containing the GPoint specified, if no bubble does, return NULL
-    SystemBubble* FindBubble(uint32 systemID, const GPoint& pos) const;
+    //call to find the bubble containing the Vector3d specified, if no bubble does, return NULL
+    SystemBubble* FindBubble(uint32 systemID, const Vector3d& pos) const;
     SystemBubble* FindBubbleByID(uint16 bubbleID);
-    //find the bubble containing the GPoint specified.  will call create to make new bubble if none found.
+    //find the bubble containing the Vector3d specified.  will call create to make new bubble if none found.
     //  this is preferred method to create new bubble.
-    SystemBubble* GetBubble(SystemManager* sysMgr, const GPoint& pos);
+    SystemBubble* GetBubble(SystemManager* sysMgr, const Vector3d& pos);
     //call to calculate new bubble's center from entity's velocity:
-    void NewBubbleCenter(GVector shipVelocity, GPoint& newCenter);
+    void NewBubbleCenter(Vector3d shipVelocity, Vector3d& newCenter);
     //call when an entity is removed from the system.
     void Remove(SystemEntity* pSE);
     void clear();
@@ -97,7 +97,7 @@ public:
     void GetBubbleCenterMarkers(uint32 systemID, std::vector<CosmicSignature>& anom);
 
 protected:
-    SystemBubble* MakeBubble(SystemManager* sysMgr, GPoint position);
+    SystemBubble* MakeBubble( SystemManager* sysMgr, Vector3d position );
 
 private:
     Timer m_wanderTimer;

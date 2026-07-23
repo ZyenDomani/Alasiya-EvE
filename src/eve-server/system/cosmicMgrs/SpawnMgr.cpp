@@ -104,7 +104,7 @@ void SpawnMgr::Process() {
      */
     if (m_ratGroupTimer.Enabled())
         if (m_ratGroupTimer.Check()) {
-            bool killTimer(true);
+            bool killTimer = true;
             std::multimap<uint16, Spawn::Entry>::iterator itr = m_spawns.begin(), end = m_spawns.end();
             while (itr != end) {
                 if (itr->second.respawn) {
@@ -237,7 +237,7 @@ void SpawnMgr::SpawnKilled(SystemBubble* pBubble, uint32 itemID) {
     if (pBubble == nullptr)
         return;
 
-    bool killed(true);
+    bool killed = true;
     std::map<uint32, uint8>::iterator cItr = m_liveCount.find(pBubble->GetID());
     if (cItr == m_liveCount.end()) {  // this should never hit
         // no entry for this bubble??
@@ -453,7 +453,7 @@ void SpawnMgr::PlayerEnteredBubble(uint8 bubbleID, Client* pClient) {
 
 bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None*/, uint8 level/*0*/) {
     float secRating(m_system->GetSecurityRating());     // 1.0 to -0.9
-    bool anomaly(false);
+    bool anomaly = false;
     // get faction for this region
     uint32 factionID(factionUnknown);  // default to rogue drones.
     if (sConfig.npc.RatFaction) {            // is RatFaction set in config?
@@ -617,7 +617,7 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
 
     // get typeIDs to spawn based on info in m_factionGroups and ship designators and put into Spawn Vector
     // figure out how to distinguish between roid, anomaly, incursion and mission defs for this....
-    uint8 shipClass(0);
+    uint8 shipClass = 0;
     if (sClass > Spawn::Class::BeltSpawn)
         shipClass = 14;
 
@@ -768,8 +768,8 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
      * for non-rat spawns, this is the intial spawn which and they will already be in pocket.
      *  waves will be spawned at structure (template positioning data), OR will warp in if no structure in pocket
      */
-    GPoint startPos(pBubble->GetCenter());
-    GPoint warpToPoint(startPos);
+    Vector3d startPos(pBubble->GetCenter());
+    Vector3d warpToPoint(startPos);
 
     std::string name = "BeltRat";
     if (anomaly) {
@@ -782,7 +782,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
          */
         startPos.MakeRandomPointOnSphere(MakeRandomFloat(10.0f, 15.0f) * 100000.0f); //1m-1.5m meters from target bubble center
         SystemBubble* pBubble = sBubbleMgr.GetBubble(m_system, startPos);
-        uint32 bubbleID(0);
+        uint32 bubbleID = 0;
         if (pBubble != nullptr)
             bubbleID = pBubble->GetID();
         _log(SPAWN__POP, "SpawnMgr::MakeSpawn - NPC starting bubbleID %u", bubbleID);
@@ -818,10 +818,10 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
     for (auto &cur : m_toSpawn) {
         /*
          *        ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, const char *_name = "",
-         *                  const GPoint &_position = NULL_ORIGIN, const char *_customInfo = "", bool _contraband = false);
+         *                  const Vector3d &_position = NULL_ORIGIN, const char *_customInfo = "", bool _contraband = false);
          */
         ItemData idata(cur.typeID, corpID, m_system->GetID(), flagAutoFit, "", startPos, name.c_str());
-        for (uint8 x(0); x < cur.quantity;) {
+        for (uint8 x = 0; x < cur.quantity;) {
             iRef = sItemFactory.SpawnItem(idata);
             if (iRef.get() == nullptr) {
                 _log(SPAWN__ERROR, "Failed to spawn item type %u.", cur.typeID);
@@ -899,7 +899,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
             //  begin warp.  this may have to be looked into later for timing of large spawns (>6)
             //  actually looks kinda cool when larger ships come in later...
             if (sClass <= Spawn::Class::BeltSpawn /*|| isFormation*/) {
-                GPoint warpTo(warpToPoint);
+                Vector3d warpTo(warpToPoint);
 /*
                 // If Elite Tier (Null-Sec / High End Anomaly), they warp directly in formation!
                 if (sConfig.npc.enableFormation and tacticalTier == 2 and x < formationOffsets.size()) {
@@ -938,14 +938,14 @@ void SpawnMgr::ReSpawn(SystemBubble* pBubble, Spawn::Entry& spawnEntry) {
     if (spawnEntry.spawnClass > Spawn::Class::Insane)
         return;
 
-    GPoint startPos(pBubble->GetCenter());
-    GPoint warpToPoint(startPos);
+    Vector3d startPos(pBubble->GetCenter());
+    Vector3d warpToPoint(startPos);
     startPos.MakeRandomPointOnSphere(MakeRandomInt(10, 15) * 100000); //1-1m5 km from bubble center
     _log(SPAWN__TRACE, "ReSpawn()  data for spawnEntryID %u  0x%X is type:%u, corp:%u, faction:%u, #:%u of %u", \
             spawnEntry.spawnID, &spawnEntry, spawnEntry.typeID, spawnEntry.corpID, \
             spawnEntry.factionID, spawnEntry.number, spawnEntry.total);
     /* ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, const char *_name = "",
-     *           const GPoint &_position = NULL_ORIGIN, const char *_customInfo = "", bool _contraband = false);
+     *           const Vector3d &_position = NULL_ORIGIN, const char *_customInfo = "", bool _contraband = false);
      */
     ItemData idata(spawnEntry.typeID, spawnEntry.corpID, m_system->GetID(), flagAutoFit, "", startPos, "BeltRat");
     InventoryItemRef iRef = sItemFactory.SpawnItem(idata);      // will have to work on this to NOT save npc to db.
@@ -998,7 +998,7 @@ void SpawnMgr::ReSpawn(SystemBubble* pBubble, Spawn::Entry& spawnEntry) {
 }
 
 uint16 SpawnMgr::GetRandTypeID(uint8 sClass) {
-    uint16 groupID(0);
+    uint16 groupID = 0;
     std::map<uint8, uint16>::iterator itr = m_factionGroups.find(sClass);
     if (itr != m_factionGroups.end())
         groupID = itr->second;
@@ -1006,7 +1006,7 @@ uint16 SpawnMgr::GetRandTypeID(uint8 sClass) {
 }
 
 bool SpawnMgr::IsChaining(uint16 bubbleID) {
-    bool rsp(false);
+    bool rsp = false;
     auto range = m_spawns.equal_range(bubbleID);
     auto itr = range.first;
     while (itr != range.second) {

@@ -100,7 +100,7 @@ namespace Inv {
         uint32          ownerID;
         uint32          locationID;
         uint32          quantity;
-        GPoint          position;
+        Vector3d          position;
         std::string     customInfo;
     };
 

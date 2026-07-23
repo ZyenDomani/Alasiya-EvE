@@ -53,7 +53,7 @@
 
     // build the tuple based on above packet...may not need, as that is cached packet....
     PyTuple* first = new PyTuple(2);
-        first->SetItem(0, new PyLong(Win32TimeNow()));
+        first->SetItem(0, new PyLong(GetFileTimeNow()));
         first->SetItem(1, new PyInt(46587)); //unknown
     PyTuple* second = new PyTuple(3);
         second->SetItem(0, new PyString("Method Call"));

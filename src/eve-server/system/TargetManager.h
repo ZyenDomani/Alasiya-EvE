@@ -28,6 +28,7 @@
 #ifndef __TARGETMANAGER_H_INCL__
 #define __TARGETMANAGER_H_INCL__
 
+#include "../eve-server.h"
 #include "inventory/ItemRef.h"
 
 namespace TargMgr {
@@ -208,6 +209,7 @@ protected:
 private:
     SystemEntity* mySE;    //we do not own this.
 
+    // update:  change these to unordered_map
     std::map<uint32, ActiveModule*> m_modules;               // map of modID/Mod* targeting this object
     std::map<SystemEntity*, TargetEntry*> m_targets;         //we own these values, not the keys
     std::map<SystemEntity*, TargetedByEntry*> m_targetedBy;  //we own these values, not the keys

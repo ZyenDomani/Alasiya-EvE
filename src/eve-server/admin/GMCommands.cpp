@@ -191,7 +191,7 @@ PyResult Command_spawnn(Client* who, CommandDB* db, PyServiceMgr* services, cons
         return new PyString("Unknown typeID or typeName returned no matches.");
     }
 
-    GPoint loc(who->GetShipSE()->GetPosition());
+    Vector3d loc(who->GetShipSE()->GetPosition());
     // Calculate a random coordinate on the sphere centered on the player's position with
     // a radius equal to the radius of the ship/celestial being spawned times 10 for really good measure of separation:
     double radius = (actualRadius * 5.0) * (MakeRandomFloat(1.0f, 3.0f));     // Scale the distance from player that the object will spawn to between 10x and 15x the object's radius
@@ -278,7 +278,7 @@ PyResult Command_spawn(Client* pClient, CommandDB* db, PyServiceMgr* services, c
     }
 
     // Check to see if the X Y Z optional coordinates were supplied with the command:
-    GPoint offsetLocation;
+    Vector3d offsetLocation;
     if (args.argCount() > 3)
     {
         if (!(args.isNumber(3)))
@@ -306,7 +306,7 @@ PyResult Command_spawn(Client* pClient, CommandDB* db, PyServiceMgr* services, c
         offsetLocationSet = true;
     }
 
-    GPoint loc;
+    Vector3d loc;
 
     for(spawnIndex=0; spawnIndex < spawnCount; ++spawnIndex)
     {
@@ -620,7 +620,7 @@ PyResult Command_giveallskills(Client* who, CommandDB* db, PyServiceMgr* service
 
             //  save gm skill gift in history  -allan
             //  maybe not for this....WAAAAYYY  to much DB traffic for this.
-            //character->SaveSkillHistory(EvESkill::Event::GMGift, Win32TimeNow(), ownerID, skillID.get_uint32(), level, \
+            //character->SaveSkillHistory(EvESkill::Event::GMGift, GetFileTimeNow(), ownerID, skillID.get_uint32(), level, \
             skill->GetAttribute(AttrSkillPoints).get_double());
         }
         // END LOOP

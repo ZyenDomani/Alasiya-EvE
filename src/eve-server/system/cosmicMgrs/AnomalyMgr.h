@@ -48,7 +48,7 @@ class AnomalyMgr
     void GetSignatureList(std::vector< CosmicSignature >& sig);
 
     uint32 GetAnomalyID(std::string& sigID);
-    GPoint GetAnomalyPos(std::string& sigID);
+    Vector3d GetAnomalyPos(std::string& sigID);
 
     const char* GetScanGroupName(uint8 groupID=0);
 

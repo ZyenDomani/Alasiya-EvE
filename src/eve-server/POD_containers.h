@@ -137,44 +137,6 @@ struct KillData {
     std::string killBlob = "none";
 };
 
-/* POD structure for asteroid */
-struct AsteroidData {
-    uint16 typeID=0;
-    uint32 itemID=0;
-    uint32 systemID=0;
-    uint32 beltID=0;
-    double quantity=0.0;
-    double radius=0.0;
-    GPoint position = NULL_ORIGIN;
-    std::string itemName = "none";
-};
-
-/* POD structure for asteroid distribution methods by group */
-struct OreTypeChance {
-    uint16 typeID=0;
-    float chance=0.0f;
-};
-
-/* POD structure for cosmic signatures/anomalies */
-struct CosmicSignature {
-    int8 dungeonType=0;          // internal for creation checks
-    uint16 bubbleID=0;            // internal for .siglist command
-    // typeID of signal
-    uint16 sigTypeID=0;           // type name if scanGroupID is not sig or anom and certainty > 0.75
-    // groupID of signal
-    uint16 sigGroupID=0;          // group name if scanGroupID is not sig or anom and certainty > 0.25
-    // groupID of signature...must be one of sig, anom, ship, drone, structure
-    uint16 scanGroupID=0;         // ship,drone and structure uses sigGroupID for group name
-    uint16 scanAttributeID=0;     // group naming data if scanGroupID is anom or sig and certainty > 0.25
-    uint32 ownerID=0;
-    uint32 systemID=0;
-    uint32 sigItemID=0;           // itemID of this entry
-    float sigStrength=0.0f;
-    GPoint position=NULL_ORIGIN;
-    std::string sigID="";          // this is unique xxx-nnn id displayed in scanner.  can be other values
-    std::string sigName="";        // site name if scanGroupID is sig or anom and certainty > 0.75
-};
-
 /* POD structure for spawn faction groups */
 struct RatFactionGroups {  // notes for me while creating/writing/testing
     uint8 shipClass=0;      // shipClass as defined in Spawn::Class
@@ -265,57 +227,6 @@ struct StatisticData {
 };
 
 
-/* POD structure for systems. */
-struct SystemData {
-    uint32 systemID=0;
-    uint32 constellationID=0;
-    uint32 regionID=0;
-    uint32 factionID=0;
-    int64 radius=0;
-    float security=0.0f;
-    std::string name="";
-    std::string securityClass="";
-};
-
-/* POD structure for solarsystem item. */
-struct SolarSystemData {
-    bool border=false;
-    bool fringe=false;
-    bool corridor=false;
-    bool hub=false;
-    bool international=false;
-    bool region=false;
-    bool constellation=false;
-    uint32 systemID=0;
-    uint32 constellationID=0;
-    uint32 regionID=0;
-    uint32 factionID=0;
-    uint32 sunTypeID=0;
-    int64 radius=0;
-    float security=0.0f;
-    float luminosity=0.0f;
-    GPoint position = NULL_ORIGIN;
-    GPoint minPosition = NULL_ORIGIN;
-    GPoint maxPosition = NULL_ORIGIN;
-    std::string name="";
-    std::string securityClass="";
-};
-struct SystemKillData {
-    uint16 killsHour=0;
-    uint16 kills24Hour=0;
-    uint16 factionKills=0;
-    uint16 factionKills24Hour=0;
-    uint16 podKillsHour=0;
-    uint16 podKills24Hour=0;
-
-    int64 killsDateTime=0;
-    int64 kills24DateTime=0;
-    int64 factionDateTime=0;
-    int64 faction24DateTime=0;
-    int64 podDateTime=0;
-    int64 pod24DateTime=0;
-};
-
 /* POD structure for static items. */
 struct StaticData {
     uint16 typeID=0;
@@ -324,7 +235,7 @@ struct StaticData {
     uint32 constellationID=0;
     uint32 regionID=0;
     float radius=0.0f;
-    GPoint position = NULL_ORIGIN;
+    Vector3d position = NULL_ORIGIN;
 };
 
 
@@ -379,10 +290,10 @@ struct StationData {
     float dockingCostPerVolume=0.0f;
     float reprocessingEfficiency=0.0f;
     float reprocessingStationsTake=0.0f;
-    GPoint position = NULL_ORIGIN;
-    GPoint dockEntry = NULL_ORIGIN;
-    GPoint dockPosition = NULL_ORIGIN;
-    GVector dockOrientation = NULL_ORIGIN_V;
+    Vector3d position = NULL_ORIGIN;
+    Vector3d dockEntry = NULL_ORIGIN;
+    Vector3d dockPosition = NULL_ORIGIN;
+    Vector3d dockOrientation = NULL_ORIGIN;
     std::string name="";
     std::string description="";
 };
@@ -435,15 +346,15 @@ struct DBSystemDynamicEntity {
     uint32 ownerID=0;
     uint32 corporationID=0;
     uint32 planetID=0;
-    GPoint position = NULL_ORIGIN;
+    Vector3d position = NULL_ORIGIN;
     std::string itemName = "none";
 };
 
-struct DBGPointEntity {
+struct DBVector3dEntity {
     uint8 idx=0;
     uint32 itemID=0;
     double radius=0.0;
-    GPoint position = NULL_ORIGIN;
+    Vector3d position = NULL_ORIGIN;
 };
 
 /* POD structure for decoded probe data */
@@ -452,7 +363,7 @@ struct ProbeData {
     uint8 rangeStep=0;
     int64 expiry=0;
     float scanRange=0.0f;
-    GPoint dest = NULL_ORIGIN;
+    Vector3d dest = NULL_ORIGIN;
 };
 
 

@@ -45,7 +45,7 @@ DBRowDescriptor::DBRowDescriptor(const DBQueryResult& res)
 : PyObjectEx_Type1(new PyToken("blue.DBRowDescriptor"), _CreateArgs())
 {
     uint32 cc(res.ColumnCount());
-    for (uint32 i(0); i < cc; ++i)
+    for (uint32 i = 0; i < cc; ++i)
         AddColumn(res.ColumnName(i), res.ColumnType(i));
 }
 
@@ -53,7 +53,7 @@ DBRowDescriptor::DBRowDescriptor(const DBResultRow& row)
 : PyObjectEx_Type1(new PyToken("blue.DBRowDescriptor"), _CreateArgs())
 {
     uint32 cc(row.ColumnCount());
-    for (uint32 i(0); i < cc; ++i)
+    for (uint32 i = 0; i < cc; ++i)
         AddColumn(row.ColumnName(i), row.ColumnType(i));
 }
 
@@ -74,7 +74,7 @@ uint32 DBRowDescriptor::FindColumn(const char* name) const {
         return ColumnCount();
 
     uint32 cc(ColumnCount());
-    for (uint32 i(0); i < cc; ++i) {
+    for (uint32 i = 0; i < cc; ++i) {
         PyString* stringName = GetColumnName(i);
         if (strcmp(name, stringName->content().c_str()) == 0)
             return i;
@@ -148,7 +148,7 @@ PyDict* CRowSet::_CreateKeywords(DBRowDescriptor* rowDesc) {
     //The Type_2 i had no longer used this
     //uint32 cc = rowDesc->ColumnCount();
     //PyList* columns = new PyList(cc);
-    //for(uint32 i(0); i < cc; i++)
+    //for(uint32 i = 0; i < cc; i++)
     //    columns->SetItem(i,  new PyString(*rowDesc->GetColumnName(i)));
     //keywords->SetItemString("columns", columns);
 

@@ -30,7 +30,6 @@
 #include "StatisticMgr.h"
 #include "exploration/Probes.h"
 #include "exploration/Scan.h"
-#include "math/Trig.h"
 #include "system/SystemBubble.h"
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/AnomalyMgr.h"
@@ -67,7 +66,7 @@ void Scan::ProcessScan(bool useProbe/*false*/)
     }
 
     bool idle = true;
-    uint16 ntime(0), duration = m_client->GetShip()->GetAttribute(AttrScanSpeed).get_uint32();
+    uint16 ntime = 0, duration = m_client->GetShip()->GetAttribute(AttrScanSpeed).get_uint32();
     if (duration < 1000)
         duration = 8000;    // 8s default probe scan time.
     for (auto &cur : m_activeProbeMap) {
@@ -109,17 +108,18 @@ PyRep* Scan::ConeScan(Call_ConeScan& args) {
      * test acDP < cone angle = point is inside cone.
      */
     bool test = false;
-    float dot(0), acDP(0), angle(args.ScanAngle * 0.5f);
+    double dot = 0, acDP = 0, angle = (args.ScanAngle * 0.5);
     std::vector<SystemEntity*> seVec;
-    const GPoint vertex(m_client->GetShipSE()->GetPosition());
-    const GPoint U(args.x, args.y, args.z);
+    Vector3d VR;
+    const Vector3d vertex = m_client->GetShipSE()->GetPosition();
+    const Vector3d U(args.x, args.y, args.z);
     m_client->SystemMgr()->DScan(args.range, vertex, seVec);
     _log(SCAN__TRACE, "ConeScan() - query returned %lu objects within range.  angle is %.3f", seVec.size(), angle);
     PyList* list = new PyList();
     for (auto &cur : seVec ) {
-        GVector VR(vertex, cur->GetPosition());
-        VR.normalize();
-        dot = U.dotProduct(VR);
+        VR = cur->GetPosition() - vertex;
+        VR.Normalize();
+        dot = U * VR;
         acDP = acos(dot);
         if (acDP < angle) {
             test = true;
@@ -155,7 +155,7 @@ void Scan::RequestScans(PyDict* dict) {
     _log(SCAN__MESSAGE, "Scan::RequestScans() called by %s in %s using %lu probes.",\
             m_client->GetName(), m_client->GetSystemName().c_str(), dict->size());
 
-    uint32 probeID(0);
+    uint32 probeID = 0;
     PyDict::const_iterator cItr = dict->begin();
     for (; cItr != dict->end(); cItr++) {
         // find probe in map....
@@ -205,7 +205,7 @@ void Scan::SystemScanStarted(uint16 duration)
 {
     _log(SCAN__TRACE, "Scan::SystemScanStarted()  for %s in system %u", m_client->GetName(), m_client->GetSystemID());
 
-    GPoint pos(NULL_ORIGIN);
+    Vector3d pos(NULL_ORIGIN);
     PyDict* probeDict = new PyDict();
     for (auto &cur : m_activeProbeMap) {
         // probe data here...
@@ -376,7 +376,7 @@ void Scan::ProbeScanResult()
         }
     }
 
-    GPoint pos(NULL_ORIGIN);
+    Vector3d pos(NULL_ORIGIN);
     PyDict* probeDict = new PyDict();
     for (auto &cur : m_activeProbeMap) {
         // probe data here...
@@ -437,14 +437,15 @@ struct CosmicSignature {
     uint32 ownerID;
     uint32 systemID;
     uint32 sigItemID;   // itemID of this entry
-    GPoint position;
+    Vector3d position;
     std::string sigID;  // this is unique xxx-nnn id displayed in scanner
     std::string sigName;
 };
      */
 
-    bool hit(false);
-    float dist(0);
+    bool hit = false;
+    float dist = 0;
+    Vector3d delta;
     std::vector<ProbeSE*> probeVec;
     // check probe scan ranges for signals; verify probe can scan signal
     for (auto &cur : m_activeProbeMap) {
@@ -456,7 +457,8 @@ struct CosmicSignature {
             case Scanning::Group::DroneOrProbe:
             case Scanning::Group::Structure: {
                 if (cur.second->CanScanShips()) {
-                    dist = cur.second->GetPosition().distance(data.sig.position);
+                    delta = data.sig.position - cur.second->GetPosition();
+                    dist = delta.Length();
                     if (cur.second->GetScanRange() > dist) {
                         hit = true;
                         probeVec.push_back(cur.second);
@@ -489,7 +491,8 @@ struct CosmicSignature {
                 }
             } // this probe can scan this signal; fall thru to add probe to signal's map
             default: {
-                dist = cur.second->GetPosition().distance(data.sig.position);
+                delta = data.sig.position - cur.second->GetPosition();
+                dist = delta.Length();
                 if (cur.second->GetScanRange() > dist) {
                     hit = true;
                     probeVec.push_back(cur.second);
@@ -511,9 +514,9 @@ struct CosmicSignature {
     // at this point, we have at least one probe scanning at least one signal
     GetSignalData(data, probeVec);
     if (probeVec.size() > 1) {
-        bool isRing(false);
-        uint8 count(0);
-        GPoint pos(NULL_ORIGIN);
+        bool isRing = false;
+        uint8 count = 0;
+        Vector3d pos(NULL_ORIGIN);
         PyList* list = new PyList();
         PyList* ring = new PyList();
         PyTuple* tuple = new PyTuple(probeVec.size());
@@ -597,11 +600,14 @@ void Scan::GetSignalData(SignalData& data, std::vector<ProbeSE*>& probeVec)
         case 8: probeMultiplier = 1.1666968137637062; break;
     }
 
-    GPoint point(data.sig.position);
+    Vector3d point = data.sig.position;
+    Vector3d delta;
     data.deviation = 0;
-    float scanStr1(0), rangeMod1(0), dist1(0), scanStr2(0), rangeMod2(0), dist2(0), angleMod(0);
+    float scanStr1 = 0, rangeMod1 = 0, scanStr2 = 0, rangeMod2 = 0, angleMod = 0;
+    double dist1 = 0, dist2 = 0;
     if (probeCount == 1) {
-        dist1 = probeVec[0]->GetPosition().distance(point);
+        delta = point - probeVec[0]->GetPosition();
+        dist1 = delta.Length();
         rangeMod1 = probeVec[0]->GetRangeModifier(dist1);
         scanStr1 = probeVec[0]->GetScanStrength();
         data.deviation = probeVec[0]->GetDeviation() *1.3;  // fudge a bit for single probe
@@ -612,28 +618,30 @@ void Scan::GetSignalData(SignalData& data, std::vector<ProbeSE*>& probeVec)
         /*  loop thru probes and get range mods and sigStrength for each.
          *  combine all probe's data to get good sum based on probe range and strength
          */
-        int8 count(0), max(2);
+        int8 count = 0, max(2);
         if (probeVec[0]->HasMaxSkill())
             max = 3;
         std::map<float, std::pair<ProbeSE*, ProbeSE*>> angleMap;     // angle, <probeSE1,probeSE2>
         CalcProbeAngles(point, probeVec, angleMap);    //determine probe angles to target
-        float probeSig1(0), probeSig2(0);
+        float probeSig1 = 0, probeSig2 = 0;
         // reverse-iterate to use highest values first
         std::map<float, std::pair<ProbeSE*, ProbeSE*>>::reverse_iterator itr = angleMap.rbegin(), end = angleMap.rend();
-        for (; itr != end; itr++) {
+        for (; itr != end; ++itr) {
             // we are using top 3 angle pairs of 2 probes/angle, which gives 6 total scans for str calc.
             // if player has signal acquisition and sensor linking both at l5, this will allow another pair of scan results
             if (count > max)
                 break;
             angleMod = sin(itr->first / 2);      // get value between 0 and 1 (fuzzy logic as angle modifier)
             // get sigStr from first probe
-            dist1 = itr->second.first->GetPosition().distance(point);
+            delta = point - itr->second.first->GetPosition();
+            dist1 = delta.Length();
             rangeMod1 = itr->second.first->GetRangeModifier(dist1);
             scanStr1 = itr->second.first->GetScanStrength();
             probeSig1 = data.sig.sigStrength * angleMod * probeMultiplier * (scanStr1 / rangeMod1);
             data.certainty += probeSig1;
             // get sigStr from second probe
-            dist2 = itr->second.second->GetPosition().distance(point);
+            delta = point - itr->second.second->GetPosition();
+            dist2 = delta.Length();
             rangeMod2 = itr->second.second->GetRangeModifier(dist2);
             scanStr2 = itr->second.second->GetScanStrength();
             probeSig2 = data.sig.sigStrength * angleMod * probeMultiplier * (scanStr2 / rangeMod2);
@@ -685,23 +693,24 @@ void Scan::GetSignalData(SignalData& data, std::vector<ProbeSE*>& probeVec)
             data.sig.sigName.c_str(), data.sig.sigID.c_str(), data.certainty, data.sig.sigStrength, data.deviation, (data.deviation / ONE_AU_IN_METERS));
 }
 
-void Scan::CalcProbeAngles(GPoint& sigPos, std::vector<ProbeSE*>& probeVec, std::map<float, std::pair<ProbeSE*, ProbeSE*>>& angleMap ) {
-    bool run(true);
-    uint8 count(probeVec.size()), x(0), y(1);
-    float dot(0.0f), angle(0.0f);
-    ProbeSE* p1(nullptr);
+void Scan::CalcProbeAngles(Vector3d& sigPos, std::vector<ProbeSE*>& probeVec, std::map<float, std::pair<ProbeSE*, ProbeSE*>>& angleMap ) {
+    bool run = true;
+    uint8 count = (probeVec.size()), x = 0, y(1);
+    float dot = 0.0f, angle = 0.0f;
+    ProbeSE* p1 = nullptr;
+    Vector3d v1, v2;
     while (x < count) {
         p1 = probeVec[x++];
         if (p1 == nullptr)
             continue;
-        GVector v1(p1->GetPosition(), sigPos);
-        v1.normalize();
+        v1 = sigPos - p1->GetPosition();
+        v1.Normalize();
         for (auto &cur : probeVec) {
             if ((cur == nullptr) or (p1 == cur))
                 continue;
-            GVector v2(cur->GetPosition(), sigPos);
-            v2.normalize();
-            dot = v1.dotProduct(v2);        // cosine of angle between v1,v2
+            v2 = sigPos - cur->GetPosition();
+            v2.Normalize();
+            dot = v1 * v2;        // cosine of angle between v1,v2
             angle = acos(dot);              // angle in rad
             // if this probe set is already inserted, skip and move along.
             if (angleMap.find(angle) != angleMap.end())

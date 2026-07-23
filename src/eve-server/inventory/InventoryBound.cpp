@@ -333,8 +333,8 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
         iRef = sItemFactory.SpawnItem(iData);
         */
     }
-    bool moveStack(false);
-    int32 quantity(0);
+    bool moveStack = false;
+    int32 quantity = 0;
     if (call.byname.find("qty") != call.byname.end())
         quantity = PyRep::IntegerValue(call.byname.find("qty")->second);
 
@@ -407,13 +407,13 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
         return nullptr;
     }
 
-    int32 quantity(0);
+    int32 quantity = 0;
     if (call.byname.find("qty") != call.byname.end())
         quantity = PyRep::IntegerValue(call.byname.find("qty")->second);
 
     // moving to hangar...move all items in stack, if applicable...this includes ship corp hangars
     //  - is this what we want here?
-    bool moveStack(false);
+    bool moveStack = false;
     if (IsHangarFlag(toFlag) or (quantity < 1))
         moveStack = true;
 
@@ -460,10 +460,10 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                                  int32 quantity, bool moveStack/*false*/, float capacity/*0.0*/)
 {   // complete method rewrite -allan 21Dec17
     ShipItem* pShip = pClient->GetShip().get();
-    bool donating(false);
-    bool ship(false);
-    bool customs(false);
-    int32 origQty(quantity);
+    bool donating = false;
+    bool ship = false;
+    bool customs = false;
+    int32 origQty = quantity;
 
     // we will need to check *this for specific item-moving rules
     switch (m_self->categoryID()) {
@@ -735,13 +735,13 @@ std::vector< int32 > InventoryBound::CatSortItems(std::vector< InventoryItemRef 
         return items;
     }
 
-    uint16 count(0);
+    uint16 count = 0;
     double start(0.0);
     if (sConfig.debug.IsTestServer and sConfig.debug.UseProfiling)
         start = GetTimeUSeconds();
 
     //begin basic sort
-    bool done(false);
+    bool done = false;
     InventoryItemRef tmp(nullptr);
     while (!done) {
         done = true;  //assume sorted

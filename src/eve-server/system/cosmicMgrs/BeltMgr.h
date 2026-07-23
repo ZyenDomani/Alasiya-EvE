@@ -13,6 +13,7 @@
 #define EVEMU_SYSTEM_BELTMGR_H_
 
 #include <unordered_map>
+
 #include "system/Asteroid.h"
 #include "system/SystemEntity.h"
 #include "system/cosmicMgrs/ManagerDB.h"
@@ -55,12 +56,14 @@ public:
 
     void RemoveAsteroid(uint32 beltID, AsteroidSE* pASE);
 
+    const char* BeltTypeName(uint8 typeID);
+
 protected:
     Timer m_respawnTimer;
 
     // type here will define the layout of belt  ** not implemented yet **
-    void SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>& roidTypes, int type = 0, bool anomaly = false);
-    void SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const GPoint& position, bool ice=false);
+    void SpawnBelt( uint16 bubbleID, std::unordered_multimap< float, uint16 >& roidTypes, int layoutType = 0, bool anomaly = false );
+    void SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const Vector3d& position, bool ice=false);
     void GetIceDist(uint8 quarter, float secStatus, std::unordered_multimap<float, uint16>& roidDist);
 
     uint32 GetAsteroidType(double p, const std::unordered_multimap<float, uint16>& roids);

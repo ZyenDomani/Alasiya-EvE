@@ -559,7 +559,7 @@ PyResult CorpRegistryBound::Handle_GetMembersByIds(PyCallArgs &call) {
 }
 
 PyResult CorpRegistryBound::Handle_AddCorporation(PyCallArgs &call) {
-    Client* pClient(call.client);
+    Client* pClient = call.client;
     Call_AddCorporation args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
@@ -600,7 +600,7 @@ PyResult CorpRegistryBound::Handle_AddCorporation(PyCallArgs &call) {
     PySafeDecRef( cache_name );
 
     // Register new corp
-    uint32 corpID(0);
+    uint32 corpID = 0;
     if (!m_db.AddCorporation(args, pClient, corpID)) {
         codelog(SERVICE__ERROR, "New corporation creation failed.");
         return nullptr;

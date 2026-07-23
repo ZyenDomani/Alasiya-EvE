@@ -185,9 +185,9 @@ PyResult DungeonService::Handle_AddObject( PyCallArgs& call )
 
     newObject.objectID = DungeonDB::CreateObject(newObject.roomID, newObject.typeID, groupID, newObject.x, newObject.y, newObject.z, newObject.yaw, newObject.pitch, newObject.roll, newObject.radius);
 
-    Client *pClient(call.client);
+    Client* pClient = call.client;
 
-    GPoint objPos;
+    Vector3d objPos;
     objPos.x = newObject.x + pClient->GetSession()->GetCurrentFloat("editor_room_x");
     objPos.y = newObject.y + pClient->GetSession()->GetCurrentFloat("editor_room_y");
     objPos.z = newObject.z + pClient->GetSession()->GetCurrentFloat("editor_room_z");
@@ -250,9 +250,9 @@ PyResult DungeonService::Handle_CopyObject( PyCallArgs& call )
 
     newObject.objectID = DungeonDB::CreateObject(newObject.roomID, newObject.typeID, groupID, newObject.x, newObject.y, newObject.z, newObject.yaw, newObject.pitch, newObject.roll, newObject.radius);
 
-    Client *pClient(call.client);
+    Client* pClient = call.client;
 
-    GPoint objPos;
+    Vector3d objPos;
         objPos.x = newObject.x + pClient->GetSession()->GetCurrentFloat("editor_room_x");
         objPos.y = newObject.y + pClient->GetSession()->GetCurrentFloat("editor_room_y");
         objPos.z = newObject.z + pClient->GetSession()->GetCurrentFloat("editor_room_z");
@@ -329,8 +329,8 @@ PyResult DungeonService::Handle_EditObjectXYZ( PyCallArgs& call )
     int64 x = PyRep::IntegerValue(call.byname["x"]);
     int64 y = PyRep::IntegerValue(call.byname["y"]);
     int64 z = PyRep::IntegerValue(call.byname["z"]);
-    GPoint roomPos = call.client->GetShipSE()->GetPosition();
-    const GPoint pos(roomPos.x + x, roomPos.y + y, roomPos.z + z);
+    Vector3d roomPos = call.client->GetShipSE()->GetPosition();
+    const Vector3d pos(roomPos.x + x, roomPos.y + y, roomPos.z + z);
     dSE->DestinyMgr()->SetPosition(pos, true);
 
     // save the position to the database
@@ -415,14 +415,14 @@ PyResult DungeonService::Handle_AddTemplateObjects( PyCallArgs& call )
     std::vector<Dungeon::RoomObject> objects;
     DungeonDB::GetTemplateObjects(objectID->value(), objects);
 
-    Client *pClient(call.client);
+    Client* pClient = call.client;
     PyList* objectIDs = new PyList();
 
     uint32 groupID = DungeonDB::GetFirstGroupForRoom(roomID->value());
 
     // Spawn the items in the object list
     for (auto cur : objects) {
-        GPoint objPos;
+        Vector3d objPos;
 
         // Relative position for the object to be spawned at
         objPos.x = posInRoomX + cur.x + pClient->GetSession()->GetCurrentFloat("editor_room_x");
@@ -497,7 +497,7 @@ PyResult DungeonService::Handle_IsObjectLocked( PyCallArgs& call )
         return nullptr;
     }
 
-    bool locked(false);
+    bool locked = false;
     PyTuple* result = new PyTuple(2);
     result->SetItem(0, new PyBool(locked));
     PyTuple* byWho = new PyTuple(2);

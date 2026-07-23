@@ -112,7 +112,7 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
     m_packaged = false;
     m_portrait = false;
     m_autoAttack = false;
-    m_bubbleWait = false;     // allow client processing of subsequent destiny msgs
+    m_bubbleWait = false;     // more updates this tic?
     m_charCreation = false;
     m_setStateSent = false;
     m_validSession = false;
@@ -294,7 +294,7 @@ bool Client::SelectCharacter(int32 charID/*0*/) {
 
     m_ship->SetPlayer(this);
 
-    GPoint pos(NULL_ORIGIN);
+    Vector3d pos(NULL_ORIGIN);
     if (sDataMgr.IsSolarSystem(m_locationID))
         pos = m_ship->position();
 
@@ -560,8 +560,8 @@ void Client::WarpIn() {
     /*
     // We are just logging in, so we need to warp to our last position from our WarpOut spot.
     //  when implemented, make sure we move the ship item, if needed....check this
-    GPoint warpToPoint(m_ship->position());
-    GPoint warpFromPoint(m_ship->position());
+    Vector3d warpToPoint(m_ship->position());
+    Vector3d warpFromPoint(m_ship->position());
     warpFromPoint.MakeRandomPointOnSphere(0.5 * ONE_AU_IN_METERS);
     pShipSE->DestinyMgr()->SetPosition(warpFromPoint);
     pShipSE->DestinyMgr()->WarpTo(warpToPoint);        // Warp ship from the random login point to the position saved on last disconnect
@@ -578,7 +578,7 @@ void Client::WarpOut() {
     /*
     SetInvulTimer(Player::Timer::WarpOutInvul);
     // We are logging out, so we need to warp to a random spot 1Mm away:
-    GPoint warpToPoint(m_ship->position());
+    Vector3d warpToPoint(m_ship->position());
     warpToPoint.MakeRandomPointOnSphere(0.5 * ONE_AU_IN_METERS);
     if (sConsole.IsShutdown())      // if server is being shutdown, set ship to WarpOut point, as if they warped there.
         pShipSE->SetPosition(warpToPoint);
@@ -612,7 +612,7 @@ void Client::EnterSystem(uint32 systemID)
     MoveToLocation(systemID, m_ship->position());
 }
 
-void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
+void Client::MoveToLocation(uint32 locationID, const Vector3d& pt) {
     // process ALL location changes here.
     if (!sDataMgr.IsStation(locationID) and !sDataMgr.IsSolarSystem(locationID)) {
         SendErrorMsg("Move requested to unsupported location %u", locationID);
@@ -632,7 +632,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
     // get data for new system.  this checks for stationID sent as locationID, so is safe here.
     sDataMgr.GetSystemData(m_locationID, m_systemData);
 
-    m_bubbleWait = false;           // allow client processing of subsequent destiny msgs
+    m_bubbleWait = false;
 
     // location changed...verify current system and set session data for current system.
     if (IsJump() or ((m_system != nullptr) and (m_system->GetID() != m_systemData.systemID))) {
@@ -707,7 +707,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
 
         CharNowInStation();
         DestroyShipSE();
-        m_bubbleWait = true;     // deny client processing of subsequent destiny msgs
+        m_bubbleWait = false;
     } else {
         _log(PLAYER__WARNING, "MoveToLocation() - Character %s(%u) InSpace in %u. (setState %s, beyonce %s)", \
                 m_char->name(), m_char->itemID(), m_locationID, m_setStateSent ? "true" : "false", \
@@ -757,7 +757,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         /* comment this block for later use...
          * m_systemData.radius is not populated yet, and this does weird things with ships
         // verify 'pt' is within system boundaries
-        if (pt.length() < m_systemData.radius) {
+        if (pt.Length() < m_systemData.radius) {
             m_ship->SetPosition(pt);
         } else {
             ;  // oob
@@ -774,15 +774,15 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         m_ship->SaveShip(); // this saves everything on ship
 }
 
-void Client::SetDestiny(const GPoint& pt, bool update/*false*/) {
+void Client::SetDestiny(const Vector3d& pt, bool update/*false*/) {
     if (!sDataMgr.IsSolarSystem(m_locationID)) {
         _log(CLIENT__ERROR, "%s(%u) - Calling SetDestiny() when not in space.", GetName(), m_char->itemID());
         return;
     }
-    m_bubbleWait = false;        // allow client processing of subsequent destiny msgs
+    m_bubbleWait = false;
     m_setStateSent = false;
 
-    bool updateShip(false);
+    bool updateShip = false;
     if (pShipSE == nullptr) {
         updateShip = true;
         CreateShipSE();
@@ -807,11 +807,11 @@ void Client::SetDestiny(const GPoint& pt, bool update/*false*/) {
 void Client::SetBallPark() {
     _log(PLAYER__AP_TRACE, "Client::SetBallPark(): %s:%u -   State: %s, SetState: %s, Beyonce: %s", \
             GetName(), GetCharID(), GetStateName(m_clientState).c_str(), m_setStateSent?"true":"false", m_beyonce?"true":"false");
-    m_bubbleWait = false;   // allow client processing of subsequent destiny msgs
+    m_bubbleWait = false;
     if (pShipSE->SysBubble() == nullptr)
         m_system->AddEntity(pShipSE);
     if (!m_beyonce and !m_login and !m_ship->IsUndocking()) {
-        m_bubbleWait = true;    // wait on proc destiny msgs
+        m_bubbleWait = false;
         CheckBallparkTimer();
         SetBallParkTimer(Player::Timer::Default);    // set timer 1s to wait for beyonce
         return;
@@ -863,7 +863,7 @@ void Client::SetInvul(bool invul/*false*/) {
     m_invul = invul;
 }
 
-void Client::MoveToPosition(const GPoint &pt) {
+void Client::MoveToPosition(const Vector3d &pt) {
     if ((pShipSE == nullptr) or (pShipSE->DestinyMgr() == nullptr)) {
         CreateShipSE();
         pShipSE->SetPilot(this);
@@ -885,7 +885,7 @@ void Client::DockToStation() {
     m_clientState = Player::State::Idle;
     _log(AUTOPILOT__TRACE, "DockToStation() - m_clientState set to Idle");
     pShipSE->DestinyMgr()->DockingAccepted();
-    m_bubbleWait = true;     // deny client processing of subsequent destiny msgs
+    m_bubbleWait = false;
 
     //Check if player is in pod and have no ships in hangar, in which case they get a rookie ship for free
     //  on live, SCC sends mail about the loss of the players ship, and offers a shiny, new, fully-fitted ship as replacement.  we dont....yet
@@ -1045,9 +1045,12 @@ void Client::Board(ShipSE* newShipSE)
         bool abandoned = true;
         if (pShipSE->SysBubble()->HasTower()) {
             TowerSE* ptSE = pShipSE->SysBubble()->GetTowerSE();
-            if (ptSE->HasForceField())
-                if (pShipSE->GetPosition().distance(ptSE->GetPosition()) < ptSE->GetSOI())
+            if (ptSE->HasForceField()) {
+                Vector3d delta = ptSE->GetPosition() - pShipSE->GetPosition();
+                double dist = delta.Length();
+                if (dist < ptSE->GetSOI())
                     abandoned = false;
+            }
         }
 
         char ci[45];
@@ -1096,9 +1099,12 @@ void Client::Eject()
     bool abandoned = true;
     if (pShipSE->SysBubble()->HasTower()) {
         TowerSE* ptSE = pShipSE->SysBubble()->GetTowerSE();
-        if (ptSE->HasForceField())
-            if (pShipSE->GetPosition().distance(ptSE->GetPosition()) < ptSE->GetSOI())
+        if (ptSE->HasForceField()) {
+            Vector3d delta = ptSE->GetPosition() - pShipSE->GetPosition();
+            double dist = delta.Length();
+            if (dist < ptSE->GetSOI())
                 abandoned = false;
+        }
     }
 
     char ci[45];
@@ -1116,7 +1122,7 @@ void Client::Eject()
 
     pShipSE->DestinyMgr()->Eject();
 
-    GPoint capsulePosition(pShipSE->GetPosition());
+    Vector3d capsulePosition(pShipSE->GetPosition());
     capsulePosition.MakeRandomPointOnSphere(m_ship->radius() + m_pod->radius() + MakeRandomInt(30, 120));
     m_pod->SetPosition(capsulePosition);
     m_pod->Move(m_locationID, flagCapsule, true);
@@ -1145,9 +1151,9 @@ void Client::Eject()
     SendSessionChange();
 }
 
-void Client::ResetAfterPopped(GPoint& position)
+void Client::ResetAfterPopped(Vector3d& position)
 {
-    m_bubbleWait = false;    // allow client processing of subsequent destiny msgs
+    m_bubbleWait = false;
 
     if (m_pod.get() == nullptr)
         CreateNewPod();
@@ -1254,7 +1260,7 @@ ShipItemRef Client::SpawnNewRookieShip(uint32 stationID) {
     /** @todo  create/send mail from scc about lost ship as needed....create char uses this method also */
     //create rookie ship of appropriate type
     using namespace Char;
-    uint16 shipID(0), gunID(0);
+    uint16 shipID(0), gunID = 0;
     switch (m_char->race()) {
         case Race::Caldari: {
             gunID = Rookie::Weapon::Caldari;
@@ -2545,8 +2551,6 @@ void Client::_SendPingResponse(const PyAddress& source, int64 callID, int64 rece
     packet->dest.callID = callID;
     packet->userid = GetUserID();
 
-    int64 now = Win32TimeNow();
-
     // In a single-process emulator, proxy and server boundaries are crossed instantly.
     // Therefore, the step-by-step pipeline mirrors reality perfectly.
     PyList* pingList = new PyList();
@@ -2555,42 +2559,42 @@ void Client::_SendPingResponse(const PyAddress& source, int64 callID, int64 rece
     // 1. Proxy handles message: From wire entry time to internal process time
     pingTuple = new PyTuple(3);
     pingTuple->SetItem(0, new PyLong(receivedTime));
-    pingTuple->SetItem(1, new PyLong(now));
+    pingTuple->SetItem(1, new PyLong(GetFileTimeNow()));
     pingTuple->SetItem(2, new PyString("proxy::handle_message"));
     pingList->AddItem(pingTuple);
 
     // 2. Proxy Writing
     pingTuple = new PyTuple(3);
     pingTuple->SetItem(0, new PyLong(receivedTime));
-    pingTuple->SetItem(1, new PyLong(now));
+    pingTuple->SetItem(1, new PyLong(GetFileTimeNow()));
     pingTuple->SetItem(2, new PyString("proxy::writing"));
     pingList->AddItem(pingTuple);
 
     // 3. Server Node Handles Message
     pingTuple = new PyTuple(3);
     pingTuple->SetItem(0, new PyLong(receivedTime));
-    pingTuple->SetItem(1, new PyLong(now));
+    pingTuple->SetItem(1, new PyLong(GetFileTimeNow()));
     pingTuple->SetItem(2, new PyString("server::handle_message"));
     pingList->AddItem(pingTuple);
 
     // 4. Server Turnaround: Tracks the internal script processing latency
     pingTuple = new PyTuple(3);
     pingTuple->SetItem(0, new PyLong(receivedTime));
-    pingTuple->SetItem(1, new PyLong(now));
+    pingTuple->SetItem(1, new PyLong(GetFileTimeNow()));
     pingTuple->SetItem(2, new PyString("server::turnaround"));
     pingList->AddItem(pingTuple);
 
     // 5. Outbound Proxy Handlers
     pingTuple = new PyTuple(3);
-    pingTuple->SetItem(0, new PyLong(now));
-    pingTuple->SetItem(1, new PyLong(now));
+    pingTuple->SetItem(0, new PyLong(GetFileTimeNow()));
+    pingTuple->SetItem(1, new PyLong(GetFileTimeNow()));
     pingTuple->SetItem(2, new PyString("proxy::handle_message"));
     pingList->AddItem(pingTuple);
 
     // 6. Outbound Wire Write
     pingTuple = new PyTuple(3);
-    pingTuple->SetItem(0, new PyLong(now));
-    pingTuple->SetItem(1, new PyLong(now));
+    pingTuple->SetItem(0, new PyLong(GetFileTimeNow()));
+    pingTuple->SetItem(1, new PyLong(GetFileTimeNow()));
     pingTuple->SetItem(2, new PyString("proxy::writing"));
     pingList->AddItem(pingTuple);
 
@@ -2674,7 +2678,7 @@ bool Client::Handle_Notify(PyPacket* packet)
         _log(SERVICE__MESSAGE, "Client Has Released These Objects:");
         ServerNotification_ReleaseObj element;
 
-        uint32 nodeID(0), bindID(0);
+        uint32 nodeID(0), bindID = 0;
         PyList::const_iterator cur = notify.elements->begin();
         for (; cur != notify.elements->end(); cur++) {
             if (!element.Decode(*cur)) {

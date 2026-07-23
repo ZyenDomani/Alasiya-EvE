@@ -421,7 +421,7 @@ void AllianceDB::UpdateAlliance(uint32 allyID, std::string description, std::str
     }
 }
 
-bool AllianceDB::CreateAlliance(Call_CreateAlliance &allyInfo, Client *pClient, uint32 &allyID, uint32 &corpID)
+bool AllianceDB::CreateAlliance(Call_CreateAlliance &allyInfo, Client* pClient, uint32 &allyID, uint32 &corpID)
 {
     std::string aName, aShort, aDesc, aURL;
     sDatabase.DoEscapeString(aName, allyInfo.allianceName);

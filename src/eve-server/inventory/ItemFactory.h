@@ -62,7 +62,7 @@ public:
 
     void SaveItems();
     void RemoveItem(uint32 itemID);
-    void SetUsingClient(Client *pClient=nullptr)        { m_pClient = pClient; }
+    void SetUsingClient(Client* pClient=nullptr)        { m_pClient = pClient; }
     void UnsetUsingClient()                             { m_pClient = nullptr; }
     void AddItem(InventoryItemRef iRef);
 

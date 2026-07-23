@@ -88,7 +88,7 @@ namespace Notify {
     }
 
     namespace Types {
-        // these are types for mail msgs.
+        // these are types for notify msgs.
         enum {
             OldLscMessages = 1,
             CharTermination = 2,

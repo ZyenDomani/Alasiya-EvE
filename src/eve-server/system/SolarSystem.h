@@ -51,8 +51,8 @@ public:
     /*
      * Public Fields:
      */
-    const GPoint &      minPosition() const             { return m_minPosition; }
-    const GPoint &      maxPosition() const             { return m_maxPosition; }
+    const Vector3d &      minPosition() const             { return m_minPosition; }
+    const Vector3d &      maxPosition() const             { return m_maxPosition; }
     float               luminosity() const              { return m_luminosity; }
 
     bool                border() const                  { return m_border; }
@@ -144,8 +144,8 @@ protected:
     float m_luminosity;
 
     std::string m_securityClass;
-    GPoint m_minPosition;
-    GPoint m_maxPosition;
+    Vector3d m_minPosition;
+    Vector3d m_maxPosition;
 };
 
 #endif /* !__SOLAR_SYSTEM__H__INCL__ */

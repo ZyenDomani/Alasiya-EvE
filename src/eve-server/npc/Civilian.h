@@ -62,7 +62,7 @@ public:
     const char*         GetName()                       { return m_type->name().c_str(); }
 
     // Setters
-    void		SetPos(GPoint pos)		{ m_pos = pos; }
+    void		SetPos(Vector3d pos)		{ m_pos = pos; }
     void 		AddGuard(Civilian* pCiv)	{ m_guards.push_back(pCiv); }
     void		SetLeader(Civilian* pLeader)	{ m_pLeader = pLeader; m_state = Civ::State::Formation; }
     void 		SetFormID(uint8 formID)		{ m_formID = formID; }
@@ -92,9 +92,9 @@ private:
     uint32              m_itemID;
     uint32              m_corpID;
 
-    GPoint              m_pos;
-    GPoint              m_heading;
-    GVector             m_velocity;
+    Vector3d              m_pos;
+    Vector3d              m_heading;
+    Vector3d             m_velocity;
 
     Civilian*           m_pLeader;
     const ItemType*	m_type;

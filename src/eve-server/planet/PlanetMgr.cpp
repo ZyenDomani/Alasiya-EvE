@@ -37,8 +37,8 @@ m_planet(pPlanet)
 PyRep* PlanetMgr::UpdateNetwork(UUNCommandList& uuncl)
 {
     using namespace PI;
-    bool cancel(false);
-    for (uint16 i(0); i < uuncl.commandList->size(); ++i) {
+    bool cancel = false;
+    for (uint16 i = 0; i < uuncl.commandList->size(); ++i) {
         if (cancel)
             return m_colony->GetColony();
         UUNCommand uunc;
@@ -312,7 +312,7 @@ void PlanetMgr::CreateRoute(UUNCommand& nc)
 
 void PlanetMgr::RemovePin(UUNCommand& nc)
 {
-    uint32 pinID(0);
+    uint32 pinID = 0;
     if (nc.command_data->GetItem(0)->IsInt()) {
         pinID = PyRep::IntegerValue(nc.command_data->GetItem(0));
     } else if (nc.command_data->GetItem(0)->IsTuple()) {
@@ -361,7 +361,7 @@ void PlanetMgr::SetLinkLevel(UUNCommand& nc)
 
 void PlanetMgr::SetSchematic(UUNCommand& nc) {
     // this is only for plants
-    uint32 pinID(0);
+    uint32 pinID = 0;
     if (nc.command_data->GetItem(0)->IsTuple()) {
         pinID = PyRep::IntegerValue(nc.command_data->GetItem(0)->AsTuple()->GetItem(1));
     } else if (nc.command_data->GetItem(0)->IsInt()) {

@@ -24,8 +24,14 @@
     Updates:    Allan
 */
 
+#pragma once
 #ifndef __UTILS_TIME_H__INCL__
 #define __UTILS_TIME_H__INCL__
+
+#include <chrono>
+#include <cstdint>
+
+#include "../eve-core.h"
 
 /*
 uSEC = 10L
@@ -64,30 +70,20 @@ namespace EvE {
         uint16 dy;      // day of year
         uint16 ms;
     };
-
 }
 
-extern const int64 Win32Time_Second;
 extern const int64 Win32Time_Minute;
 extern const int64 Win32Time_Hour;
-extern const int64 Win32Time_Day;
-extern const int64 Win32Time_Month;
-extern const int64 Win32Time_Year;
-extern int64 UnixTimeToWin32Time( time_t sec, uint32 nsec );
-extern int64 Win32TimeNow();
-extern void Win32TimeToUnixTime( int64 win32t, time_t &unix_time, uint32 &nsec );
+
+typedef std::chrono::duration<int64, std::ratio<1, 10000000>> duration_100ns;
+constexpr uint64_t FILETIME_EPOCH_OFFSET = 116444736000000000ULL;
+
+
 extern std::string Win32TimeToString(int64 win32t);
+void Win32TimeToUnixTime( int64 win32t, time_t &unix_time, uint32 &nsec );
 
 // returns delta between time and now, in hours
 int32 GetElapsedHours(int64 time);
-// this returns 100 nanosecond resolution in filetime format
-int64 GetFileTimeNow();        // replacement for Win32TimeNow()
-//  this returns milliseconds
-int64 GetSteadyTime();
-//  this returns milliseconds in microsecond resolution
-double GetTimeMSeconds();
-//  this returns microseconds in nanosecond resolution
-double GetTimeUSeconds();
 
 // return elapsed time formatted in units
 std::string GetUTimeTillNow(double fromTime);
@@ -100,7 +96,90 @@ const std::string currentDateTime();
 // break down given filetime into year, month, day, hour, min, sec, ms
 EvE::TimeParts GetTimeParts(int64 filetime=0);  // also gives day of week, day of year, and week of year
 
-// Get linux filetime from dataTime format YYYY-MM-DDTHH:mm:ssZ (where "T" is a separator and "Z" denotes 'zulo')
-//std::time_t getEpochTime(const std::wstring& dateTime);
+
+
+// ============================================================================
+// PART 1: Monotonic Performance Timers (Double & Int64 Hybrid)
+// ============================================================================
+
+//  this returns milliseconds
+inline int64 GetSteadyTime() noexcept {  // -allan
+    // Simulation of Windows GetTickCount() returning integer milliseconds.
+    using namespace std::chrono;
+
+    // Crucial: Swapped to steady_clock to prevent NTP time jumps
+    // and fixed the explicit type to assist compiler optimization.
+    static const steady_clock::time_point bootTime = steady_clock::now();
+
+    auto current = steady_clock::now();
+    return duration_cast<milliseconds>(current - bootTime).count();
+}
+
+inline double GetTimeSeconds() noexcept {
+    // returns <s>.<ms><us><ns>
+    using namespace std::chrono;
+    static const steady_clock::time_point bootTime = steady_clock::now();
+
+    return duration<double>(steady_clock::now() - bootTime).count();
+}
+
+inline double GetTimeMSeconds() noexcept {
+    // returns <s><ms>.<us><ns>
+    using namespace std::chrono;
+    static const steady_clock::time_point bootTime = steady_clock::now();
+
+    return duration<double, std::milli>(steady_clock::now() - bootTime).count();
+}
+
+inline int64 GetTimeUSeconds() noexcept {
+    // returns <s><ms><us>
+    using namespace std::chrono;
+    static const steady_clock::time_point bootTime = steady_clock::now();
+
+    auto delta = steady_clock::now() - bootTime;
+    // On GCC 4.9.2 / Linux, steady_clock tracks raw nanoseconds natively.
+    // Dividing by 1000 yields microseconds with near-zero assembly instructions.
+    return delta.count() / 1000LL;
+}
+
+inline int64 GetTimeNSeconds() noexcept {
+    // returns <s><ms><us><ns>
+    using namespace std::chrono;
+    static const steady_clock::time_point bootTime = steady_clock::now();
+
+    auto delta = steady_clock::now() - bootTime;
+    // Returns native nanosecond register values instantly.
+    return delta.count();
+}
+
+// ============================================================================
+// PART 2: Wall-Clock File Timers (Unix Epoch to FILETIME format)
+// ============================================================================
+
+// 100-nanosecond block representation required for custom FILETIME calculations
+using duration_100ns = std::chrono::duration<int64, std::ratio<1, 10000000>>;
+
+// this returns 100 nanosecond resolution in filetime format
+inline int64 GetFileTimeNow() noexcept {
+     // replacement for Win32TimeNow()
+    using namespace std::chrono;
+
+    auto now = system_clock::now();
+    auto duration = now.time_since_epoch();
+
+    int64 epoch_interval = duration_cast<duration_100ns>(duration).count();
+    return epoch_interval + FILETIME_EPOCH_OFFSET;
+}
+
+// returns second resolution in filetime format
+inline int64 GetFileTimeNowSeconds() noexcept {
+    using namespace std::chrono;
+
+    auto now = system_clock::now();
+    auto duration = now.time_since_epoch();
+
+    // Server Optimization: Extracted seconds early to bypass 18-digit division loops
+    return duration_cast<seconds>(duration).count() + (FILETIME_EPOCH_OFFSET / 10000000LL);
+}
 
 #endif /* !__UTILS_TIME_H__INCL__ */

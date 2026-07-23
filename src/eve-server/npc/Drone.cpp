@@ -564,7 +564,8 @@ bool DroneSE::InControlDistance() {
     if (!sConfig.drone.StrictDistance)
         return true;
 
-    double distance(m_AI->GetAssignedShipSE()->GetPosition().distance(GetPosition()));
+    Vector3d delta = GetPosition() - m_AI->GetAssignedShipSE()->GetPosition();
+    double distance = delta.Length();
     distance -= m_AI->GetAssignedShipSE()->GetRadius();
     return (distance < m_controlDistance);
 }
@@ -713,12 +714,12 @@ void DroneSE::EncodeDestiny(Buffer& into) {
             ORBIT_Struct orbit;
             orbit.targetID = m_AI->GetTargetID();
             orbit.followRange = m_AI->GetFollowDistance();
-            orbit.formationID = 0xFF;
+            orbit.formationID = -1;
             into.Append(orbit);
        }  break;
         default: {
             STOP_Struct main;
-            main.formationID = 0xFF;
+            main.formationID = -1;
             into.Append(main);
         } break;
     }
@@ -886,7 +887,7 @@ void DroneSE::Killed(Damage &fatal_blow) {
     if ((m_bubble == nullptr) or (m_system == nullptr))
         return; // make error here?
 
-    uint32 killerID(0);
+    uint32 killerID = 0;
     Client* pClient(nullptr);
     SystemEntity *killer(fatal_blow.srcSE);
 

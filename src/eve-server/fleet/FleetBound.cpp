@@ -104,7 +104,7 @@ PyResult FleetBound::Handle_Init(PyCallArgs &call) {
     args.unknownDict
     */
 
-    Client* pClient(call.client);
+    Client* pClient = call.client;
     if (pClient == nullptr)
         return new PyLong(GetFileTimeNow());
 

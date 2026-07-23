@@ -153,7 +153,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     // check name and throw on failure before we get too far in this
     CharacterDB::ValidateCharName(PyRep::StringContent(arg.charactername));
 
-    Client* pClient(call.client);
+    Client* pClient = call.client;
     pClient->CreateChar(true);
 
     if (!pClient->RecPic())
@@ -204,7 +204,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         corpData.grantableRolesAtHQ = Corp::Role::Member;
         corpData.grantableRolesAtOther = Corp::Role::Member;
 
-    bool defCorp(true);
+    bool defCorp = true;
     if (sConfig.character.startCorporation) { // Skip if 0
         if ( CorporationDB::DoesCorporationExist( sConfig.character.startCorporation ) ) {
             corpData.corporationID = sConfig.character.startCorporation;

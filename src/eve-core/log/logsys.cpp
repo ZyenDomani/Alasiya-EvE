@@ -164,8 +164,8 @@ bool load_log_settings(const char *filename) {
     if (f == nullptr)
         return false;
     char linebuf[512], type_name[256], value[256];
-    uint16 i(0), r(0), k(0);
-    bool enabled(false);
+    uint16 i = 0, r = 0, k = 0;
+    bool enabled = false;
     while (!feof(f)) {
         ++i;
         if (fgets(linebuf, 512, f) == nullptr)

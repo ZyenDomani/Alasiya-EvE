@@ -88,7 +88,7 @@ void DBcore::Initialize(std::string host, std::string user, std::string password
         return;
     }
 
-    uint errnum(0);
+    uint errnum = 0;
     char errbuf[1024];
     errbuf[0] = 0;
 
@@ -185,7 +185,7 @@ bool DBcore::Reconnect() {
     _log(DATABASE__MESSAGE, "DBCore attempting to recover...");
     Close();
     mysql = mysql_init(nullptr);
-    uint errnum(0);
+    uint errnum = 0;
     char errbuf[1024];
     errbuf[0] = 0;
     //MutexLock lock(MDatabase);

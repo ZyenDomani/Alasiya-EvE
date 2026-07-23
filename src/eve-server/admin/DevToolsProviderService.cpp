@@ -78,11 +78,11 @@ PyResult DevToolsProviderService::Handle_ExceptionFluentExample (PyCallArgs& cal
         case 1:
             throw UserError("SalvagingTooComplex").AddOwnerID("type", call.client->GetCharID());
         case 2:
-            throw UserError("SalvagingTooComplex").AddDate("type", Win32TimeNow());
+            throw UserError("SalvagingTooComplex").AddDate("type", GetFileTimeNow());
         case 3:
-            throw UserError("SalvagingTooComplex").AddDateTime("type", Win32TimeNow());
+            throw UserError("SalvagingTooComplex").AddDateTime("type", GetFileTimeNow());
         case 4:
-            throw UserError("SalvagingTooComplex").AddTime("type", Win32TimeNow());
+            throw UserError("SalvagingTooComplex").AddTime("type", GetFileTimeNow());
         case 5:
             throw UserError("SalvagingTooComplex").AddTimeShort("type", Win32Time_Hour + (Win32Time_Minute * 5));
         case 6:

@@ -94,7 +94,7 @@ bool MiningLaser::CanActivate()
         return false;
     }
 
-    bool canActivate(false);
+    bool canActivate = false;
     // verify module vs target for activation.  disallow if not compatible.  set special ore hold if applicable
     if (m_rMiner) {
         if ((m_targetSE->GetSelf()->categoryID() == EVEDB::invCategories::Asteroid)
@@ -296,7 +296,7 @@ void MiningLaser::ProcessCycle(bool abort/*false*/) {
         return;
     }
 
-    bool oreError(true);
+    bool oreError = true;
     if (m_shipRef->GetMyInventory()->HasAvailableSpace(m_holdFlag, oRef)) {
         oreError = false;
         // automagically stack ore in hold.  this is a feature.
@@ -362,7 +362,7 @@ void MiningLaser::Depleted(std::multimap<float, MiningLaser*> &mMap) {
     }
 
     float roidQuantity(roidRef->GetAttribute(AttrQuantity).get_float());
-    double oreAmount(0);
+    double oreAmount = 0;
 
     for (auto &cur : mMap) {
         if ((cur.first < oreVolume) or (cur.first < 0.1)) {

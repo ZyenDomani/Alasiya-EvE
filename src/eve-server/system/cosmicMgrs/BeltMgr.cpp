@@ -239,7 +239,7 @@ struct CosmicSignature {
     uint16 sigGroupID;
     uint16 scanGroupID;
     uint16 scanAttributeID;
-    GPoint position;
+    Vector3d position;
 };
 */
 
@@ -249,11 +249,11 @@ bool BeltMgr::Create(CosmicSignature& sig, std::unordered_multimap<float, uint16
     if (pSE == nullptr)
         return false;
     pSE->SysBubble()->SetBelt(pSE->GetSelf());
-    SpawnBelt(pSE->SysBubble()->GetID(), roidTypes, 0, true);
+    SpawnBelt(pSE->SysBubble()->GetID(), roidTypes, BeltLayout::HalfCircle, true);
     return true;
 }
 
-void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>& roidTypes, int type/*0*/, bool anomaly/*false*/)
+void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>& roidTypes, int layoutType/*0*/, bool anomaly/*false*/)
 {
     if (IsSpawned(bubbleID))
         return;
@@ -266,13 +266,17 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>&
     if (pSE == nullptr)
         return;
 
-    bool ice(pSE->GetTypeID() == 17774);
+    // 1. Establish the explicit Ice field detection identity based on your native database layout rules
+    bool isIceBelt = (pSE->GetTypeID() == 17774);
 
     float secRating = m_system->GetSecurityRating();
     float secValue = m_system->GetSecValue();
+
     std::unordered_multimap<float, uint16> roidDist;
-    if (ice) {
-        // caldari=1, minmatar=2, amarr=3, gallente=4, none=5
+
+    // --- PART 1: RESOURCE CATALOG MATRIX DISTRIBUTIONS ---
+    if (isIceBelt) {
+        // Pull regional ice variants: Caldari=1, Minmatar=2, Amarr=3, Gallente=4
         GetIceDist(sDataMgr.GetRegionQuarter(m_regionID), secRating, roidDist);
     } else if (anomaly) {
         roidDist = roidTypes;
@@ -280,41 +284,36 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>&
         sDataMgr.GetRoidDist(m_system->GetSecurityClass(), roidDist);
     }
 
+    // --- PART 2: DETERMINE CLUSTER PIECE COUNTS & RADIAL RINGS ---
     int8 pcs = 5;
-    double radius = 8000;
-    radius *= sConfig.cosmic.roidRadiusMultiplier;
-    double roidradius = 0, theta = 0, randRadius = 0, elevation = 0;
+    double baseRadius = 8000.0 * sConfig.cosmic.roidRadiusMultiplier;
+
     if (anomaly) {
         pcs += roidDist.size();
-        radius += (radius * secValue);
-        radius += (pcs * 250);
-        elevation = (radius * 0.25f);
-    } else if (ice) {  //880 total systems with ice. 293 in hisec
-        //  ice needs to be 30k to 75k, with radius of 40k to 100k
-        radius *= 3; //24k base
-        if (secRating > 0.7) {
-            pcs = 1;
-        } else if (secRating > 0.4) {
-            pcs = 2;
-        } else if (secRating > 0.0) {
-            pcs = 3;
-        } else if (secRating > -0.4) {
-            pcs = 4;
-        } else {
-            pcs = 6;
-        }
+        baseRadius += (baseRadius * secValue);
+        baseRadius += (pcs * 250);
+    } else if (isIceBelt) {
+        // Enforce your exact time-tested security scarcity distribution table
+        baseRadius *= 3.0; // Establish the 24,000m baseline tracking track
+        if (secRating > 0.7)       pcs = 1;
+        else if (secRating > 0.4)  pcs = 2;
+        else if (secRating > 0.0)  pcs = 3;
+        else if (secRating > -0.4) pcs = 4;
+        else                       pcs = 6;
     } else {
         pcs += MakeRandomUInt(5, 30);
-        radius += (radius * secValue);
-        radius += (pcs * 250);
-        elevation = (radius * 0.25);
+        baseRadius += (baseRadius * secValue);
+        baseRadius += (pcs * 250);
     }
 
-    double degreeSeparation = (180.0 / pcs);
     ++pcs;
-    GPoint center(pSE->SysBubble()->GetCenter());
-    GPoint mposition(NULL_ORIGIN);
-    for (uint8 i = 1; i < pcs; i++) {
+
+    double verticalElevation = baseRadius * 0.25;
+    double degreeSeparation = (180.0 / pcs); // Switch to full 360-degree matrix paths?
+    Vector3d centerAxis = pSE->SysBubble()->GetCenter();
+/*
+    Vector3d mposition(NULL_ORIGIN);
+    for (uint8 i = 1; i < pcs; ++i) {
         if (ice) {
             if (secRating > -0.2) {
                 roidradius = MakeRandomUInt(20, 40) * 1000; // (40k,70k)  72-102k radius
@@ -341,6 +340,93 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>&
         mposition.y = MakeRandomFloat(-elevation, elevation);
         SpawnAsteroid(beltID, GetAsteroidType(MakeRandomFloat(), roidDist), roidradius, (center + mposition), ice);
     }
+*/
+    // --- THE GRAVITATIONAL CORE ORBIT MODE  ---
+    if (layoutType == BeltLayout::GravitationalOrbit) {
+        uint32 centralAnchorID = 140;
+        double megaRockRadius = isIceBelt ? 60000.0 : 45000.0;
+
+        // Spawn the central master mother rock anchor
+        SpawnAsteroid(centralAnchorID, GetAsteroidType(MakeRandomFloat(), roidDist), megaRockRadius, centerAxis, isIceBelt);
+
+        for (uint8 i = 1; i < pcs; ++i) {
+            double assignedOrbitRadius = baseRadius + (isIceBelt ? MakeRandomFloat(10000.0, 30000.0) : MakeRandomFloat(-2000.0, 4000.0));
+            double initialAngleRadian = EvE::Trig::Deg2Rad(degreeSeparation * i);
+
+            // Build the dynamic 3D plane normal axis
+            Vector3d orbitPlaneNormal(MakeRandomFloat(-0.15, 0.15), 1.0, MakeRandomFloat(-0.15, 0.15));
+            orbitPlaneNormal.Normalize();
+
+            Vector3d perpendicularTangent(cos(initialAngleRadian), 0.0, sin(initialAngleRadian));
+            perpendicularTangent.Cross(orbitPlaneNormal);
+            Vector3d finalSpawnPoint = centerAxis + (perpendicularTangent * assignedOrbitRadius);
+
+            double childRoidRadius = isIceBelt ?
+                ((secRating > -0.2 ? MakeRandomUInt(20, 40) : MakeRandomUInt(40, 70)) * 1000.0) :
+                (MakeRandomUInt(3000, 8000) * secValue);
+
+            SpawnAsteroid(beltID, GetAsteroidType(MakeRandomFloat(), roidDist), childRoidRadius, finalSpawnPoint, isIceBelt);
+/*
+            // --- DEPLOY THE DESTINY ORBIT CONTRACTS ---
+            // Direct the child nodes to execute continuous deterministic orbits around the central mother rock
+            pChildRoid->GetDestinyEngine()->SetOrbitPlaneNormal(orbitPlaneNormal);
+            pChildRoid->GetDestinyEngine()->SetMovementMode(5); // Active Orbit Integration
+            pChildRoid->GetDestinyEngine()->SetTargetBallPointer(centralAnchorID);
+            pChildRoid->GetDestinyEngine()->SetOrbitRadius(assignedOrbitRadius);
+            pChildRoid->GetDestinyEngine()->SetVelocityVector(perpendicularTangent * pChildRoid->GetAttribute(AttrMaxVelocity));
+
+            // Sync the action over the network wire (3 variables: shipID, targetID, radius)
+            pGrid->NotifyGridOfOrbitAction(dynamicRoidID, centralAnchorID, assignedOrbitRadius);
+        */
+        }
+    } else {
+        // --- PART 4: STATIC ADVANCED GEOMETRY EXECUTION MATRICES ---
+        // Track localized copies of baseRadius to permanently prevent the loops from sliding out of bounds
+        double localTrackRadius = baseRadius;
+
+        for (uint8 i = 1; i < pcs; ++i) {
+            Vector3d mposition = NULL_ORIGIN;
+
+            // Calculate child rock size profiles safely based on your authentic formulas
+            double childRoidRadius = isIceBelt ?
+                            ((secRating > -0.2 ? MakeRandomUInt(20, 40) : MakeRandomUInt(40, 70)) * 1000.0) :
+                            (MakeRandomUInt(3000, 8000) * secValue);
+
+            double theta = EvE::Trig::Deg2Rad(degreeSeparation * i);
+
+            switch (layoutType) {
+                case BeltLayout::SphericalCloud: {
+                    double phi = MakeRandomFloat(0.0, EvE::Trig::Pi);
+                    double randomRadialDepth = localTrackRadius + MakeRandomFloat(-localTrackRadius * 0.25, localTrackRadius * 0.35);
+
+                    mposition.x = randomRadialDepth * std::sin(theta) * std::cos(phi);
+                    mposition.z = randomRadialDepth * std::sin(theta) * std::sin(phi);
+                    mposition.y = MakeRandomFloat(-verticalElevation, verticalElevation);
+                } break;
+                case BeltLayout::TripleHelixVortex: {
+                    double spiralExpansionRadius = localTrackRadius + (i * (4000.0 / pcs));
+                    double armPhaseOffset = (i % 3) * (EvE::Trig::Pi * 2.0 / 3.0);
+                    double currentRadian = theta + armPhaseOffset;
+
+                    mposition.x = std::cos(currentRadian) * spiralExpansionRadius + MakeRandomFloat(-1000.0, 3000.0);
+                    mposition.z = std::sin(currentRadian) * spiralExpansionRadius + MakeRandomFloat(-1000.0, 3000.0);
+                    mposition.y = (i * (verticalElevation * 2.0 / pcs)) - verticalElevation;
+                } break;
+                case BeltLayout::HalfCircle:
+                default: {
+                    // Your classic EVE Online default half-circle, fully protected against radial creep
+                    double randRadius = MakeRandomFloat(-localTrackRadius / 4.0, localTrackRadius / 2.0);
+                    double halfCircleTheta = EvE::Trig::Deg2Rad((180.0 / pcs) * i);
+
+                    mposition.x = (randRadius + childRoidRadius + localTrackRadius) * std::cos(halfCircleTheta);
+                    mposition.z = (randRadius + childRoidRadius + localTrackRadius) * std::sin(halfCircleTheta);
+                    mposition.y = MakeRandomFloat(-verticalElevation, verticalElevation);
+                } break;
+            }
+
+            SpawnAsteroid(beltID, GetAsteroidType(MakeRandomFloat(), roidDist), childRoidRadius, (centerAxis + mposition), isIceBelt);
+        }
+    }
 
     std::map<uint32, bool>::iterator itr = m_spawned.find(beltID);
     if (itr == m_spawned.end()) {
@@ -356,8 +442,9 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>&
         itr->second = false;
     }
 
-    _log(COSMIC_MGR__TRACE, "BeltMgr::SpawnBelt - Belt spawned with %u roids of %s in %s %u for %s(%u)", \
-            pcs, (ice?"ice":"ore"), (anomaly?"anomalyID":"beltID"), beltID, m_system->GetName(), m_systemID );
+    _log(COSMIC_MGR__TRACE, "BeltMgr::SpawnBelt - '%s' Belt spawned with %u roids of %s in %s %u for %s(%u)", \
+                BeltTypeName(layoutType), pcs, (isIceBelt?"ice":"ore"), (anomaly?"anomalyID":"beltID"), \
+                beltID, m_system->GetName(), m_systemID );
 }
 
 uint32 BeltMgr::GetAsteroidType(double p, const std::unordered_multimap<float, uint16>& roids) {
@@ -373,7 +460,7 @@ uint32 BeltMgr::GetAsteroidType(double p, const std::unordered_multimap<float, u
     return 0;
 }
 
-void BeltMgr::SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const GPoint& position, bool ice/*false*/) {
+void BeltMgr::SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const Vector3d& position, bool ice/*false*/) {
     if (typeID == 0) {
         _log(COSMIC_MGR__WARNING, "BeltMgr::SpawnAsteroid - typeID is 0");
         return;
@@ -534,6 +621,21 @@ void BeltMgr::GetIceDist(uint8 quarter, float secStatus, std::unordered_multimap
     }
 }
 
+const char* BeltMgr::BeltTypeName(uint8 typeID) {
+    switch (typeID) {
+        case BeltLayout::HalfCircle:		return "Half-Circle"; 		break;
+        case BeltLayout::WeirdDiagonal:		return "Weird Diagonal"; 	break;
+        case BeltLayout::OddSlant:		return "Odd Slant"; 		break;
+        case BeltLayout::WTF_UFO:		return "WTF UFO!"; 		break;
+        case BeltLayout::ElevatedArc:		return "Arc"; 			break;
+        case BeltLayout::SphericalCloud:	return "Spherical Cloud"; 	break;
+        case BeltLayout::TripleHelixVortex:	return "Triple-Helix Vortex"; 	break;
+        case BeltLayout::GravitationalOrbit:	return "Gravitational Orbit"; 	break;
+    }
+    
+    return "Invalid";
+}
+
 /*          this gives random single point on sphere with radius of 'r'
  *
         double theta = MakeRandomFloat(0.0, (2*M_PI) );
@@ -574,8 +676,8 @@ void BeltMgr::GetIceDist(uint8 quarter, float secStatus, std::unordered_multimap
     const double security = 1.1 - m_db.GetSecurity(sys->GetID());
     radius += (radius * security) *2;
 
-    GPoint mposition = NULL_ORIGIN;
-    const GPoint position(who->SysBubble()->GetCenter() );
+    Vector3d mposition = NULL_ORIGIN;
+    const Vector3d position(who->SysBubble()->GetCenter() );
     double roidradius = 0, thefloat = 0;
     uint32 theta = 0, angleSeperation = floor(180 /pcs);
 
@@ -663,5 +765,5 @@ void BeltMgr::GetIceDist(uint8 quarter, float secStatus, std::unordered_multimap
     /* idea...
      * huge rock in center, with smaller rocks in 'orbit' at various angles
      * even better, give the smaller rocks a destinyMgr and make them actually orbit....not sure how client would handle it
-     * hell, not sure how I'D handle it, as our orbit code is wonky, but this would be most awesome!!
+     * hell, not sure how I'D handle it, but this would be most awesome!!
      */

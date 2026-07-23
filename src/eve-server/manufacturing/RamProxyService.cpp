@@ -382,7 +382,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
         /** @todo do something constructive with this data...
         // this is populated for t2 bpc
         //     inventionItems=quoteData.inventionItems
-        uint16 outputType(0), baseItemType(0), decryptorType(0);
+        uint16 outputType(0), baseItemType(0), decryptorType = 0;
         if (call.byname.find("inventionItems") != call.byname.end()) {
             PyDict* dict = call.byname["inventionItems"]->AsDict();
             outputType = PyRep::IntegerValueU32(dict->GetItemString("outputType"));
@@ -415,7 +415,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
 
     // get proper location data
     /** @todo  this will need work for pos */
-    uint32 locationID(0);
+    uint32 locationID = 0;
     switch (args.lineLocationGroupID) {
         case EVEDB::invGroups::Station:  {
             // this should be same location as client....unless remote

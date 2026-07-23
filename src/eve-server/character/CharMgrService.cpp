@@ -178,7 +178,7 @@ CharMgrService::~CharMgrService() {
     delete m_dispatch;
 }
 
-PyBoundObject *CharMgrService::CreateBoundObject(Client *pClient, const PyRep *bind_args) {
+PyBoundObject *CharMgrService::CreateBoundObject(Client* pClient, const PyRep *bind_args) {
     _log(CHARACTER__BIND, "CharMgrService bind request:");
     bind_args->Dump(CHARACTER__BIND, "    ");
     Call_TwoIntegerArgs args;

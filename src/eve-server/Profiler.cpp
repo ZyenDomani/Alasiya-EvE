@@ -349,9 +349,9 @@ void Profiler::GetRunTimes(std::vector< double >& container, double& h, double& 
         return;
     }
 
-    uint32 size(container.size()), over(0);
+    uint32 size(container.size()), over = 0;
     double total(0.0), lo(0.0), hi(0.0);
-    for (uint32 i(0); i < size; ++i) {
+    for (uint32 i = 0; i < size; ++i) {
         if (container[i] > 1000000.0) {
             std::printf("hi time %.3f\n", container[i]);
             ++over;

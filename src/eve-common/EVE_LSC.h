@@ -1,8 +1,5 @@
 
 
-#ifndef EVE_LSC_H
-#define EVE_LSC_H
-
 /*
  *
  * LSC stands for Large Scale Chat
@@ -55,62 +52,64 @@
  *
  *
  */
+
+#pragma once
+
+
 namespace LSC {
-/*
-    for colorkey, color, intCol in [(service.ROLE_QA, '0xff0099ff', LtoI(4278229503L)),
-     (service.ROLE_WORLDMOD, '0xffac75ff', LtoI(4289492479L)),
-     (service.ROLE_GMH, '0xffee6666', LtoI(4293813862L)),
-     (service.ROLE_GML, '0xffffff20', LtoI(4294967072L)),
-     (service.ROLE_CENTURION, '0xff00ff00', LtoI(4278255360L)),
-     (service.ROLE_LEGIONEER, '0xff00ffcc', LtoI(4278255564L)),
-     (service.ROLE_ADMIN, '0xffee6666', LtoI(4293813862L))]:
-        if role & colorkey == colorkey:
-            return [color, intCol][asInt]
+    // The master mapping struct to bundle hex strings and native client integers
+    struct ChatColor {
+        const char* hexStr;
+        int32 clientInt;
+    };
 
-    return ['0xffe0e0e0', LtoI(4292927712L)][asInt]
+    namespace Color {
+        // --- 1. STANDARD COLORS ---
+        const ChatColor Orange     = { "0xffffa500", -0        };
+        const ChatColor Purple     = { "0xff800080", -0        };
+        const ChatColor Brown      = { "0xffa52a2a", -0        };
+        const ChatColor Yellow     = { "0xffffff00", -0        };
+        const ChatColor Maroon     = { "0xff800000", -0        };
+        const ChatColor Lime       = { "0xff00ff00", -0        };
+        const ChatColor Magenta    = { "0xffff00ff", -0        };
+        const ChatColor Olive      = { "0xff808000", -0        };
+        const ChatColor Pink       = { "0xffffc0cb", -0        };
+        const ChatColor Aquamarine = { "0xff7fffd4", -0        };
+        const ChatColor Red        = { "0xffff0000", -0        };
+        const ChatColor Silver     = { "0xffc0c0c0", -0        };
+        const ChatColor Blue       = { "0xff0000ff", -0        };
+        const ChatColor Gray       = { "0xff808080", -0        };
+        const ChatColor DarkBlue   = { "0xff00008b", -0        };
+        const ChatColor LightBlue  = { "0xffadd8e6", -0        };
+        const ChatColor Cyan       = { "0xff00ffff", -16711681 }; // Heavy utility / custom broadcast
+        const ChatColor Azure      = { "0xff007fff", -16744449 }; // Fleet / deep atmospheric operations
+        const ChatColor PureWhite  = { "0xffffffff", -1        }; // System informational overrides
+        const ChatColor PureGreen  = { "0xff00ff00", -16711936 }; // Secure comms / clear data links
+        const ChatColor LiteGrey   = { "0xffe0e0e0", -2039584  }; // Standard baseline chatter
+
+        // --- 2. THE THEMATIC DRONE / BORG PALETTE ---
+        const ChatColor BorgNeon   = { "0xff00ffcc", -16711732 }; // Legioneer Green / Hive synchronization
+        const ChatColor WorldMod   = { "0xffac75ff", -5474817  }; // Purposed Purple / Hacking intrusion siege
+        const ChatColor ThreatGold = { "0xffffff20", -224      }; // GML Gold / Target vulnerability profile mapping
+        const ChatColor CritRed    = { "0xffee6666", -1153434  }; // Critical warnings / Terminal host shatter events
+
+        // --- 3. RECOMMENDED OPERATIONAL SUGGESTIONS ---
+        const ChatColor WarnYellow = { "0xffffff00", -256      }; // Environmental hazards / cosmic signatures
+        const ChatColor AlertOrange= { "0xffff6600", -39424    }; // Weapon overload cascades / proximity breaches
+        const ChatColor Crimson    = { "0xffdc143c", -2354116  }; // Severe threat / Capital target detection alerts
+        const ChatColor DeepPurple = { "0xff7f00ff", -8453889  }; // Anomalous data / Abyssal-style space events
+        const ChatColor StealthGrey= { "0xff5a5a5a", -10855846 }; // Low-priority background diagnostic chatter
+        const ChatColor MatrixDark = { "0xff003300", -16764160 }; // Background "noise" / hidden encryption streams
+    }
+    /*  drone bcast suggetions
+        CorruptedGreen  = 1,   // Matrix/Firmware aesthetics
+        WarningYellow   = 2,   // Swarm command bleed-over
+        LostPanic       = 3,   // Small ships panic events
+        AlertOrange     = 5,   // Tactical shifting/Vulnerability mapping
+        CriticalRed     = 11,  // Shield breaches/Shatter events
+        SystemWhite     = 18,  // Clear, uncorrupted binary overrides
+        InfectionPurple = 773399ff   // Elite Carrier intrusion siege tracking
     */
-
-    // type designations are internal-use only (client works on strings)
-    enum Type{
-        global          = 1,    // send channelID as tuple(id, desc)  uses full memberlist, never memberless
-        corp            = 2,    // send channelID as tuple(id, desc)  uses full memberlist, never memberless
-        region          = 3,    // send channelID as tuple(id, desc)  uses full memberlist, never memberless, not used in w-space
-        constellation   = 4,    // send channelID as tuple(id, desc)  uses full memberlist, never memberless, not used in w-space
-        solarsystem     = 5,    // send channelID as tuple(id, desc)  used in w-space, memberless, changes chat window title from "Local" to "System"
-        solarsystem2    = 6,    // send channelID as tuple(id, desc)  uses full memberlist, never memberless, not used in w-space (k-space "Local" channel)
-        // end of static channels
-        character       = 7,    // for mailing lists using channelID = charID
-        // begin dynamic channels
-        alliance        = 8,
-        fleet           = 9,
-        wing            = 10,
-        squad           = 11,
-        warfaction      = 12,
-        incursion       = 13,
-        normal          = 14,   //  trial accts arent time buffered (channelID > 2100000000)
-        custom          = 15    //  invite only.  channelID < 0
-    };
-
-    enum Mode {
-        chDisallowed = -2,
-        chUnspecified = -1,
-        chNone = 0,                             // banned/muted
-        chListener = 1,                 // read-only
-        chSpeaker = 2,                  // std member
-        chConversationalist = 3,// op/mod
-        chOperator = 7,
-        chCreator = 15                  // owner
-    };
-
-    enum Error {
-        errUnspecified = -1,
-        errDisallowed = -2,
-        errNoSuchChannel = -3,
-        errAccessDenied = -4,
-        errWrongPass = -5,
-        errChannelExists = -6,
-        errTooManyChannels = -7
-    };
 
     struct ChannelData {
         int32 channelID = 0;
@@ -125,9 +124,9 @@ namespace LSC {
 
         // Explicit constructor required to satisfy GCC 4.9.2's emplace constraints
         ChannelData(int32 id, std::string name, std::string m, uint32 owner,
-                       std::string key, bool memb, std::string pass, bool mail, uint32 cs)
-        : channelID(id), displayName(name), motd(m), ownerID(owner),
-        comparisonKey(key), memberless(memb), password(pass), mailingList(mail), cspa(cs) {}
+                   std::string key, bool memb, std::string pass, bool mail, uint32 cs)
+            : channelID(id), displayName(name), motd(m), ownerID(owner),
+            comparisonKey(key), memberless(memb), password(pass), mailingList(mail), cspa(cs) {}
     };
 
     struct CharMetaData {
@@ -139,7 +138,55 @@ namespace LSC {
         : characterName(charName), corporationName(corpName) {}
     };
 
-}   // namespace LSC
+
+    namespace Type {
+        // type designations are internal-use only (client works on strings)
+        enum {
+            global          = 1,    // send channelID as tuple(id, desc)  uses full memberlist, never memberless
+            corp            = 2,    // send channelID as tuple(id, desc)  uses full memberlist, never memberless
+            region          = 3,    // send channelID as tuple(id, desc)  uses full memberlist, never memberless, not used in w-space
+            constellation   = 4,    // send channelID as tuple(id, desc)  uses full memberlist, never memberless, not used in w-space
+            solarsystem     = 5,    // send channelID as tuple(id, desc)  used in w-space, memberless, changes chat window title from "Local" to "System"
+            solarsystem2    = 6,    // send channelID as tuple(id, desc)  uses full memberlist, never memberless, not used in w-space (k-space "Local" channel)
+            // end of static channels
+            character       = 7,    // for mailing lists using channelID = charID
+            // begin dynamic channels
+            alliance        = 8,
+            fleet           = 9,
+            wing            = 10,
+            squad           = 11,
+            warfaction      = 12,
+            incursion       = 13,
+            normal          = 14,   //  trial accts arent time buffered (channelID > 2100000000)
+            custom          = 15    //  invite only.  channelID < 0
+        };
+    }
+
+    namespace Mode {
+        enum {
+            Disallowed 	        = -2,
+            Unspecified 	= -1,
+            None 		= 0,	// banned/muted
+            Listener	        = 1,	// read-only
+            Speaker 	        = 2,	// std member
+            Moderator	        = 3,	// op/mod
+            Operator 	        = 7,
+            Creator 	        = 15	// owner
+        };
+    }
+
+    namespace Error {
+        enum {
+            Unspecified 	= -1,
+            Disallowed 	        = -2,
+            NoSuchChannel 	= -3,
+            AccessDenied 	= -4,
+            WrongPass 	        = -5,
+            ChannelExists 	= -6,
+            TooManyChannels     = -7
+        };
+    }
+};   // namespace LSC
 
 /* groupMessageIDs and descriptions
  * 1 = Passive
@@ -154,145 +201,7 @@ namespace LSC {
  * 263328 = Content
  *
  */
-
-namespace Notifications {
-    /*
-securityLevelDescriptions = {-10: 'Notifications/SecurityStatus/SecurityDescription_-10',
- -9: 'Notifications/SecurityStatus/SecurityDescription_-9',
- -8: 'Notifications/SecurityStatus/SecurityDescription_-8',
- -7: 'Notifications/SecurityStatus/SecurityDescription_-7',
- -6: 'Notifications/SecurityStatus/SecurityDescription_-6',
- -5: 'Notifications/SecurityStatus/SecurityDescription_-5',
- -4: 'Notifications/SecurityStatus/SecurityDescription_-4',
- -3: 'Notifications/SecurityStatus/SecurityDescription_-3',
- -2: 'Notifications/SecurityStatus/SecurityDescription_-2',
- -1: 'Notifications/SecurityStatus/SecurityDescription_-1',
- 0: 'Notifications/SecurityStatus/SecurityDescription_0',
- 1: 'Notifications/SecurityStatus/SecurityDescription_1',
- 2: 'Notifications/SecurityStatus/SecurityDescription_2',
- 3: 'Notifications/SecurityStatus/SecurityDescription_3',
- 4: 'Notifications/SecurityStatus/SecurityDescription_4',
- 5: 'Notifications/SecurityStatus/SecurityDescription_5',
- 6: 'Notifications/SecurityStatus/SecurityDescription_6',
- 7: 'Notifications/SecurityStatus/SecurityDescription_7',
- 8: 'Notifications/SecurityStatus/SecurityDescription_8',
- 9: 'Notifications/SecurityStatus/SecurityDescription_9',
- 10: 'Notifications/SecurityStatus/SecurityDescription_10'}
-rankLost = {const.factionCaldariState: 'UI/FactionWarfare/Ranks/RankLostCaldari',
- const.factionMinmatarRepublic: 'UI/FactionWarfare/Ranks/RankLostMinmatar',
- const.factionAmarrEmpire: 'UI/FactionWarfare/Ranks/RankLostAmarr',
- const.factionGallenteFederation: 'UI/FactionWarfare/Ranks/RankLostGallente'}
-rankGain = {const.factionCaldariState: 'UI/FactionWarfare/Ranks/RankGainCaldari',
- const.factionMinmatarRepublic: 'UI/FactionWarfare/Ranks/RankGainMinmatar',
- const.factionAmarrEmpire: 'UI/FactionWarfare/Ranks/RankGainAmarr',
- const.factionGallenteFederation: 'UI/FactionWarfare/Ranks/RankGainGallente'}
-notificationTypes = {'notificationTypeOldLscMessages': 1,
- 'notificationTypeCharTerminationMsg': 2,
- 'notificationTypeCharMedalMsg': 3,
- 'notificationTypeAllMaintenanceBillMsg': 4,
- 'notificationTypeAllWarDeclaredMsg': 5,
- 'notificationTypeAllWarSurrenderMsg': 6,
- 'notificationTypeAllWarRetractedMsg': 7,
- 'notificationTypeAllWarInvalidatedMsg': 8,
- 'notificationTypeCharBillMsg': 9,
- 'notificationTypeCorpAllBillMsg': 10,
- 'notificationTypeBillOutOfMoneyMsg': 11,
- 'notificationTypeBillPaidCharMsg': 12,
- 'notificationTypeBillPaidCorpAllMsg': 13,
- 'notificationTypeBountyClaimMsg': 14,
- 'notificationTypeCloneActivationMsg': 15,
- 'notificationTypeCorpAppNewMsg': 16,
- 'notificationTypeCorpAppRejectMsg': 17,
- 'notificationTypeCorpAppAcceptMsg': 18,
- 'notificationTypeCorpTaxChangeMsg': 19,
- 'notificationTypeCorpNewsMsg': 20,
- 'notificationTypeCharLeftCorpMsg': 21,
- 'notificationTypeCorpNewCEOMsg': 22,
- 'notificationTypeCorpDividendMsg': 23,
- 'notificationTypeCorpVoteMsg': 25,
- 'notificationTypeCorpVoteCEORevokedMsg': 26,
- 'notificationTypeCorpWarDeclaredMsg': 27,
- 'notificationTypeCorpWarFightingLegalMsg': 28,
- 'notificationTypeCorpWarSurrenderMsg': 29,
- 'notificationTypeCorpWarRetractedMsg': 30,
- 'notificationTypeCorpWarInvalidatedMsg': 31,
- 'notificationTypeContainerPasswordMsg': 32,
- 'notificationTypeCustomsMsg': 33,
- 'notificationTypeInsuranceFirstShipMsg': 34,
- 'notificationTypeInsurancePayoutMsg': 35,
- 'notificationTypeInsuranceInvalidatedMsg': 36,
- 'notificationTypeSovAllClaimFailMsg': 37,
- 'notificationTypeSovCorpClaimFailMsg': 38,
- 'notificationTypeSovAllBillLateMsg': 39,
- 'notificationTypeSovCorpBillLateMsg': 40,
- 'notificationTypeSovAllClaimLostMsg': 41,
- 'notificationTypeSovCorpClaimLostMsg': 42,
- 'notificationTypeSovAllClaimAquiredMsg': 43,
- 'notificationTypeSovCorpClaimAquiredMsg': 44,
- 'notificationTypeAllAnchoringMsg': 45,
- 'notificationTypeAllStructVulnerableMsg': 46,
- 'notificationTypeAllStrucInvulnerableMsg': 47,
- 'notificationTypeSovDisruptorMsg': 48,
- 'notificationTypeCorpStructLostMsg': 49,
- 'notificationTypeCorpOfficeExpirationMsg': 50,
- 'notificationTypeCloneRevokedMsg1': 51,
- 'notificationTypeCloneMovedMsg': 52,
- 'notificationTypeCloneRevokedMsg2': 53,
- 'notificationTypeInsuranceExpirationMsg': 54,
- 'notificationTypeInsuranceIssuedMsg': 55,
- 'notificationTypeJumpCloneDeletedMsg1': 56,
- 'notificationTypeJumpCloneDeletedMsg2': 57,
- 'notificationTypeFWCorpJoinMsg': 58,
- 'notificationTypeFWCorpLeaveMsg': 59,
- 'notificationTypeFWCorpKickMsg': 60,
- 'notificationTypeFWCharKickMsg': 61,
- 'notificationTypeFWCorpWarningMsg': 62,
- 'notificationTypeFWCharWarningMsg': 63,
- 'notificationTypeFWCharRankLossMsg': 64,
- 'notificationTypeFWCharRankGainMsg': 65,
- 'notificationTypeAgentMoveMsg': 66,
- 'notificationTypeTransactionReversalMsg': 67,
- 'notificationTypeReimbursementMsg': 68,
- 'notificationTypeLocateCharMsg': 69,
- 'notificationTypeResearchMissionAvailableMsg': 70,
- 'notificationTypeMissionOfferExpirationMsg': 71,
- 'notificationTypeMissionTimeoutMsg': 72,
- 'notificationTypeStoryLineMissionAvailableMsg': 73,
- 'notificationTypeTutorialMsg': 74,
- 'notificationTypeTowerAlertMsg': 75,
- 'notificationTypeTowerResourceAlertMsg': 76,
- 'notificationTypeStationAggressionMsg1': 77,
- 'notificationTypeStationStateChangeMsg': 78,
- 'notificationTypeStationConquerMsg': 79,
- 'notificationTypeStationAggressionMsg2': 80,
- 'notificationTypeFacWarCorpJoinRequestMsg': 81,
- 'notificationTypeFacWarCorpLeaveRequestMsg': 82,
- 'notificationTypeFacWarCorpJoinWithdrawMsg': 83,
- 'notificationTypeFacWarCorpLeaveWithdrawMsg': 84,
- 'notificationTypeCorpLiquidationMsg': 85,
- 'notificationTypeSovereigntyTCUDamageMsg': 86,
- 'notificationTypeSovereigntySBUDamageMsg': 87,
- 'notificationTypeSovereigntyIHDamageMsg': 88,
- 'notificationTypeContactAdd': 89,
- 'notificationTypeContactEdit': 90,
- 'notificationTypeIncursionCompletedMsg': 91,
- 'notificationTypeCorpKicked': 92,
- 'notificationTypeOrbitalAttacked': 93,
- 'notificationTypeOrbitalReinforced': 94,
- 'notificationTypeOwnershipTransferred': 95,
- 'notificationTypeFWAllianceWarningMsg': 96,
- 'notificationTypeFWAllianceKickMsg': 97}
-notifyIDs = util.KeyVal(notificationTypes)
-groupUnread = 0
-groupAgents = 1
-groupBills = 2
-groupCorp = 3
-groupMisc = 4
-groupOld = 5
-groupSov = 6
-groupStructures = 7
-groupWar = 8
-groupContacts = 9
+/*
 groupTypes = {groupAgents: [notifyIDs.notificationTypeAgentMoveMsg,
                notifyIDs.notificationTypeLocateCharMsg,
                notifyIDs.notificationTypeResearchMissionAvailableMsg,
@@ -388,8 +297,4 @@ groupTypes = {groupAgents: [notifyIDs.notificationTypeAgentMoveMsg,
             notifyIDs.notificationTypeFacWarCorpLeaveWithdrawMsg,
             notifyIDs.notificationTypeFWAllianceWarningMsg,
             notifyIDs.notificationTypeFWAllianceKickMsg]}
-            */
-}   // namespace Notifications
-
-
-#endif
+*/

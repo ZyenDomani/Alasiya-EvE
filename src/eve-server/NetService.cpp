@@ -60,7 +60,7 @@ PyResult NetService::Handle_GetClusterSessionStatistics(PyCallArgs &call)
      *   client already has IsAFK()
      */
 
-    uint16 system(0);
+    uint16 system = 0;
     PyDict* sol = new PyDict();
     PyDict* sta = new PyDict();
 

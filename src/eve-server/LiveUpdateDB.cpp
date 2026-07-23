@@ -63,11 +63,11 @@ void LiveUpdateDB::Init()
 
     // we need to manually create PyPackedRows since we don't want everything from the query in them
     m_updateList = new PyList(res.GetRowCount());
-    int listIndex(0);
+    int listIndex = 0;
     DBResultRow row;
     while (res.GetRow(row)) {
         PyPackedRow* packedRow = new PyPackedRow(header);
-        for (uint32 i(0); i < 7; ++i)
+        for (uint32 i = 0; i < 7; ++i)
             packedRow->SetField(i, DBColumnToPyRep(row, i));
 
         LiveUpdateInner inner;

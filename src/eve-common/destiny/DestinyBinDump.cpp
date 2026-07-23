@@ -104,7 +104,7 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
         data += sizeof(MassSector);
         len -= sizeof(MassSector);
 
-        _log(into, "   mass: %.2f, cloak: %u, harmonic: %i, corp: %i, alliance: %lli" ,
+        _log(into, "   mass: %.2f, cloak: %u, harmonic: %lli, corp: %i, alliance: %i" ,
             masschunk->mass, masschunk->cloak, masschunk->harmonic, masschunk->corporationID, masschunk->allianceID);
     }
 
@@ -132,69 +132,69 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
             const GOTO_Struct *b = (const GOTO_Struct *) data;
             data += sizeof(GOTO_Struct);
             len -= sizeof(GOTO_Struct);
-            _log(into, "       formID: %u, target: %.1f, %.1f, %.1f", b->formationID, b->x, b->y, b->z);
+            _log(into, "       formID: %i, target: %.1f, %.1f, %.1f", b->formationID, b->x, b->y, b->z);
         } break;
         case Ball::Mode::FOLLOW: {
             const FOLLOW_Struct *b = (const FOLLOW_Struct *) data;
             data += sizeof(FOLLOW_Struct);
             len -= sizeof(FOLLOW_Struct);
-            _log(into, "       formID: %u, followID: %lli, distance: %.1f", b->formationID, b->followID, b->followRange);
+            _log(into, "       formID: %i, followID: %lli, distance: %.1f", b->formationID, b->followID, b->followRange);
         } break;
         case Ball::Mode::STOP: {
             const STOP_Struct *b = (const STOP_Struct *) data;
             data += sizeof(STOP_Struct);
             len -= sizeof(STOP_Struct);
-            _log(into, "       formID: %u ", b->formationID);
+            _log(into, "       formID: %i ", b->formationID);
         } break;
         case Ball::Mode::WARP: {
             const WARP_Struct *b = (const WARP_Struct *) data;
             data += sizeof(WARP_Struct);
             len -= sizeof(WARP_Struct);
-            _log(into, "       formID: %u, TargPt: %.1f, %.1f, %.1f start: %i", b->formationID, b->targX, b->targY, b->targZ, b->effectStamp);
+            _log(into, "       formID: %i, TargPt: %.1f, %.1f, %.1f start: %i", b->formationID, b->targX, b->targY, b->targZ, b->effectStamp);
             _log(into, "       distance: %.1f, warpInVelocity: %.1f, warpFactor: %i", b->distance, b->warpInVelocity, b->warpFactor);
         } break;
         case Ball::Mode::ORBIT: {
             const ORBIT_Struct *b = (const ORBIT_Struct *) data;
             data += sizeof(ORBIT_Struct);
             len -= sizeof(ORBIT_Struct);
-            _log(into, "       formID: %u, targetID: %u, distance: %.1f", b->formationID, b->targetID, b->followRange);
+            _log(into, "       formID: %i, targetID: %u, distance: %.1f", b->formationID, b->targetID, b->followRange);
         } break;
         case Ball::Mode::MISSILE: {
             const MISSILE_Struct *b = (const MISSILE_Struct *) data;
             data += sizeof(MISSILE_Struct);
             len -= sizeof(MISSILE_Struct);
-            _log(into, "       formID: %u, targetID: %lli, followRange: %.1f, ownerID: %lli, start: %i", b->formationID, b->targetID, b->followRange, b->ownerID, b->effectStamp);
+            _log(into, "       formID: %i, targetID: %lli, followRange: %.1f, ownerID: %lli, start: %i", b->formationID, b->targetID, b->followRange, b->ownerID, b->effectStamp);
             _log(into, "       pos: %.1f, %.1f, %.1f", b->x, b->y, b->z);
         } break;
         case Ball::Mode::MUSHROOM: {
             const MUSHROOM_Struct *b = (const MUSHROOM_Struct *) data;
             data += sizeof(MUSHROOM_Struct);
             len -= sizeof(MUSHROOM_Struct);
-            _log(into, "       formID: %u, maxRadius: %.2f, waveFactor: %.3f, effectStamp: %i, ownerID: %lli", b->formationID, b->maxRadius, b->waveFactor, b->effectStamp, b->ownerID);
+            _log(into, "       formID: %i, maxRadius: %.2f, waveFactor: %.3f, effectStamp: %i, ownerID: %lli", b->formationID, b->maxRadius, b->waveFactor, b->effectStamp, b->ownerID);
         } break;
         case Ball::Mode::TROLL: {
             const TROLL_Struct *b = (const TROLL_Struct *) data;
             data += sizeof(TROLL_Struct);
             len -= sizeof(TROLL_Struct);
-            _log(into, "       formID: %u, delay: %i", b->formationID, b->delay);
+            _log(into, "       formID: %i, delay: %i", b->formationID, b->delay);
         } break;
         case Ball::Mode::FIELD: {
             const FIELD_Struct *b = (const FIELD_Struct *) data;
             data += sizeof(FIELD_Struct);
             len -= sizeof(FIELD_Struct);
-            _log(into, "       formID: %u ", b->formationID);
+            _log(into, "       formID: %i ", b->formationID);
         } break;
         case Ball::Mode::RIGID: {
             const RIGID_Struct *b = (const RIGID_Struct *) data;
             data += sizeof(RIGID_Struct);
             len -= sizeof(RIGID_Struct);
-            _log(into, "       formID: %u ", b->formationID);
+            _log(into, "       formID: %i ", b->formationID);
         } break;
         case Ball::Mode::FORMATION: {   // not used
             const FORMATION_Struct *b = (const FORMATION_Struct *) data;
             data += sizeof(FORMATION_Struct);
             len -= sizeof(FORMATION_Struct);
-            _log(into, "       formID: %u, leaderID: %lli, spacing: %.1f, slotID: %i", b->formationID, b->leaderID, b->spacing, b->slotID);
+            _log(into, "       formID: %i, leaderID: %lli, spacing: %.1f, slotID: %i", b->formationID, b->leaderID, b->spacing, b->slotID);
         } break;
         default:
             _log(into, "Error: Unknown ball mode %u!", ballhead->mode);

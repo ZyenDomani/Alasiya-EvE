@@ -834,8 +834,8 @@ void Character::LoadPausedSkillQueue(uint16 typeID)
     }
 
     // queue was paused.  all endTimes are off, so reset using now as start time for first skill.
-    uint8 nextLvl(0);
-    uint32 currentSP(0), nextSP(0);
+    uint8 nextLvl = 0;
+    uint32 currentSP(0), nextSP = 0;
     int64 startTime(GetFileTimeNow());
     for (SkillQueue::iterator itr = m_skillQueue.begin(); itr != m_skillQueue.end(); ++itr) {
         skill = GetCharSkillRef(itr->typeID).get();
@@ -891,7 +891,7 @@ void Character::CancelSkillInTraining(bool update/*false*/)
         nextLvl = EvESkill::MAXSKILLLEVEL;
 
     int64 curTime(GetFileTimeNow());
-    uint32 currentSP(0);
+    uint32 currentSP = 0;
 
     // is skill in training first in queue?
     if (qs.typeID != m_inTraining->typeID()) {
@@ -1081,7 +1081,7 @@ void Character::SkillQueueLoop(bool update/*true*/)
     }
 
     PyList* list = new PyList();
-    bool sent(false), multiple(false);
+    bool sent = false, multiple = false;
     Skill* skill(nullptr);
     while (!m_skillQueue.empty()) {
         QueuedSkill qs = m_skillQueue.front();
@@ -1345,7 +1345,7 @@ void Character::LoadImplants() {
     // load attribute implants into their own maps
     std::vector<InventoryItemRef> implants;
     pInventory->GetItemsByFlag(flagImplant, implants);
-    uint32 slot(0);
+    uint32 slot = 0;
     for (auto &cur : implants) {
         slot = cur->GetAttribute(AttrImplantness).get_uint32();
         m_implantMap[slot] = cur;

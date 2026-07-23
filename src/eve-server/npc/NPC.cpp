@@ -231,9 +231,9 @@ void NPC::EncodeDestiny(Buffer& into)
     into.Append( data );
     switch (mode) {
         case Ball::Mode::WARP: {
-            GPoint target = m_destiny->GetTargetPoint();
+            Vector3d target = m_destiny->GetTargetPoint();
             WARP_Struct warp;
-            warp.formationID = 0xFF;
+            warp.formationID = -1;
             warp.targX = target.x;
             warp.targY = target.y;
             warp.targZ = target.z;
@@ -241,11 +241,11 @@ void NPC::EncodeDestiny(Buffer& into)
             // warp timing.  see Ship::EncodeDestiny() for notes/updates
             if (m_destiny->IsWarping()) {
                 warp.effectStamp = m_destiny->GetStateStamp();   //timestamp when warp started
-                warp.distance = -1.0;
-                warp.warpInVelocity = 23000.0;
+                warp.distance = 0.0;
+                warp.warpInVelocity = 15000.0;
             } else {
                 warp.effectStamp = -1;
-                warp.distance = 0;
+                warp.distance = 0.0;
                 warp.warpInVelocity = 0.0;   //4802252820405690112
             }
             into.Append( warp );
@@ -254,20 +254,20 @@ void NPC::EncodeDestiny(Buffer& into)
             FOLLOW_Struct follow;
             follow.followID = m_destiny->GetTargetID();
             follow.followRange = m_destiny->GetFollowDistance();
-            follow.formationID = 0xFF;
+            follow.formationID = -1;
             into.Append( follow );
         }  break;
         case Ball::Mode::ORBIT: {
             ORBIT_Struct orbit;
             orbit.targetID = m_destiny->GetTargetID();
             orbit.followRange = m_destiny->GetFollowDistance();
-            orbit.formationID = 0xFF;
+            orbit.formationID = -1;
             into.Append( orbit );
         }  break;
         case Ball::Mode::GOTO: {
-            GPoint target = m_destiny->GetTargetPoint();
+            Vector3d target = m_destiny->GetTargetPoint();
             GOTO_Struct go;
-            go.formationID = 0xFF;
+            go.formationID = -1;
             go.x = target.x;
             go.y = target.y;
             go.z = target.z;
@@ -285,7 +285,7 @@ void NPC::EncodeDestiny(Buffer& into)
         }  break;
         default: {
             STOP_Struct main;
-            main.formationID = 0xFF;
+            main.formationID = -1;
             into.Append( main );
         } break;
     }
@@ -327,7 +327,7 @@ void NPC::Killed(Damage &fatal_blow) {
     MapDB::AddFactionKill(locationID);
 
     // set killer info
-    uint32 killerID(0);
+    uint32 killerID = 0;
     Client* pClient(nullptr);
     SystemEntity* killer(fatal_blow.srcSE);
 
@@ -366,7 +366,7 @@ void NPC::Killed(Damage &fatal_blow) {
         }
     }
 
-    GPoint wreckPosition(m_self->position());
+    Vector3d wreckPosition(m_self->position());
     if (wreckPosition.isNaN()) {
         sLog.Error("NPC::Killed()", "Wreck Position is NaN");
         return;

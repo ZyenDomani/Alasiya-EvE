@@ -116,7 +116,7 @@ bool SystemEntity::ApplyDamage(Damage &damage) {
         }
     }
 
-    int8 damageID(0);
+    int8 damageID = 0;
     switch (damage.weaponRef->groupID()) {
         case EVEDB::invGroups::Missile_Launcher_Assault:
         case EVEDB::invGroups::Missile_Launcher_Bomb:       // not sure here
@@ -176,7 +176,7 @@ bool SystemEntity::ApplyDamage(Damage &damage) {
     if (IsDroneSE())
         ShipTakingDamage(damage.srcSE);
 
-    bool killed(false);
+    bool killed = false;
     float total_damage(0.0f);
     float shield_damage(DamageToShield.GetTotal());
     float available_shield(m_self->GetAttribute(AttrShieldCharge).get_float());
@@ -333,7 +333,7 @@ bool SystemEntity::ApplyDamage(Damage &damage) {
                 dict->SetItemString("target", new PyInt(GetID()));
                 dict->SetItemString("damage", new PyFloat(total_damage));
             PyTuple* tuple = new PyTuple(3);
-            bool banked(false);
+            bool banked = false;
             tuple->SetItem(0, new PyString("OnDamageMessage"));
             if (damage.weaponRef->IsModuleItem()) {
                 GenericModule* pMod = damage.srcSE->GetShipSE()->GetShipItemRef()->GetModule(damage.weaponRef->flag());
@@ -406,7 +406,7 @@ void ShipSE::Killed(Damage &damage) {
     MapDB::AddFactionKill(locationID);
 
     // set up basic wreck data
-    GPoint wreckPosition = m_destiny->GetPosition();
+    Vector3d wreckPosition = m_destiny->GetPosition();
     if (wreckPosition.isNaN()) {
         sLog.Error("Ship::Killed()", "Wreck Position is NaN");
         return;
@@ -526,7 +526,7 @@ void ShipSE::Killed(Damage &damage) {
         if (deadShipInventory.empty()) {
             blob << "<i t=" << data.victimShipTypeID << " f=0 s=1 d=0 x=1/>";
         } else {
-            uint32 s(0), d(0), x(0);
+            uint32 s(0), d(0), x = 0;
             for (auto &cur : deadShipInventory) {
                 d = 0;
                 x = cur.second->quantity();
@@ -606,7 +606,7 @@ void ShipSE::Killed(Damage &damage) {
         m_destiny->SendJettisonPacket();
 
         uint16 groupID = m_self->groupID();
-        GPoint podPosition(wreckPosition);
+        Vector3d podPosition(wreckPosition);
         podPosition.MakeRandomPointOnSphere(GetShipItemRef()->radius() + pPilot->GetPod()->radius() + MakeRandomFloat(100, 200));
         // this resets client ship data
         pPilot->ResetAfterPopped(podPosition);

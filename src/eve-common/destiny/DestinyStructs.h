@@ -41,7 +41,7 @@ namespace Destiny {
                 ORBIT       = 4,    // Perpendicular tangent vector shifting loop (Rule 2)
                 MISSILE     = 5,    // Speed-scaled dynamic mass turning tracking (Rule 4)
                 MUSHROOM    = 6,    // Radial gravity/area expansion envelope (Smartbombs/AOE)
-				// This is used when objects are spawned in proximity and need to resolve their initial positions before settling.
+                // This is used when objects are spawned in proximity and need to resolve their initial positions before settling.
                 BOID        = 7,    // Spatial swarm flock aggregation physics (Craig Reynolds' Bird-oid)
                 TROLL       = 8,    // Inertially decaying unanchored physical drop (Wrecks/Cans dropped from moving objects)
                 MINIBALL    = 9,    // Component multi-hitbox structural sub-mesh
@@ -118,9 +118,9 @@ struct BallHeader {
 struct MassSector {
     double mass;                  // Static baseline weight property (0x68 Memory Offset)
     uint8  cloak;                 // Active vision denial masking state flag (0x53 Memory Offset)
-    int64 allianceID;             // Ownership entity identifier tracking blocks
+    int32 allianceID;             // Ownership entity identifier tracking blocks
     int32 corporationID;
-    int32 harmonic;               // Spatial sensor resolution signature seed modifier
+    int64 harmonic;               // Forcefield signature; >0 = set, -1 = none, -2 = all
 };
 
 
@@ -163,24 +163,24 @@ struct MiniBallList {
 // ============================================================================
 
 struct GOTO_Struct {
-    uint8  formationID;           // Assigned tracking flight group descriptor context
+    int8  formationID;           // Assigned tracking flight group descriptor context
     double x;                     // Target spatial destination matrix (Maps to 0x150)
     double y;
     double z;
 };
 
 struct FOLLOW_Struct {
-    uint8  formationID;
+    int8  formationID;
     int64  followID;              // Target entity identifier to lock trajectories onto
     float  followRange;           // Safe tracking gap constraint distance parameter
 };
 
 struct STOP_Struct {
-    uint8  formationID;           // Forces rapid alignment-free speed reduction looping
+    int8  formationID;           // Forces rapid alignment-free speed reduction looping
 };
 
 struct WARP_Struct {
-    uint8  formationID;           // Master layout shape profile index (for fleet warp alignments)
+    int8  formationID;           // Master layout shape profile index (for fleet warp alignments)
     // Absolute destination terminal exit coordinates
     double targX;                 // Termination exit coordinates for warp drop
     double targY;
@@ -192,13 +192,13 @@ struct WARP_Struct {
 };
 
 struct ORBIT_Struct {
-    uint8  formationID;
+    int8  formationID;
     uint32 targetID;              // Target entity to project perpendicular circular track around
     double followRange;           // Commanded orbit radius setting (Maps to 0x70 Memory Offset)
 };
 
 struct MISSILE_Struct {
-    uint8  formationID;
+    int8  formationID;
     int64  targetID;               // Targeted object proxy tracker pointer
     float  followRange;            // Containment blast payload detonate radius scale
     int64  ownerID;                // Launcher context identifier tracking parameter
@@ -209,7 +209,7 @@ struct MISSILE_Struct {
 };
 
 struct MUSHROOM_Struct {
-    uint8  formationID;
+    int8  formationID;
     float  maxRadius;              // Absolute boundary ceiling of explosive expansion volume
     double waveFactor;             // Radial deployment speed wave factor multiplier
     int32  effectStamp;            // Volumetric deployment timeline step execution stamp
@@ -217,20 +217,20 @@ struct MUSHROOM_Struct {
 };
 
 struct TROLL_Struct {
-    uint8  formationID;
+    int8  formationID;
     int32  delay;                  // delay before triggering RIGID mutation (added to current ticstamp in client)
 };
 
 struct FIELD_Struct {
-    uint8  formationID;            // Static geometry boundary conditional checking payload
+    int8  formationID;            // Static geometry boundary conditional checking payload
 };
 
 struct RIGID_Struct {
-    uint8  formationID;
+    int8  formationID;
 };
 
 struct FORMATION_Struct {	   // ONLY used by slaves with no other mode structure; linked via leaderID
-    uint8  formationID;		   // formation index (0=Point, 1=Sphere, 2=Plane, 3=Wall, 4=Arrow, etc).
+    int8  formationID;		   // formation index (0=Point, 1=Sphere, 2=Plane, 3=Wall, 4=Arrow, etc).
     int64  leaderID;               // formation leader (focus entity) tracking index
     float  spacing;                // how much 'extra' padding between form points
     int32  slotID;

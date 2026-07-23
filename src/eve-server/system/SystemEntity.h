@@ -243,8 +243,8 @@ public:
     int32                       GetRadius()             { return m_self->radius(); }
     uint32                      GetLocationID()         { return m_self->locationID(); }
     const char*                 GetName() const         { return m_self->name(); }
-    const GPoint&               GetPosition() const     { return m_self->position(); }
-    void                  SetPosition(const GPoint &pos){ m_self->SetPosition(pos); }
+    const Vector3d&               GetPosition() const     { return m_self->position(); }
+    void                  SetPosition(const Vector3d &pos){ m_self->SetPosition(pos); }
     inline double               x()                     { return m_self->position().x; }
     inline double               y()                     { return m_self->position().y; }
     inline double               z()                     { return m_self->position().z; }
@@ -276,7 +276,7 @@ public:
     /* generic functions handled here, but set elsewhere */
     bool                        IsDead()                { return m_killed; }
     // this is virtual to allow drones to override it (they dont have DestinyMgr)
-    virtual const GVector&      GetVelocity()           { return (m_destiny != nullptr ? m_destiny->GetVelocity() : NULL_ORIGIN_V); }
+    virtual const Vector3d&      GetVelocity()           { return (m_destiny != nullptr ? m_destiny->GetVelocity() : NULL_ORIGIN); }
 
     /* virtual functions default to base class and overridden as needed */
     virtual void                Killed(Damage &damage);

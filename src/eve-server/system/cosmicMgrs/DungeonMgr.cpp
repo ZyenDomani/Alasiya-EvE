@@ -294,7 +294,7 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
     if ((typeID == 1) or (typeID == 8) or (typeID == 9) or (typeID == 10)) {
         // setup data to save active dungeon
         ActiveDungeon dungeon = ActiveDungeon();
-            dungeon.dunExpiryTime = Win32TimeNow() + (EvE::Time::Day * 3);       // 3 days - i know this isnt right. just for testing.
+            dungeon.dunExpiryTime = GetFileTimeNow() + (EvE::Time::Day * 3);       // 3 days - i know this isnt right. just for testing.
             dungeon.dunTemplateID = templateID;
             dungeon.dunItemID = sig.sigItemID;
             dungeon.state = 0;  //dunType here.
@@ -358,7 +358,7 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
     // item spawning method
     uint32 systemID = m_system->GetID();
     std::vector<uint32> items;
-    GPoint pos2(NULL_ORIGIN);
+    Vector3d pos2(NULL_ORIGIN);
     std::vector<Dungeon::GroupData>::iterator itr = m_anomalyItems.begin(), end = m_anomalyItems.end();
     while (itr != end) {
         pos2.x = sig.position.x + itr->x;
@@ -636,7 +636,7 @@ struct CosmicSignature {
     uint16 sigGroupID;
     uint16 scanGroupID;
     uint16 scanAttributeID;
-    GPoint position;
+    Vector3d position;
 };
 */
 

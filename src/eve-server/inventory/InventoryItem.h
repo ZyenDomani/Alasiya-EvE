@@ -101,7 +101,7 @@ public:
     uint32                  ownerID() const             { return m_data.ownerID; }
     uint32                  locationID() const          { return m_data.locationID; }
     EVEItemFlags            flag() const                { return m_data.flag; }
-    const GPoint &          position() const            { return m_data.position; }
+    const Vector3d &          position() const            { return m_data.position; }
     const ItemType &        type() const                { return m_type; }
     const std::string &     itemName() const            { return m_data.name; }
     const std::string &     customInfo() const          { return m_data.customInfo; }
@@ -121,7 +121,7 @@ public:
     bool                    IsOnline()                  { return GetAttribute(AttrOnline).get_bool(); }
 
     /* public-access generic functions handled in base class. */
-    void                    SetPosition(const GPoint& pos);     // change coords of item
+    void                    SetPosition(const Vector3d& pos);     // change coords of item
     void                    SetCustomInfo(const char *ci);
     void                    ChangeOwner(uint32 new_owner, bool notify=false);
     // remove item from old location, add to new location and (optionally) notify client of changes

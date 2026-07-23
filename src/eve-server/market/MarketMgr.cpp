@@ -332,7 +332,7 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
      */
 
     // get buyer id and determine if buyer is player or corp (or bot for later)
-    bool isPlayer(false), isCorp(false), isTrader(false);
+    bool isPlayer = false, isCorp = false, isTrader = false;
     if (IsPlayerCorp(oInfo.ownerID)) {
         // buyer is player corp
         isCorp = true;
@@ -416,7 +416,7 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
     reason += stDataMgr.GetStationName(args.stationID).c_str();
     if (isPlayer) {
         // get data needed and compute tax
-        uint8 lvl(0);
+        uint8 lvl = 0;
         Client* pBuyer = sEntityMgr.FindClientByCharID(oInfo.ownerID);
         if (pBuyer == nullptr) {
             lvl = CharacterDB::GetSkillLevel(oInfo.ownerID, EvESkill::Accounting);
@@ -431,7 +431,7 @@ bool MarketMgr::ExecuteBuyOrder(Client* seller, uint32 orderID, InventoryItemRef
     } else if (isCorp) {
         // is corp taxes modified by using character skills?  im thinking yes...
         // get data needed and compute tax
-        uint8 lvl(0);
+        uint8 lvl = 0;
         Client* pBuyer = sEntityMgr.FindClientByCharID(oInfo.memberID);
         if (pBuyer == nullptr) {
             lvl = CharacterDB::GetSkillLevel(oInfo.memberID, EvESkill::Accounting);
@@ -524,7 +524,7 @@ void MarketMgr::ExecuteSellOrder(Client* buyer, uint32 orderID, Call_PlaceCharOr
         return;
     }
 
-    bool orderConsumed(false);
+    bool orderConsumed = false;
     if (args.quantity > oInfo.quantity)
         args.quantity = oInfo.quantity;
     if (args.quantity == oInfo.quantity)
@@ -701,9 +701,9 @@ void MarketMgr::SetBasePrice()
 
 
     // estimate price of item based on mineral requirements
-    bool found(true);
-    uint8 mLevel(0);
-    double current(0);
+    bool found = true;
+    uint8 mLevel = 0;
+    double current = 0;
     Inv::GrpData gData = Inv::GrpData();
     EvERam::bpTypeData bpData = EvERam::bpTypeData();
     // item typeID/data{inventory data}

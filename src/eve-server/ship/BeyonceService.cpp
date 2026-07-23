@@ -197,7 +197,7 @@ PyResult BeyonceBound::Handle_CmdGotoDirection(PyCallArgs &call) {
 
     pDestiny->SetAutoPilot(false);
 
-    const GPoint dir(arg.x, arg.y, arg.z);
+    const Vector3d dir(arg.x, arg.y, arg.z);
     pDestiny->GotoDirection(dir);
 
     return PyStatic.NewNone();
@@ -319,7 +319,8 @@ PyResult BeyonceBound::Handle_CmdStargateJump(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
-    float dist = call.client->GetShipSE()->GetPosition().distance(pGateSE->GetPosition());
+    Vector3d delta =  pGateSE->GetPosition() - call.client->GetShipSE()->GetPosition();
+    double dist = delta.Length();
     dist -= pGateSE->GetRadius();
     if (dist < 2500) {
         call.client->StargateJump(args.fromStargateID, args.toStargateID);
@@ -401,8 +402,8 @@ PyResult BeyonceBound::Handle_CmdGotoBookmark(PyCallArgs &call) {
     pDestiny->SetAutoPilot(false);
 
     double x(0.0), y(0.0), z(0.0);
-    uint16 typeID(0);
-    uint32 itemID(0), locationID(0);
+    uint16 typeID = 0;
+    uint32 itemID(0), locationID = 0;
 
     BookmarkService* pBMSvc = (BookmarkService*)(call.client->services().LookupService( "bookmark" ));
 
@@ -418,7 +419,7 @@ PyResult BeyonceBound::Handle_CmdGotoBookmark(PyCallArgs &call) {
                 return PyStatic.NewNone();
             }
 
-            GPoint point(x, y, z);
+            Vector3d point(x, y, z);
             pDestiny->GotoPoint(point);
         } else {
             // Bookmark type is of a static system entity, so search for it and obtain its coordinates:
@@ -501,7 +502,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
    if (pClient->GetShip()->GetAttribute(AttrWarpScrambleStatus) > 0)
         throw UserError("WarpScrambled");
 
-   DestinyManager* pDestiny(pClient->GetShipSE()->DestinyMgr());
+   DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
     if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
         return PyStatic.NewNone();
@@ -519,20 +520,20 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
 
     pDestiny->SetAutoPilot(false);
 
-    bool fleet(false);
+    bool fleet = false;
     if (call.byname.find("fleet") != call.byname.end())
         if (!(call.byname.find("fleet")->second->IsNone()))
             fleet = call.byname.find("fleet")->second->AsBool()->value();
 
     // get the warp-to distance specified by the client
-    int32 distance(0);
+    int32 distance = 0;
     if (call.byname.find("minRange") != call.byname.end())
         distance = PyRep::IntegerValueI32(call.byname.find("minRange")->second);
 
-    GPoint warpToPoint(NULL_ORIGIN);
+    Vector3d warpToPoint = NULL_ORIGIN;
     SystemEntity* pSE = nullptr;
-    int32 radius(0);
-    uint32 toID(0);
+    int32 radius = 0;
+    uint32 toID = 0;
     std::string stringArg = "";
 
     if ((call.tuple->GetItem(1)->IsString())
@@ -550,10 +551,10 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             return PyStatic.NewNone();
         }
     } else if (type == "bookmark" ) {
-        double x(0.0), y(0.0), z(0.0);
-        uint16 typeID(0);
-        uint32 locationID(0);
-        uint32 bookmarkID(PyRep::IntegerValueU32(call.tuple->GetItem(1)));
+        double x = 0.0, y = 0.0, z = 0.0;
+        uint16 typeID = 0;
+        uint32 locationID = 0;
+        uint32 bookmarkID = PyRep::IntegerValueU32(call.tuple->GetItem(1));
 
         BookmarkService* bkSrvc = (BookmarkService *)(pClient->services().LookupService( "bookmark" ));
         if (bkSrvc == nullptr) {
@@ -661,13 +662,14 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             if (pSE->GetPlanetSE()->HasCOSE()) {
                 // if planet has a customs office, make warpin point 5km from co.
                 warpToPoint = pSE->GetPlanetSE()->GetCustomsOffice()->GetPosition();
-                GVector vectorFromOrigin(pClient->GetShipSE()->GetPosition(), warpToPoint);
-                vectorFromOrigin.normalize();   //we now have a direction
-                GPoint stopPoint(vectorFromOrigin * 10000);
+                Vector3d vectorFromOrigin = warpToPoint - pClient->GetShipSE()->GetPosition();
+                vectorFromOrigin.Normalize();   //we now have a direction
+                Vector3d stopPoint = (vectorFromOrigin * 10000);
                 distance += pSE->GetPlanetSE()->GetCustomsOffice()->GetRadius();
                 distance += pClient->GetShip()->radius();
-                warpToPoint -= stopPoint;
-                warpToPoint -= distance;
+                warpToPoint.x -= (stopPoint.x - distance);
+                warpToPoint.y -= (stopPoint.y - distance);
+                warpToPoint.z -= (stopPoint.z - distance);
                 distance = 0;
             } else {
                 srandom(toID);  //this is the only place random() is used....other random functions use rand() as it's non-repeatable.
@@ -683,38 +685,48 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             }
         } else if (pSE->IsStationSE()) {
             // fudge the distance a bit for these... its' a lil close by default
-            GVector vectorFromOrigin(pClient->GetShipSE()->GetPosition(), warpToPoint);
-            vectorFromOrigin.normalize();   //we now have a direction
-            GPoint stopPoint(vectorFromOrigin * (radius + 2000 + pClient->GetShip()->radius()));
-            warpToPoint -= stopPoint;
+            Vector3d vectorFromOrigin = warpToPoint - pClient->GetShipSE()->GetPosition();
+            vectorFromOrigin.Normalize();   //we now have a direction
+            Vector3d stopPoint = (vectorFromOrigin * (radius + 2000 + pClient->GetShip()->radius()));
+            warpToPoint.x -= stopPoint.x;
+            warpToPoint.z -= stopPoint.z;
             // this makes ship warp to station dock elevation (y), instead of warping to stations "center point" position (where icon is)
             warpToPoint.y = stDataMgr.GetDockPosY(pSE->GetID());
         } else if (pSE->IsCOSE() or pSE->IsGateSE()) {
             // fudge the distance a bit for these... its' a lil close by default
-            GVector vectorFromOrigin(pClient->GetShipSE()->GetPosition(), warpToPoint);
-            vectorFromOrigin.normalize();   //we now have a direction
-            GPoint stopPoint(vectorFromOrigin * (radius + 500 + pClient->GetShip()->radius()));
-            warpToPoint -= stopPoint;
+            Vector3d vectorFromOrigin = warpToPoint - pClient->GetShipSE()->GetPosition();
+            vectorFromOrigin.Normalize();   //we now have a direction
+            Vector3d stopPoint = (vectorFromOrigin * (radius + 500 + pClient->GetShip()->radius()));
+            warpToPoint.x -= stopPoint.x;
+            warpToPoint.y -= stopPoint.y;
+            warpToPoint.z -= stopPoint.z;
         } else if (pSE->IsMoonSE()) {
             if (pSE->GetMoonSE()->HasTower()) {
                 // if moon has a tower, make warpin point 20km inside edge of tower's bubble.
                 warpToPoint = pSE->GetMoonSE()->GetMyTower()->GetPosition();
-                GVector vectorFromOrigin(pClient->GetShipSE()->GetPosition(), warpToPoint);
-                vectorFromOrigin.normalize();   //we now have a direction
-                GPoint stopPoint(vectorFromOrigin * (BUBBLE_RADIUS_METERS - 20000));  // 20km inside bubble.
-                warpToPoint -= stopPoint;
+                Vector3d vectorFromOrigin = warpToPoint - pClient->GetShipSE()->GetPosition();
+                vectorFromOrigin.Normalize();   //we now have a direction
+                Vector3d stopPoint = (vectorFromOrigin * (BUBBLE_RADIUS_METERS - 20000));  // 20km inside bubble.
+                warpToPoint.x -= stopPoint.x;
+                warpToPoint.y -= stopPoint.y;
+                warpToPoint.z -= stopPoint.z;
                 distance = 0;
             } else {
                 // hack for warping to moons
                 // this puts ship at Az: 0.785332, Ele: 0.615505, angle: 1.5708
-                warpToPoint -= (radius * 1.25f);
+                radius *= 1.25f;
+                warpToPoint.x -= radius;
+                warpToPoint.y -= radius;
+                warpToPoint.z -= radius;
             }
         } else if (pSE->IsWormholeSE()) {
             // move warpin point -20km from center of wh.
-            GVector vectorFromOrigin(pClient->GetShipSE()->GetPosition(), warpToPoint);
-            vectorFromOrigin.normalize();   //we now have a direction
-            GPoint stopPoint(vectorFromOrigin * 20000 + radius);
-            warpToPoint -= stopPoint;
+            Vector3d vectorFromOrigin = warpToPoint - pClient->GetShipSE()->GetPosition();
+            vectorFromOrigin.Normalize();   //we now have a direction
+            Vector3d stopPoint = (vectorFromOrigin * 20000 + radius);
+            warpToPoint.x -= stopPoint.x;
+            warpToPoint.y -= stopPoint.y;
+            warpToPoint.z -= stopPoint.z;
         } else if (radius > 90000) {
             // this doesnt work for moons
             warpToPoint.x += ((radius + 500000) * EvE::Trig::FastCos(radius));
@@ -724,9 +736,9 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
         /*
         if (radius < 90000) {
             // this will include stations (max station radius 60km)
-            GVector vectorFromOrigin(pClient->GetShipSE()->GetPosition(), warpToPoint);
-            vectorFromOrigin.normalize();   //we now have a direction
-            GPoint stopPoint = (vectorFromOrigin * radius);
+            Vector3d vectorFromOrigin(pClient->GetShipSE()->GetPosition(), warpToPoint);
+            vectorFromOrigin.Normalize();   //we now have a direction
+            Vector3d stopPoint = (vectorFromOrigin * radius);
             warpToPoint -= stopPoint;
         }
         */
@@ -784,11 +796,13 @@ PyResult BeyonceBound::Handle_CmdWarpToStuffAutopilot(PyCallArgs &call) {
 
     pDestiny->SetAutoPilot(true);
 
-    GPoint warpToPoint = pSE->GetPosition();
-    GVector vectorFromOrigin(call.client->GetShipSE()->GetPosition(), warpToPoint);
-    vectorFromOrigin.normalize();   //we now have a direction
-    GPoint stopPoint = (vectorFromOrigin * (sConfig.world.apWarptoDistance + call.client->GetShipSE()->GetRadius()));
-    warpToPoint -= stopPoint;
+    Vector3d warpToPoint = pSE->GetPosition();
+    Vector3d vectorFromOrigin = warpToPoint - call.client->GetShipSE()->GetPosition();
+    vectorFromOrigin.Normalize();   //we now have a direction
+    int32 radius = call.client->GetShipSE()->GetRadius() + sConfig.world.apWarptoDistance;
+    warpToPoint.x -= (vectorFromOrigin.x * radius);
+    warpToPoint.y -= (vectorFromOrigin.y * radius);
+    warpToPoint.z -= (vectorFromOrigin.z * radius);
 
     _log(AUTOPILOT__MESSAGE, "%s called WarpToStuffAutopilot. AP: %s  Target:%s(%u)", \
             call.client->GetName(), (pDestiny->IsAutoPilot() ? "true" : "false"), \

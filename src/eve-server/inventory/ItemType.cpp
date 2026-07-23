@@ -227,7 +227,7 @@ ItemData::ItemData(
     bool _contraband/*false*/,
     bool _singleton/*false*/,
     int32 _quantity/*0*/,
-    const GPoint &_position/*NULL_ORIGIN*/,
+    const Vector3d &_position/*NULL_ORIGIN*/,
     const char *_customInfo/*""*/)
 : name(_name),
 typeID(_typeID),
@@ -269,7 +269,7 @@ ItemData::ItemData(
     uint32 _locationID,
     EVEItemFlags _flag,
     const char* _name/*""*/,
-    const GPoint& _position/*NULL_ORIGIN*/,
+    const Vector3d& _position/*NULL_ORIGIN*/,
     const char* _customInfo/*""*/,
     bool _contraband/*false*/)
 : name(_name),

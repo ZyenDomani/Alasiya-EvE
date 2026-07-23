@@ -114,8 +114,8 @@ void CustomsSE::InitData()
      * roll is rotation on z axis  [-180/180]
      *  +roll is counterclockwise from y 0
      */
-    GPoint pos(m_self->position());
-    GPoint targ(m_planetSE->GetPosition());
+    Vector3d pos(m_self->position());
+    Vector3d targ(m_planetSE->GetPosition());
     float z = targ.z - pos.z;   // rise on z axis
     float x = targ.x - pos.x;    // run on x axis
     float y = targ.y - pos.y;   // rise on y axis
@@ -206,7 +206,7 @@ void CustomsSE::UpdateSettings(int8 selectedHour, int8 standingValue, bool ally,
 
 PyRep* CustomsSE::GetTaxRate(Client* pClient) {
     // get current tax rate based on set values by owning corp to using client
-    uint8 standing(0);
+    uint8 standing = 0;
     uint8 rate = EVEPOS::TaxValues::None;
 
     // do access checks
@@ -325,7 +325,7 @@ void CustomsSE::SendSlimUpdate()
 }
 
 
-void CustomsSE::SetAnchor(Client* pClient, GPoint& pos)
+void CustomsSE::SetAnchor(Client* pClient, Vector3d& pos)
 {
     if (m_cData.status > EVEPOS::StructureState::Unanchored) {
         pClient->SendErrorMsg("The %s is already anchored", m_self->name());
@@ -398,7 +398,7 @@ void CustomsSE::EncodeDestiny(Buffer& into)
     into.Append( head );
 
     RIGID_Struct main;
-        main.formationID = 0xFF;
+        main.formationID = -1;
     into.Append( main );
 
     /* TODO  query and configure miniballs for entity
@@ -560,7 +560,7 @@ void CustomsSE::Killed(Damage &fatal_blow) {
             AwardSecurityStatus(m_self, pClient->GetChar().get());  // this awards secStatusChange for npcs in empire space
     }
 
-    GPoint wreckPosition = m_destiny->GetPosition();
+    Vector3d wreckPosition = m_destiny->GetPosition();
     std::string wreck_name = m_self->itemName();
     wreck_name += " Wreck";
     ItemData wreckItemData(3962/*CO gantry*/, killerID, locationID, flagAutoFit, wreck_name.c_str(), wreckPosition, itoa(m_allyID));

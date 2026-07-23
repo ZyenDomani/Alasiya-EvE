@@ -346,7 +346,7 @@ bool PosMgrDB::GetCustomsData(EVEPOS::CustomsData& cData, EVEPOS::OrbitalData& o
         taxRateValues[TaxValues::StandingHigh]      = row.GetFloat(11);
     cData.taxRateValues = taxRateValues;
     cData.timestamp = row.GetInt64(12);
-    oData.rotation = GVector(row.GetFloat(13), row.GetFloat(14), row.GetFloat(15));
+    oData.rotation = Vector3d(row.GetFloat(13), row.GetFloat(14), row.GetFloat(15));
     oData.orbitalHackerProgress = row.GetInt(16);
     oData.orbitalHackerID = row.GetInt(17);
     cData.state = row.GetInt(18);

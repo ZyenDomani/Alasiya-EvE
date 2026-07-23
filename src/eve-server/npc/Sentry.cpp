@@ -104,7 +104,7 @@ void Sentry::EncodeDestiny(Buffer& into)
         mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
     into.Append( mass );
     STOP_Struct main;
-        main.formationID = 0xFF;
+        main.formationID = -1;
     into.Append( main );
 
     _log(SE__DESTINY, "Sentry::EncodeDestiny: %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
@@ -170,7 +170,7 @@ void Sentry::Killed(Damage &fatal_blow) {
             AwardSecurityStatus(m_self, pClient->GetChar().get());  // this awards secStatusChange for npcs in empire space
     }
 
-    GPoint wreckPosition = m_destiny->GetPosition();
+    Vector3d wreckPosition = m_destiny->GetPosition();
     if (wreckPosition.isNaN()) {
         sLog.Error("Sentry::Killed()", "Wreck Position is NaN");
         return;

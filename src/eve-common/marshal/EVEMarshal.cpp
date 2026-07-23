@@ -498,7 +498,7 @@ bool MarshalStream::VisitChecksumedStream( const PyChecksumedStream* rep )
 void MarshalStream::SaveVarInteger( const PyLong* v )
 {
     const int64 value(v->value());
-    uint8 integerSize(0);
+    uint8 integerSize = 0;
 
 #define DoIntegerSizeCheck(x) if ( ( (uint8*)&value )[x] != 0 ) integerSize = x + 1;
     DoIntegerSizeCheck(4);
@@ -536,8 +536,8 @@ bool MarshalStream::SaveRLE(const Buffer& in )
     // both ntt's reverence and Captnoord's re-implementation of evemu core have the exact same code
     // after validation against the disassembly (and unless I've missed anything) it seems to be 100% accurate
     // so no real modification to it was done
-    int nibble(0), nibble_ix (0), in_ix (0), out_ix (0);
-    int start(0), end(0), count(0), zerochains (0);
+    int nibble(0), nibble_ix (0), in_ix (0), out_ix  = 0;
+    int start(0), end(0), count(0), zerochains  = 0;
     int in_size = in.size();
 
     while (in_ix < in_size) {

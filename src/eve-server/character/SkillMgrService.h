@@ -42,7 +42,7 @@ protected:
     CharacterDB m_db;
 
     //overloaded in order to support bound objects:
-    virtual PyBoundObject *CreateBoundObject(Client *pClient, const PyRep *bind_args);
+    virtual PyBoundObject *CreateBoundObject(Client* pClient, const PyRep *bind_args);
 };
 
 class SkillMgrBound

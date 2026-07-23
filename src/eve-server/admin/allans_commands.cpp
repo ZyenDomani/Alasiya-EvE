@@ -344,7 +344,7 @@ PyResult Command_destinyvars(Client* pClient, CommandDB* db, PyServiceMgr* servi
     DestinyManager* dm = pClient->GetShipSE()->DestinyMgr();
     InventoryItemRef sRef = pClient->GetShipSE()->GetSelf();
 
-    GVector heading = dm->GetVelocity();
+    Vector3d heading = dm->GetVelocity();
 
     // test for args:   targ.
     if (args.argCount() == 2) {
@@ -355,7 +355,7 @@ PyResult Command_destinyvars(Client* pClient, CommandDB* db, PyServiceMgr* servi
         }
     }
 
-    heading.normalize();
+    heading.Normalize();
 
     char reply[350];
     snprintf(reply, 350,
@@ -576,7 +576,7 @@ PyResult Command_attrlist(Client* pClient, CommandDB* db, PyServiceMgr* services
     /* this command is used to debug attributes
      * wip.   -allan 15Mar17
      */
-    uint32 itemID(0);
+    uint32 itemID = 0;
 
     if (args.isNumber(1)) {
         itemID = atol(args.arg(1).c_str());
@@ -887,16 +887,17 @@ PyResult Command_getpositiondata(Client* pClient, CommandDB* db, PyServiceMgr* s
     if (!pClient->GetShipSE()->DestinyMgr())
         throw CustomError("You have no destiny manager.");
 
-    GPoint sPos(pClient->GetShipSE()->GetPosition());
-    GPoint mPos(pClient->SystemMgr()->GetClosestMoonSE(sPos)->GetPosition());
-    GVector vec(sPos, mPos);
+    Vector3d sPos = pClient->GetShipSE()->GetPosition();
+    Vector3d mPos = pClient->SystemMgr()->GetClosestMoonSE(sPos)->GetPosition();
+    Vector3d vec = (mPos - sPos);
+    Vector3d sNorm = sPos.Normalize();
+    Vector3d mNorm = mPos.Normalize();
+    double normProd = sNorm * mNorm;
+    double dotProd = sPos.dotProduct(mPos);
+    double angle = std::acos( dotProd / normProd);
 
-    float normProd = sPos.normalize() * mPos.normalize();
-    float dotProd = sPos.dotProduct(mPos);
-    float angle = std::acos( dotProd / normProd);
-
-    float azimuth = std::atan2(vec.z, vec.x);
-    float elevation = std::atan2(vec.y, std::sqrt(std::pow(vec.x,2) + std::pow(vec.z,2)));
+    double azimuth = std::atan2(vec.z, vec.x);
+    double elevation = std::atan2(vec.y, std::sqrt(std::pow(vec.x,2) + std::pow(vec.z,2)));
 
     std::ostringstream str;
     str << "Angle for current position is " << angle << "<br>";
@@ -1246,9 +1247,15 @@ PyResult Command_distance(Client* pClient, CommandDB* db, PyServiceMgr* services
     }
 
     SystemEntity* pSE = pClient->GetShipSE()->TargetMgr()->GetFirstTarget();
-    uint32 distance = pClient->GetShipSE()->GetPosition().distance(pSE->GetPosition());
+    uint32 distance = 0;
+    if (pSE != nullptr) {
+        Vector3d delta = pSE->GetPosition() - pClient->GetShipSE()->GetPosition();
+        distance = delta.Length();
+        pClient->SendInfoModalMsg("Distance between you and %s is %um", pSE->GetName(), distance);
+        return nullptr;
+    }
 
-    pClient->SendInfoModalMsg("Distance between you and %s is %um", pSE->GetName(), distance);
+    pClient->SendInfoModalMsg("You have no target to measure.");
     return nullptr;
 }
 

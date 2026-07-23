@@ -405,9 +405,9 @@ uint32 AnomalyMgr::GetAnomalyID(std::string& sigID)
     return 0;
 }
 
-GPoint AnomalyMgr::GetAnomalyPos(std::string& sigID)
+Vector3d AnomalyMgr::GetAnomalyPos(std::string& sigID)
 {
-    GPoint pos(NULL_ORIGIN);
+    Vector3d pos(NULL_ORIGIN);
     std::map<std::string, CosmicSignature>::iterator itr = m_sigBySigID.find(sigID);
     if (itr != m_sigBySigID.end())
         pos = itr->second.position;

@@ -93,7 +93,7 @@ void ItemFactory::Close() {
 void ItemFactory::SaveItems() {
     if (sConfig.debug.DeleteTrackingCans)
         InventoryDB::DeleteTrackingCans();
-    uint32 count(0);
+    uint32 count = 0;
     double startTime = GetTimeMSeconds();
     std::vector<Inv::SaveData> items;
     for (auto &cur : m_items) {
@@ -268,7 +268,7 @@ const BlueprintType* ItemFactory::GetBlueprintType(uint16 blueprintTypeID) {
 
 const ItemType* ItemFactory::GetCharacterTypeByBloodline(uint16 bloodlineID) {
     // Unfortunately, we have it indexed by typeID, so we must get it ...
-    uint16 characterTypeID(0);
+    uint16 characterTypeID = 0;
     if (!CharacterDB::GetCharacterTypeByBloodline(bloodlineID, characterTypeID))
         return nullptr;
     return GetType(characterTypeID);

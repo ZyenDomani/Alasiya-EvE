@@ -34,7 +34,7 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
         _log(EFFECTS__TRACE, "FxProc::ParseExpression(): container: %s(%u) parsing %s ", \
                 pItem->name(), pItem->itemID(), expression.expressionName.c_str());
 
-    bool skill(false);
+    bool skill = false;
     switch (data.srcRef->categoryID()) {
         case  EVEDB::invCategories::Skill:
         case  EVEDB::invCategories::Implant: {  // cat::implant also covers grp::booster

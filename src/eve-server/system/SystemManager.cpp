@@ -877,7 +877,7 @@ void SystemManager::DoSpawnForBubble(SystemBubble* pBubble, uint8 type/*normal*/
             pBubble->GetID(), sBubbleMgr.GetBeltID(pBubble->GetID()), m_data.name.c_str(), \
             m_data.systemID, m_data.security, m_data.regionID);
 
-    uint8 error(0);
+    uint8 error = 0;
     switch (type) {
         case Bubble::Type::Normal: {
             // we're still not spawning anything in normal bubbles
@@ -1058,9 +1058,10 @@ void SystemManager::SendStaticBall(SystemEntity* pSE)
 
     if (is_log_enabled(DESTINY__MESSAGE)) {
         if (pSE->SysBubble() != nullptr) { //Don't attempt to log if bubble is null (ie, on static structure initial launch)
-            GPoint bCenter(pSE->SysBubble()->GetCenter());
+            Vector3d delta =  pSE->SysBubble()->GetCenter() - pSE->GetPosition();
+            double distance = delta.Length();
             _log(DESTINY__MESSAGE, "SystemManager::SendStaticBall() - Adding static entity %s(%u) to bubble %u.  Dist to center: %.2f", \
-            pSE->GetName(), pSE->GetID(), pSE->SysBubble()->GetID(), bCenter.distance(pSE->GetPosition()));
+                    pSE->GetName(), pSE->GetID(), pSE->SysBubble()->GetID(), distance);
         }
     }
 
@@ -1158,44 +1159,56 @@ PlanetSE* SystemManager::GetPlanet(uint32 planetID) {
     return nullptr;
 }
 
-uint32 SystemManager::GetClosestPlanetID(const GPoint& myPos) {
+uint32 SystemManager::GetClosestPlanetID(const Vector3d& myPos) {
     std::map<double, SystemEntity*> sorted;
-    for (auto &cur : m_planetMap)
-        sorted.insert(std::pair<double, SystemEntity*>(myPos.distance(cur.second->GetPosition()), cur.second));
+    Vector3d delta;
+    double dist;
+    for (auto &cur : m_planetMap) {
+        delta = cur.second->GetPosition() - myPos;
+        dist = delta.Length();
+        sorted.emplace(dist, cur.second);
+    }
 
-    std::map<double, SystemEntity*>::iterator itr = sorted.begin();
-
-    return itr->second->GetID();
+    return sorted.begin()->second->GetID();
 }
 
-PlanetSE* SystemManager::GetClosestPlanetSE(const GPoint& myPos) {
+PlanetSE* SystemManager::GetClosestPlanetSE(const Vector3d& myPos) {
     std::map<double, SystemEntity*> sorted;
-    for (auto &cur : m_planetMap)
-        sorted.insert(std::pair<double, SystemEntity*>(myPos.distance(cur.second->GetPosition()), cur.second));
+    Vector3d delta;
+    double dist;
+    for (auto &cur : m_planetMap) {
+        delta = cur.second->GetPosition() - myPos;
+        dist = delta.Length();
+        sorted.emplace(dist, cur.second);
+    }
 
-    std::map<double, SystemEntity*>::iterator itr = sorted.begin();
-
-    return itr->second->GetPlanetSE();
+    return sorted.begin()->second->GetPlanetSE();
 }
 
-StargateSE* SystemManager::GetClosestGateSE(const GPoint& myPos) {
+StargateSE* SystemManager::GetClosestGateSE(const Vector3d& myPos) {
     std::map<double, SystemEntity*> sorted;
-    for (auto &cur : m_gateMap)
-        sorted.insert(std::pair<double, SystemEntity*>(myPos.distance(cur.second->GetPosition()), cur.second));
+    Vector3d delta;
+    double dist;
+    for (auto &cur : m_gateMap) {
+        delta = cur.second->GetPosition() - myPos;
+        dist = delta.Length();
+        sorted.emplace(dist, cur.second);
+    }
 
-    std::map<double, SystemEntity*>::iterator itr = sorted.begin();
-
-    return itr->second->GetGateSE();
+    return sorted.begin()->second->GetGateSE();
 }
 
-MoonSE* SystemManager::GetClosestMoonSE(const GPoint& myPos) {
+MoonSE* SystemManager::GetClosestMoonSE(const Vector3d& myPos) {
     std::map<double, SystemEntity*> sorted;
-    for (auto &cur : m_moonMap)
-        sorted.insert(std::pair<double, SystemEntity*>(myPos.distance(cur.second->GetPosition()), cur.second));
+    Vector3d delta;
+    double dist;
+    for (auto &cur : m_moonMap) {
+        delta = cur.second->GetPosition() - myPos;
+        dist = delta.Length();
+        sorted.emplace(dist, cur.second);
+    }
 
-    std::map<double, SystemEntity*>::iterator itr = sorted.begin();
-
-    return itr->second->GetMoonSE();
+    return sorted.begin()->second->GetMoonSE();
 }
 
 void SystemManager::GetClientList(std::vector< Client* >& cVec) {
@@ -1211,7 +1224,7 @@ SystemEntity* SystemManager::GetEntityByID(uint32 itemID) {
     return m_entities.find(itemID)->second;
 }
 
-void SystemManager::DScan(int64 range, const GPoint& position, std::vector<SystemEntity*>& vector )
+void SystemManager::DScan(int64 range, const Vector3d& position, std::vector<SystemEntity*>& vector )
 {
     /** @todo finish this for correct dscan entity reporting
      * all ships (not cloaked)
@@ -1230,6 +1243,8 @@ void SystemManager::DScan(int64 range, const GPoint& position, std::vector<Syste
      */
 
     //  TO CHECK...do scan settings alter this or is entirely client-side?
+    Vector3d delta;
+    double dist;
     for (auto &cur : m_entities) {
         // these dont show on dscan
         if (IsTempItem(cur.first))
@@ -1251,7 +1266,9 @@ void SystemManager::DScan(int64 range, const GPoint& position, std::vector<Syste
             if (cur.second->DestinyMgr()->IsCloaked())
                 continue;
         // made it this far.  add item to scan list
-        if (position.distance(cur.second->GetPosition()) < range)
+        delta = cur.second->GetPosition() - position;
+        dist = delta.Length();
+        if (dist < range)
             vector.push_back(cur.second);
     }
 }

@@ -38,7 +38,7 @@ PyResult Command_goto(Client* pClient, CommandDB* db, PyServiceMgr* services, co
         throw CustomError("Correct Usage: /goto [x coord] [y coor] [z coord]");
     }
 
-    GPoint p(atoll(args.arg(1).c_str()),
+    Vector3d p(atoll(args.arg(1).c_str()),
              atoll(args.arg(2).c_str()),
              atoll(args.arg(3).c_str()));
 
@@ -87,7 +87,7 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
     Client* pOtherClient(nullptr);
     const char* Help = "help";  // many uses.  avoid creating temp objects for every test
     bool me = false, item = false, player = false, fleet = false;
-    GPoint pt(NULL_ORIGIN);
+    Vector3d pt(NULL_ORIGIN);
     int locationID = 0, myLocationID = pClient->GetLocationID();
 
     if (args.argCount() == 2) { // single arg - help, locationID, {invalid}
@@ -347,7 +347,7 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
             locationID = atoi(args.arg(1).c_str());
             if (!sDataMgr.IsSolarSystem(locationID))
                 throw CustomError("Translocate: Invalid Arguments - locationID %u is not a SolarSystemID.", locationID);
-            pt = GPoint(atoi(args.arg(2).c_str()), atoi(args.arg(3).c_str()), atoi(args.arg(4).c_str()));
+            pt = Vector3d(atoi(args.arg(2).c_str()), atoi(args.arg(3).c_str()), atoi(args.arg(4).c_str()));
 
             pClient->JumpOutEffect(locationID);
             pClient->MoveToLocation(locationID, pt);
@@ -417,7 +417,7 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
     return nullptr;
 }
 
-static PyResult generic_createitem(Client *pClient, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
+static PyResult generic_createitem(Client* pClient, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
     int typeID = -1;
     if (args.isNumber(1)) {
         typeID = atoi(args.arg(1).c_str());
@@ -651,8 +651,8 @@ PyResult Command_unspawn(Client* pClient, CommandDB* db, PyServiceMgr* services,
         throw CustomError("/unspawn failed.  You don't appear to be in a bubble.  Try /update");
     }
 
-    GPoint player_pos = pClient->GetShipSE()->GetPosition();
-
+    Vector3d player_pos = pClient->GetShipSE()->GetPosition();
+    Vector3d delta;
     std::map< uint32, SystemEntity* > entMap;
     pBubble->GetEntities(entMap);
     for (auto &cur : entMap) {
@@ -667,7 +667,9 @@ PyResult Command_unspawn(Client* pClient, CommandDB* db, PyServiceMgr* services,
             continue;
         }
 
-        if (player_pos.distance(cur.second->GetPosition()) > range)
+        delta = cur.second->GetPosition() - player_pos;
+        double dist = delta.Length();
+        if (dist > range)
             continue;
 
         cur.second->Delete();
@@ -695,8 +697,8 @@ PyResult Command_location(Client* pClient, CommandDB* db, PyServiceMgr* services
     }
     uint16 bubble = pBubble->GetID();
 
-    const GPoint &loc = dm->GetPosition();
-    const GVector &vel = dm->GetVelocity();
+    const Vector3d &loc = dm->GetPosition();
+    const Vector3d &vel = dm->GetVelocity();
 
     char reply[140];
     snprintf(reply, 140,
@@ -707,7 +709,7 @@ PyResult Command_location(Client* pClient, CommandDB* db, PyServiceMgr* services
              "speed: %.1f",
              pClient->GetSystemID(), bubble,
              loc.x, loc.y, loc.z,
-             vel.length()
+             vel.Length()
     );
 
     pClient->SendInfoModalMsg(reply);
@@ -755,7 +757,7 @@ PyResult Command_syncpos(Client* pClient, CommandDB* db, PyServiceMgr* services,
     return new PyString("All Positions synchronized.");
 }
 
-PyResult Command_update(Client *pClient, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
+PyResult Command_update(Client* pClient, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
     if (!pClient->IsInSpace())
         throw CustomError("You're not in space.");
     if (pClient->GetShipSE()->DestinyMgr() == nullptr)
@@ -783,7 +785,7 @@ PyResult Command_update(Client *pClient, CommandDB *db, PyServiceMgr *services, 
     return new PyString("Update sent.");
 }
 
-PyResult Command_sendstate(Client *pClient, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
+PyResult Command_sendstate(Client* pClient, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
     if (!pClient->IsInSpace())
         throw CustomError("You're not in space.");
     if (pClient->GetShipSE()->DestinyMgr() == nullptr)
@@ -802,7 +804,7 @@ PyResult Command_sendstate(Client *pClient, CommandDB *db, PyServiceMgr *service
     return new PyString("Update sent.");
 }
 
-PyResult Command_addball(Client *pClient, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
+PyResult Command_addball(Client* pClient, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
     if (!pClient->IsInSpace())
         throw CustomError("You're not in space.");
     if (pClient->GetShipSE()->DestinyMgr() == nullptr)
@@ -820,7 +822,7 @@ PyResult Command_addball(Client *pClient, CommandDB *db, PyServiceMgr *services,
     return new PyString("Update sent.");
 }
 
-PyResult Command_addball2(Client *pClient, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
+PyResult Command_addball2(Client* pClient, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
     if (!pClient->IsInSpace())
         throw CustomError("You're not in space.");
     if (pClient->GetShipSE()->DestinyMgr() == nullptr)

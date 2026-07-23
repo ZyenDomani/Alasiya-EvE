@@ -294,7 +294,7 @@ uint32 DungeonDB::CreateObject(uint32 roomID, uint32 typeID, uint32 groupID, dou
 {
     DBerror err;
 
-    uint32 objectID(0);
+    uint32 objectID = 0;
     if (!sDatabase.RunQueryLID(err, objectID, "INSERT INTO dunRoomObjects (roomID, typeID, groupID, x, y, z, yaw, pitch, roll, radius) VALUES (%u, %u, %u, %f, %f, %f, %f, %f, %f, %f)", roomID, typeID, groupID, x, y, z, yaw, pitch, roll, radius))
         _log(DATABASE__ERROR, "Cannot insert object into room %u", roomID);
 
@@ -341,7 +341,7 @@ uint32 DungeonDB::CreateTemplate(std::string templateName, std::string templateD
     std::string templateDescriptionEscaped;
     sDatabase.DoEscapeString(templateDescriptionEscaped, templateDescription);
 
-    uint32 templateID(0);
+    uint32 templateID = 0;
     if (!sDatabase.RunQueryLID(err, templateID, "INSERT INTO dunTemplates (dunTemplateName, dunTemplateDescription, dunRoomID) VALUES ('%s', '%s', %u)", templateNameEscaped.c_str(), templateDescriptionEscaped.c_str(), roomID))
         _log(DATABASE__ERROR, "Cannot insert template into room %u", roomID);
 

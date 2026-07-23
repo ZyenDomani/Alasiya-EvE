@@ -438,7 +438,7 @@ void Colony::CreateLink(uint32 src, uint32 dest, uint16 level) {
 void Colony::CreateRoute(uint16 routeID, uint32 typeID, uint32 qty, PyList* path) {
     // routeID is sent as tempID like pins.
     std::list<uint32> list1;
-    for (uint16 i(0); i < path->size(); ++i) {
+    for (uint16 i = 0; i < path->size(); ++i) {
         if (path->GetItem(i)->IsTuple()) {
             list1.push_back(PyRep::IntegerValue(path->GetItem(i)->AsTuple()->GetItem(1)));
         } else if (path->GetItem(i)->IsInt()) {
@@ -936,7 +936,7 @@ PyRep* Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items
     // NOTE:  PI launches have 5d timers
     /** @todo check capacities before adding items */
     SystemManager* pSysMgr(m_pSE->SystemMgr());
-    GPoint location(pSysMgr->GetSE(m_pSE->GetID())->GetPosition());
+    Vector3d location(pSysMgr->GetSE(m_pSE->GetID())->GetPosition());
 	/* NOTE:  launches spawn ~10000Km from customs office
 	 * create entry in journal (pi launches)
 	 * create bm?
@@ -975,8 +975,8 @@ PyRep* Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items
      * calculate taxes on items
      * charge char taxes upon launch
      */
-    uint8 count(0);
-    double cost(0);
+    uint8 count = 0;
+    double cost = 0;
     for (auto &cur : items) {
         std::map<uint16, uint32>::iterator cont = pinItr->second.contents.find(cur.first);
         if (cont != pinItr->second.contents.end()) {
@@ -1062,7 +1062,7 @@ void Colony::PlanetXfer(uint32 pinID, std::map< uint32, uint16 > importItems, st
         return;
     }
 
-    uint8 toColony(0), fromColony(0);
+    uint8 toColony(0), fromColony = 0;
     double cost(0.0);
     InventoryItemRef iRef(nullptr);
     std::map<uint16, uint32>::iterator itr;
@@ -1198,7 +1198,7 @@ void Colony::PrioritizeRoute(uint16 routeID, int8 priority) {
 }
 
 PyTuple* Colony::GetPins() {
-    uint8 index(0);
+    uint8 index = 0;
     PyTuple* pins(new PyTuple(ccData->pins.size()));
 
     for (auto &cur : ccData->pins) {
@@ -1270,7 +1270,7 @@ PyTuple* Colony::GetPins() {
 }
 
 PyTuple* Colony::GetLinks() {
-    uint8 index(0);
+    uint8 index = 0;
     PyTuple* links = new PyTuple(ccData->links.size());
     for (auto &cur : ccData->links) {
         PyDict* dict = new PyDict();
@@ -1285,7 +1285,7 @@ PyTuple* Colony::GetLinks() {
 }
 
 PyTuple* Colony::GetRoutes() {
-    uint8 index(0);
+    uint8 index = 0;
     PyTuple* routes = new PyTuple(ccData->routes.size());
 
     for (auto &cur : ccData->routes) {
@@ -1389,8 +1389,8 @@ void Colony::ProcessECUs() {
     if (ccData->ecus.empty())
         return;
 
-    uint16 cycles(0);
-    uint32 amount(0);
+    uint16 cycles = 0;
+    uint32 amount = 0;
     double delta(0.0), divisor(0.0);
     // routed item [typeID, qty}
     std::map<uint16, uint32>::iterator itemItr;
@@ -1521,8 +1521,8 @@ void Colony::ProcessPlants() {
      */
 
     uint8 curCycle(m_pLevel);
-    uint16 tempCycles(0);
-    int32 cycles(0), cycles2(0), amount(0), divisor(0), delta(0);
+    uint16 tempCycles = 0;
+    int32 cycles(0), cycles2(0), amount(0), divisor(0), delta = 0;
     // either plant or storage {itemID, data}
     std::map<uint32, PI_Pin>::iterator srcPinItr;
     // either plant or storage {itemID, data}

@@ -11,7 +11,7 @@
 
 #include "../eve-core/eve-core.h"
 
-#include "math/gpoint.h"
+#include "math/Vector3d.h"
 
 
 namespace EVEPOS {
@@ -79,7 +79,7 @@ namespace EVEPOS {
         uint32 orbitalHackerID;
         uint32 standingOwnerID; // corp/ally
         float orbitalHackerProgress;
-        GVector rotation;      /* yaw,pitch,roll - direction to planet (for correct orientation) */
+        Vector3d rotation;      /* yaw,pitch,roll - direction to planet (for correct orientation) */
     };
 
     struct POS_Connections {

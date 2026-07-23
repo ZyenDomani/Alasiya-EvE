@@ -68,7 +68,7 @@ PyResult WormHoleSvc::Handle_WormholeJump( PyCallArgs& call ) {
      */
 
     /* return error msg from this call, if applicable, else nodeid and timestamp */
-    return new PyLong(Win32TimeNow());
+    return new PyLong(GetFileTimeNow());
 }
 
 //                  ----------  wormhole data sent thru "AddBalls2" packet

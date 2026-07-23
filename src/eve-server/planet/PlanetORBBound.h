@@ -39,7 +39,7 @@ protected:
     class Dispatcher;
     Dispatcher *const m_dispatch;
 
-    virtual PyBoundObject *CreateBoundObject(Client *pClient, const PyRep *bind_args);
+    virtual PyBoundObject *CreateBoundObject(Client* pClient, const PyRep *bind_args);
 
 private:
     //PyCallable_DECL_CALL()

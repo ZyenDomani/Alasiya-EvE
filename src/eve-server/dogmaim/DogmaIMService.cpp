@@ -155,7 +155,7 @@ PyResult DogmaIMService::Handle_GetAttributeTypes(PyCallArgs& call) {
 
 //TODO:  update this to use common error testing like in entityservice.cpp
 
-PyBoundObject* DogmaIMService::CreateBoundObject(Client *pClient, const PyRep* bind_args) {
+PyBoundObject* DogmaIMService::CreateBoundObject(Client* pClient, const PyRep* bind_args) {
     DogmaLM_BindArgs args;
     if (!args.Decode(bind_args)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode bind args.", GetName());
@@ -172,7 +172,7 @@ PyResult DogmaIMBound::Handle_CharGetInfo(PyCallArgs& call) {
 
 PyResult DogmaIMBound::Handle_ClearTargets(PyCallArgs& call) {
     // calling client tests
-    Client* pClient(call.client);
+    Client* pClient = call.client;
     if (pClient->IsDocked())
         throw CustomError("You can't do this while docked");
 
@@ -195,7 +195,7 @@ PyResult DogmaIMBound::Handle_ClearTargets(PyCallArgs& call) {
 
 PyResult DogmaIMBound::Handle_GetTargets(PyCallArgs& call) {
     // calling client tests
-    Client* pClient(call.client);
+    Client* pClient = call.client;
     if (pClient->IsDocked())
         throw CustomError("You can't do this while docked");
 
@@ -216,7 +216,7 @@ PyResult DogmaIMBound::Handle_GetTargets(PyCallArgs& call) {
 
 PyResult DogmaIMBound::Handle_GetTargeters(PyCallArgs& call) {
     // calling client tests
-    Client* pClient(call.client);
+    Client* pClient = call.client;
     if (pClient->IsDocked())
         throw CustomError("You can't do this while docked");
 
@@ -260,7 +260,7 @@ PyResult DogmaIMBound::Handle_ItemGetInfo(PyCallArgs& call) {
 }
 
 PyResult DogmaIMBound::Handle_SetModuleOnline(PyCallArgs& call) {
-    Client* pClient(call.client);
+    Client* pClient = call.client;
 
     if (pClient->IsInSpace()) {
         DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
@@ -292,7 +292,7 @@ PyResult DogmaIMBound::Handle_SetModuleOnline(PyCallArgs& call) {
 }
 
 PyResult DogmaIMBound::Handle_TakeModuleOffline(PyCallArgs& call) {
-    Client* pClient(call.client);
+    Client* pClient = call.client;
 
     if (pClient->IsInSpace()) {
         DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
@@ -430,7 +430,7 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
         throw CustomError("Cannot find target.");
     }
     // calling client tests
-    Client* pClient(call.client);
+    Client* pClient = call.client;
     if (pClient->IsDocked())
         throw CustomError("You can't do this while docked");
 
@@ -466,9 +466,13 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
     }
     if (mySE->SysBubble()->HasTower()) {
         TowerSE* ptSE = mySE->SysBubble()->GetTowerSE();
-        if (ptSE->HasForceField() and (mySE->GetPosition().distance(ptSE->GetPosition()) < ptSE->GetSOI()))
-            throw UserError("DeniedTargetingInsideField")
+        if (ptSE->HasForceField()) {
+            Vector3d delta = ptSE->GetPosition() - mySE->GetPosition();
+            double dist = delta.Length();
+            if (dist < ptSE->GetSOI())
+                throw UserError("DeniedTargetingInsideField")
                     .AddFormatValue("target", new PyInt(args.arg));
+        }
     }
 
     // caller destiny tests
@@ -544,11 +548,15 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
     }
     if (tSE->SysBubble()->HasTower()) {
         TowerSE* ptSE = tSE->SysBubble()->GetTowerSE();
-        if (ptSE->HasForceField() and (tSE->GetPosition().distance(ptSE->GetPosition()) < ptSE->GetSOI()))
-            throw UserError("DeniedTargetForceField")
-                        .AddFormatValue("target", new PyInt(args.arg))
-                        .AddDistance("range", ptSE->GetSOI())
-                        .AddFormatValue("item", new PyInt(ptSE->GetID()));
+        if (ptSE->HasForceField()) {
+            Vector3d delta = ptSE->GetPosition() - tSE->GetPosition();
+            double dist = delta.Length();
+            if (dist < ptSE->GetSOI())
+                throw UserError("DeniedTargetForceField")
+                    .AddFormatValue("target", new PyInt(args.arg))
+                    .AddDistance("range", ptSE->GetSOI())
+                    .AddFormatValue("item", new PyInt(ptSE->GetID()));
+        }
     }
     if (tSE->IsPOSSE())
         if (tSE->GetPOSSE()->IsReinforced())
@@ -569,7 +577,7 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
 }
 
 PyResult DogmaIMBound::Handle_RemoveTarget(PyCallArgs& call) {
-    Client* pClient(call.client);
+    Client* pClient = call.client;
 
     SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
@@ -590,9 +598,10 @@ PyResult DogmaIMBound::Handle_RemoveTarget(PyCallArgs& call) {
 
     if (sConfig.debug.IsTestServer)
         if (is_log_enabled(TARGET__MESSAGE)) {
-            GVector vectorToTarget(pClient->GetShipSE()->GetPosition(), pTSE->GetPosition());
+            Vector3d delta = pTSE->GetPosition() - pClient->GetShipSE()->GetPosition();
+            double dist = delta.Length();
             _log(TARGET__MESSAGE, "Handle_RemoveTarget() - Removing %s(%u) - Range to Target: %.2f meters.", \
-                        pTSE->GetName(),pTSE->GetID(), vectorToTarget.length() );
+                        pTSE->GetName(),pTSE->GetID(), dist);
         }
 
     // tell our ship this target has been removed
@@ -606,7 +615,7 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
     // added more return data and updated logic (almost complete and mostly accurate) -allan 26Mar16
     // completed.  -allan 7Jan19
     // Start the Code
-    Client* pClient(call.client);
+    Client* pClient = call.client;
 
     Call_TwoBoolArgs args; // arg1: getCharInfo, arg2: getShipInfo
     if (!args.Decode(&call.tuple)) {
@@ -912,7 +921,7 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
     // dogmaLM.Activate(itemID, const.effectAnchorDrop)
     // dogmaLM.Activate(itemID, const.effectAnchorLift)
     // dogmaLM.Activate(itemID, const.effectAnchorLiftForStructures)
-    Client* pClient(call.client);
+    Client* pClient = call.client;
 
     if (!pClient->IsInSpace()) {
         pClient->SendNotifyMsg("You can't do this while docked.");
@@ -1000,7 +1009,7 @@ PyResult DogmaIMBound::Handle_Deactivate(PyCallArgs& call)
         call.Dump(SHIP__MESSAGE);
     }
 
-    Client* pClient(call.client);
+    Client* pClient = call.client;
 
     if (!pClient->IsInSpace()) {
         pClient->SendNotifyMsg("You can't do this while docked");
@@ -1064,7 +1073,7 @@ PyResult DogmaIMBound::Handle_Overload(PyCallArgs& call) {
      */
     // self.GetDogmaLM().Overload(itemID, effectID)
 
-    Client* pClient(call.client);
+    Client* pClient = call.client;
     Call_TwoIntegerArgs args;   //itemID, effectID
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
@@ -1080,7 +1089,7 @@ PyResult DogmaIMBound::Handle_Overload(PyCallArgs& call) {
 // this one is called from Deactivate() when module is OL
 PyResult DogmaIMBound::Handle_StopOverload(PyCallArgs& call)
 {
-    Client* pClient(call.client);
+    Client* pClient = call.client;
     Call_TwoIntegerArgs args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
@@ -1097,7 +1106,7 @@ PyResult DogmaIMBound::Handle_StopOverload(PyCallArgs& call)
 PyResult DogmaIMBound::Handle_CancelOverloading(PyCallArgs& call) {
     // self.dogmaLM.CancelOverloading(itemID)
 
-    Client* pClient(call.client);
+    Client* pClient = call.client;
     SingleIntegerArg args;   //itemID
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
@@ -1112,7 +1121,7 @@ PyResult DogmaIMBound::Handle_OverloadRack(PyCallArgs& call) {
     /* moduleIDs = self.GetDogmaLM().OverloadRack(itemID)
      *   moduleIDs is list of modules in rack.
      */
-    Client* pClient(call.client);
+    Client* pClient = call.client;
     SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
@@ -1128,7 +1137,7 @@ PyResult DogmaIMBound::Handle_StopOverloadRack(PyCallArgs& call) {
     /* moduleIDs = self.GetDogmaLM().StopOverloadRack(itemID)
      *   moduleIDs is list of modules in rack.
      */
-    Client* pClient(call.client);
+    Client* pClient = call.client;
     SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());

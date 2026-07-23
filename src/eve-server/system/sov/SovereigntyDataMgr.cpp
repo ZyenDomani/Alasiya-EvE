@@ -269,7 +269,7 @@ void SovereigntyDataMgr::AddSovClaim(SovereigntyData data)
     _log(SOV__INFO, "AddSovClaim() - Adding claim for %u to DataMgr...", data.solarSystemID);
 
     //Add a new sovereignty claim to DB
-    uint32 claimID(0);
+    uint32 claimID = 0;
     SovereigntyDB::AddSovereigntyData(data, claimID);
     _log(SOV__DEBUG, "AddSovClaim() - ClaimID %u added to DB...", claimID);
 

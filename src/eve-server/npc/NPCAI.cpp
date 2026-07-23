@@ -361,7 +361,8 @@ void NPCAIMgr::Process() {
     // Inside your active NPCAIMgr::Process() case loop for FORMATION mode:
     if (myNPC->DestinyMgr()->GetBallMode() == Destiny::Ball::Mode::FORMATION) {
         if (m_attackTarget != nullptr) {
-            double currentDistance = myNPC->GetPosition().distance(m_attackTarget->GetPosition());
+            Vector3d delta = m_attackTarget->GetPosition() - myNPC->GetPosition();
+            double currentDistance = delta.Length();
 
             // If a brawling frigate realizes the target is far beyond its
             // optimal range, it breaks ranks to execute an independent tackle burn!
@@ -832,7 +833,7 @@ void NPCAIMgr::SetChasing(SystemEntity* pTargetSE) {
 
     m_warpOutTimer.Disable();
 
-    bool newTarg(false);
+    bool newTarg = false;
     if (m_attackTarget != pTargetSE) {
         if (myNPC->TargetMgr()->IsTargeting(pTargetSE)) {
             newTarg = true;
@@ -923,10 +924,8 @@ void NPCAIMgr::SetFleeing(SystemEntity* pTargetSE) {
     } else {
         // we will need a better direction here...like to local stronghold (which is not written yet)   (idea...warpout...see same pc...localchat "you again??")
         // for now, go opposite from target
-    	GVector targHeading(pTargetSE->GetPosition(), myNPC->GetPosition());
-    	targHeading.normalize();
-        const GPoint head(targHeading);
-        m_destiny->GotoDirection(head);
+        Vector3d head = pTargetSE->GetPosition() - myNPC->GetPosition();
+        m_destiny->GotoDirection(head.Normalize());
     }
 }
 
@@ -975,32 +974,38 @@ void NPCAIMgr::SetSignaling(SystemEntity* pTargetSE) {
 }
 
 bool NPCAIMgr::InOptimalRange(SystemEntity* pTargetSE) {
-    double dist(myNPC->GetPosition().distance(pTargetSE->GetPosition()));
+    Vector3d delta = pTargetSE->GetPosition() - myNPC->GetPosition();
+    double dist = delta.Length();
     return (dist < m_optimalRange);
 }
 
 bool NPCAIMgr::InFalloffDistance(SystemEntity* pTargetSE) {
-    double dist(myNPC->GetPosition().distance(pTargetSE->GetPosition()));
+    Vector3d delta = pTargetSE->GetPosition() - myNPC->GetPosition();
+    double dist = delta.Length();
     return (dist < m_falloffDistance);
 }
 
 bool NPCAIMgr::InFlyRange(SystemEntity* pTargetSE) {
-    double dist(myNPC->GetPosition().distance(pTargetSE->GetPosition()));
+    Vector3d delta = pTargetSE->GetPosition() - myNPC->GetPosition();
+    double dist = delta.Length();
     return (dist < m_flyRange);
 }
 
 bool NPCAIMgr::InChaseRange(SystemEntity* pTargetSE) {
-    double dist(myNPC->GetPosition().distance(pTargetSE->GetPosition()));
+    Vector3d delta = pTargetSE->GetPosition() - myNPC->GetPosition();
+    double dist = delta.Length();
     return (dist < m_chaseRange);
 }
 
 bool NPCAIMgr::InAttackRange(SystemEntity* pTargetSE) {
-    double dist(myNPC->GetPosition().distance(pTargetSE->GetPosition()));
+    Vector3d delta = pTargetSE->GetPosition() - myNPC->GetPosition();
+    double dist = delta.Length();
     return (dist < m_attackRange);
 }
 
 bool NPCAIMgr::InSightRange(SystemEntity* pTargetSE) {
-    double dist(myNPC->GetPosition().distance(pTargetSE->GetPosition()));
+    Vector3d delta = pTargetSE->GetPosition() - myNPC->GetPosition();
+    double dist = delta.Length();
     return (dist < m_sightRange);
 }
 
@@ -1008,12 +1013,13 @@ void NPCAIMgr::CheckDistance(SystemEntity* pTargetSE) {
     if (pTargetSE == nullptr)
         return;
 
+    Vector3d delta = pTargetSE->GetPosition() - myNPC->GetPosition();
+    double dist = delta.Length();
     if (is_log_enabled(NPC__TRACE))
         _log(NPC__TRACE, "%s(%u): CheckDistance:  target: %s(%u), state: %s, dist: %.0fm", \
                 myNPC->GetName(), myNPC->GetID(), pTargetSE->GetName(), pTargetSE->GetID(), \
-                GetStateName(m_state), myNPC->GetPosition().distance(pTargetSE->GetPosition()));
+                GetStateName(m_state), dist);
 
-    double dist = myNPC->GetPosition().distance(pTargetSE->GetPosition());
     // near to far
     if (dist < m_optimalRange) {
         SetEngaged(pTargetSE);
@@ -1049,7 +1055,7 @@ void NPCAIMgr::Target(SystemEntity* pTargetSE) {
     if (myNPC->TargetMgr()->IsTargeting(pTargetSE))
         return;
 
-    bool chase(false);
+    bool chase = false;
     if (!myNPC->TargetMgr()->StartTargeting(pTargetSE, GetTargetingTime(), m_maxLockedTargets, m_sightRange, chase)) {
         if (!chase) {
             _log(NPC__AI_TRACE, "%s(%u): Targeting of %s(%u) failed and not chasing.  Returning to Idle.", \
@@ -1219,7 +1225,8 @@ void NPCAIMgr::PickTarget() {
         if (m_size >= NPCAI::Size::BCruiser && targetRadius <= NPCAI::Size::Swarm)
             continue;
 
-        float distance = myNPC->GetPosition().distance(targetEntity->GetPosition());
+        Vector3d delta = targetEntity->GetPosition() - myNPC->GetPosition();
+        double distance = delta.Length();
         if (distance <= 0.0f)
             distance = 1.0f;
 
@@ -1628,15 +1635,15 @@ void NPCAIMgr::SendGFX(Client* pClient /*nullptr*/) {
         return;
     }
 
-    int32 repeat(0);
-    bool active(false), start(false);
+    int32 repeat = 0;
+    bool active = false, start = false;
     if (m_action > NPCAI::Action::Wandering) {
         start = true;
         active = true;
         repeat = 20000;
     }
 
-    bool sendTurret(false);
+    bool sendTurret = false;
     int32 duration(m_attackSpeed);
     int64 startTime(m_attackTime);
     SystemEntity* pTargetSE(m_attackTarget);
@@ -1938,18 +1945,22 @@ SystemEntity* NPCAIMgr::EvaluateThreats() {
     std::map<uint32, SystemEntity*>  visibleEntities;
     myNPC->SysBubble()->GetEntities(visibleEntities);
 
+    Vector3d delta;
+    double distance;
     for (auto &cur : visibleEntities) {
         // 1. Ensure target is valid, alive, and attackable
         if (cur.second->IsNPCSE() || cur.second->IsDead())
             continue;
 
-        float distance = myNPC->GetPosition().distance(cur.second->GetPosition());
+        delta = cur.second->GetPosition() - myNPC->GetPosition();
+        distance = delta.Length();
         if (distance > m_attackRange)
             continue; // Out of locking range
 
         // 2. Base Threat: Signature Radius vs Distance
         // Large ships close by are highly attractive targets. Prevent division by zero.
-        float baseThreat = cur.second->GetSelf()->GetAttribute(AttrSignatureRadius).get_float() / std::max(distance, 1.0f);
+        float baseThreat = cur.second->GetSelf()->GetAttribute(AttrSignatureRadius).get_float();
+        baseThreat /= std::max(distance, 1.0);
 
         // 3. Modifiers Layer (EWAR & Logistics tracking)
         float ewarModifier = 0.0f;
@@ -2087,7 +2098,9 @@ void NPCAIMgr::LaunchMissile(uint16 typeID, SystemEntity* pTargetSE) {
     Missile* pMissile = new Missile(missileRef, *(pSystem->GetServiceMgr()),  pSystem, m_self, pTargetSE, myNPC);
     if (pMissile == nullptr)
         return; // make error here
-    double distance = pMissile->GetPosition().distance(pTargetSE->GetPosition());
+
+    Vector3d delta = pTargetSE->GetPosition() - pMissile->GetPosition();
+    double distance = delta.Length();
     double missileSpeed = missileRef->GetAttribute(AttrMaxVelocity).get_float();
     double travelTime = (distance / missileSpeed);
     if (travelTime < 1)

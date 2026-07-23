@@ -63,7 +63,7 @@ private:
     Client* m_client;
     SystemManager* m_system;
 
-    void CalcProbeAngles(GPoint& sigPos, std::vector<ProbeSE*>& probeVec, std::map<float, std::pair<ProbeSE*, ProbeSE*>>& angleMap);
+    void CalcProbeAngles(Vector3d& sigPos, std::vector<ProbeSE*>& probeVec, std::map<float, std::pair<ProbeSE*, ProbeSE*>>& angleMap);
 
     bool m_probeScan;
 

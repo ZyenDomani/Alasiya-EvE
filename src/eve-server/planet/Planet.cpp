@@ -256,7 +256,7 @@ void PlanetSE::CreateCustomsOffice() {
     StructureItemRef iRef = sItemFactory.SpawnStructure(idata);
     // get warpInPoint for planet
     int32 radius(GetRadius());
-    GPoint warpInPoint(GetPosition());
+    Vector3d warpInPoint(GetPosition());
     srandom(GetID());  //this is the only place random() is used....other random functions use rand() as it's non-repeatable.
     int rand = random();
     double j = (((rand / RAND_MAX) - 1.0f) / 3.0f);

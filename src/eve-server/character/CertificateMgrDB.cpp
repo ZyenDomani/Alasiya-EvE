@@ -116,7 +116,7 @@ bool CertificateMgrDB::SaveCertificates( uint32 characterID, const CertMap &data
     Inserts << "INSERT INTO chrCertificates";
     Inserts << " (characterID, certificateID, grantDate, visibilityFlags)";
     Inserts << " VALUES ";
-    bool save(false);
+    bool save = false;
     for (auto &cur : data) {
         if (save) {
             Inserts << ", ";

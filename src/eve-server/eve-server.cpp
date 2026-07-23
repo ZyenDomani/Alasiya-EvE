@@ -967,7 +967,7 @@ int main( int argc, char* argv[] )
     #endif
     */
 
-    uint32 start(0);
+    uint32 start = 0;
     EVETCPConnection* tcpc(nullptr);
 
     if (sConfig.debug.UseProfiling) {

@@ -20,7 +20,7 @@
 #include "POD_containers.h"
 
 #include "../eve-common/EVE_Character.h"
-
+#include "../eve-common/EVE_Cosmic.h"
 #include "../eve-common/EVE_RAM.h"
 #include "../eve-common/EVE_Market.h"
 

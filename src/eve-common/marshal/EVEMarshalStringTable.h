@@ -88,7 +88,7 @@ private:
     uint32 hash( const char* str )
     {
         uint32 hash = 5381;
-        int c(0);
+        int c = 0;
 
         while( ( c = *str++ ) )
             hash = ( ( hash << 5 ) + hash ) + c; /* hash * 33 + c */

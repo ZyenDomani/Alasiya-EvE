@@ -141,13 +141,13 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
     }
 
     // get lower of ship and char target skills, with minimum of 1
-    uint8 maxLockedTargets(1);
-    uint8 maxCharTargets(mySE->GetPilot()->GetChar()->GetSkillLevel(EvESkill::Targeting));
+    int8 maxLockedTargets = 1;
+    int8 maxCharTargets = mySE->GetPilot()->GetChar()->GetSkillLevel(EvESkill::Targeting);
     maxCharTargets += mySE->GetPilot()->GetChar()->GetSkillLevel(EvESkill::Multitasking);
     if (maxCharTargets > 1)
         maxLockedTargets = maxCharTargets;
 
-    uint8 maxShipTargets((uint8)sRef->GetAttribute(AttrMaxLockedTargets).get_uint32());
+    int8 maxShipTargets = static_cast<uint8>(sRef->GetAttribute(AttrMaxLockedTargets).get_uint32());
     if (maxShipTargets > 0)  // is this redundant?
         if (maxLockedTargets > maxShipTargets)
             maxLockedTargets = maxShipTargets;
@@ -160,10 +160,10 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
     }
 
     // Check against max target range
-    double maxTargetRange(sRef->GetAttribute(AttrMaxTargetRange).get_double());
-    GVector rangeToTarget(mySE->GetPosition(), tSE->GetPosition());
+    double maxTargetRange = sRef->GetAttribute(AttrMaxTargetRange).get_double();
+    Vector3d rangeToTarget = tSE->GetPosition() - mySE->GetPosition();
     // adjust for target radius, in case of ice or other large objects..
-    double targetDistance(rangeToTarget.length());
+    double targetDistance = rangeToTarget.Length();
     if (tSE->IsAsteroidSE())
         targetDistance -= tSE->GetRadius();
     if (targetDistance > maxTargetRange) {
@@ -175,7 +175,7 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
     }
 
     // Calculate Time to Lock target:
-    float lockTime(TimeToLock(sRef, tSE));
+    float lockTime = TimeToLock(sRef, tSE);
 
     if (is_log_enabled(TARGET__INFO))
         _log(TARGET__INFO, "Pilot %s in %s(%u) started targeting %s(%u) at %.1fm with %.2fs lock time.", \
@@ -220,11 +220,15 @@ bool TargetManager::StartTargeting(SystemEntity* tSE, uint16 lockTime, uint8 max
         return false;
     }
     // Check against max target range, except drones
-    if (!mySE->IsDroneSE() and (mySE->GetPosition().distance(tSE->GetPosition()) > maxTargetLockRange)) {
-        _log(TARGET__TRACE, " %s(%u): Told to target %s(%u), but they are too far away.  Begin Approaching.", \
-        mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
-        chase = true;
-        return false;
+    if (!mySE->IsDroneSE()) {
+        Vector3d delta = tSE->GetPosition() - mySE->GetPosition();
+        double dist = delta.Length();
+        if (dist > maxTargetLockRange) {
+            _log(TARGET__TRACE, " %s(%u): Told to target %s(%u), but they are too far away.  Begin Approaching.", \
+                mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
+            chase = true;
+            return false;
+        }
     }
 
     TargetEntry *te = new TargetEntry();
@@ -724,7 +728,8 @@ float TargetManager::TimeToLock(ShipItemRef sRef, SystemEntity* tSE) const {
          *     disMod = distance / 10k (for 10k increments)
          *     time += disMod * 0.1
          */
-        double distance(sRef->position().distance(tSE->GetPosition()));
+        Vector3d delta = tSE->GetPosition() - sRef->position();
+        double distance = delta.Length();
         // check for snipers... >85k distance do NOT need additional 7.5+s to targettime
         // should we check LRT skill for pilots to modify this?  yes....not sure how to modify time using this yet...
         /*
@@ -739,7 +744,7 @@ float TargetManager::TimeToLock(ShipItemRef sRef, SystemEntity* tSE) const {
         if (distance > 85000)
             distance -= 75000;
 
-        float disMod(distance / 10000);
+        float disMod = (distance / 10000);
         if (disMod < 1)
             disMod = 0.0f;
         time += (disMod * 0.1f);

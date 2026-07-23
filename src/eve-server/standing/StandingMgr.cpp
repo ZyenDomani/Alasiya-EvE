@@ -174,7 +174,7 @@ void StandingMgr::UpdateDerivedStandings(uint32 fromID, uint32 toID, uint16 even
 }
 
 void StandingMgr::UpdateStandings(Character* pChar, Agent* pAgent, uint8 eventID, std::string missionName, bool important/*false*/) {
-    uint32 charID(0);
+    uint32 charID = 0;
     float charStanding = GetEffectiveStanding(pAgent->GetID(), pChar);
     float quality = EvEMath::Agent::EffectiveQuality(pAgent->GetQuality(), pChar->GetSkillLevel(EvESkill::Negotiation), charStanding);
     float pctChange = EvEMath::Agent::StandingChange(pAgent->GetLevel(), quality);

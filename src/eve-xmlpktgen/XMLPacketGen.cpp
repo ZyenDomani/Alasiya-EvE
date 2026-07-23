@@ -184,7 +184,7 @@ void XMLPacketGen::SetSourceFile(const char* source) {
 }
 
 bool XMLPacketGen::OpenFiles() {
-    bool res(true);
+    bool res = true;
 
     if (!mHeaderFileName.empty() && (nullptr == mHeaderFile)) {
         mHeaderFile = fopen(mHeaderFileName.c_str(), "w");

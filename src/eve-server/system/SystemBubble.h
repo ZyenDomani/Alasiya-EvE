@@ -77,7 +77,7 @@ class ActiveModule;
 
 class SystemBubble {
 public:
-    SystemBubble(SystemManager* pSystem, const GPoint& center, double radius);
+    SystemBubble(SystemManager* pSystem, const Vector3d& center, double radius);
     ~SystemBubble() noexcept;
 
     SystemEntity* const GetEntity(uint32 entityID) const;
@@ -125,7 +125,7 @@ public:
     double z() const                                    { return m_center.z; }
     uint16 GetID()                                      { return m_bubbleID; }
     uint32 GetSystemID();
-    GPoint GetCenter()                                  { return m_center; }
+    Vector3d GetCenter()                                  { return m_center; }
     ContainerSE* GetCenterMarker()                      { return m_centerSE; }
 
     void clear();
@@ -152,8 +152,8 @@ public:
     //send a destiny update to every client in the bubble EXCLUDING the given SystemEntity 'pSE'
     void BubblecastDestinyUpdateExclusive(PyTuple** payload, const char* desc, SystemEntity* pSE) const;
 
-    bool InBubble(const GPoint &pt, bool inWarp=false) const;
-    bool IsOverlap(const GPoint &pt) const;
+    bool InBubble(const Vector3d &pt, bool inWarp=false) const;
+    bool IsOverlap(const Vector3d &pt) const;
     void MarkCenter();
     void RemoveMarkers();
 
@@ -207,7 +207,7 @@ public:
 
 
 protected:
-    const GPoint m_center;
+    const Vector3d m_center;
     const double m_radius;
 
     // remove all balls in bubble for this SE
@@ -216,7 +216,7 @@ protected:
     // remove this ball from bubble.  update all clients in bubble this SE has left.
     void RemoveBallExclusive(SystemEntity* pSE);
 
-    void MarkBubble(const GPoint& position, std::string& name, std::string& desc, bool center=false);
+    void MarkBubble(const Vector3d& position, std::string& name, std::string& desc, bool center=false);
 
 private:
     TCUSE* m_tcuSE;

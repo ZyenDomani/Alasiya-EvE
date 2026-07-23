@@ -84,7 +84,7 @@ PlanetORB::~PlanetORB() {
     delete m_dispatch;
 }
 
-PyBoundObject* PlanetORB::CreateBoundObject(Client *pClient, const PyRep *bind_args) {
+PyBoundObject* PlanetORB::CreateBoundObject(Client* pClient, const PyRep *bind_args) {
     _log(PLANET__INFO, "PlanetORB bind request for:");  // sends systemID
     bind_args->Dump(PLANET__INFO, "    ");
     if (!bind_args->IsInt()) {

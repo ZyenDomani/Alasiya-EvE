@@ -411,7 +411,7 @@ void ManagerDB::GetAnomaliesBySystem(uint32 systemID, DBQueryResult& res)
         }
 }
 
-GPoint ManagerDB::GetAnomalyPos(std::string& string)
+Vector3d ManagerDB::GetAnomalyPos(std::string& string)
 {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res, "SELECT x,y,z FROM sysSignatures WHERE sigID = '%s'", string.c_str()))
@@ -423,7 +423,7 @@ GPoint ManagerDB::GetAnomalyPos(std::string& string)
         return NULL_ORIGIN;
     }
 
-    GPoint pos(row.GetDouble(0), row.GetDouble(1), row.GetDouble(2));
+    Vector3d pos(row.GetDouble(0), row.GetDouble(1), row.GetDouble(2));
     return pos;
 }
 
@@ -561,7 +561,7 @@ bool ManagerDB::GetAsteroidData(uint32 asteroidID, AsteroidData& dbData)
         dbData.beltID = row.GetInt(3);
         dbData.quantity = row.GetDouble(4);
         dbData.radius = row.GetDouble(5);
-        GPoint pos(row.GetDouble(6), row.GetDouble(7), row.GetDouble(8));
+        Vector3d pos(row.GetDouble(6), row.GetDouble(7), row.GetDouble(8));
         dbData.position = pos;
         return true;
     } else {
@@ -594,7 +594,7 @@ bool ManagerDB::LoadSystemRoids(uint32 systemID, uint32& beltID, std::vector< As
         entry.beltID = row.GetInt(4);
         entry.quantity = row.GetDouble(5);
         entry.radius = row.GetDouble(6);
-        GPoint pos(row.GetDouble(7), row.GetDouble(8), row.GetDouble(9));
+        Vector3d pos(row.GetDouble(7), row.GetDouble(8), row.GetDouble(9));
         entry.position = pos;
         into.push_back(entry);
     }

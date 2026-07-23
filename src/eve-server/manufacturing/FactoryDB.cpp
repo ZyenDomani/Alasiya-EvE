@@ -535,7 +535,7 @@ uint32 FactoryDB::InstallJob(const uint32 ownerID, const uint32 installerID, Cal
                              const int64 beginTime, const int64 endTime)
 {
     DBerror err;
-    uint32 jobID(0);
+    uint32 jobID = 0;
     // insert job
     if (!sDatabase.RunQueryLID(err, jobID,
         "INSERT INTO ramJobs"

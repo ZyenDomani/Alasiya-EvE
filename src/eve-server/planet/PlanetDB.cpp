@@ -185,7 +185,7 @@ PyRep* PlanetDB::GetMyLaunchesDetails(uint32 charID) {
     return DBResultToRowset(res);
 }
 
-GPoint PlanetDB::GetLaunchPos(uint32 launchID)
+Vector3d PlanetDB::GetLaunchPos(uint32 launchID)
 {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res, "SELECT x,y,z FROM piLaunches WHERE launchID = %u", launchID)) {
@@ -195,7 +195,7 @@ GPoint PlanetDB::GetLaunchPos(uint32 launchID)
     if (!res.GetRow(row))
         return NULL_ORIGIN;
 
-    GPoint pos(row.GetDouble(0), row.GetDouble(1), row.GetDouble(2));
+    Vector3d pos(row.GetDouble(0), row.GetDouble(1), row.GetDouble(2));
     return pos;
 }
 
@@ -479,7 +479,7 @@ void PlanetDB::LoadHeads(uint32 ecuID, std::map< uint16, PI_Heads >& heads)
     }
 }
 
-void PlanetDB::SaveLaunch(uint32 contID, uint32 charID, uint32 systemID, uint32 planetID, GPoint& pos)
+void PlanetDB::SaveLaunch(uint32 contID, uint32 charID, uint32 systemID, uint32 planetID, Vector3d& pos)
 {
     DBerror err;
     if (!sDatabase.RunQuery(err,
@@ -544,7 +544,7 @@ void PlanetDB::SavePins(PI_CCData* pData) {
     Inserts << "INSERT INTO piPins";
     Inserts << " (pinID, level, schematicID, cycleTime, installTime, lastRunTime, expiryTime)";
     Inserts << " VALUES ";
-    bool save(false);
+    bool save = false;
     for (auto &cur : pData->pins) {
         if (save) {
             Inserts << ", ";
@@ -613,7 +613,7 @@ void PlanetDB::UpdatePinTimes(PI_CCData* pData)
     Inserts << "INSERT INTO piPins";
     Inserts << " (pinID, installTime, lastRunTime, expiryTime) VALUES ";
 
-    bool save(false);
+    bool save = false;
     for (auto &cur : pData->pins) {
         if (save) {
             Inserts << ", ";
@@ -675,7 +675,7 @@ void PlanetDB::SaveLinks(PI_CCData* pData)
     Inserts << "INSERT INTO piLinks";
     Inserts << " (colonyID, linkID, level, endpoint1, endpoint2) VALUES ";
 
-    bool save(false);
+    bool save = false;
     for (auto &cur : pData->links) {
         if (save) {
             Inserts << ", ";
@@ -738,7 +738,7 @@ void PlanetDB::SaveRoutes(PI_CCData* pData)
     Inserts << "INSERT INTO piRoutes";
     Inserts << " (colonyID, routeID, srcPinID, destPinID, path, typeID, itemQty) VALUES ";
 
-    bool save(false);
+    bool save = false;
     std::string path;
     std::list<uint32>::iterator itr;
     for (auto &cur : pData->routes) {
@@ -780,7 +780,7 @@ void PlanetDB::SavePinContents(uint32 pinID, PI_CCData* pData) {
     Inserts << "INSERT INTO piPinContents";
     Inserts << " (colonyID, pinID, typeID, itemQty) VALUES ";
 
-    bool first(false);
+    bool first = false;
     std::map<uint32, PI_Pin>::iterator srcItr = pData->pins.find(pinID);
     std::map<uint16, uint32>::iterator itemItr;
     for (itemItr = srcItr->second.contents.begin(); itemItr != srcItr->second.contents.end(); ++itemItr) {
@@ -810,7 +810,7 @@ void PlanetDB::SaveAllContents(PI_CCData* pData) {
     Inserts << "INSERT INTO piPinContents";
     Inserts << " (colonyID, pinID, typeID, itemQty) VALUES ";
 
-    bool first(false);
+    bool first = false;
     std::map<uint16, uint32>::iterator itemItr;         //typeID, qty
     for (auto &cur : pData->pins) {
         if (cur.second.update) {

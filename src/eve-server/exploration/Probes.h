@@ -124,7 +124,7 @@ public:
     // total probe scan strength, based on data modified by char skills, ship, launcher, and range
     float GetScanStrength();
 
-    GPoint GetDestination()                             { return m_destination; }
+    Vector3d GetDestination()                             { return m_destination; }
     const char* GetStateName(uint8 state);
 
     bool CanScanShips()                                 { return m_scanShips; }
@@ -147,7 +147,7 @@ private:
     Scan* m_scan;
     Client* m_client;
 
-    GPoint m_destination;
+    Vector3d m_destination;
 
     ShipItemRef m_shipRef;
     InventoryItemRef m_moduleRef;

@@ -8,7 +8,7 @@
 #define EVE_DUNGEON_H
 
 #include "../eve-core/eve-core.h"
-#include "../eve-core/math/gpoint.h"
+#include "../eve-core/math/Vector3d.h"
 
 
 namespace Dungeon {
@@ -232,7 +232,7 @@ namespace Dungeon {
 
     // These structures are used for dungeons which are actually spawned in space
     struct LiveRoom {
-        GPoint position;
+        Vector3d position;
         std::vector<uint32> items;
     };
 

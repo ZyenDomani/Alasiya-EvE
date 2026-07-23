@@ -39,7 +39,7 @@ protected:
     Dispatcher *const m_dispatch;
 
     //overloaded in order to support bound objects
-    virtual PyBoundObject* CreateBoundObject(Client *pClient, const PyRep *bind_args);
+    virtual PyBoundObject* CreateBoundObject(Client* pClient, const PyRep *bind_args);
 };
 
 #endif // __AGGRESSIONMGRSERVICE__H__INCL__

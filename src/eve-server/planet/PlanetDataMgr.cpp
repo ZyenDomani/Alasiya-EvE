@@ -432,7 +432,7 @@ uint32 PIDataMgr::GetProgramOutput(InventoryItemRef iRef, int64 cycleTime, int64
 
 uint32 PIDataMgr::GetProgramOutputPrediction(InventoryItemRef iRef, int64 cycleTime, uint32 numCycles/*0*/)
 {
-    uint32 val(0);
+    uint32 val = 0;
     if (numCycles > 120)    // hardcoded in client
         numCycles = 120;
     for (int i(1); i <= numCycles; ++i)

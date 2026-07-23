@@ -263,9 +263,9 @@ void StaticDataMgr::Populate() {
         sysData.constellationID         = row.GetUInt(1);
         sysData.regionID                = row.GetUInt(2);
         sysData.name                    = row.GetText(3);
-        sysData.position                = GPoint(row.GetDouble(4), row.GetDouble(5), row.GetDouble(6));
-        sysData.minPosition             = GPoint(row.GetDouble(7), row.GetDouble(8), row.GetDouble(9));
-        sysData.maxPosition             = GPoint(row.GetDouble(10), row.GetDouble(11), row.GetDouble(12));
+        sysData.position                = Vector3d(row.GetDouble(4), row.GetDouble(5), row.GetDouble(6));
+        sysData.minPosition             = Vector3d(row.GetDouble(7), row.GetDouble(8), row.GetDouble(9));
+        sysData.maxPosition             = Vector3d(row.GetDouble(10), row.GetDouble(11), row.GetDouble(12));
         sysData.luminosity              = row.GetFloat(13);
         sysData.border                  = row.GetBool(14);
         sysData.fringe                  = row.GetBool(15);
@@ -337,7 +337,7 @@ void StaticDataMgr::Populate() {
         data.systemID           = row.GetUInt(3);
         data.typeID             = row.GetUInt(4);
         data.radius             = row.GetFloat(5);
-        data.position           = GPoint(row.GetDouble(6),row.GetDouble(7),row.GetDouble(8));
+        data.position           = Vector3d(row.GetDouble(6),row.GetDouble(7),row.GetDouble(8));
         //m_staticData[row.GetInt(0)] = data;
         m_staticData.emplace(row.GetUInt(0), std::move(data));
     }
@@ -428,7 +428,7 @@ void StaticDataMgr::Populate() {
     sLog.Cyan("    StaticDataMgr", "%lu Skills loaded in %.3fms.", m_skills.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
-    uint piCount(0);
+    uint piCount = 0;
     FactoryDB::GetComponents(*res);     //766
     while (res->GetRow(row)) {
         //SELECT typeID, typeName FROM invTypes [where type=composite or component]
@@ -657,7 +657,7 @@ void StaticDataMgr::Populate() {
               m_LootGroupMap.size(), m_LootTypeMap.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
-    uint32 locationID(0);
+    uint32 locationID = 0;
     ManagerDB::GetAgentData(*res);
     while (res->GetRow(row)) {
         //SELECT agentID, corporationID, locationID FROM agtAgents
@@ -1176,7 +1176,7 @@ void StaticDataMgr::GetLoot(float secValue, uint32 groupID, std::vector<LootList
     double profileStartTime = GetTimeUSeconds();
 
     float randChance(0.0f);
-    uint8 metaLevel(0);
+    uint8 metaLevel = 0;
     uint8 secModX10(static_cast<uint8>(secValue * 10));   //[1, 20]
     float secMod(secValue / 10); //[0.01, 0.2]
     // modified chances for metaLevel checks - lower security = higher chance
@@ -1896,7 +1896,7 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
     }
 
     // booleans to only set items that are populated
-    bool manuf(false), copy(false), invent(false), dup(false), me(false), re(false), te(false), tech(false);
+    bool manuf = false, copy = false, invent = false, dup = false, me = false, re = false, te = false, tech = false;
     // the ramRequirements table holds ALL skill/item data for all aspects of RAM per BlueprintTypeID.
     std::vector<EvERam::RamRequirements> ramReqs;
     GetRamRequirements(typeID, ramReqs);

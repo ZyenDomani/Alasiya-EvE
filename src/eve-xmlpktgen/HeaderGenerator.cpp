@@ -71,13 +71,13 @@ bool ClassHeaderGenerator::ProcessElementDef( const TiXmlElement* field )
     }
 
     //  new switch to (dis)allow encoding.    -xmlp bloat wip
-    bool encode(true);
+    bool encode = true;
     const char* encode_str = field->Attribute("encode");
     if (encode_str != nullptr)
         encode = str2<bool>(encode_str);
 
     //  new switch to (dis)allow decoding.    -xmlp bloat wip
-    bool decode(true);
+    bool decode = true;
     const char* decode_str = field->Attribute("decode");
     if (decode_str != nullptr)
         decode = str2<bool>(decode_str);

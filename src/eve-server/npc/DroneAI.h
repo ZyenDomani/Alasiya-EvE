@@ -117,7 +117,7 @@ public:
     int32               GetOrbitDistance()              { return m_orbitDistance; }
     uint32              GetMaxSpeed()                   { return m_maxSpeed; }
 
-    const GVector&      GetVelocity()                   { return m_velocity; }
+    const Vector3d&      GetVelocity()                   { return m_velocity; }
     float               GetVelocityX()                  { return m_velocity.x; }
     float               GetVelocityY()                  { return m_velocity.y; }
     float               GetVelocityZ()                  { return m_velocity.z; }
@@ -180,8 +180,8 @@ protected:
     void                SendTrueState(int8 stateID=DroneAI::State::Idle);
 
     /* internal destiny methods.  testing drone w/o actual DestinyManager (dont need the overhead) */
-    GVector             m_heading;                      // well, drone heading, ofc
-    GVector             m_velocity;                     // current speed and heading
+    Vector3d             m_heading;                      // well, drone heading, ofc
+    Vector3d             m_velocity;                     // current speed and heading
 
     void                Stop();                         // called when offline - calls SetIdle()
     void                Pause();                        // called when orbiting - sets position and velocity then stops movement and processing
@@ -192,7 +192,7 @@ protected:
 
     void                SetState(int8 stateID=-1);
     void                SetAction(int8 actionID=-1);
-    void                MarkPoint(const GPoint& position);
+    void                MarkPoint(const Vector3d& position);
 
     // this is for tracking position changes from moving target
     void                MoveDrone(SystemEntity* pTarget); // where drone remains in set orbit around moving target

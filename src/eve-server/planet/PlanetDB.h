@@ -46,7 +46,7 @@ public:
 
     // must send data.launchID
     static void GetLaunchDetails(Launch::Data &data);
-    static GPoint GetLaunchPos(uint32 launchID);
+    static Vector3d GetLaunchPos(uint32 launchID);
     static uint32 GetLaunchItemID(uint32 launchID);
     static uint32 GetLaunchPlanet(uint32 launchID);
     static void UpdateLaunchStatus(uint32 itemID, uint8 status);
@@ -83,7 +83,7 @@ public:
     static void GetExtractorsForPlanet(uint32 planetID, DBQueryResult& res);
 
     int64 GetLastLaunchTime(uint32 colonyID);
-    void SaveLaunch(uint32 contID, uint32 charID, uint32 systemID, uint32 planetID, GPoint& pos);
+    void SaveLaunch(uint32 contID, uint32 charID, uint32 systemID, uint32 planetID, Vector3d& pos);
     static void DeleteLaunch(uint32 contID);
     void UpdatePinTimes(PI_CCData* data);
     void AddPlanetForChar(uint32 solarSystemID, uint32 planetID, uint32 charID, uint32 colonyID, uint16 typeID);

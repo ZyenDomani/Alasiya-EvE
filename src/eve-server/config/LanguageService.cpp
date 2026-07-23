@@ -74,7 +74,7 @@ LanguageService::~LanguageService() {
 
 
 /*
-PyBoundObject *LanguageService::CreateBoundObject(Client *pClient, PyTuple *bind_args) {
+PyBoundObject *LanguageService::CreateBoundObject(Client* pClient, PyTuple *bind_args) {
     _log(CLIENT__MESSAGE, "LanguageService bind request for:");
     bind_args->Dump(CLIENT__MESSAGE, "    ");
 

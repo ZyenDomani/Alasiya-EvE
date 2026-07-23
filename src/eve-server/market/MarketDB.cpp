@@ -319,7 +319,7 @@ bool MarketDB::DeleteOrder(uint32 orderID) {
 
 uint32 MarketDB::StoreOrder(Market::SaveData &data) {
     DBerror err;
-    uint32 orderID(0);
+    uint32 orderID = 0;
     if (!sDatabase.RunQueryLID(err, orderID,
         "INSERT INTO mktOrders ("
         " typeID, ownerID, regionID, stationID, solarSystemID, orderRange,"

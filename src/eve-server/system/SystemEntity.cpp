@@ -114,7 +114,7 @@ void SystemEntity::EncodeDestiny(Buffer& into)
         head.flags = Ball::Flag::IsGlobal;
     into.Append( head );
     RIGID_Struct main;
-        main.formationID = 0xFF;
+        main.formationID = -1;
     into.Append( main );
     _log(SE__DESTINY, "SE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
@@ -142,7 +142,9 @@ void SystemEntity::Delete() {
 double SystemEntity::DistanceTo2(const SystemEntity* other) {
     if (other->m_bubble == nullptr)
         return 1000000.0;
-    return GetPosition().distance(other->GetPosition());
+
+    Vector3d delta =  other->GetPosition() - m_self->position();
+    return delta.Length();
 }
 
 void SystemEntity::SendDamageStateChanged() {  //working 24Apr15
@@ -191,7 +193,7 @@ void SystemEntity::DropLoot(WreckContainerRef wreckRef, uint32 groupID, uint32 o
     }
 
     uint8 secModX10(m_system->GetSecValue() * 10);   //[1, 20]
-    uint32 quantity(0);
+    uint32 quantity = 0;
     InventoryItemRef iRef(nullptr);
     std::vector<LootList>::iterator itr = lootList.begin();
     while (itr != lootList.end()) {
@@ -313,7 +315,7 @@ void StaticSystemEntity::EncodeDestiny(Buffer& into) {
         head.flags = Ball::Flag::IsGlobal;
     into.Append( head );
     RIGID_Struct main;
-        main.formationID = 0xFF;
+        main.formationID = -1;
     into.Append( main );
     _log(SE__DESTINY, "SSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X, radius:%.1f", GetName(), head.entityID, head.mode, head.flags, head.radius);
 }
@@ -411,12 +413,12 @@ void FieldSystemEntity::EncodeDestiny(Buffer& into) {
     into.Append( mass );
     if (head.mode == Ball::Mode::FIELD) {
         FIELD_Struct main;
-        main.formationID = 0xFF;
+        main.formationID = -1;
         into.Append( main );
     } else if (head.mode == Ball::Mode::STOP) {
         // TODO: is this accurate?
         STOP_Struct main;
-        main.formationID = 0xFF;
+        main.formationID = -1;
         into.Append( main );
     }
 
@@ -459,12 +461,12 @@ void FieldSE::EncodeDestiny(Buffer& into)
     into.Append( mass );
     if (head.mode == Ball::Mode::FIELD) {
         FIELD_Struct main;
-        main.formationID = 0xFF;
+        main.formationID = -1;
         into.Append( main );
     } else if (head.mode == Ball::Mode::STOP) {
         // TODO: is this accurate?
         STOP_Struct main;
-        main.formationID = 0xFF;
+        main.formationID = -1;
         into.Append( main );
     }
 
@@ -548,7 +550,7 @@ PyDict* ItemSystemEntity::MakeSlimItem() {
             slim->SetItemString("dunWipeNPC", new PyBool(0));   //?
             slim->SetItemString("dunKeyQuantity", PyStatic.NewOne());   //?
             slim->SetItemString("dunKeyTypeID", new PyInt(m_keyType));   //Training Complex Passkey   group Acceleration_Gate_Keys
-            slim->SetItemString("dunOpenUntil", new PyLong(Win32TimeNow()+EvE::Time::Hour));   //?
+            slim->SetItemString("dunOpenUntil", new PyLong(GetFileTimeNow()+EvE::Time::Hour));   //?
             slim->SetItemString("dunRoomName", new PyString("Lobby"));   //?
             slim->SetItemString("dunMusicUrl", new PyString("res:/Sound/Music/Ambient031combat.ogg"));
         }
@@ -578,7 +580,7 @@ void ItemSystemEntity::EncodeDestiny(Buffer& into)
         head.flags = 0;
     into.Append( head );
     RIGID_Struct main;
-        main.formationID = 0xFF;
+        main.formationID = -1;
     into.Append( main );
 
     _log(SE__DESTINY, "ISE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
@@ -632,7 +634,7 @@ void ObjectSystemEntity::EncodeDestiny(Buffer& into)
         head.flags = Ball::Flag::IsMassive;
     into.Append( head );
     RIGID_Struct main;
-        main.formationID = 0xFF;
+        main.formationID = -1;
     into.Append( main );
 
     _log(SE__DESTINY, "OSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
@@ -774,7 +776,7 @@ void DynamicSystemEntity::EncodeDestiny(Buffer& into)
         data.speedfraction = m_destiny->GetSpeedFraction();
     into.Append( data );
     STOP_Struct main;
-        main.formationID = 0xFF;
+        main.formationID = -1;
     into.Append( main );
 
     _log(SE__DESTINY, "DSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
