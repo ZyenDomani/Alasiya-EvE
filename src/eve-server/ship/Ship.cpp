@@ -2606,6 +2606,14 @@ void ShipSE::EncodeDestiny( Buffer& into) {
                     warp.effectStamp = -1;
                     warp.distance = 0;
                     warp.warpInVelocity = 0.0;   //4802252820405690112
+                    /*
+                     * 4802252820405690112   77.28 au/s
+                     * 4796203259224232925  28.97 au/s
+                     * -4616189618054758400 -1.0
+                     * 4781149336094358132  3 au/s
+                     * 4781149335553454020  2.999 au/s
+                     * 4669471951536783360     15000 m/s
+                     */
                 }
             into.Append(warp);
         }  break;

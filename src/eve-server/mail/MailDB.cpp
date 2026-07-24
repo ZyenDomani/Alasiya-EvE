@@ -38,8 +38,8 @@ PyRep* MailDB::GetMailStatus(int charId)
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
                             " SELECT messageID, statusMask, labelMask "
-                            " FROM mailStatus"
-                            " WHERE characterID = %u" , charId)) {
+                            " FROM eveMailRecipients"
+                            " WHERE recipientID = %u" , charId)) {
         codelog(DATABASE__ERROR, " Failed to get mail status" );
         return nullptr;
     }

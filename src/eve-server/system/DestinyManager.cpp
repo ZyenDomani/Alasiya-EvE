@@ -263,31 +263,33 @@ void DestinyManager::Process() {
     Integrate();
 
     // Global boundary parking check
-    double speedSq = m_shipVelocity.LengthSq();
-    if (m_stop and (speedSq < VISUAL_STOP_THRESHOLD_SQ)) {
+    double speed = m_shipVelocity.Length();
+    if (m_stop and (speed < 0.05f)) {
         Halt();
         return;
     }
 
     if (m_maxSpeed > 0.01f)
-        m_activeSpeedFraction = speedSq / (m_maxSpeed * m_maxSpeed);
+        m_activeSpeedFraction = speed / m_maxSpeed;
 
     // only create tracking can when ship is moving significant amount
     if (sEntityMgr.GetTracking())
         CreateShipMarker();
 
-    if (is_log_enabled(DESTINY__MOVE_TRACE)) {
-        uint32 timeDelta = sEntityMgr.GetStamp() - m_stateStamp;
-        _log(DESTINY__MOVE_TRACE, "Destiny::%s(%u) - %s(%u): m_shipVelocity: %.2f, %.2f, %.2f @ asf: %0.3f (speed: %0.1f)", \
+    if (0 and is_log_enabled(DESTINY__MOVE_TRACE)) {
+        int32 timeDelta = sEntityMgr.GetStamp() - m_stateStamp;
+        _log(DESTINY__MOVE_TRACE, "Destiny::%s(%u) - %s(%i): Current Ship Velocity: %.2f, %.2f, %.2f @ asf: %0.3f (speed: %0.1f)", \
                 GetModeNameString().c_str(), timeDelta, mySE->GetName(), mySE->GetID(), \
                 m_shipVelocity.x, m_shipVelocity.y, m_shipVelocity.z, \
                 m_activeSpeedFraction, m_shipVelocity.Length());
-        _log(DESTINY__MOVE_TRACE, "m_position: %.2f, %.2f, %.2f", \
+        _log(DESTINY__MOVE_TRACE, "Current position: %.2f, %.2f, %.2f", \
                 m_position.x, m_position.y, m_position.z);
-        _log(DESTINY__MOVE_TRACE, "m_targetPoint: %.2f, %.2f, %.2f", \
-                m_targetPoint.x, m_targetPoint.y, m_targetPoint.z);
-        _log(DESTINY__MOVE_TRACE, "m_targetVelocity: %.2f, %.2f, %.2f", \
-                m_targetVelocity.x, m_targetVelocity.y, m_targetVelocity.z);
+        if (m_targetPoint.notZero())
+            _log(DESTINY__MOVE_TRACE, "Ship target Point: %.2f, %.2f, %.2f", \
+                    m_targetPoint.x, m_targetPoint.y, m_targetPoint.z);
+        if (m_targetVelocity.notZero())
+            _log(DESTINY__MOVE_TRACE, "Ship target Velocity: %.2f, %.2f, %.2f", \
+                    m_targetVelocity.x, m_targetVelocity.y, m_targetVelocity.z);
     }
 
     if (sConfig.debug.UseProfiling)
@@ -375,11 +377,7 @@ void DestinyManager::Stop() {
             m_warpCapacitorNeed = 0.000000138;   // lowest value in db
         }
         // warp gfx cleared by stop packet
-    } else if (m_ballMode == Destiny::Ball::Mode::ORBIT) {
-        // hack for orbit...but damn it's close
-        SetPosition(m_position, true);
     }
-
 
     if (m_ballMode != Destiny::Ball::Mode::STOP) {
         m_ballMode = Destiny::Ball::Mode::STOP;
@@ -514,8 +512,9 @@ if (slot >= m_formations[formationID].size()) {
 }
 
 void DestinyManager::OrbitVelocity() {
-    // 1. Establish the deterministic orbital plane angles
-    const double phi1 = (double)sEntityMgr.GetStamp() * ORBITAL_PRECESSION;
+    // 1. Establish the azimuth angle
+    const double phi1 = (double)mySE->SystemMgr()->GetTicCount() * ORBITAL_PRECESSION;
+    // elevation angle
     const double phi2 = (double)(mySE->GetID() & 0x0000FFFF) + phi1;
 
     // 2. Generate the base unit orientation vector
@@ -529,7 +528,6 @@ void DestinyManager::OrbitVelocity() {
     Vector3d toVector = m_targetEntity.second->GetPosition() - m_position;
     radialVector.Cross(toVector);
     radialVector.Normalize();
-
     const double dist = toVector.Length();
     if (dist < 1e-6)
         return; // Safety boundary clamp
@@ -568,9 +566,7 @@ void DestinyManager::OrbitVelocity() {
     transverseFactor *= signum;
 
     // 9. THE BRIDGE: Scale the final direction components directly into terminal velocity space (m/s)
-    // All mass, agility, and multi-million friction constants cancel out completely!
     const double maxVelStep = m_userSpeedFraction * m_maxSpeed;
-
     m_targetVelocity.x = (radialVector.x * radialFactor + toVector.x * transverseFactor) * maxVelStep;
     m_targetVelocity.y = (radialVector.y * radialFactor + toVector.y * transverseFactor) * maxVelStep;
     m_targetVelocity.z = (radialVector.z * radialFactor + toVector.z * transverseFactor) * maxVelStep;
@@ -1071,6 +1067,7 @@ void DestinyManager::BeginMovement() {
 
     m_stop = false;
     m_skipTic = false;
+    m_moveDelay = true;
 
     // reset move stamps
     m_stateStamp = sEntityMgr.GetStamp();
@@ -1507,8 +1504,7 @@ void DestinyManager::SetUndockSpeed() {
     m_userSpeedFraction = 1.0f;
     m_activeSpeedFraction = 1.0f;
 
-    double maxThrust  = Destiny_k * m_maxSpeed / m_agility;
-    m_shipVelocity = m_targetHeading * maxThrust;
+    m_shipVelocity = m_targetHeading * m_maxSpeed;
     m_targetVelocity = m_shipVelocity;
 
     if (m_ballMode == Destiny::Ball::Mode::MISSILE)
@@ -1918,7 +1914,7 @@ Battleships                             0.155
         std::vector<PyTuple*> updates;
         SetBallAgility sbagility;
             sbagility.entityID =  mySE->GetID();
-            sbagility.agility = sRef->GetAttribute(AttrInertiaMod).get_double();;
+            sbagility.agility = sRef->GetAttribute(AttrInertiaMod).get_double();
         updates.push_back(sbagility.Encode());
         SetBallMassive sbmassive;
             sbmassive.entityID = mySE->GetID();
@@ -2290,7 +2286,7 @@ void DestinyManager::SendSetState() const {
                 mySE->GetName(), mySE->GetID(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
 
     SetState ss;
-        ss.stamp = sEntityMgr.GetStamp();
+        ss.stamp = mySE->SystemMgr()->GetTicCount();
         ss.ego = mySE->GetID();
 
     mySE->SystemMgr()->MakeSetState(mySE->SysBubble(), ss);

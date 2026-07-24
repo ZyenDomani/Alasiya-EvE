@@ -620,7 +620,7 @@ void SystemBubble::SendAddBalls(SystemEntity* to_who) {
 
     Destiny::AddBall_header head = Destiny::AddBall_header();
         head.packet_type = 1;   // 0 = full state   1 = balls
-        head.stamp = sEntityMgr.GetStamp();
+        head.stamp = m_system->GetTicCount();
     destinyBuffer->Append(head);
 
     AddBalls addballs;
@@ -671,11 +671,11 @@ void SystemBubble::SendAddBalls2(SystemEntity* to_who) {
 
     Destiny::AddBall_header head = Destiny::AddBall_header();
         head.packet_type = 1;   // 0 = full state   1 = balls
-        head.stamp = sEntityMgr.GetStamp();
+        head.stamp = m_system->GetTicCount();
     destinyBuffer->Append(head);
 
     AddBalls2 addballs2;
-    addballs2.stateStamp = sEntityMgr.GetStamp();
+    addballs2.stateStamp = m_system->GetTicCount();
     addballs2.extraBallData = new PyList();
 
     for (auto &cur : m_dynamicEntities) {
@@ -725,7 +725,7 @@ void SystemBubble::AddBallExclusive(SystemEntity* pSE) {
     //create AddBalls header
     Destiny::AddBall_header head = Destiny::AddBall_header();
         head.packet_type = 1;   // 0 = full state   1 = balls
-        head.stamp = sEntityMgr.GetStamp();
+        head.stamp = m_system->GetTicCount();
     destinyBuffer->Append(head);
 
     AddBalls addballs;

@@ -59,7 +59,7 @@ PyResult FleetProxy::Handle_ApplyToJoinFleet(PyCallArgs &call) {
     SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode args.", call.client->GetChar()->name());
-        return PyStatic.NewFalse();;
+        return PyStatic.NewFalse();
     }
 
     // returns boolean

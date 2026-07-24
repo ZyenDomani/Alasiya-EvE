@@ -85,10 +85,10 @@ struct FleetAdvert {
     uint32 solarSystemID=0;
     int64 advertTime=0;
     int64 dateCreated=0;
-    float local_minSecurity=0.0f;;
-    float public_minStanding=0.0f;;
-    float local_minStanding=0.0f;;
-    float public_minSecurity=0.0f;;
+    float local_minSecurity=0.0f;
+    float public_minStanding=0.0f;
+    float local_minStanding=0.0f;
+    float public_minSecurity=0.0f;
     Client* leader=nullptr;
     std::string fleetName="";
     std::string description="";
@@ -126,8 +126,8 @@ struct SquadData {
     uint32 fleetID=0;
     uint32 wingID=0;
     BoostData boost=BoostData();
-    Client* leader=nullptr;;
-    Client* booster=nullptr;;
+    Client* leader=nullptr;
+    Client* booster=nullptr;
     std::string name="";
     std::map<uint32, Client*> members;
 };
@@ -136,8 +136,8 @@ struct InviteData {
     int8 role=0;
     int32 wingID=0;
     int32 squadID=0;
-    Client* invited=nullptr;;
-    Client* inviteBy=nullptr;;
+    Client* invited=nullptr;
+    Client* inviteBy=nullptr;
 };
 
 #endif  // EVEMU_SRC_FLEET_DATA_H_

@@ -2126,7 +2126,13 @@ void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool
     if (is_log_enabled(CLIENT__QUEUE_DUMP))
         (*update)->Dump(CLIENT__QUEUE_DUMP, "");
     DoDestinyAction act;
+    // since this is a new implementation, check shit before hitting it...
+    if (m_system != nullptr) {
+        act.stamp = m_system->GetTicCount();
+    } else {
+        sLog.Warning("  Client Error", "m_system is null on Destiny Update");
         act.stamp = sEntityMgr.GetStamp();
+    }
     if (DoPackage or IsSetState/* or m_packaged*/) {
         if (IsSetState) {
             // send the setstate buffer alone

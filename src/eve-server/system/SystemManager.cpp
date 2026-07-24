@@ -85,6 +85,7 @@ m_activeRatSpawns(0),
 m_activeGateSpawns(0),
 m_activeRoidSpawns(0),
 m_secValue(1.1f),
+m_ticStamp(0),
 m_minutes(0),
 m_civDensity(0),
 m_civSpawnTic(0),
@@ -266,6 +267,9 @@ bool SystemManager::ProcessTic() {
                 SpawnCivilian();
         }
     }
+
+    // increment out tic count
+    ++m_ticStamp;
 
     if (sConfig.debug.UseProfiling)
         sProfiler.AddTime(Profile::system, GetTimeUSeconds() - profileStartTime);
@@ -748,7 +752,7 @@ void SystemManager::AddMarker(SystemEntity* pSE, bool sendBall/*false*/, bool ad
         destinyBuffer->Append( head );
 
         AddBalls2 addballs2;
-            addballs2.stateStamp = sEntityMgr.GetStamp();
+            addballs2.stateStamp = m_ticStamp;
             addballs2.extraBallData = new PyList();
 
         PyTuple* balls = new PyTuple(2);
@@ -1069,11 +1073,11 @@ void SystemManager::SendStaticBall(SystemEntity* pSE)
     //create AddBalls header
     Destiny::AddBall_header head = Destiny::AddBall_header();
         head.packet_type = 1;   // 0 = full state   1 = balls
-        head.stamp = sEntityMgr.GetStamp();
+        head.stamp = m_ticStamp;
     destinyBuffer->Append( head );
 
     AddBalls2 addballs2;
-    addballs2.stateStamp = sEntityMgr.GetStamp();
+    addballs2.stateStamp = m_ticStamp;
     addballs2.extraBallData = new PyList();
 
     if (pSE->IsContainerSE()) {

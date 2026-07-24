@@ -224,7 +224,7 @@ void SuperWeapon::_ShowCycle()
     GodmaEnvironment ge;
         ge.selfID = m_modRef->itemID();
         ge.charID = m_shipRef->ownerID();
-        ge.shipID = m_shipRef->itemID();;
+        ge.shipID = m_shipRef->itemID();
         ge.targetID = 0;
         ge.subLoc = sDataMgr.NewNone();
         ge.area = new PyList;

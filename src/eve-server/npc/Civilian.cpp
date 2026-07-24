@@ -205,7 +205,11 @@ void Civilian::Add(SystemBubble* pBubble) {
     //create AddBalls header
     Destiny::AddBall_header head = Destiny::AddBall_header();
         head.packet_type = 1;   // 0 = full state   1 = balls
+    if (m_origSE->SystemMgr() != nullptr) {
+        head.stamp = m_origSE->SystemMgr()->GetTicCount();
+    } else {
         head.stamp = sEntityMgr.GetStamp();
+    }
     destinyBuffer->Append(head);
 
     AddBalls addballs;

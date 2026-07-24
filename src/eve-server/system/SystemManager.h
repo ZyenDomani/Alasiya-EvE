@@ -108,6 +108,8 @@ public:
     uint32 PlayerCount()                                { return m_players; }
     uint32 GetSysNPCCount()                             { return m_npcs.size(); }
 
+    int32 GetTicCount()                                 { return m_ticStamp; }
+
     // CosmicMgr interface
     BeltMgr* GetBeltMgr()                               { return m_beltMgr; }
     SpawnMgr* GetSpawnMgr()                             { return m_spawnMgr; }
@@ -203,6 +205,9 @@ private:
     SystemData m_data;
 
     float m_secValue;  // range is 0.1 for 1.0 system to 2.0 for -0.9 system
+
+    // system tic counter
+    int32 m_ticStamp;
 
     // for dynamic data system  -allan 10June2019
     SystemKillData m_killData;

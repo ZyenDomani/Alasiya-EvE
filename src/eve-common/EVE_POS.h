@@ -16,8 +16,8 @@
 
 namespace EVEPOS {
     struct CustomsData {
-        bool allowAlliance :1;;
-        bool allowStandings :1;;
+        bool allowAlliance :1;
+        bool allowStandings :1;
         int8 state;         /* used to hold POS state (online, reinforced, operating, etc) */
         int8 status;        /* used to hold POS StructureState (online, reinforced, operating, etc) */
         int8 selectedHour;  /* determines timeframe structure will come out of reinforced mode */
