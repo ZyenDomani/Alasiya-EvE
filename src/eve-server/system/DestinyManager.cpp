@@ -452,6 +452,9 @@ void DestinyManager::Integrate() {
 }
 
 void DestinyManager::CalculateFollowPoint() {
+    // should this check for moving/static objects?
+    //if (m_targetEntity.second->IsStaticEntity())
+    //    return;
     // 1. Extract the target entity's master position
     Vector3d targPos = m_targetEntity.second->GetPosition();
     Vector3d delta = targPos - m_position;
@@ -1163,9 +1166,7 @@ void DestinyManager::FollowBall(SystemEntity* pSE, int32 distance) {
         return;
     }
 
-    distance += mySE->GetRadius() + pSE->GetRadius();
-
-    m_followDistance = distance;
+    m_followDistance = distance + mySE->GetRadius() + pSE->GetRadius();
 
     m_targetHeading = m_targetPoint - m_position;
     m_targetDistance = m_targetHeading.Length();
@@ -1542,8 +1543,7 @@ PyResult DestinyManager::AttemptDockOperation() {
 
     //get the station Docking Perimeter
     Vector3d delta =  stationSE->GetPosition() - m_position;
-    double distance = delta.Length();
-    distance -= (mySE->GetRadius() - stationSE->GetRadius());
+    double distance = delta.Length() - (mySE->GetRadius() + stationSE->GetRadius());
 
     // Verify range to station is within docking perimeter of 2500 meters:
     _log(DESTINY__TRACE, "Destiny::AttemptDockOperation() rangeToStationPerimiter is %0.2fm", distance);

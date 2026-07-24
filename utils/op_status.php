@@ -2120,7 +2120,7 @@ Expiration, Failure or Denial forever blocks giving agent.<BR>
 <td><font color=orange>Skeleton Code Only</font><BR>2Feb20</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Ship_Navigation"> Ship Navigation (<font color=brown">Destiny</font> - <font color=green>Current</font>)</span></h2>
+<h2> <span class="mw-headline" id="Ship_Navigation"> Ship Navigation (<font color=brown">Destiny Rewrite Complete</font> - <font color=yellow>Needs Major Refactor</font>)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: #2222EE; width:84%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
@@ -2139,52 +2139,52 @@ Expiration, Failure or Denial forever blocks giving agent.<BR>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=green>COMPLETE</font><BR>30Jan25</td></tr>
-<tr><td> - Orbit Object</td><td class="broken">40%
+<td><font color=green>COMPLETE</font><BR>23Jul26</td></tr>
+<tr><td> - Orbit Object</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 40%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Preliminary Implementation of new system</font><BR>30Jun26</td></tr>
+<td><font color=green>COMPLETE</font><BR>23Jul26</td></tr>
 <tr><td> - Follow Object</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=green>COMPLETE</font><BR>30Jan25</td></tr>
+<td><font color=green>COMPLETE</font><BR>23Jul26</td></tr>
 <tr><td> - Approach Object</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=green>COMPLETE</font><BR>30Jan25</td></tr>
+<td><font color=green>COMPLETE</font><BR>23Jul26</td></tr>
 <tr><td> - Keep Object at Distance</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=green>COMPLETE</font><BR>30Jan25</td></tr>
+<td><font color=green>COMPLETE</font><BR>23Jul26</td></tr>
 <tr><td> - Aligning to Object</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=green>COMPLETE</font><BR>30Jan25</td></tr>
+<td><font color=green>COMPLETE</font><BR>23Jul26</td></tr>
 <tr><td> - Warp to object on-grid</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=green>COMPLETE</font><BR>30Jan25</td></tr>
+<td><font color=green>COMPLETE</font><BR>23Jul26</td></tr>
 <tr><td> - Warp to object off-grid</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=green>COMPLETE</font><BR>30Jan25</td></tr>
+<td><font color=green>COMPLETE</font><BR>23Jul26</td></tr>
 <tr><td> - Dock to Station</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=green>COMPLETE</font><BR>27July15</td></tr>
+<td><font color=green>COMPLETE</font><BR>23Jul26</td></tr>
 <tr><td> - Undock from Station (with velocity)</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=green>COMPLETE</font><BR>27July15</td></tr>
+<td><font color=green>COMPLETE</font><BR>23Jul26</td></tr>
 <tr><td> - Can travel routes using AutoPilot</td><td class="broken">30%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>
@@ -2232,21 +2232,21 @@ Expiration, Failure or Denial forever blocks giving agent.<BR>
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=green>COMPLETE</font><BR>27Jun17</td></tr>
-<tr><td> - Can Orbit target</td><td class="broken">40%
+<tr><td> - Can Orbit target</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 40%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Preliminary Implementation of new system</font><BR>30Jun26</td></tr>
+<td><font color=green>COMPLETE</font><BR>23Jul26</td></tr>
 <tr><td> - Can Follow target</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=green>COMPLETE</font><BR>27Jun17</td></tr>
+<td><font color=green>COMPLETE</font><BR>23Jul26</td></tr>
 <tr><td> - Can Keep target at distance</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=green>COMPLETE</font><BR>27Jun17</td></tr>
+<td><font color=green>COMPLETE</font><BR>23Jul26</td></tr>
 <tr><td> - Pilot moved to pod when ship destroyed</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
