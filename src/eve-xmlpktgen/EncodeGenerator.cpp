@@ -90,20 +90,28 @@ bool ClassEncodeGenerator::ProcessElement( const TiXmlElement* field ) {
         return false;
     }
 
-    // 1. Fetch the parent layout mask from your string stack
-    std::string currentMask = top();
+    // 1. Fetch the target destination string or layout mask from the stack
+    std::string currentTarget = top();
     pop();
 
     // 2. Pre-format the C++ output expression for encoding the sub-object
     char valueBuffer[64];
     snprintf(valueBuffer, sizeof(valueBuffer), "%s.Encode()", name);
 
-    // 3. Merge the sub-object expression into the parent layout format mask
+    // 3. Merge the sub-object expression safely based on target type
     char finalizedLine[256];
-    snprintf(finalizedLine, sizeof(finalizedLine), currentMask.c_str(), valueBuffer);
+
+    // CASE A: The parent is an inline collection layout mask (contains "%s")
+    if (currentTarget.find("%s") != std::string::npos) {
+        snprintf(finalizedLine, sizeof(finalizedLine), currentTarget.c_str(), valueBuffer);
+    }
+    // CASE B: The parent is a flat destination variable (like obj0_args or ss_2)
+    else {
+        snprintf(finalizedLine, sizeof(finalizedLine), "%s = %s", currentTarget.c_str(), valueBuffer);
+    }
 
     // 4. Output the completed statement
-    fprintf( mOutputFile, "    %s;\n\n", finalizedLine );
+    fprintf( mOutputFile, "   %s;\n", finalizedLine );
     return true;
 }
 
