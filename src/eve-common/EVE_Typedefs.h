@@ -98,7 +98,9 @@ namespace Item {
             Credit              = 29,
             Tritanium           = 34,
             CivilianMiner       = 3651,
-            TypeBillboard       = 11136
+            TypeBillboard       = 11136,
+            // used as 'default' npc
+            GistiiHijacker      = 16877
         };
     }
 }

@@ -151,7 +151,7 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
             data += sizeof(WARP_Struct);
             len -= sizeof(WARP_Struct);
             _log(into, "       formID: %i, TargPt: %.1f, %.1f, %.1f start: %i", b->formationID, b->targX, b->targY, b->targZ, b->effectStamp);
-            _log(into, "       distance: %.1f, warpInVelocity: %.1f, warpFactor: %i", b->distance, b->warpInVelocity, b->warpFactor);
+            _log(into, "       warpDistance: %.1f, minRange: %.1f, warpFactor: %i", b->warpDistance, b->minRange, b->warpFactor);
         } break;
         case Ball::Mode::ORBIT: {
             const ORBIT_Struct *b = (const ORBIT_Struct *) data;

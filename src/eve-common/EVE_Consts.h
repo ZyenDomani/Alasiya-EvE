@@ -28,9 +28,6 @@ static const uint8 marshaledNone[] = { 0x74, 0x04, 0x00, 0x00, 0x00, 0x4E, 0x6F,
 static const Vector3d NULL_ORIGIN(0.0,0.0,0.0);  // common place for a zero-value vector
 
 constexpr double Destiny_k      = 1000000.0;
-constexpr double Destiny_k2     = 1000000000000.0;        //Destiny_k * Destiny_k;
-constexpr double Destiny_ook    = 0.000001;       // 1.0 / Destiny_k;
-constexpr double Destiny_ook2   = 0.000000000001; // 1.0 / ( Destiny_k * Destiny_k );
 
 //   based on client code...
 constexpr float TIC_DURATION_IN_SECONDS = 1000;       // not used yet
@@ -39,7 +36,6 @@ constexpr uint16 SHIP_PROCESS_TICK_MS = 5000;    // 5s
 constexpr double ORBITAL_PRECESSION = 0.001;
 constexpr int64 ONE_LIGHTYEAR = 9460000000000000;  // in meters
 constexpr int64 ONE_AU_IN_METERS = 149597870700;     // 1 astronomical unit in meters, per EVElopedia: http://wiki.eveonline.com/en/wiki/Astronomical_Unit
-constexpr double TEN_AU_IN_METERS = 1495978707000.0;
 constexpr int64 STATION_HANGAR_MAX_CAPACITY = 9000000000000000;  //per client
 constexpr int64 NEXT_DUNGEON_ROOM_DIST = 50000000000; // 50M meters as generic distance between rooms
 constexpr int64 MAX_MARKET_PRICE = 9223372036854;  //max int64/1000000  (9223372036854775807/1000000)

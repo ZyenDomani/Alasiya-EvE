@@ -53,7 +53,7 @@ void PlanetDataMgr::Populate()
     m_db.GetPlanetData(*res);
     while (res->GetRow(row)) {
         // SELECT planet.typeID, resource.typeID
-        m_planetData.insert(std::pair<uint32, uint32>(row.GetInt(0), row.GetInt(1)));
+        m_planetData.emplace(row.GetInt(0), row.GetInt(1));
     }
 
     //cleanup
@@ -227,7 +227,7 @@ void PIDataMgr::Populate()
 
     m_db.GetSchematicData(*res);
     DBResultRow row;
-    std::map<uint8, PI_Schematic>::iterator itr;
+    std::map<uint8, PI::Schematic>::iterator itr;
     while (res->GetRow(row)) {
         // SELECT `schematicID`, `typeID`, `quantity`, `isInput`
         itr = m_schematicData.find(row.GetInt(0));
@@ -239,7 +239,7 @@ void PIDataMgr::Populate()
                 itr->second.outputQty = row.GetInt(2);
             }
         } else {
-            PI_Schematic data = PI_Schematic();
+            PI::Schematic data = PI::Schematic();
             if (row.GetBool(3)) {
                 data.inputs[row.GetInt(1)] = row.GetInt(2);
             } else {
@@ -263,9 +263,9 @@ void PIDataMgr::Populate()
     sLog.Cyan("        PIDataMgr", "%lu PI Schematic data groups loaded in %.3fms.", m_schematicData.size(), (GetTimeMSeconds() - start));
 }
 
-void PIDataMgr::GetSchematicData(uint8 schematicID, PI_Schematic& data)
+void PIDataMgr::GetSchematicData(uint8 schematicID, PI::Schematic& data)
 {
-    std::map<uint8, PI_Schematic>::iterator itr = m_schematicData.find(schematicID);
+    std::map<uint8, PI::Schematic>::iterator itr = m_schematicData.find(schematicID);
     if (itr != m_schematicData.end()) {
         data = itr->second;
         return;
@@ -512,7 +512,7 @@ float EvaluateSingleNodeSH(const float* c, float x, float y, float z) {
 }
 
 // Core Execution: Calculates raw output yield and reduces the local heatmap intensity
-float PIDataMgr::ExtractAndDepletePlanetResource(std::string& io_dbBuffer, const PI_Heads& headPin,
+float PIDataMgr::ExtractAndDepletePlanetResource(std::string& io_dbBuffer, const PI::Heads& headPin,
                                                  float durationFactor/*1.0f*/, float headRadius/*1.0f*/) {
     std::vector<float> floatArray = DecodeHexBufferToFloats(io_dbBuffer);
     float totalExtractedYield(0.0f);

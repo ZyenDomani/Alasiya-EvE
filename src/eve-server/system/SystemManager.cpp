@@ -539,6 +539,12 @@ bool SystemManager::BuildDynamicEntity(const DBSystemDynamicEntity& data, uint32
             if (pClient->InFleet())
                 pWE->SetFleetID(pClient->GetFleetID());
         }
+
+        // set wreck speed based on killed object
+        SystemEntity* pSE = GetSE(launcherID);
+        if (pSE != nullptr) {
+            pWE->DestinyMgr()->SetTrollData(pSE->DestinyMgr());
+        }
     }
 
     AddEntity(pSE);

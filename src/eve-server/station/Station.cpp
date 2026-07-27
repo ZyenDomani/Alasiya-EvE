@@ -320,10 +320,10 @@ void StationSE::EncodeDestiny(Buffer& into)
         head.posY = y();
         head.posZ = z();
         head.flags = /*Ball::Flag::HasMiniBalls |*/ Ball::Flag::IsGlobal | Ball::Flag::IsMassive;
-    into.Append( head );
+    into.Append(head);
     RIGID_Struct main;
         main.formationID = -1;
-    into.Append( main );
+    into.Append(main);
 
 /** @todo miniballs is broken and needs work...
  *  dont know what's wrong at this point, but client freaks out and ignores ANY ball data (in SetState) after this.

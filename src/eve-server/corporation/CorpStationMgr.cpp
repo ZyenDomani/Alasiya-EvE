@@ -347,7 +347,6 @@ PyResult CorpStationMgrIMBound::Handle_GetPotentialHomeStations(PyCallArgs &call
         list->AddItem(new PyObject("util.KeyVal", dict));
     }
 
-    PySafeDecRef(dict);
     return list;
 }
 

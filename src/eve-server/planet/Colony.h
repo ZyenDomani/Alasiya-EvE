@@ -121,9 +121,9 @@ private:
     // pLevel, pinID
     std::multimap<uint8, uint32> m_plantMap;        // map plant's P level to pinID.  to be used during Update()
     // srcPinID, routeData
-    std::multimap<uint32, PI_Route> m_srcRoutes;     // map sourcePin to routeData
+    std::multimap<uint32, PI::Route> m_srcRoutes;     // map sourcePin to routeData
     // destPinID, routeData
-    std::multimap<uint32, PI_Route> m_destRoutes;     // map destPin to routeData
+    std::multimap<uint32, PI::Route> m_destRoutes;     // map destPin to routeData
 };
 
 /*  FINALLY found how to update pins without resending entire colony (must send on uunc)

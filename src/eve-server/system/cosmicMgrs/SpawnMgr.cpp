@@ -183,7 +183,7 @@ void SpawnMgr::WarpOutSpawn(NPC* pNPC, SystemBubble* pBubble) {
     // set bubblespawn false before warping spawn
     pNPC->SysBubble()->SetSpawned(false);
 
-    NPC* rNPC(nullptr);
+    NPC* rNPC = nullptr;
     auto range = m_spawns.equal_range(pNPC->SysBubble()->GetID());
     auto itr = range.first;
     while (itr != range.second) {
@@ -452,10 +452,10 @@ void SpawnMgr::PlayerEnteredBubble(uint8 bubbleID, Client* pClient) {
 }
 
 bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None*/, uint8 level/*0*/) {
-    float secRating(m_system->GetSecurityRating());     // 1.0 to -0.9
+    float secRating = m_system->GetSecurityRating();     // 1.0 to -0.9
     bool anomaly = false;
     // get faction for this region
-    uint32 factionID(factionUnknown);  // default to rogue drones.
+    uint32 factionID = factionUnknown;  // default to rogue drones.
     if (sConfig.npc.RatFaction) {            // is RatFaction set in config?
         factionID = sConfig.npc.RatFaction;
     } else if (MakeRandomFloat() > 0.05f) {      // 5% chance for ANY spawn to be rogue drone.
@@ -768,8 +768,8 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
      * for non-rat spawns, this is the intial spawn which and they will already be in pocket.
      *  waves will be spawned at structure (template positioning data), OR will warp in if no structure in pocket
      */
-    Vector3d startPos(pBubble->GetCenter());
-    Vector3d warpToPoint(startPos);
+    Vector3d startPos = pBubble->GetCenter();
+    Vector3d warpToPoint = startPos;
 
     std::string name = "BeltRat";
     if (anomaly) {
@@ -806,7 +806,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
         data.factionID = factionID;
         data.ownerID = corpID;
 
-    NPC* pNPC(nullptr);
+    NPC* pNPC = nullptr;
     InventoryItemRef iRef(nullptr);
     std::map<uint32, uint8>::iterator cItr = m_liveCount.find(pBubble->GetID());
     if (cItr == m_liveCount.end()) {
@@ -899,7 +899,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
             //  begin warp.  this may have to be looked into later for timing of large spawns (>6)
             //  actually looks kinda cool when larger ships come in later...
             if (sClass <= Spawn::Class::BeltSpawn /*|| isFormation*/) {
-                Vector3d warpTo(warpToPoint);
+                Vector3d warpTo = warpToPoint;
 /*
                 // If Elite Tier (Null-Sec / High End Anomaly), they warp directly in formation!
                 if (sConfig.npc.enableFormation and tacticalTier == 2 and x < formationOffsets.size()) {
@@ -912,7 +912,10 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
                 } else {*/
                     // Otherwise: Rookies and Mid-Tier squads use your beautiful staggered individual warp arrivals!
                     warpTo.MakeRandomPointOnSphere(sClass * 1000);
+
                 //}
+
+                pNPC->DestinyMgr()->WarpTo(warpTo, (MakeRandomInt(-5, 10) * 1000));
             }
 
             // increment live counter for this bubble
@@ -938,8 +941,8 @@ void SpawnMgr::ReSpawn(SystemBubble* pBubble, Spawn::Entry& spawnEntry) {
     if (spawnEntry.spawnClass > Spawn::Class::Insane)
         return;
 
-    Vector3d startPos(pBubble->GetCenter());
-    Vector3d warpToPoint(startPos);
+    Vector3d startPos = pBubble->GetCenter();
+    Vector3d warpToPoint = startPos;
     startPos.MakeRandomPointOnSphere(MakeRandomInt(10, 15) * 100000); //1-1m5 km from bubble center
     _log(SPAWN__TRACE, "ReSpawn()  data for spawnEntryID %u  0x%X is type:%u, corp:%u, faction:%u, #:%u of %u", \
             spawnEntry.spawnID, &spawnEntry, spawnEntry.typeID, spawnEntry.corpID, \
@@ -1000,9 +1003,14 @@ void SpawnMgr::ReSpawn(SystemBubble* pBubble, Spawn::Entry& spawnEntry) {
 uint16 SpawnMgr::GetRandTypeID(uint8 sClass) {
     uint16 groupID = 0;
     std::map<uint8, uint16>::iterator itr = m_factionGroups.find(sClass);
-    if (itr != m_factionGroups.end())
+    if (itr != m_factionGroups.end()) {
         groupID = itr->second;
-    return sDataMgr.GetRandRatType(sClass, groupID);
+        return sDataMgr.GetRandRatType(sClass, groupID);
+    }
+
+    _log(SPAWN__WARNING, "GetRandTypeID() - Spawn Class %s not found in m_factionGroups.", GetSpawnClassName(sClass));
+    // default to actual npc type to avoid item spawn errors
+    return Item::Type::GistiiHijacker;
 }
 
 bool SpawnMgr::IsChaining(uint16 bubbleID) {

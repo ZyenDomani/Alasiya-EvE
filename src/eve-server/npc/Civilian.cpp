@@ -326,10 +326,10 @@ void Civilian::EncodeDestiny( Buffer& into) {
                 warp.targX = target.x;
                 warp.targY = target.y;
                 warp.targZ = target.z;
-                warp.warpFactor = 150;       //ship warp speed x10
+                warp.warpFactor = 150;
                 warp.effectStamp = -1;
-                warp.distance = -1;
-                warp.warpInVelocity = 15000;
+                warp.warpDistance = -1;
+                warp.minRange = 0;
             into.Append(warp);
         }  break;
         case Civ::State::Undocking: {
@@ -343,12 +343,16 @@ void Civilian::EncodeDestiny( Buffer& into) {
         }  break;
         case Civ::State::Arriving: {
             Vector3d target = m_destSE->GetPosition();
-            GOTO_Struct go;
-                go.formationID = -1;
-                go.x = target.x;
-                go.y = target.y;
-                go.z = target.z;
-            into.Append(go);
+            WARP_Struct warp;
+                warp.formationID = -1;
+                warp.targX = target.x;
+                warp.targY = target.y;
+                warp.targZ = target.z;
+                warp.warpFactor = 150;
+                warp.effectStamp = -1;
+                warp.warpDistance = -1;
+                warp.minRange = 0;
+            into.Append(warp);
         }  break;
         case Civ::State::Formation: {
             FORMATION_Struct form;
@@ -361,7 +365,7 @@ void Civilian::EncodeDestiny( Buffer& into) {
         default: {
             STOP_Struct main;
                 main.formationID = -1;
-            into.Append( main );
+            into.Append(main);
         } break;
     }
 }
@@ -375,6 +379,7 @@ void Civilian::SendShipVars(SystemBubble* pBubble) {
         sbagility.entityID =  m_itemID;
         sbagility.agility = m_type->GetAttribute(AttrInertiaMod).get_double();
     updates.push_back(sbagility.Encode());
+    // this may not be needed for non-massive
     SetBallMassive sbmassive;
         sbmassive.entityID = m_itemID;
         sbmassive.is_massive = 0;

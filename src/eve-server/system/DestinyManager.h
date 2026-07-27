@@ -105,17 +105,19 @@ public:
 
     /* Informational query functions: */
     //  functions to return protected variables for SystemBubble exclusive WarpTo updates and other methods that need Destiny Variables
-    const Vector3d &GetPosition() const                 { return m_position; }
-    const Vector3d &GetVelocity() const                 { return m_shipVelocity; }
+    const Vector3d& GetPosition() const                 { return m_position; }
+    const Vector3d& GetVelocity() const                 { return m_shipVelocity; }
     float GetSpeedFraction()                            { return m_activeSpeedFraction; }
     double GetSpeed()                                   { return m_shipVelocity.Length(); }
     int32 GetWarpSpeed()                                { return static_cast<int32>(m_shipWarpSpeed * 10); }
     uint32 GetTargetID()                                { return m_targetEntity.first; }
     SystemEntity* GetTargetEntity()                     { return m_targetEntity.second; }
     Vector3d GetTargetPoint()                           { return m_targetPoint; }
-    // is this right??
-    double GetFollowDistance()                          { return static_cast<double>(m_targetDistance); }
-    uint32 GetStateStamp()                              { return m_stateStamp; }
+    // this is distance from where we are to where we want to be
+    double GetTargetDistance()                          { return static_cast<double>(m_targetDistance); }
+    // this is commanded follow or 'warp to within' distance
+    double GetFollowDistance()                          { return static_cast<double>(m_followDistance); }
+    int32 GetTicStamp()                                 { return m_ticStamp; }
     double GetAgility()                                 { return m_agility; }   // this is only used by my GetShipVars command
     uint8 GetAlignTime()                                { return m_alignTime; } // this is only used by my GetShipVars command
     float GetWarpDropSpeed()                            { return m_speedToLeaveWarp; }
@@ -139,7 +141,7 @@ public:
     // reset speed variables and bubblecast ship's AB/MWD modified speed (module activate/deactivate)
     void SpeedBoost(bool deactivate=false);
     void SetPosition(const Vector3d& pt, bool update=false);
-    void SetMaxVelocity(uint16 maxVelocity);
+    void SetNPCSpeed(uint16 newSpeed, uint16 maxSpeed);
     void UpdateShipVariables();
     // set all movement vars for missile and add to system
     void MakeMissile(Missile* missile);  //  this is used by all entities (pc, npc, drone, sentry, pos, etc)
@@ -164,10 +166,14 @@ public:
 
     /* TractorBeam */
     void TractorBeamStop();
-    void TractorBeamStart(SystemEntity* pShipSE, EvilNumber speed);
+    void TractorBeamStart(SystemEntity* pSE, EvilNumber speed);
 
     /* Larger movement */
     void WarpTo( const Vector3d& destPoint, int32 distance = 0, bool autoPilot = false, SystemEntity* pSE = nullptr );
+
+    /* special */
+    void ApplyVortexGravityTug(ShipSE* pShipSE, Vector3d vortexCenterAxis);
+    void SetTrollData(DestinyManager* pDestiny);  // as stated.  uses DestinyMgr of launcher to acquire data
 
     //Destiny Update stuff:
     PyResult AttemptDockOperation();
@@ -226,7 +232,7 @@ protected:
     float m_maxSpeed;                   //in m/s
     float m_alignTime;                  //in s      - no longer used
     float m_shipWarpSpeed;              //in au/s   x/3 = warp speed multiplier
-    float m_speedToLeaveWarp;           //in m/s    - this is set to 75% of m_maxSpeed
+    float m_speedToLeaveWarp;           //in m/s    - this is set to 50% of m_maxSpeed
 
     //User controlled information used by a state to determine what to do.
     bool m_stop;                        //used to denote Stop() has been called to avoid multiple stops (and associated decel)
@@ -235,20 +241,19 @@ protected:
     bool m_tractorPause;
 
     double m_timeStamp;                 //timestamp of when current mode began, using GetTimeMSeconds()
-    uint32 m_stateStamp;                //statestamp of when current state began, in seconds
+    int32 m_ticStamp;                   //sysMgr ticStamp of when current state began, in seconds
 
     float m_userSpeedFraction;          //fuzzy logic - user commanded percent of max speed
     float m_activeSpeedFraction;        //fuzzy logic - current percent of max speed
 
     int64 m_targetDistance;             //in m  this is current distance to target
-    int64 m_followDistance;             //in m  this is desired distance to target
+    int64 m_followDistance;             //in m  this is desired distance to target; also 'warp to within' distance
 
-    Vector3d m_position;                  //in m
-    Vector3d m_targetPoint;               //vector  point in space used as current destination
-    Vector3d m_warpHeading;              //as stated
-    Vector3d m_shipVelocity;             //current ship velocity
-    Vector3d m_targetHeading;            //direction to current target
-    Vector3d m_targetVelocity;           //desired ship velocity
+    Vector3d m_position;                //in m
+    Vector3d m_targetPoint;             //vector  point in space used as current destination
+    Vector3d m_shipVelocity;            //current ship velocity
+    Vector3d m_targetHeading;           //direction to current target
+    Vector3d m_targetVelocity;          //desired ship velocity
     std::pair<uint32, SystemEntity*> m_targetEntity;   //we do not own the SystemEntity*
 
 private:
@@ -261,7 +266,7 @@ private:
     bool m_alignTo;                     // once aligned, ship will stop
     bool m_paused;                      // used to fake orbit while keeping velocity but not actually move ship.
     bool m_posHack;                     //force position update
-    double m_agility;                   // something about m/s  not quite sure yet
+    double m_agility;                   // something about m/s^2  not quite sure yet
 
     // new movement data
     double m_expTerm;                   // e^(-dt/tau)   [tau = mass * inertiaMod / 1000000.0f]
@@ -294,9 +299,6 @@ private:
     void WarpStop(int64 currentShipSpeed);
     void WarpUpdate(int64 currentShipSpeed, uint16 sec_into_warp, uint8 type);      // 0=error, 1=accel, 2=cruise, 3=decel
 
-    // trying update queue (didnt work)
-    std::vector<PyTuple*> m_updateQueue;
-
     // Variables used during Warp.
     class WarpState {
     public:
@@ -324,6 +326,9 @@ private:
         cruise(cruise_),
         decel(decel_)
         {}
+        bool accel;
+        bool cruise;
+        bool decel;
         int32 start_time;          //from sEntityMgr::GetStamp()
         int64 total_distance;      //in m
         int64 warpSpeed;           //in m/s
@@ -332,10 +337,8 @@ private:
         int64 decelDist;           //in m
         float warpTime;            //in s
         float accelFraction;
-        bool accel;
-        bool cruise;
-        bool decel;
     };
+
     WarpState* m_warpState;		    //we own this.
 };
 

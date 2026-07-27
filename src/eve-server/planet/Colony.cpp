@@ -230,7 +230,7 @@ void Colony::LoadPlants() {
         if (cur.second.isECU) {
             DBQueryResult res;
             DBResultRow row;
-            PI_ECU ecu = PI_ECU();
+            PI::ECU ecu = PI::ECU();
 
             m_db.LoadECU(cur.first, res);
             if (res.GetRow(row)) {
@@ -248,8 +248,8 @@ void Colony::LoadPlants() {
 
         // load plants in mem object
         if (cur.second.isProcess) {
-            PI_Plant plant                  = PI_Plant();
-            plant.data                      = PI_Schematic();
+            PI::Plant plant                  = PI::Plant();
+            plant.data                      = PI::Schematic();
             plant.hasReceivedInputs         = false;
             plant.receivedInputsLastCycle   = false;
 
@@ -308,7 +308,7 @@ void Colony::CreateCommandPin(uint32 itemID, uint32 typeID, double latitude, dou
 
 void Colony::CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latitude, double longitude) {
     using namespace EVEDB::invGroups;
-    PI_Pin pin = PI_Pin();
+    PI::PinData pin = PI::PinData();
     InventoryItemRef iRef(nullptr);
     if (groupID == Command_Centers) {
         iRef = sItemFactory.GetItemRef(m_colonyID);
@@ -358,12 +358,12 @@ void Colony::CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latit
         case Processors: {         // 1028
             pin.isStorage = true;
             pin.isProcess = true;
-            ccData->plants[iRef->itemID()] = PI_Plant();
+            ccData->plants[iRef->itemID()] = PI::Plant();
         } break;
         case Extractor_Control_Units: { // 1063
             pin.isECU = true;
             pin.qtyPerCycle = iRef->GetAttribute(AttrPinExtractionQuantity).get_uint32();
-            ccData->ecus[iRef->itemID()] = PI_ECU();
+            ccData->ecus[iRef->itemID()] = PI::ECU();
         } break;
         case Spaceports:{   // 1030
             pin.isStorage = true;
@@ -422,7 +422,7 @@ void Colony::CreateLink(uint32 src, uint32 dest, uint16 level) {
     iRef->Move(m_pSE->GetID(), flagPlanetSurface, true);
     iRef->SaveItem();
 
-    PI_Link link = PI_Link();
+    PI::Link link = PI::Link();
         link.state = PI::Pin::State::Idle;
         link.level = level;
         link.endpoint1 = src;
@@ -464,9 +464,9 @@ void Colony::CreateRoute(uint16 routeID, uint32 typeID, uint32 qty, PyList* path
         list1 = list2;
     }
 
-    PI_Route route = PI_Route();
+    PI::Route route = PI::Route();
         route.state = PI::Pin::State::Idle;
-        route.priority = PI::Route::PriorityNorm;
+        route.priority = PI::RoutePriority::Norm;
         route.commodityTypeID = typeID;
         route.commodityQuantity = qty;
         route.srcPinID = list1.front();
@@ -482,10 +482,10 @@ void Colony::CreateRoute(uint16 routeID, uint32 typeID, uint32 qty, PyList* path
     _log(COLONY__INFO, "Colony::CreateRoute() - Created route id %u for %u of typeID %u, making %u hops.", routeID, qty, typeID, (uint32)path->size() - 1);
 
     // route has been created and added to list.  check for materials being moved, and if source has the mat, remove qty and send to dest.
-    std::map<uint32, PI_Pin>::iterator srcItr = ccData->pins.find(route.srcPinID);
+    std::map<uint32, PI::PinData>::iterator srcItr = ccData->pins.find(route.srcPinID);
     if (srcItr == ccData->pins.end())
         return;  // source not found.  make error here.
-    std::map<uint32, PI_Pin>::iterator destItr = ccData->pins.find(route.destPinID);
+    std::map<uint32, PI::PinData>::iterator destItr = ccData->pins.find(route.destPinID);
     if (destItr == ccData->pins.end())
         return;  // destination not found.  make error here.
     std::map<uint16, uint32>::iterator itemItr = srcItr->second.contents.find(route.commodityTypeID);
@@ -513,7 +513,7 @@ void Colony::CreateRoute(uint16 routeID, uint32 typeID, uint32 qty, PyList* path
 
 void Colony::UpgradeCommandCenter(uint32 pinID, int8 level) {
     ccData->level = level;
-    std::map<uint32, PI_Pin>::iterator itr = ccData->pins.find(pinID);
+    std::map<uint32, PI::PinData>::iterator itr = ccData->pins.find(pinID);
     if (itr != ccData->pins.end()) {
         itr->second.level = level;
         m_db.SaveCCLevel(pinID, level);
@@ -526,7 +526,7 @@ void Colony::UpgradeCommandCenter(uint32 pinID, int8 level) {
 void Colony::UpgradeLink(uint32 src, uint32 dest, uint8 level)
 {
 	/** @todo is there a better way to do this instead of interating thru entire map? */
-    std::map<uint32, PI_Link>::iterator itr = ccData->links.begin();
+    std::map<uint32, PI::Link>::iterator itr = ccData->links.begin();
     for (; itr != ccData->links.end(); itr++)
         if (itr->second.endpoint1 == src)
             if (itr->second.endpoint2 == dest) {
@@ -540,7 +540,7 @@ void Colony::RemovePin(uint32 pinID)
 {
     uint8 linkCount = 0, routeCount = 0, pathCount = 0;
     // check for and remove links to this pinID
-    std::map<uint32, PI_Link>::iterator linkItr = ccData->links.begin();
+    std::map<uint32, PI::Link>::iterator linkItr = ccData->links.begin();
     while (linkItr != ccData->links.end()) {
         if (linkItr->second.endpoint1 == pinID) {
             m_db.RemoveLink(linkItr->first);
@@ -558,7 +558,7 @@ void Colony::RemovePin(uint32 pinID)
     }
 
     // check for routes to, from, or thru this pin
-    std::map<uint16, PI_Route>::iterator routeItr = ccData->routes.begin();
+    std::map<uint16, PI::Route>::iterator routeItr = ccData->routes.begin();
     while (routeItr != ccData->routes.end()) {
         if (routeItr->second.srcPinID == pinID) {
             m_db.RemoveRoute(routeItr->first);
@@ -591,10 +591,10 @@ void Colony::RemovePin(uint32 pinID)
     m_destRoutes.erase(pinID);
 
     // find this pin in map, then process delete accordingly
-    std::map<uint32, PI_Pin>::iterator pinItr = ccData->pins.find(pinID);
+    std::map<uint32, PI::PinData>::iterator pinItr = ccData->pins.find(pinID);
     if (pinItr != ccData->pins.end()) {
         if (pinItr->second.isProcess) {
-            std::map<uint32, PI_Plant>::iterator plantItr = ccData->plants.find(pinID);
+            std::map<uint32, PI::Plant>::iterator plantItr = ccData->plants.find(pinID);
             auto cycleItr = m_plantMap.equal_range(plantItr->second.pLevel);
             for (auto it = cycleItr.first; it != cycleItr.second; ++it) {
                 if (it->second == pinID)
@@ -616,7 +616,7 @@ void Colony::RemovePin(uint32 pinID)
 }
 
 void Colony::RemoveLink(uint32 src, uint32 dest) {
-    std::map<uint32, PI_Link>::iterator linkItr = ccData->links.begin();
+    std::map<uint32, PI::Link>::iterator linkItr = ccData->links.begin();
     for (; linkItr != ccData->links.end(); ++linkItr) {
         if (linkItr->second.endpoint1 == src) {
             if (linkItr->second.endpoint2 == dest) {
@@ -630,7 +630,7 @@ void Colony::RemoveLink(uint32 src, uint32 dest) {
 }
 
 void Colony::RemoveRoute(uint16 routeID) {
-    std::map<uint16, PI_Route>::iterator routeItr = ccData->routes.find(routeID);
+    std::map<uint16, PI::Route>::iterator routeItr = ccData->routes.find(routeID);
     if (routeItr != ccData->routes.end()) {
         m_srcRoutes.erase(routeItr->second.srcPinID);
         m_destRoutes.erase(routeItr->second.destPinID);
@@ -641,7 +641,7 @@ void Colony::RemoveRoute(uint16 routeID) {
 }
 
 void Colony::AddExtractorHead(uint32 ecuID, uint16 headID, double latitude, double longitude) {
-    std::map<uint32, PI_ECU>::iterator ecuItr = ccData->ecus.find(ecuID);
+    std::map<uint32, PI::ECU>::iterator ecuItr = ccData->ecus.find(ecuID);
     if (ecuItr == ccData->ecus.end()) {
         _log(COLONY__ERROR, "Colony::MoveExtractorHead() - ecuID %u not found in ccData.pins map", ecuID);
         return;
@@ -650,7 +650,7 @@ void Colony::AddExtractorHead(uint32 ecuID, uint16 headID, double latitude, doub
 
     m_newHead = true;
     tempECUs.push_back(ecuID);
-    PI_Heads head = PI_Heads();
+    PI::Heads head = PI::Heads();
         head.typeID = ecuItr->second.programType;
         head.ecuPinID = ecuID;
         head.latitude = latitude;
@@ -659,13 +659,13 @@ void Colony::AddExtractorHead(uint32 ecuID, uint16 headID, double latitude, doub
 }
 
 void Colony::MoveExtractorHead(uint32 ecuID, uint16 headID, double latitude, double longitude) {
-    std::map<uint32, PI_ECU>::iterator ecuItr = ccData->ecus.find(ecuID);
+    std::map<uint32, PI::ECU>::iterator ecuItr = ccData->ecus.find(ecuID);
     if (ecuItr == ccData->ecus.end()) {
         _log(COLONY__ERROR, "Colony::MoveExtractorHead() - ecuID %u not found in ccData.pins map", ecuID);
         return;
     }
 
-    std::map<uint16, PI_Heads>::iterator headItr = ecuItr->second.heads.find(headID);
+    std::map<uint16, PI::Heads>::iterator headItr = ecuItr->second.heads.find(headID);
     if (headItr == ecuItr->second.heads.end()) {
         _log(COLONY__ERROR, "Colony::MoveExtractorHead() - headID %u not found in pin.heads map", headID);
         return;
@@ -679,7 +679,7 @@ void Colony::MoveExtractorHead(uint32 ecuID, uint16 headID, double latitude, dou
 }
 
 void Colony::KillExtractorHead(uint32 ecuID, uint16 headID) {
-    std::map<uint32, PI_ECU>::iterator ecuItr = ccData->ecus.find(ecuID);
+    std::map<uint32, PI::ECU>::iterator ecuItr = ccData->ecus.find(ecuID);
     if (ecuItr == ccData->ecus.end()) {
         _log(COLONY__ERROR, "Colony::KillExtractorHead() - ecuID %u not found in ccData.pins map", ecuID);
         return;
@@ -694,13 +694,13 @@ void Colony::SetSchematic(uint32 pinID, uint8 schematicID/*0*/) {
             pinID = itr->second;
     }
 
-    std::map<uint32, PI_Plant>::iterator plantItr = ccData->plants.find(pinID);
+    std::map<uint32, PI::Plant>::iterator plantItr = ccData->plants.find(pinID);
     if (plantItr == ccData->plants.end()) {
         _log(COLONY__ERROR, "Colony::SetSchematic() - plantID %u not found in ccData.plants map", pinID);
         return;
     }
 
-    std::map<uint32, PI_Pin>::iterator pinItr = ccData->pins.find(pinID);
+    std::map<uint32, PI::PinData>::iterator pinItr = ccData->pins.find(pinID);
 
     if (schematicID) {
         // install new schematic.  set lastRunTime to 0.  set installTime to now.   update
@@ -755,14 +755,14 @@ void Colony::InstallProgram(uint32 ecuID, uint16 typeID, double headRadius) {
      * 09:54:54 [PlanetCallDump]       [ 0]   [10]   [ 1]   [ 1]    Integer: 2272       typeID
      * 09:54:54 [PlanetCallDump]       [ 0]   [10]   [ 1]   [ 2]       Real: 0.011281   headRadius
      */
-    std::map<uint32, PI_Pin>::iterator pinItr = ccData->pins.find(ecuID);
+    std::map<uint32, PI::PinData>::iterator pinItr = ccData->pins.find(ecuID);
     if (pinItr == ccData->pins.end()) {
         ccData->ecus.erase(ecuID);
         _log(COLONY__ERROR, "Colony::InstallProgram() - ecuPinID %u not found in ccData.pins map", ecuID);
         return;
     }
 
-    std::map<uint32, PI_ECU>::iterator ecuItr = ccData->ecus.find(ecuID);
+    std::map<uint32, PI::ECU>::iterator ecuItr = ccData->ecus.find(ecuID);
 
     pinItr->second.launchTime = 0;
     ecuItr->second.cycleCount = 0;
@@ -798,13 +798,13 @@ void Colony::InstallProgram(uint32 ecuID, uint16 typeID, double headRadius) {
 
 void Colony::SetProgramResults(uint32 ecuID, uint16 typeID, uint16 numCycles, double headRadius, float cycleTime, uint32 qtyPerCycle)
 {
-    std::map<uint32, PI_Pin>::iterator itr = ccData->pins.find(ecuID);
+    std::map<uint32, PI::PinData>::iterator itr = ccData->pins.find(ecuID);
     if (itr == ccData->pins.end()) {
         _log(COLONY__ERROR, "Colony::SetProgramResults() - ecuPinID %u not found in ccData.pins map", ecuID);
         return;
     }
 
-    std::map<uint32, PI_ECU>::iterator ecuItr = ccData->ecus.find(ecuID);
+    std::map<uint32, PI::ECU>::iterator ecuItr = ccData->ecus.find(ecuID);
 
     itr->second.cycleTime = cycleTime * EvE::Time::Hour;
     itr->second.qtyPerCycle = qtyPerCycle;
@@ -833,14 +833,14 @@ void Colony::SetProgramResults(uint32 ecuID, uint16 typeID, uint16 numCycles, do
  */
 PyDict* Colony::TransferCommodities(uint32 srcID, uint32 destID, std::map< uint16, uint32 > items) {
     //  this call actually sends path src->dest to verify throughput, which we dont do yet...
-    std::map<uint32, PI_Pin>::iterator srcItr = ccData->pins.find(srcID);
+    std::map<uint32, PI::PinData>::iterator srcItr = ccData->pins.find(srcID);
     if (srcItr == ccData->pins.end()) {
         _log(COLONY__ERROR, "Colony::TransferCommodities() - srcItr %u not found in ccData.pins map", srcID);
         if (m_client->CanThrow())
             throw CustomError("Source not found.");
         return nullptr; // make error and return.
     }
-    std::map<uint32, PI_Pin>::iterator destItr = ccData->pins.find(destID);
+    std::map<uint32, PI::PinData>::iterator destItr = ccData->pins.find(destID);
     if (destItr == ccData->pins.end()) {
         _log(COLONY__ERROR, "Colony::TransferCommodities() - destItr %u not found in ccData.pins map", destID);
         if (m_client->CanThrow())
@@ -926,7 +926,7 @@ PyRep* Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items
 {
     // this will export items from CC to jetcan in space.
     // launchpad (Spaceport) xfers items to/from customs office
-    std::map<uint32, PI_Pin>::iterator pinItr = ccData->pins.find(pinID);
+    std::map<uint32, PI::PinData>::iterator pinItr = ccData->pins.find(pinID);
     if (pinItr == ccData->pins.end()) {
         _log(COLONY__ERROR, "Colony::LaunchCommodities() - pinID %u not found in ccData.pins map", pinID);
         return nullptr;
@@ -1053,7 +1053,7 @@ void Colony::PlanetXfer(uint32 pinID, std::map< uint32, uint16 > importItems, st
     // import is from CO to planet.  export is from planet to CO
     // this method will make the transfer of items from real to virtual and back as necessary
 
-    std::map<uint32, PI_Pin>::iterator pinItr = ccData->pins.find(pinID);
+    std::map<uint32, PI::PinData>::iterator pinItr = ccData->pins.find(pinID);
     if (pinItr == ccData->pins.end()) {
         _log(COLONY__ERROR, "Colony::PlanetXfer() - pinID %u not found in ccData.pins map", pinID);
         if (m_client->CanThrow())
@@ -1190,7 +1190,7 @@ void Colony::PlanetXfer(uint32 pinID, std::map< uint32, uint16 > importItems, st
 
 void Colony::PrioritizeRoute(uint16 routeID, int8 priority) {
     // set priority level for route...still not sure how to use it
-    std::map<uint16, PI_Route>::iterator routeItr = ccData->routes.find(routeID);
+    std::map<uint16, PI::Route>::iterator routeItr = ccData->routes.find(routeID);
     if (routeItr != ccData->routes.end()) {
         routeItr->second.priority = priority;
         m_db.SaveRoutes(ccData);
@@ -1231,7 +1231,7 @@ PyTuple* Colony::GetPins() {
             if (cur.second.schematicID) {
                 dict->SetItem("schematicID", new PyInt(cur.second.schematicID));
                 dict->SetItem("cycleTime", new PyLong(cur.second.cycleTime));
-                std::map<uint32, PI_Plant>::iterator plantItr = ccData->plants.find(cur.first);
+                std::map<uint32, PI::Plant>::iterator plantItr = ccData->plants.find(cur.first);
                 dict->SetItem("hasReceivedInputs", new PyBool(plantItr->second.hasReceivedInputs));
                 dict->SetItem("receivedInputsLastCycle", new PyBool(plantItr->second.receivedInputsLastCycle));
             } else {
@@ -1242,7 +1242,7 @@ PyTuple* Colony::GetPins() {
         }
 
         if (cur.second.isECU) {
-            std::map<uint32, PI_ECU>::iterator ecuItr = ccData->ecus.find(cur.first);
+            std::map<uint32, PI::ECU>::iterator ecuItr = ccData->ecus.find(cur.first);
             if (ecuItr->second.programType) {
                 dict->SetItem("cycleTime", new PyLong(cur.second.cycleTime));
                 dict->SetItem("expiryTime", (ecuItr->second.expiryTime ? new PyLong(ecuItr->second.expiryTime) : PyStatic.NewNone()));
@@ -1306,7 +1306,7 @@ PyTuple* Colony::GetRoutes() {
 PyRep* Colony::GetColony() {
     if (m_newHead) {
         for (auto &cur : tempECUs) {
-            std::map<uint32, PI_ECU>::iterator ecuItr = ccData->ecus.find(cur);
+            std::map<uint32, PI::ECU>::iterator ecuItr = ccData->ecus.find(cur);
             if (ecuItr != ccData->ecus.end()) {
                 m_db.SaveHeads(m_colonyID, m_client->GetCharacterID(), cur, ecuItr->second.heads);
             } else {
@@ -1358,7 +1358,7 @@ void Colony::Update() {
     ProcessPlants();
 
     // update CommandCenter runtime
-    std::map<uint32, PI_Pin>::iterator pinItr = ccData->pins.find(m_colonyID);
+    std::map<uint32, PI::PinData>::iterator pinItr = ccData->pins.find(m_colonyID);
     if (pinItr != ccData->pins.end())
         pinItr->second.lastRunTime = m_procTime;
 
@@ -1395,9 +1395,9 @@ void Colony::ProcessECUs() {
     // routed item [typeID, qty}
     std::map<uint16, uint32>::iterator itemItr;
     // this is our source {pinID, data}
-    std::map<uint32, PI_Pin>::iterator ecuPinItr;
+    std::map<uint32, PI::PinData>::iterator ecuPinItr;
     // either plant or storage {itemID, data}
-    std::map<uint32, PI_Pin>::iterator destPinItr;
+    std::map<uint32, PI::PinData>::iterator destPinItr;
     for (auto &ecu : ccData->ecus) {
         if (is_log_enabled(COLONY__DEBUG))
             _log(COLONY__DEBUG, "Colony::ProcessECUs() - Start Processing %s(%u).", \
@@ -1478,7 +1478,7 @@ void Colony::ProcessECUs() {
 
             if (destPinItr->second.isProcess) {
                 // routing is straight to plant.  trigger input
-                std::map<uint32, PI_Plant>::iterator plantItr = ccData->plants.find(it->second.destPinID);
+                std::map<uint32, PI::Plant>::iterator plantItr = ccData->plants.find(it->second.destPinID);
                 // this triggers plant input loop for req mat'l
                 plantItr->second.hasReceivedInputs = true;
             }
@@ -1524,15 +1524,15 @@ void Colony::ProcessPlants() {
     uint16 tempCycles = 0;
     int32 cycles(0), cycles2(0), amount(0), divisor(0), delta = 0;
     // either plant or storage {itemID, data}
-    std::map<uint32, PI_Pin>::iterator srcPinItr;
+    std::map<uint32, PI::PinData>::iterator srcPinItr;
     // either plant or storage {itemID, data}
-    std::map<uint32, PI_Pin>::iterator destPinItr;
+    std::map<uint32, PI::PinData>::iterator destPinItr;
     // common pin data for plant {itemID, data}
-    std::map<uint32, PI_Pin>::iterator plantPinItr;
+    std::map<uint32, PI::PinData>::iterator plantPinItr;
     // stored item [typeID, qty}
     std::map<uint16, uint32>::iterator itemItr;
     // plant-specific data  {itemID, data}
-    std::map<uint32, PI_Plant>::iterator plantItr;
+    std::map<uint32, PI::Plant>::iterator plantItr;
     _log(COLONY__INFO, "Colony::ProcessPlants() - Begin Plant Processing.  m_procTime: %lli", m_procTime);
 
     // can this loop be split into smaller calls?  (like warp in destiny)
@@ -1763,7 +1763,7 @@ void Colony::ProcessPlants() {
                 for (auto it = srcRouteItr.first; it != srcRouteItr.second; ++it) {
                     // get destination pin and update qty there for this round
                     destPinItr = ccData->pins.find(it->second.destPinID);
-                    // contents are stored in each pin.  PI_Pin.contents(std::map<uint16, uint32> typeID, qty)
+                    // contents are stored in each pin.  PI::PinData.contents(std::map<uint16, uint32> typeID, qty)
                     // we have plant cycles for this loop, so multiply output by cycles to get a total to simulate the "active" plant
                     amount = it->second.commodityQuantity * cycles;
 

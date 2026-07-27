@@ -48,6 +48,7 @@ int StaticDataMgr::Initialize() {
     m_bpMatlHeader->AddColumn("quantity",          DBTYPE_I4);
     m_bpMatlHeader->AddColumn("requiredTypeID",    DBTYPE_I4);
     m_bpMatlHeader->AddColumn("damagePerJob",      DBTYPE_R4);
+    //TODO:  check for adding 'extras' here...
 
     Populate();
     return 1;
@@ -780,9 +781,9 @@ PyInt* StaticDataMgr::GetAgentSystemID(int32 agentID) {
 
 void StaticDataMgr::GetSalvage(uint32 factionID, std::vector<uint32> &into) {
     auto range = m_salvageMap.equal_range(factionID);
-    uint16 count = std::distance(range.first, range.second);
-    if (count == 0)
+    if (range.first == range.second)
         return;
+    uint16 count = std::distance(range.first, range.second);
     into.reserve(into.size() + count);
     for (auto &it = range.first; it != range.second; ++it)
         into.push_back(it->second);
@@ -822,12 +823,13 @@ void StaticDataMgr::LoadSalvageTables() {
 
 bool StaticDataMgr::GetRoidDist(const char* secClass, std::unordered_multimap<float, uint16>& into) {
     auto range = m_oreBySecClass.equal_range(secClass);
-    uint16 count = std::distance(range.first, range.second);
-    if (count == 0)
+    if (range.first == range.second)
         return false;
+    uint16 count = std::distance(range.first, range.second);
     into.reserve(into.size() + count);
     for (auto it = range.first; it != range.second; ++it) {
-        _log(MINING__INFO, "GetRoidDist - adding %u with chance %.3f", it->second.typeID, it->second.chance);
+        if (is_log_enabled(MINING__INFO))
+            _log(MINING__INFO, "GetRoidDist - adding %u with chance %.3f", it->second.typeID, it->second.chance);
         into.emplace(it->second.chance, it->second.typeID);
     }
 
@@ -836,9 +838,9 @@ bool StaticDataMgr::GetRoidDist(const char* secClass, std::unordered_multimap<fl
 
 void StaticDataMgr::GetDgmTypeAttrVec(uint16 typeID, std::vector< Inv::DmgTypeAttribute >& into) {
     auto range = m_typeAttrMap.equal_range(typeID);
-    uint16 count = std::distance(range.first, range.second);
-    if (count == 0)
+    if (range.first == range.second)
         return;
+    uint16 count = std::distance(range.first, range.second);
     into.reserve(into.size() + count);
     for (auto it = range.first; it != range.second; ++it)
         into.push_back(it->second);
@@ -980,7 +982,7 @@ bool StaticDataMgr::GetNPCTypes(uint16 groupID, std::vector< uint16 >& typeVec) 
 bool StaticDataMgr::GetNPCGroups(uint32 factionID, std::map< uint8, uint16 >& groupMap) {
     auto range = m_npcGroups.equal_range(factionID);
     for (auto it = range.first; it != range.second; ++it)
-        groupMap[it->second.shipClass] = it->second.groupID;
+        groupMap.emplace(it->second.shipClass, it->second.groupID);
 
     return !groupMap.empty();
 }
@@ -988,9 +990,9 @@ bool StaticDataMgr::GetNPCGroups(uint32 factionID, std::map< uint8, uint16 >& gr
 //TODO:  this is getting all levels for the class...we only need one level, but level isnt calculated yet
 bool StaticDataMgr::GetNPCClasses(uint8 sClass, std::vector< RatSpawnClass >& classVec) {
     auto range = m_npcClasses.equal_range(sClass);
-    uint16 count = std::distance(range.first, range.second);
-    if (count == 0)
+    if (range.first == range.second)
         return false;
+    uint16 count = std::distance(range.first, range.second);
     classVec.reserve(classVec.size() + count);
     for (auto it = range.first; it != range.second; ++it) {
         RatSpawnClass spawnClass   = RatSpawnClass();
@@ -1191,9 +1193,9 @@ void StaticDataMgr::GetLoot(float secValue, uint32 groupID, std::vector<LootList
     // Finds a range containing all elements whose key is k.
     // pair<iterator, iterator> equal_range(const key_type& k)
     auto range = m_LootGroupMap.equal_range(groupID);
-    uint16 count = std::distance(range.first, range.second);
-    if (count == 0)
+    if (range.first == range.second)
         return;
+    uint16 count = std::distance(range.first, range.second);
     lootGrpVec.reserve(lootGrpVec.size() + count);
 
     for (auto it = range.first; it != range.second; ++it) {
@@ -1479,9 +1481,9 @@ uint32 StaticDataMgr::GetStationSystem(uint32 stationID) {
 
 void StaticDataMgr::GetConstellationSystems(uint32 constellationID, std::vector<uint32>& into) {
     auto range = m_constSystems.equal_range(constellationID);
-    uint16 count = std::distance(range.first, range.second);
-    if (count == 0)
+    if (range.first == range.second)
         return;
+    uint16 count = std::distance(range.first, range.second);
     into.reserve(into.size() + count);
     for (auto &it = range.first; it != range.second; ++it)
         into.push_back(it->second);
@@ -1489,9 +1491,9 @@ void StaticDataMgr::GetConstellationSystems(uint32 constellationID, std::vector<
 
 void StaticDataMgr::GetRegionSystems(uint32 regionID, std::vector<uint32>& into) {
     auto range = m_regionSystems.equal_range(regionID);
-    uint16 count = std::distance(range.first, range.second);
-    if (count == 0)
+    if (range.first == range.second)
         return;
+    uint16 count = std::distance(range.first, range.second);
     into.reserve(into.size() + count);
     for (auto &it = range.first; it != range.second; ++it)
         into.push_back(it->second);

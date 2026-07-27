@@ -66,7 +66,7 @@ public:
 
     PyRep* GetProgramResultInfo( Colony* pColony, uint32 pinID, uint16 typeID, double headRadius, PyList* heads);
 
-    void GetSchematicData(uint8 schematicID, PI_Schematic& data);
+    void GetSchematicData(uint8 schematicID, PI::Schematic& data);
 
     uint8 GetProductLevel(uint16 typeID);
     uint16 GetHeadType(uint16 ecuTypeID, uint16 programType);
@@ -87,13 +87,13 @@ protected:
     // Converts your database string back into raw float data for evaluation
     std::vector<float> DecodeHexBufferToFloats(const std::string& hexBuffer);
     // Core Execution: Calculates raw output yield and reduces the local heatmap intensity
-    float ExtractAndDepletePlanetResource( std::string& io_dbBuffer, const PI_Heads& headPin,
+    float ExtractAndDepletePlanetResource( std::string& io_dbBuffer, const PI::Heads& headPin,
                                            float durationFactor=1.0f, float headRadius=1.0f );
 
 private:
     PlanetDB m_db;
 
-    std::map<uint8, PI_Schematic> m_schematicData;
+    std::map<uint8, PI::Schematic> m_schematicData;
 };
 
 #define sPIDataMgr \

@@ -61,9 +61,8 @@ bool PlanetDB::LoadPlanetResourceData(uint32 planetID, PlanetResourceData& data)
         return false;
 
     DBResultRow row;
-    if (!res.GetRow(row)) {
+    if (!res.GetRow(row))
         return false;
-    }
 
     data.type_1 = row.GetUInt16(0);
     data.type_2 = row.GetUInt16(1);
@@ -305,7 +304,7 @@ bool PlanetDB::LoadColony(uint32 charID, uint32 planetID, PI_CCData* pData)
     return false;
 }
 
-void PlanetDB::LoadPins(uint32 colonyID, std::map<uint32, PI_Pin>& pins)
+void PlanetDB::LoadPins(uint32 colonyID, std::map<uint32, PI::PinData>& pins)
 {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
@@ -323,7 +322,7 @@ void PlanetDB::LoadPins(uint32 colonyID, std::map<uint32, PI_Pin>& pins)
 
     DBResultRow row;
     while (res.GetRow(row)) {
-        PI_Pin pin = PI_Pin();
+        PI::PinData pin = PI::PinData();
             pin.typeID                  = row.GetUInt16(1);
             pin.ownerID                 = row.GetUInt(2);
             pin.state                   = row.GetInt8(3);
@@ -349,7 +348,7 @@ void PlanetDB::LoadPins(uint32 colonyID, std::map<uint32, PI_Pin>& pins)
     }
 }
 
-void PlanetDB::LoadLinks(uint32 colonyID, std::map<uint32, PI_Link >& links)
+void PlanetDB::LoadLinks(uint32 colonyID, std::map<uint32, PI::Link >& links)
 {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
@@ -365,7 +364,7 @@ void PlanetDB::LoadLinks(uint32 colonyID, std::map<uint32, PI_Link >& links)
 
     DBResultRow row;
     while (res.GetRow(row)) {
-        PI_Link link = PI_Link();
+        PI::Link link = PI::Link();
             link.level = row.GetUInt8(1);
             link.state = row.GetInt8(2);
             link.typeID = 2280; // only link type in game
@@ -375,7 +374,7 @@ void PlanetDB::LoadLinks(uint32 colonyID, std::map<uint32, PI_Link >& links)
     }
 }
 
-void PlanetDB::LoadRoutes(uint32 colonyID, std::map<uint16, PI_Route >& routes) {
+void PlanetDB::LoadRoutes(uint32 colonyID, std::map<uint16, PI::Route >& routes) {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         "SELECT routeID, srcPinID, destPinID, state, priority, path, typeID, itemQty"
@@ -392,7 +391,7 @@ void PlanetDB::LoadRoutes(uint32 colonyID, std::map<uint16, PI_Route >& routes) 
     std::string tempPath;
     while (res.GetRow(row)) {
         tempPath.clear();
-        PI_Route route = PI_Route();
+        PI::Route route = PI::Route();
             route.srcPinID = row.GetUInt(1);
             route.destPinID = row.GetUInt(2);
             route.state = row.GetInt8(3);
@@ -453,7 +452,7 @@ void PlanetDB::LoadECU(uint32 ecuID, DBQueryResult& res) {
     _log(DATABASE__RESULTS, "LoadECU returned %lu items", res.GetRowCount());
 }
 
-void PlanetDB::LoadHeads(uint32 ecuID, std::map< uint16, PI_Heads >& heads)
+void PlanetDB::LoadHeads(uint32 ecuID, std::map< uint16, PI::Heads >& heads)
 {
     //SELECT ecuID, headID, typeID, latitude, longitude FROM piECUHeads
     DBQueryResult res;
@@ -470,7 +469,7 @@ void PlanetDB::LoadHeads(uint32 ecuID, std::map< uint16, PI_Heads >& heads)
 
     DBResultRow row;
     while (res.GetRow(row)) {
-        PI_Heads head = PI_Heads();
+        PI::Heads head = PI::Heads();
             head.typeID = row.GetUInt16(1);
             head.ecuPinID = ecuID;
             head.latitude = row.GetDouble(2);
@@ -517,7 +516,7 @@ void PlanetDB::UpdateCCLaunch(uint32 pinID, int64 launchTime) {
         _log(DATABASE__ERROR, "UpdateCCLaunch - Unable to save CCLevel(1): %s", err.GetError());
 }
 
-void PlanetDB::CreatePin(uint32 colonyID, uint32 pinID, PI_Pin &data) {
+void PlanetDB::CreatePin(uint32 colonyID, uint32 pinID, PI::PinData &data) {
     // save newly-created pin data
     DBerror err;
     if (!sDatabase.RunQuery(err,
@@ -573,13 +572,13 @@ void PlanetDB::SavePins(PI_CCData* pData) {
 }
 
 void PlanetDB::UpdateECUPin(uint32 ecuID, PI_CCData* pData) {
-    std::map<uint32, PI_Pin>::iterator pinItr = pData->pins.find(ecuID);
+    std::map<uint32, PI::PinData>::iterator pinItr = pData->pins.find(ecuID);
     if (pinItr == pData->pins.end()) {
         _log(PLANET__ERROR, "PlanetDB::UpdateECUPin() - pinID %u not found in data.pins map", ecuID);
         return;
     }
 
-    std::map<uint32, PI_ECU>::iterator ecuItr = pData->ecus.find(ecuID);
+    std::map<uint32, PI::ECU>::iterator ecuItr = pData->ecus.find(ecuID);
     if (ecuItr == pData->ecus.end()) {
         _log(PLANET__ERROR, "PlanetDB::UpdateECUPin() - ecuID %u not found in data.ecus map", ecuID);
         return;
@@ -637,7 +636,7 @@ void PlanetDB::UpdatePinTimes(PI_CCData* pData)
     }
 }
 
-void PlanetDB::SaveHeads(uint32 colonyID, uint32 ownerID, uint32 ecuID, std::map< uint16, PI_Heads >& heads)
+void PlanetDB::SaveHeads(uint32 colonyID, uint32 ownerID, uint32 ecuID, std::map< uint16, PI::Heads >& heads)
 {
     if (heads.empty())
         return;
@@ -707,7 +706,7 @@ void PlanetDB::SaveLinkLevel(uint32 linkID, uint8 level)
     }
 }
 
-uint16 PlanetDB::SaveRoute(uint32 colonyID, PI_Route& route)
+uint16 PlanetDB::SaveRoute(uint32 colonyID, PI::Route& route)
 {
     DBerror err;
     uint32 routeID(0);
@@ -781,7 +780,7 @@ void PlanetDB::SavePinContents(uint32 pinID, PI_CCData* pData) {
     Inserts << " (colonyID, pinID, typeID, itemQty) VALUES ";
 
     bool first = false;
-    std::map<uint32, PI_Pin>::iterator srcItr = pData->pins.find(pinID);
+    std::map<uint32, PI::PinData>::iterator srcItr = pData->pins.find(pinID);
     std::map<uint16, uint32>::iterator itemItr;
     for (itemItr = srcItr->second.contents.begin(); itemItr != srcItr->second.contents.end(); ++itemItr) {
         if (first) {

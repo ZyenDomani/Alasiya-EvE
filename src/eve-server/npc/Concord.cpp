@@ -132,14 +132,14 @@ void Concord::EncodeDestiny(Buffer& into) {
         head.posY = y();
         head.posZ = z();
         head.flags = Ball::Flag::IsMassive | Ball::Flag::IsFree;
-    into.Append( head );
+    into.Append(head);
     MassSector mass = MassSector();
         mass.mass = m_self->mass();
         mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
         mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
-    into.Append( mass );
+    into.Append(mass);
     DataSector data = DataSector();
         data.maxSpeed = m_destiny->GetMaxVelocity();
         data.velX = m_destiny->GetVelocity().x;
@@ -147,7 +147,7 @@ void Concord::EncodeDestiny(Buffer& into) {
         data.velZ = m_destiny->GetVelocity().z;
         data.inertia = m_self->GetAttribute(AttrInertiaMod).get_float();
         data.speedfraction = m_destiny->GetSpeedFraction();
-    into.Append( data );
+    into.Append(data);
     switch (mode) {
         case Ball::Mode::WARP: {
             Vector3d target = m_destiny->GetTargetPoint();
@@ -156,26 +156,32 @@ void Concord::EncodeDestiny(Buffer& into) {
                 warp.targX = target.x;
                 warp.targY = target.y;
                 warp.targZ = target.z;
-                warp.warpFactor = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
-                // warp timing.  see Ship::EncodeDestiny() for notes/updates
-                warp.effectStamp = -1; //m_destiny->GetStateStamp();   //timestamp when warp started
-                warp.distance = -1.0;
-                warp.warpInVelocity = 15000;
-            into.Append( warp );
+                warp.warpFactor = m_destiny->GetWarpSpeed();
+                // warp timing and data.   see Ship::EncodeDestiny() for notes
+                if (m_destiny->IsWarping()) {
+                    warp.effectStamp    = m_destiny->GetTicStamp();
+                    warp.warpDistance   = m_destiny->GetTargetDistance();
+                    warp.minRange       = m_destiny->GetFollowDistance();
+                } else {
+                    warp.effectStamp    = -1;
+                    warp.warpDistance   = -1.0;
+                    warp.minRange       = 0.0;
+                }
+            into.Append(warp);
         }  break;
         case Ball::Mode::FOLLOW: {
             FOLLOW_Struct follow;
                 follow.followID = m_destiny->GetTargetID();
-                follow.followRange = m_destiny->GetFollowDistance();
+                follow.followRange = m_destiny->GetTargetDistance();
                 follow.formationID = -1;
-            into.Append( follow );
+            into.Append(follow);
         }  break;
         case Ball::Mode::ORBIT: {
             ORBIT_Struct orbit;
                 orbit.targetID = m_destiny->GetTargetID();
-                orbit.followRange = m_destiny->GetFollowDistance();
+                orbit.followRange = m_destiny->GetTargetDistance();
                 orbit.formationID = -1;
-            into.Append( orbit );
+            into.Append(orbit);
         }  break;
         case Ball::Mode::GOTO: {
             Vector3d target = m_destiny->GetTargetPoint();
@@ -184,12 +190,12 @@ void Concord::EncodeDestiny(Buffer& into) {
                 go.x = target.x;
                 go.y = target.y;
                 go.z = target.z;
-            into.Append( go );
+            into.Append(go);
         }  break;
         default: {
             STOP_Struct main;
                 main.formationID = -1;
-            into.Append( main );
+            into.Append(main);
         } break;
     }
 

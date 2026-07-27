@@ -149,8 +149,6 @@ void BubbleManager::RemoveEmpty() {
     while (itr != m_bubbles.end()) {
         if ((*itr)->IsEmpty()) {
             _log(BUBBLE__DEBUG, "BubbleManager::RemoveEmpty() - Bubble %u is empty and is being deleted from the system.", (*itr)->GetID() );
-            _log(BUBBLE__TRACE, "BubbleManager::RemoveEmpty() - Entity list of bubble %u as follows...", (*itr)->GetID());
-            //(*itr)->PrintEntityList();  // for debugging
             RemoveBubble((*itr)->GetSystem()->GetID(), (*itr));
             itr = m_bubbles.erase(itr);
         } else {
@@ -297,15 +295,17 @@ void BubbleManager::ClearSystemBubbles(uint32 systemID) {
 }
 
 void BubbleManager::RemoveBubble(uint32 systemID, SystemBubble* pSB) {
+    std::map<uint32, SystemBubble*>::iterator itr = m_bubbleIDMap.find(pSB->GetID());
+    if (itr != m_bubbleIDMap.end())
+        m_bubbleIDMap.erase(itr);
+
     auto range = m_sysBubbleMap.equal_range(systemID);
-    for (auto itr = range.first; itr != range.second; ++itr)
+    for (auto itr = range.first; itr != range.second; ++itr) {
         if (itr->second == pSB) {
             m_sysBubbleMap.erase(itr);
             return;
         }
-    std::map<uint32, SystemBubble*>::iterator itr = m_bubbleIDMap.find(pSB->GetID());
-    if (itr != m_bubbleIDMap.end())
-        m_bubbleIDMap.erase(itr);
+    }
 }
 
 /* for beltmgr */

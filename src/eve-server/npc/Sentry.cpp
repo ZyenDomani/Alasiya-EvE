@@ -95,17 +95,17 @@ void Sentry::EncodeDestiny(Buffer& into)
         head.posY = y();
         head.posZ = z();
         head.flags = Ball::Flag::IsMassive;
-    into.Append( head );
+    into.Append(head);
     MassSector mass = MassSector();
         mass.mass = m_self->type().mass();
         mass.cloak = 0;
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
         mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
-    into.Append( mass );
+    into.Append(mass);
     STOP_Struct main;
         main.formationID = -1;
-    into.Append( main );
+    into.Append(main);
 
     _log(SE__DESTINY, "Sentry::EncodeDestiny: %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }

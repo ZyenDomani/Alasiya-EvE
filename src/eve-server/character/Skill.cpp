@@ -52,11 +52,11 @@ SkillRef Skill::Load( uint32 skillID)
 
 SkillRef Skill::Spawn( ItemData &data)
 {
-    uint32 skillID(InventoryItem::CreateItemID(data));
+    uint32 skillID = InventoryItem::CreateItemID(data);
     if ( skillID == 0 )
         return SkillRef(nullptr);
 
-    SkillRef skillRef(Skill::Load(skillID));
+    SkillRef skillRef = Skill::Load(skillID);
     if (skillRef.get() == nullptr) {
         // make error msg here for failure to load skill?
         return SkillRef(nullptr);
@@ -80,7 +80,7 @@ uint32 Skill::GetSPForLevel(uint8 level) {
 
 uint32 Skill::GetCurrentSP(Character* ch, int64 startTime/*0*/)
 {
-    uint32 currentSP(GetAttribute(AttrSkillPoints).get_uint32());
+    uint32 currentSP = GetAttribute(AttrSkillPoints).get_uint32();
     if (flag() == flagSkill)
         return currentSP;
 
@@ -97,7 +97,7 @@ uint32 Skill::GetCurrentSP(Character* ch, int64 startTime/*0*/)
     /** @todo this isnt completely right.... */
     // at this point, the skill is in training.  calculate accumulated sp and return
     uint32 delta = 0;
-    uint32 timeElapsed((GetFileTimeNow() - startTime) / EvE::Time::Second);
+    uint32 timeElapsed = ((GetFileTimeNow() - startTime) / EvE::Time::Second);
 
     // skill in training - return updated SP based on elapsed training
     delta = (timeElapsed / 60) * ch->GetSPPerMin(this);
@@ -119,9 +119,9 @@ uint32 Skill::GetRemainingSP(Character* ch, int64 curTime/*0*/)
         curTime = GetFileTimeNow();
 
     // get full sp needed for next level
-    uint32 remainingSP(GetSPForLevel(level) - GetAttribute(AttrSkillPoints).get_uint32());
+    uint32 remainingSP = (GetSPForLevel(level) - GetAttribute(AttrSkillPoints).get_uint32());
 
-    uint32 timeLeft((ch->GetEndOfTraining() - curTime) / EvE::Time::Second);
+    uint32 timeLeft = ((ch->GetEndOfTraining() - curTime) / EvE::Time::Second);
     // if remaining time > 1m, subtract spm from total to get remaining
     if (timeLeft > 60)
         remainingSP -= ((timeLeft / 60) * ch->GetSPPerMin(this));
@@ -136,9 +136,9 @@ uint32 Skill::GetTrainingTime(Character* ch, int64 startTime/*0*/)
         return 0;
 
     // get full sp needed for next level
-    uint32 remainingSP(GetSPForLevel(level) - GetAttribute(AttrSkillPoints).get_uint32());
+    uint32 remainingSP = (GetSPForLevel(level) - GetAttribute(AttrSkillPoints).get_uint32());
     // divide by spm to get time and convert to seconds
-    uint32 timeLeft((remainingSP /ch->GetSPPerMin(this)) * 60);
+    uint32 timeLeft = ((remainingSP /ch->GetSPPerMin(this)) * 60);
 
     if (startTime == 0)
         return timeLeft;
@@ -174,14 +174,14 @@ void Skill::VerifySP() {
     if (GetAttribute(AttrSkillPoints) == EvilZero)
         return;
 
-    uint8 level(GetAttribute(AttrSkillLevel).get_uint32() + 1);
+    uint8 level = (GetAttribute(AttrSkillLevel).get_uint32() + 1);
     if (level > EvESkill::MAXSKILLLEVEL) {
         level = EvESkill::MAXSKILLLEVEL;
         SetAttribute(AttrSkillLevel, level, false);
     }
 
-    uint32 spThisLevel(GetSPForLevel(level - 1));
-    uint32 spCurrent(GetAttribute(AttrSkillPoints).get_uint32());
+    uint32 spThisLevel = (GetSPForLevel(level - 1));
+    uint32 spCurrent = GetAttribute(AttrSkillPoints).get_uint32();
     if (spCurrent < spThisLevel) {
         _log(SKILL__WARNING, "Skill %s points low.  Updating from %u to %u", name(), spCurrent, spThisLevel);
         SetAttribute(AttrSkillPoints, spThisLevel, false);
@@ -190,7 +190,7 @@ void Skill::VerifySP() {
         return;
     }
 
-    uint32 spNextLevel(GetSPForLevel(level));
+    uint32 spNextLevel = GetSPForLevel(level);
     if (spCurrent > spNextLevel) {
         SetAttribute(AttrSkillLevel, level);
         if (level > 4) {
@@ -207,7 +207,7 @@ void Skill::VerifySP() {
 }
 
 bool Skill::SkillPrereqsComplete(Character &ch) {
-    EvilNumber skillID = 0;
+    EvilNumber skillID = EvilZero;
     if (HasAttribute(AttrRequiredSkill1, skillID)) //Primary Skill
         if (GetAttribute(AttrRequiredSkill1Level) > ch.GetSkillLevel(skillID.get_uint32()))
             return false;
@@ -228,7 +228,7 @@ bool Skill::SkillPrereqsComplete(Character &ch) {
 }
 
 bool Skill::FitModuleSkillCheck(InventoryItemRef iRef, CharacterRef cRef) {
-    EvilNumber skillID = 0;
+    EvilNumber skillID = EvilZero;
     if (iRef->HasAttribute(AttrRequiredSkill1, skillID)) //Primary Skill
         if ( iRef->GetAttribute(AttrRequiredSkill1Level) > cRef->GetSkillLevel(skillID.get_uint32()))
             return false;

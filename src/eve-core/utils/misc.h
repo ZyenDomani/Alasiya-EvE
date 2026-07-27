@@ -97,7 +97,7 @@ namespace EvE {
     // prints the top10 items in stack to stdout
     void traceStack(void);
     // Find Case Insensitive Sub String in a given substring
-    bool icontains(std::string data, std::string toSearch, size_t pos = 0);
+    bool icontains(const std::string& data, const std::string& toSearch, size_t pos = 0);
     // format given time (in seconds) to month/week/day/hour/minute/second
     // <0 will return "Invalid Time".  0 will return "None"
     std::string FormatTime(int64 time=-1);

@@ -23,8 +23,8 @@ Items listed as "<font color=orange>Skeleton Code Only</font>" has a basic outli
 The server may not respond or only partially respond to these requests. You may get an error from these requests, and the server may crash.<BR><BR>
 Items listed as "<font color=yellow>Preliminary Implementation</font>" have a first draft of their specific code, possibably a step or two above skeleton code, and may not function properly or completely. <BR>
 There will be some response, like opening windows, but *should not* generate an error or crash the server.</font><BR><BR><BR>
-<font color=magenta>Server Version:</font>&nbsp;&nbsp;&nbsp;<font color=orange>0.89.43</font><BR>
-<font color=magenta>Latest Update:</font>&nbsp;&nbsp;&nbsp;<font color=green>7 July 2026</font><BR>
+<font color=magenta>Server Version:</font>&nbsp;&nbsp;&nbsp;<font color=orange>0.91.13</font><BR>
+<font color=magenta>Latest Update:</font>&nbsp;&nbsp;&nbsp;<font color=green>27 July 2026</font><BR>
 <font color=magenta>Page Status:</font>&nbsp;&nbsp;&nbsp;<font color=yellow>WIP</font><BR>
 <font color=magenta>Incomplete Data:</font>&nbsp;&nbsp;&nbsp;<font color=brown>Anything not listed as (<font color=green>Current</font>) is pending review/update/rewrite.</font><BR><BR>
 <a href="https://scan.coverity.com/projects/zyendomani-alasiyaeve">
@@ -2140,11 +2140,11 @@ Expiration, Failure or Denial forever blocks giving agent.<BR>
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=green>COMPLETE</font><BR>23Jul26</td></tr>
-<tr><td> - Orbit Object</td><td class="working">100%
+<tr><td> - Orbit Object<BR>Orbiting stationary object track perfectly.  Not so much when target is moving.</td><td class="working">70%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=green>COMPLETE</font><BR>23Jul26</td></tr>
+<td><font color=teal>Working</font> - <font color=magenta>Needs Work</font><BR>23Jul26</td></tr>
 <tr><td> - Follow Object</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -2433,7 +2433,7 @@ Expiration, Failure or Denial forever blocks giving agent.<BR>
 <td><font color=green>COMPLETE</font><BR>27Jun17</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Drones"> Drones (<font color=violet>PlayTesting</font> - <font color=green>Current</font>) - <font color=yellow>v1.17</font></span></h2>
+<h2> <span class="mw-headline" id="Drones"> Player Drones (<font color=violet>PlayTesting</font> - <font color=green>Current</font>) - <font color=yellow>v1.17</font></span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: #2222EE; width:85%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
@@ -2615,11 +2615,11 @@ Drone will search out and salvage wrecks belonging to you or your fleet.</td><td
 <tr><td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=orange>Needs Update</font><BR>7Jun26</td></tr>
-<tr><td> - NPC lock/engage/orbit targets</td><td class="broken">80%
+<tr><td> - NPC lock/engage/orbit targets</td><td class="broken">70%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=orange>Needs Update</font><BR>7Jun26</td></tr>
+<td><font color=teal>Working</font> - <font color=magenta>Needs Work</font><BR>23Jul26</td></tr>
 <tr><td> - NPC notice new targets within sight range, and engage weakest</td><td class="broken">70%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
@@ -2655,6 +2655,84 @@ Drone will search out and salvage wrecks belonging to you or your fleet.</td><td
 <td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=lime>Final Testing</font><BR>7Jun26</td></tr>
+</table>
+<p><br style="clear:both;" /></p>
+<h2> <span class="mw-headline" id="NPC_Combat_Spawning_AI"> Rogue Drone AI (<font color=yellow>New System - WIP</font> - <font color=green>Current</font>) - <font color=yellow>v0.57</font></span></h2>
+<div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
+<table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
+<table style="background: #2222EE; width:81%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+</td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
+<table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
+<table style="background: transparent; width:81%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
+<td> &#160;<font color=red><b>80.9</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+</td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
+<table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
+<td> <font color=red><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
+<table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;">
+<tr><td style="width: 70&amp;;">Service/Action</td>
+<td style="width: 4%;">Status</td>
+<td style="width: 26%;">Comments</td></tr>
+<tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Collective Hive Mind</h3></font></td></tr>
+<tr><td> - <font color=green>Swarm Intelligence</font><BR>
+Based on number of units in bubble and system (compounded)</td><td class="broken">15%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=yellow>Preliminary Implementation</font><BR>25Jul26</td></tr>
+<tr><td> - <font color=green>Swarm Communication</font><BR>
+Hive mind communication between units</td><td class="broken">15%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=yellow>Preliminary Implementation</font><BR>25Jul26</td></tr>
+<tr><td> - <font color=green>Swarm Threat Monitoring</font><BR>
+Units report activity to Hive Mind</td><td class="broken">15%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=yellow>Preliminary Implementation</font><BR>25Jul26</td></tr>
+<tr><td> - <font color=green>Swarm Network Bleedover</font><BR>
+Swarm population leads to local chat communication bleedover</td><td class="broken">15%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=yellow>Preliminary Implementation</font><BR>25Jul26</td></tr>
+<tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Individual Drone Units</h3></font></td></tr>
+<tr><td> - Drone follow commands</td><td class="broken">15%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=yellow>Preliminary Implementation</font><BR>25Jul26</td></tr>
+<tr><td> - Drone reports to local collective</td><td class="broken">15%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=yellow>Preliminary Implementation</font><BR>25Jul26</td></tr>
+<tr><td> - Drone harvests unit wrecks to 'heal'</td><td class="broken">15%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=yellow>Preliminary Implementation</font><BR>25Jul26</td></tr>
+<tr><td> - Drone goes feral upon lost swarm contact</td><td class="broken">15%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=yellow>Preliminary Implementation</font><BR>25Jul26</td></tr>
+<tr><td> - Drone </td><td class="broken">15%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=yellow>Preliminary Implementation</font><BR>25Jul26</td></tr>
+<tr><td> - Drone </td><td class="broken">15%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=yellow>Preliminary Implementation</font><BR>25Jul26</td></tr>
+<tr><td> - Drone </td><td class="broken">15%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=yellow>Preliminary Implementation</font><BR>25Jul26</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="Science_and_Industry"> Science &amp; Industry (<font color=pink>Rewrite on hold</font>)</span></h2>

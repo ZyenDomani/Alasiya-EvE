@@ -215,7 +215,9 @@ void LSCChannel::SendMessage(Client * c, const char * message, bool self/*false*
 
 void LSCChannel::SendServerMOTD(Client* pClient) {
     std::string msg = "<br>Welcome to Alasiya's EvEmu Server ";
+    msg += "<font color='yellow'>";
     msg += pClient->GetCharName();
+    msg += "</font>";
     msg += ".<br>Server Version: ";
     msg += EVEMU_REVISION;
     msg += "<br>Revision Date: ";

@@ -395,11 +395,11 @@ void CustomsSE::EncodeDestiny(Buffer& into)
         head.posZ = z();
         head.mode = Ball::Mode::RIGID;
         head.flags = Ball::Flag::IsGlobal /*| HasMiniBalls*/;
-    into.Append( head );
+    into.Append(head);
 
     RIGID_Struct main;
         main.formationID = -1;
-    into.Append( main );
+    into.Append(main);
 
     /* TODO  query and configure miniballs for entity
      * NOTE  MiniBalls are BROKEN!!!  DO NOT USE!

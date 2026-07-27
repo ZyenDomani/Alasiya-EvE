@@ -97,6 +97,14 @@ bool PlanetSE::LoadExtras() {
         PlanetDB::SavePlanetResourceData(m_self->itemID(), m_data);
     }
 
+    // load resource data into local container for faster/easier lookups
+    m_typeBuffers.reserve(5);
+    m_typeBuffers.emplace(m_data.type_1, m_data.buffer_1);
+    m_typeBuffers.emplace(m_data.type_2, m_data.buffer_2);
+    m_typeBuffers.emplace(m_data.type_3, m_data.buffer_3);
+    m_typeBuffers.emplace(m_data.type_4, m_data.buffer_4);
+    m_typeBuffers.emplace(m_data.type_5, m_data.buffer_5);
+
     return true;
 }
 
@@ -127,7 +135,7 @@ PyRep* PlanetSE::GetResourceData(Call_ResourceDataDict& dict) {
     dict.oldBand;               <- is this used?  how?
     dict.updateTime;
     */
-    std::map<uint16, std::string>::iterator itr = m_typeBuffers.find(dict.resourceTypeID);
+    std::unordered_map<uint16, std::string>::iterator itr = m_typeBuffers.find(dict.resourceTypeID);
     if (itr == m_typeBuffers.end())
         return nullptr;
 
@@ -255,8 +263,8 @@ void PlanetSE::CreateCustomsOffice() {
     ItemData idata(typeID, data.ownerID, m_system->GetID(), flagAutoFit, 1, itoa(m_self->itemID()), false);
     StructureItemRef iRef = sItemFactory.SpawnStructure(idata);
     // get warpInPoint for planet
-    int32 radius(GetRadius());
-    Vector3d warpInPoint(GetPosition());
+    int32 radius = GetRadius();
+    Vector3d warpInPoint = GetPosition();
     srandom(GetID());  //this is the only place random() is used....other random functions use rand() as it's non-repeatable.
     int rand = random();
     double j = (((rand / RAND_MAX) - 1.0f) / 3.0f);
@@ -269,10 +277,10 @@ void PlanetSE::CreateCustomsOffice() {
     warpInPoint.z -= (d * EvE::Trig::FastCos(t));
 
     // set new position in middle of grid
-    int64 bubbleDia(BUBBLE_RADIUS_METERS * 2);
-    int64 xGrid(floor(warpInPoint.x / bubbleDia));
-    int64 yGrid(floor(warpInPoint.y / bubbleDia));
-    int64 zGrid(floor(warpInPoint.z / bubbleDia));
+    int64 bubbleDia = (BUBBLE_RADIUS_METERS * 2);
+    int64 xGrid = (floor(warpInPoint.x / bubbleDia));
+    int64 yGrid = (floor(warpInPoint.y / bubbleDia));
+    int64 zGrid = (floor(warpInPoint.z / bubbleDia));
     warpInPoint.x = (xGrid * bubbleDia + BUBBLE_RADIUS_METERS);
     warpInPoint.y = (yGrid * bubbleDia + BUBBLE_RADIUS_METERS);
     warpInPoint.z = (zGrid * bubbleDia + BUBBLE_RADIUS_METERS);

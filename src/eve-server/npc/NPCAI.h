@@ -125,6 +125,9 @@ public:
 
     uint16              GetSize()                       { return m_size; }
 
+    uint16              GetMaxSpeed()                   { return m_maxSpeed; }
+    uint16              GetCruiseSpeed()                { return m_cruiseSpeed; }
+
     // npcAI methods
     void                SendGFX(Client* pClient=nullptr);
     void                DisableWarpOutTimer()           { m_warpOutTimer.Disable(); }
@@ -153,7 +156,7 @@ protected:
     // advanced method to pick preferred target
     void                PickTarget();
     // NOTE:  must call destiny->follow (or another movement call) after changing speed
-    void                ChangeSpeed(bool increase=false);
+    void                ChangeSpeed();
     // Method to broadcast misc tidbits to local channel of all players in bubble
     void                BcastLocal(uint8 state);
 
@@ -192,6 +195,7 @@ protected:
     uint16              GetTargetingTime();
 
     const char*         GetStateName(int8 stateID);
+    const char*         GetSizeName();
 
     // advanced AI methods
     void                SwitchTarget();
@@ -233,7 +237,7 @@ private:
     int32               m_armorRepairDuration;
     int32               m_shieldBoosterDuration;
 
-    uint32              m_sigRadius;
+    float               m_sigRadModifier;
 
     //in order of distance  far to close
     int32               m_sightRange;                   //[6] npc sight range

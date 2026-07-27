@@ -209,6 +209,7 @@ public:
 protected:
     const Vector3d m_center;
     const double m_radius;
+    const double m_radiusSq;
 
     // remove all balls in bubble for this SE
     void RemoveBall(SystemEntity* pSE);

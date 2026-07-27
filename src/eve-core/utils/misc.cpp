@@ -203,14 +203,21 @@ double EvE::max(double x, double y, double z)
     return  ((max < z) ? z : max);
 }
 
-bool EvE::icontains(std::string data, std::string toSearch, size_t pos/*0*/)
-{
-    // Convert complete given String to lower case
-    std::transform(data.begin(), data.end(), data.begin(), ::tolower);
-    // Convert complete given Sub String to lower case
-    std::transform(toSearch.begin(), toSearch.end(), toSearch.begin(), ::tolower);
-    // Find sub string in given string
-    return (data.find(toSearch, pos) != std::string::npos);
+bool EvE::icontains(const std::string& data, const std::string& toSearch, size_t pos/*0*/) {
+    if (toSearch.empty())
+        return false;
+    if ((toSearch.size() > data.size()) or (pos >= data.size()))
+        return false;
+
+    auto it = std::search(data.begin() + pos, data.end(),
+                          toSearch.begin(), toSearch.end(),
+                          [](char ch1, char ch2) {
+                              return std::tolower(static_cast<unsigned char>(ch1)) ==
+                                     std::tolower(static_cast<unsigned char>(ch2));
+                            }
+                        );
+
+    return (it != data.end());
 }
 
 std::string EvE::FormatTime(int64 time/*-1*/) {

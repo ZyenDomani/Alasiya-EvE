@@ -45,11 +45,9 @@
 
 SystemBubble::SystemBubble(SystemManager* pSystem, const Vector3d& center, double radius)
 : m_tcuSE(nullptr), m_sbuSE(nullptr), m_ihubSE(nullptr), m_towerSE(nullptr),
-m_system(pSystem), m_center(center), m_radius(radius),
-m_centerSE(nullptr), m_hasMarkers(false),m_hasBubble(false),
-m_spawnTimer(0),
-m_type(Bubble::Type::Normal),
-m_spawned(false), m_bubbleID(sBubbleMgr.GetBubbleID())
+m_system(pSystem), m_center(center), m_radius(radius), m_radiusSq(radius * radius),
+m_centerSE(nullptr), m_hasMarkers(false),m_hasBubble(false), m_spawnTimer(0),
+m_type(Bubble::Type::Normal), m_spawned(false), m_bubbleID(sBubbleMgr.GetBubbleID())
 {
     _log(BUBBLE__TRACE, "SysBubble::Constructor - Created new bubble %u(%p) at (%.2f,%.2f,%.2f)[%.1f m radius].",\
 	     m_bubbleID, this, m_center.x, m_center.y, m_center.z, m_radius);
@@ -167,7 +165,7 @@ void SystemBubble::Add(SystemEntity* pSE) {
     if (pSE->IsStaticEntity() or pSE->isGlobal()) {
         _log(BUBBLE__TRACE, "SysBubble::Add() - Entity %s(%u) is static or global or both.", pSE->GetName(), pSE->GetID());
         // all static and global entities (stations, gates, asteroid fields, cyno fields, etc) are put into bubble's staticEntity map
-        m_entities[pSE->GetID()] = pSE;
+        m_entities.emplace(pSE->GetID(), pSE);
         return;
     }
 
@@ -179,14 +177,15 @@ void SystemBubble::Add(SystemEntity* pSE) {
     }
 
     if (pSE->HasPilot()) {
+        Client* pClient = pSE->GetPilot();
+        m_players.emplace(pClient->GetCharacterID(), pClient);   //add to bubble's player list
         // Set spawn timer for this bubble, if needed
         switch (m_type) {
             case Bubble::Type::Normal: {
             } break;
             case Bubble::Type::Gate: {
-                if (sConfig.npc.StaticSpawns)
-                    if (!m_spawnTimer.Enabled())
-                        SetSpawnTimer();
+                if (sConfig.npc.StaticSpawns and !m_spawnTimer.Enabled())
+                    SetSpawnTimer();
             } break;
             case Bubble::Type::Ice:
             case Bubble::Type::Belt: {
@@ -195,9 +194,8 @@ void SystemBubble::Add(SystemEntity* pSE) {
                 // if belt is spawned, inform npcs of new player entering bubble
                 if (m_spawned)
                     m_system->GetSpawnMgr()->PlayerEnteredBubble(m_bubbleID, pSE->GetPilot());
-                if (sConfig.npc.RoamingSpawns)
-                    if (!m_spawnTimer.Enabled())
-                        SetSpawnTimer();
+                if (sConfig.npc.RoamingSpawns and !m_spawnTimer.Enabled())
+                    SetSpawnTimer();
             } break;
             case Bubble::Type::Anomaly: {
                 m_system->GetSpawnMgr()->PlayerEnteredBubble(m_bubbleID, pSE->GetPilot());
@@ -216,10 +214,9 @@ void SystemBubble::Add(SystemEntity* pSE) {
             } break;
         }
 
-        Client* pClient(pSE->GetPilot());
         // this is sent in state when undocking
-        //if (!pClient->IsUndock())
-        //    SendAddBalls2(pSE);
+        if (!pClient->IsUndock())
+            SendAddBalls2(pSE);
         if (!m_players.empty())
             AddBallExclusive(pSE);  // adds new player to all players in bubble except self
 
@@ -235,19 +232,16 @@ void SystemBubble::Add(SystemEntity* pSE) {
             // also, notify all active rats in this bubble
             cur.second->GetAI()->ShipArrived(pClient);
         }
-
-        m_players[pClient->GetCharacterID()] = pClient;   //add to bubble's player list
     } else {
         // do we need to check bubble types here?
         if (!m_players.empty())
             AddBallExclusive(pSE);
-        if (pSE->IsDroneSE())
-            if (!pSE->IsAbandoned())
-                m_drones[pSE->GetID()] = pSE->GetDroneSE();
+        if (pSE->IsDroneSE() and !pSE->IsAbandoned())
+            m_drones.emplace(pSE->GetID(), pSE->GetDroneSE());
     }
 
     // all non-global entities (players, npcs, roids, containers, etc) are put into bubble's dynamicEntity map
-    m_dynamicEntities[pSE->GetID()] = pSE;
+    m_dynamicEntities.emplace(pSE->GetID(), pSE);
 
     if (is_log_enabled(BUBBLE__DEBUG)) {
         Vector3d delta =  NULL_ORIGIN - pSE->GetPosition();
@@ -505,8 +499,11 @@ uint32 SystemBubble::GetSystemID() {
 
 bool SystemBubble::InBubble(const Vector3d& pt, bool inWarp/*false*/) const {
     Vector3d delta =  m_center - pt;
-    double distance = delta.Length();
-    return (distance < m_radius);
+    double distanceSq = delta.LengthSq();
+    if (inWarp)
+        return (distanceSq < (m_radiusSq + 100000.0));
+
+    return (distanceSq < m_radiusSq);
 }
 
 bool SystemBubble::IsOverlap(const Vector3d& pt) const {
@@ -1008,8 +1005,7 @@ void SystemBubble::BubblecastDestinyEvent(std::vector<PyTuple *> &events, const 
     events.clear();
 }
 
-void SystemBubble::BubblecastDestinyUpdate(PyTuple** payload, const char* desc) const
-{
+void SystemBubble::BubblecastDestinyUpdate(PyTuple** payload, const char* desc) const {
     if (is_log_enabled(BUBBLE__CAST_DUMP))
         (*payload)->Dump(BUBBLE__CAST_DUMP, "    ");
     for (auto &cur : m_players) {
@@ -1018,8 +1014,7 @@ void SystemBubble::BubblecastDestinyUpdate(PyTuple** payload, const char* desc) 
     }
 }
 
-void SystemBubble::BubblecastDestinyUpdateExclusive(PyTuple** payload, const char* desc, SystemEntity* pSE) const
-{
+void SystemBubble::BubblecastDestinyUpdateExclusive(PyTuple** payload, const char* desc, SystemEntity* pSE) const {
     for (auto &cur : m_players) {
         // Only queue a Destiny update for this bubble if the current SystemEntity is not 'pSE':
         // (this is an update to all client objects in the bubble EXCLUDING 'pSE')
@@ -1030,8 +1025,7 @@ void SystemBubble::BubblecastDestinyUpdateExclusive(PyTuple** payload, const cha
     }
 }
 
-void SystemBubble::BubblecastDestinyEvent(PyTuple** payload, const char* desc) const
-{
+void SystemBubble::BubblecastDestinyEvent(PyTuple** payload, const char* desc) const {
     if (is_log_enabled(BUBBLE__CAST_DUMP))
         (*payload)->Dump(BUBBLE__CAST_DUMP, "    ");
     for (auto &cur : m_players) {
@@ -1040,8 +1034,7 @@ void SystemBubble::BubblecastDestinyEvent(PyTuple** payload, const char* desc) c
     }
 }
 
-void SystemBubble::BubblecastSendNotification(const char* notifyType, const char* idType, PyTuple** payload, bool seq)
-{
+void SystemBubble::BubblecastSendNotification(const char* notifyType, const char* idType, PyTuple** payload, bool seq) {
     for (auto &cur : m_players) {
         _log(BUBBLE__CAST, "BubblecastNotify %s to %s(%u)", notifyType, cur.second->GetName(), cur.first);
         cur.second->SendNotification(notifyType, idType, payload, seq);

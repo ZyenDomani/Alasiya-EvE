@@ -84,7 +84,7 @@ protected:
     };
 
 private:
-    std::map<uint16, std::string> m_typeBuffers;
+    std::unordered_map<uint16, std::string> m_typeBuffers;
 
     /* map of charID, Colony* for this planet.
      *   this is a hack, as the client will not reuse planet bound objects, instead calling for a new object on every call.

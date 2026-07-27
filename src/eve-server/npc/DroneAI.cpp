@@ -2181,7 +2181,7 @@ bool DroneAIMgr::IsIdle() {
     return idle;
 }
 
-uint32 DroneAIMgr::GetFollowDistance() {
+uint32 DroneAIMgr::GetTargetDistance() {
     switch (m_action) {
         case DroneAI::Action::Idle:
         case DroneAI::Action::Invalid:

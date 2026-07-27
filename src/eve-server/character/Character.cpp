@@ -693,6 +693,7 @@ int64 Character::GetEndOfTraining() {
         return 0;
     }
 
+    // this throws error on login.  not sure why yet.
     m_pClient->SetTrainingEndTime(m_skillQueue.front().endTime);
     return m_skillQueue.front().endTime;
 }

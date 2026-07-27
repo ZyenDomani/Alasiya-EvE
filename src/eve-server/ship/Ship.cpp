@@ -2596,24 +2596,29 @@ void ShipSE::EncodeDestiny( Buffer& into) {
                 warp.targX = target.x;
                 warp.targY = target.y;
                 warp.targZ = target.z;
-                warp.warpFactor = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
-                // warp timing.  see ShipSE::EncodeDestiny() for notes/updates
+                warp.warpFactor = m_destiny->GetWarpSpeed();       //ship warp speed x10  (x * 0.1 in client)
+                // warp timing and data
                 if (m_destiny->IsWarping()) {
-                    warp.effectStamp = m_destiny->GetStateStamp();   //timestamp when warp started
-                    warp.distance = -1.0;
-                    warp.warpInVelocity = 13000.0;
-                } else {
-                    warp.effectStamp = -1;
-                    warp.distance = 0;
-                    warp.warpInVelocity = 0.0;   //4802252820405690112
-                    /*
-                     * 4802252820405690112   77.28 au/s
-                     * 4796203259224232925  28.97 au/s
-                     * -4616189618054758400 -1.0
-                     * 4781149336094358132  3 au/s
-                     * 4781149335553454020  2.999 au/s
-                     * 4669471951536783360     15000 m/s
+                    warp.effectStamp    = m_destiny->GetTicStamp();   //timestamp when warp started
+                    warp.warpDistance   = m_destiny->GetTargetDistance();
+                    warp.minRange       = m_destiny->GetFollowDistance();
+                    /* followRange / warpDistance  total warp distance
+                     * -4616189618054758400 -1.0   while aligning
+                     * 4802252820405690112   77.28 au
+                     * 4796203259224232925  28.97 au
+                     * 4781149336094358132  3 au
+                     * 4781149335553454020  2.999 au
+                     * 4781149335219433688  2.999 au
+                     *
+                     * FollowId / minRange:     "warp to within" distance
+                     * 4669471951536783360     15000 m   ap default distance
+                     * 0
+                     *
                      */
+                } else {
+                    warp.effectStamp    = -1;      // counter for stuck on align (tics at -1; warp forced on 0)
+                    warp.warpDistance   = -1.0;    // warp distance is nil during align
+                    warp.minRange       = 0.0;     // minRange is nil during align
                 }
             into.Append(warp);
         }  break;
@@ -2621,14 +2626,14 @@ void ShipSE::EncodeDestiny( Buffer& into) {
             FOLLOW_Struct follow;
                 follow.formationID = -1;
                 follow.followID = m_destiny->GetTargetID();
-                follow.followRange = m_destiny->GetFollowDistance();
+                follow.followRange = m_destiny->GetTargetDistance();
             into.Append(follow);
         }  break;
         case Ball::Mode::ORBIT: {
             ORBIT_Struct orbit;
                 orbit.formationID = -1;
                 orbit.targetID = m_destiny->GetTargetID();
-                orbit.followRange = m_destiny->GetFollowDistance();
+                orbit.followRange = m_destiny->GetTargetDistance();
             into.Append(orbit);
         }  break;
         case Ball::Mode::GOTO: {
@@ -2643,7 +2648,7 @@ void ShipSE::EncodeDestiny( Buffer& into) {
         default: {
             STOP_Struct main;
                 main.formationID = -1;
-            into.Append( main );
+            into.Append(main);
         } break;
     }
 

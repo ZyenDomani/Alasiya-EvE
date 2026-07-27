@@ -111,7 +111,7 @@ NPCAIMgr::NPCAIMgr(NPC* mySE)
   m_shieldBoosterDuration(-1),
   m_maxSpeed(0),
   m_cruiseSpeed(0),
-  m_sigRadius(0),
+  m_sigRadModifier(6.0f),
   m_sightRange(0),
   m_attackRange(0),
   m_chaseRange(0),
@@ -142,7 +142,6 @@ NPCAIMgr::NPCAIMgr(NPC* mySE)
 void NPCAIMgr::Init() {
     // set basic ship data
     m_turretID = m_self->GetAttribute(AttrGfxTurretID).get_uint32();
-    m_sigRadius = m_self->GetAttribute(AttrSignatureRadius).get_uint32();
     m_attackSpeed = m_self->GetAttribute(AttrSpeed).get_int();
 
     //NOTE:  they are not all lazors...
@@ -204,10 +203,8 @@ void NPCAIMgr::Init() {
     m_chaseRange = m_self->GetAttribute(AttrEntityChaseMaxDistance).get_int();  // npc will activate mwd if target is farther than this distance
 
     // sightrange is arbitrary now.  live uses 'can see all on grid'
-    if (EvE::icontains(m_self->type().groupName(), "Swarm")) {
-        m_sightRange = 30000;
-        m_size = NPCAI::Size::Swarm;
-    } else if (EvE::icontains(m_self->type().groupName(), "Frigate")) {
+    // may need to update this to use radius instead of group names...
+    if (EvE::icontains(m_self->type().groupName(), "Frigate")) {
         m_sightRange = 40000;
         m_size = NPCAI::Size::Frigate;
     } else if (EvE::icontains(m_self->type().groupName(), "Destroyer")) {
@@ -218,16 +215,49 @@ void NPCAIMgr::Init() {
         m_size = NPCAI::Size::Cruiser;
     } else if (EvE::icontains(m_self->type().groupName(), "BattleCruiser")) {
         m_sightRange = 90000;
-        m_size = NPCAI::Size::BCruiser; //22824
-    } else if (EvE::icontains(m_self->type().groupName(), "BattleShip")) { // 350+
+        m_size = NPCAI::Size::BCruiser;
+    } else if (EvE::icontains(m_self->type().groupName(), "BattleShip")) {
         m_sightRange = 130000;
         m_size = NPCAI::Size::BShip;
+    } else if (EvE::icontains(m_self->type().groupName(), "Hauler")) {
+        m_sightRange = 130000;
+        m_size = NPCAI::Size::Indy;
+    } else if (EvE::icontains(m_self->type().groupName(), "Officer")
+            or EvE::icontains(m_self->type().groupName(), "Other")) {
+        // 'Officer' have different sizes and 'Other' are special ships for missions
+        float radius = m_self->radius();
+        // d31,d45,dn50,dn150,d250,dn350
+        if (radius < 55.0f) {
+            m_sightRange = 40000;
+            m_size = NPCAI::Size::Frigate;
+        } else if (radius < 170.0f) {
+            m_sightRange = 50000;
+            m_size = NPCAI::Size::Destroyer;
+        } else if (radius < 270.0f) {
+            m_sightRange = 70000;
+            m_size = NPCAI::Size::Cruiser;
+        } else if (radius < 350.0f) {
+            m_sightRange = 90000;
+            m_size = NPCAI::Size::BCruiser; //22824
+        } else { // 350+
+            m_sightRange = 130000;
+            m_size = NPCAI::Size::BShip;
+        }
     } else {
         // not sure what to do here.
     	_log(NPC__WARNING, "%s(%u): groupName %s (ID %u) - no match found in 'contains' test ", \
                 m_self->name(), m_self->itemID(), m_self->type().groupName().c_str(), m_self->groupID());
     }
 
+    // check for elite npcs and adjust sigRadMod accordingly
+    std::string name = m_self->name();
+    if (EvE::icontains(name, "Arch") or EvE::icontains(name, "Elder")
+    or  EvE::icontains(name, "Dire") or EvE::icontains(name, "Loyal")
+    or  EvE::icontains(name, "Guardian") or EvE::icontains(name, "Divine")
+    or  EvE::icontains(name, "Taibu") or EvE::icontains(name, "Elite")
+    or  EvE::icontains(name, "Chief")) {
+        m_sigRadModifier = 2.5f;
+    }
     //  check into entityStrength(542)   504 entries
     // 542 - A relative strength that indicates how powerful this NPC entity is in combat
 
@@ -247,7 +277,7 @@ void NPCAIMgr::Init() {
     //m_self->GetAttribute(AttrMaxAttackTargets).get_uint32()     may use this later...
     m_maxLockedTargets = m_self->GetAttribute(AttrMaxLockedTargets).get_uint32();
     if ((m_maxLockedTargets < 1) or (m_attackSpeed < 1)) {
-        // these are passive
+        //NOTE:  these are passive npcs
         if (is_log_enabled(NPC__INFO))
             _log(NPC__INFO, "%s(%u): setting to passive.", myNPC->GetName(), myNPC->GetID());
         // set map in bubble for passives to have escort guard them?   maybe later with more advanced AI
@@ -313,8 +343,8 @@ void NPCAIMgr::Init() {
     } */
 
     if (is_log_enabled(NPC__INFO))
-        _log(NPC__INFO, "%s(%u): sight:%u, attack:%u, chase:%u, fly:%u, falloff:%u, optimal:%u.", \
-        myNPC->GetName(), myNPC->GetID(), m_sightRange, m_attackRange, m_chaseRange, \
+        _log(NPC__INFO, "%s(%u): size: %s, sight:%u, attack:%u, chase:%u, fly:%u, falloff:%u, optimal:%u.", \
+        myNPC->GetName(), myNPC->GetID(), GetSizeName(), m_sightRange, m_attackRange, m_chaseRange, \
         m_flyRange, m_falloffDistance, m_optimalRange);
 }
 
@@ -372,7 +402,7 @@ void NPCAIMgr::Process() {
                      myNPC->GetName(), currentDistance);
 
                 // Throttle up MicroWarpDrive to close the distance gap
-                ChangeSpeed(true);
+                ChangeSpeed();
                 // Break the shared destiny local-space anchor
                 //myNPC->DestinyMgr()->SetBallMode(Destiny::Ball::Mode::FOLLOW);
                 // Pivot instantly into a high-speed pursuit state
@@ -433,9 +463,13 @@ The squad clears the formationID state, and all members break out into their hig
             }
 
             if (!m_beginFindTarget.Enabled()) {
+                return;
                 if (m_self->HasAttribute(AttrEntityAttackDelayMin)) {
-                    m_beginFindTarget.Start(MakeRandomUInt(m_self->GetAttribute(AttrEntityAttackDelayMin).get_uint32(), m_self->GetAttribute(AttrEntityAttackDelayMax).get_uint32()));
-                    _log(NPC__AI_LOGIC, "%s(%u) has attack delay.  Setting target delay timer.", myNPC->GetName(), myNPC->GetID());
+                    uint32 delay = MakeRandomUInt(m_self->GetAttribute(AttrEntityAttackDelayMin).get_uint32(), \
+                            m_self->GetAttribute(AttrEntityAttackDelayMax).get_uint32());
+                    m_beginFindTarget.Start(delay);
+                    _log(NPC__AI_LOGIC, "%s(%u) has attack delay.  Setting target delay timer of %ums.", \
+                            myNPC->GetName(), myNPC->GetID(), delay);
                 } else if (m_attackSpeed) {
                     m_beginFindTarget.Start(m_attackSpeed);
                     _log(NPC__AI_LOGIC, "%s(%u) has no attack delay.  Setting target timer to %ims", \
@@ -635,6 +669,7 @@ void NPCAIMgr::WarpOutComplete() {
     m_warpOutTimer.Disable();
     m_state = NPCAI::State::Idle;
 }
+
 void NPCAIMgr::SetWander() {
     if (myNPC->GetSpawnMgr() == nullptr)
         return;
@@ -648,7 +683,8 @@ void NPCAIMgr::SetWander() {
     SystemBubble* pBubble = myNPC->SysBubble();
 
     if (pBubble == nullptr) {
-        if (m_destiny->IsMoving()) m_destiny->Stop();
+        if (m_destiny->IsMoving())
+            m_destiny->Stop();
         return;
     }
 
@@ -687,7 +723,7 @@ void NPCAIMgr::SetWander() {
 
         if (m_actionTarget == nullptr) return;
 
-        ChangeSpeed(false);
+        ChangeSpeed();
         uint16 orbitDistance = MakeRandomUInt(5000, 15000);
 
         // FIX: The Destiny engine should track targeted anchors via entityID
@@ -736,7 +772,7 @@ void NPCAIMgr::SetIdle() {
     m_state = NPCAI::State::Idle;
     m_action = NPCAI::Action::Idle;
 	// do we need to cancel gfx here?
-    ChangeSpeed(false);
+    ChangeSpeed();
     m_destiny->Stop();
 
     ClearAllTimers();
@@ -784,7 +820,7 @@ void NPCAIMgr::SetEngaged(SystemEntity* pTargetSE) {
     SetAttackTimers();
 
     // update speed
-    ChangeSpeed(false);
+    ChangeSpeed();
     if (sConfig.npc.UseOrbit) {
         m_destiny->OrbitBall(pTargetSE, m_optimalRange);  //try to get inside orbit range
     } else {
@@ -822,7 +858,7 @@ void NPCAIMgr::SetFollowing(SystemEntity* pTargetSE) {
     SetAttackTimers();
 
     // outside optimal range; increase speed to get closer
-    ChangeSpeed(true);
+    ChangeSpeed();
     m_destiny->FollowBall(pTargetSE, m_falloffDistance);  //try to get inside falloff range
 }
 
@@ -856,20 +892,20 @@ void NPCAIMgr::SetChasing(SystemEntity* pTargetSE) {
             // check chance for npc to delay activating mwd while chasing
             if (MakeRandomFloat() < m_self->GetAttribute(AttrEntityChaseMaxDelayChance).get_float()) {
                 m_state = NPCAI::State::Delay;
-                ChangeSpeed(false);
+                ChangeSpeed();
                 m_chaseTimeEnd = GetFileTimeNow() + (m_self->GetAttribute(AttrEntityChaseMaxDelay).get_long() * EvE::Time::mSecond);
                 _log(NPC__AI_LOGIC, "%s(%u): SetChasing(0) - Delay MWD speed for %llims", \
                         myNPC->GetName(), myNPC->GetID(), m_self->GetAttribute(AttrEntityChaseMaxDelay).get_long());
             } else {
                 m_state = NPCAI::State::Chasing;
-                ChangeSpeed(true);
+                ChangeSpeed();
                 _log(NPC__AI_LOGIC, "%s(%u): SetChasing(1) - Not Delayed - Full speed of %um/s enabled", \
                         myNPC->GetName(), myNPC->GetID(), m_maxSpeed);
             }
         } else {
             m_chaseTimeEnd = 0;
             m_state = NPCAI::State::Chasing;
-            ChangeSpeed(true);
+            ChangeSpeed();
             _log(NPC__AI_LOGIC, "%s(%u): SetChasing(2) - Delay Complete. Full speed of %um/s enabled", \
                     myNPC->GetName(), myNPC->GetID(), m_maxSpeed);
         }
@@ -917,7 +953,7 @@ void NPCAIMgr::SetFleeing(SystemEntity* pTargetSE) {
 
     //  disengage, then warp out.  << both these will need to be written.
     //  this state is only usable by higher-class npcs.
-    ChangeSpeed(true);
+    ChangeSpeed();
 
     if (sConfig.npc.UseOrbit) {
         m_destiny->OrbitBall(m_attackTarget, m_flyRange);  //try to get ouside orbit range
@@ -964,7 +1000,7 @@ void NPCAIMgr::SetSignaling(SystemEntity* pTargetSE) {
     }
 
     //  start speedtanking while signaling.  (im sure this is cheating, but fuckem.)
-    ChangeSpeed(true);
+    ChangeSpeed();
     if (sConfig.npc.UseOrbit) {
         m_destiny->OrbitBall(m_attackTarget, m_flyRange);  //try to get outside orbit range
     } else {
@@ -1644,9 +1680,9 @@ void NPCAIMgr::SendGFX(Client* pClient /*nullptr*/) {
     }
 
     bool sendTurret = false;
-    int32 duration(m_attackSpeed);
-    int64 startTime(m_attackTime);
-    SystemEntity* pTargetSE(m_attackTarget);
+    int32 duration = m_attackSpeed;
+    int64 startTime = m_attackTime;
+    SystemEntity* pTargetSE = m_attackTarget;
 
     // or can use (m_action > attack) here
     switch (m_effectID) {
@@ -1675,7 +1711,7 @@ void NPCAIMgr::SendGFX(Client* pClient /*nullptr*/) {
             sLog.Green("NPCAI", "starting %s(%u) GFX for %s(%u);  repeat:%i", \
                 guidStr.c_str(), m_effectID, myNPC->GetName(), myNPC->GetID(), repeat);
         } else {
-            sLog.Error("NPCAI", "stopping %s(%u) GFX for %s(%u)", \
+            sLog.Warning("NPCAI", "stopping %s(%u) GFX for %s(%u)", \
                 guidStr.c_str(), m_effectID, myNPC->GetName(), myNPC->GetID());
         }
     }
@@ -1716,9 +1752,9 @@ void NPCAIMgr::SendGFX(Client* pClient /*nullptr*/) {
 }
 
 void NPCAIMgr::ReportDamage(uint8 type, SystemEntity* pSourceSE) {
-    if (pSourceSE == nullptr || pSourceSE->IsDead())
+    // TODO:  fix this to still allow rep if enabled no matter source's status
+    if (pSourceSE == nullptr or pSourceSE->IsDead())
         return;
-
 
     _log(NPC__AI_LOGIC, "ReportDamage: %s(%u) has %s.", \
             myNPC->GetName(), myNPC->GetID(), sDataMgr.GetDmgRptName(type));
@@ -1759,7 +1795,7 @@ void NPCAIMgr::ReportDamage(uint8 type, SystemEntity* pSourceSE) {
                 return;
             }
             // if npc cant rep, this will never hit
-            if (!m_armorRepairTimer.Enabled() and (m_armorRepairDuration > 0)) {
+            if (sConfig.npc.UseRepair and (m_armorRepairDuration > 0) and !m_armorRepairTimer.Enabled()) {
                 //TODO:  need to know what fxID they using here.
                 m_effectID = EvE::GFXID::armorRepair;    // this is hacked for now.
                 m_actionSpeed = m_armorRepairDuration;
@@ -1781,7 +1817,7 @@ void NPCAIMgr::ReportDamage(uint8 type, SystemEntity* pSourceSE) {
                 // most passives can boost, so fall thru to set timer
             }
             // if npc cant boost, this will never hit
-            if (!m_shieldBoosterTimer.Enabled() and (m_shieldBoosterDuration > 0)) {
+            if (sConfig.npc.UseRegen and (m_shieldBoosterDuration > 0) and  !m_shieldBoosterTimer.Enabled()) {
                 // is this self or remote or both?   to test...
                 //TODO:  need to know what fxID they using here.
                 m_effectID = EvE::GFXID::shieldBoosting;  //this is hacked for now.
@@ -2148,6 +2184,9 @@ uint16 NPCAIMgr::GetTargetingTime() {
             case NPCAI::Size::BShip: {
                 targetTime = 6000;
             } break;
+            case NPCAI::Size::Indy: {
+                targetTime = 8000;
+            } break;
         }
     }
 
@@ -2350,39 +2389,59 @@ void NPCAIMgr::ClearAllTimers() {
     myNPC->SysBubble()->RemoveNPC(myNPC);
 }
 
-void NPCAIMgr::ChangeSpeed(bool increase/*false*/) {
+void NPCAIMgr::ChangeSpeed() {
     // helper method to add/remove mwd speed on npcs
-    float sigRad(m_self->GetAttribute(AttrSignatureRadius).get_float()); //552
-    uint32 speed(m_cruiseSpeed);
+    // start with current sigRad (this will allow mod both ways)
+    float sigRadius = m_self->GetAttribute(AttrSignatureRadius).get_float(); //552
+    uint16 speed = m_cruiseSpeed;
+    uint16 maxSpeed = m_cruiseSpeed;
 
-    if (increase) {
-        //  increase sig radius and speed
-        switch (m_state) {
-            case NPCAI::State::Chasing: {
-                speed = m_maxSpeed;
-            } break;
-            case NPCAI::State::Fleeing: {
-                speed = m_maxSpeed / 2;
-            } break;
-            case NPCAI::State::Following: {
-                speed = m_maxSpeed / 4;
-            } break;
-            case NPCAI::State::Signaling: {
-                speed = m_cruiseSpeed * 2;
-            } break;
-        }
+    // modify sigRad based on set speed (full mwd speed = full modifier)
+    // npc dont have data in dump for AttrEntityMaxVelocitySignatureRadiusMultiplier
+    float multiplier = m_sigRadModifier;
 
-        // modify sigRad based on set speed (full mwd speed = full modifier)
-        float multiplier(m_self->GetAttribute(AttrEntityMaxVelocitySignatureRadiusMultiplier).get_float());
-        multiplier *= (speed / m_maxSpeed);
-        sigRad *= (1.0f + multiplier);
-    } else {
-        // finish this...
+    //  increase sig radius and speed
+    switch (m_state) {
+        case NPCAI::State::Chasing: {
+            speed = m_maxSpeed;
+            maxSpeed = m_maxSpeed;
+            multiplier *= (speed / m_maxSpeed);
+        } break;
+        case NPCAI::State::Fleeing: {
+            speed = m_maxSpeed / 2;
+            maxSpeed = m_maxSpeed / 2;
+            multiplier *= (speed / m_maxSpeed);
+        } break;
+        case NPCAI::State::Following: {
+            speed = m_maxSpeed / 4;
+            maxSpeed = m_maxSpeed / 4;
+            multiplier *= (speed / m_maxSpeed);
+        } break;
+        case NPCAI::State::Signaling: {
+            speed = m_cruiseSpeed * 2;
+            maxSpeed = m_cruiseSpeed * 2;
+            multiplier *= (speed / m_maxSpeed);
+        } break;
+        case NPCAI::State::Idle: {
+            speed = m_cruiseSpeed / 2;
+            maxSpeed = m_cruiseSpeed / 2;
+            multiplier *= (speed / m_cruiseSpeed);
+        } break;
     }
 
-    m_sigRadius = sigRad;
-    m_destiny->SetMaxVelocity(speed);
-    m_self->SetAttribute(AttrSignatureRadius, sigRad, false);
+    m_destiny->SetNPCSpeed(speed, maxSpeed);
+    if (speed > m_cruiseSpeed) {
+        // if npc is running higher than cruise speed, modify sigRad.
+        multiplier *= (speed / m_maxSpeed);
+        if (multiplier > 0.05f) {
+            sigRadius *= multiplier;
+        }
+    }
+
+    // reset in case we're dropping back down to cruise speed.
+    m_self->SetAttribute(AttrSignatureRadius, sigRadius, false);
+
+    //TODO:  should this also affect mass/agility like player ships?
 }
 
 void NPCAIMgr::BcastLocal(uint8 state) {
@@ -2408,6 +2467,20 @@ const char* NPCAIMgr::GetStateName(int8 stateID) {
         case NPCAI::State::Signaling:      return "Signaling";
         case NPCAI::State::WarpOut:        return "Warping Out";
         case NPCAI::State::WarpFollow:     return "Following Warp";
+        default:                           return "None";
+    }
+}
+
+const char* NPCAIMgr::GetSizeName() {
+    switch (m_size) {
+        case NPCAI::Size::None:            return "None";
+        case NPCAI::Size::Swarm:           return "Swarm";
+        case NPCAI::Size::Frigate:         return "Frigate";
+        case NPCAI::Size::Destroyer:       return "Destroyer";
+        case NPCAI::Size::Cruiser:         return "Cruiser";
+        case NPCAI::Size::BCruiser:        return "BCruiser";
+        case NPCAI::Size::BShip:           return "BShip";
+        case NPCAI::Size::Indy:            return "Indy";
         default:                           return "Invalid";
     }
 }
@@ -2484,6 +2557,8 @@ const char* NPCAIMgr::GetStateName(int8 stateID) {
             case NPCAI::Size::BCruiser: {
             } break;
             case NPCAI::Size::BShip: {
+            } break;
+            case NPCAI::Size::Indy: {
             } break;
         }
 */

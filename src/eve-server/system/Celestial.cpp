@@ -125,17 +125,17 @@ void AnomalySE::EncodeDestiny(Buffer& into)
         head.posY = y();
         head.posZ = z();
         head.flags = 0;
-    into.Append( head );
+    into.Append(head);
     MassSector mass = MassSector();
         mass.mass = 10000000000;    // as seen in packets
         mass.cloak = 0;
         mass.harmonic = m_harmonic;
         mass.corporationID = -1;
         mass.allianceID = -1;
-    into.Append( mass );
+    into.Append(mass);
     STOP_Struct main;
         main.formationID = -1;
-    into.Append( main );
+    into.Append(main);
 
     _log(SE__DESTINY, "AnomalySE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
@@ -175,17 +175,17 @@ void WormholeSE::EncodeDestiny(Buffer& into)
         head.posY = y();
         head.posZ = z();
         head.flags = 0;
-    into.Append( head );
+    into.Append(head);
     MassSector mass = MassSector();
         mass.mass = 10000000000;    // as seen in packets
         mass.cloak = 0;
         mass.harmonic = m_harmonic;
         mass.corporationID = -1;
         mass.allianceID = -1;
-    into.Append( mass );
+    into.Append(mass);
     STOP_Struct main;
         main.formationID = -1;
-    into.Append( main );
+    into.Append(main);
     _log(SE__DESTINY, "WormholeSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 

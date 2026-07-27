@@ -503,7 +503,7 @@ void BeltMgr::SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const V
     if (pASE == nullptr)
         return;
 
-    m_asteroids.emplace(std::pair<uint32, AsteroidSE*>(beltID, pASE));
+    m_asteroids.emplace(beltID, pASE);
     pASE->SetMgr(this, beltID);
     m_system->AddEntity(pASE, false);   // we're not adding roids to signal list
 }
@@ -632,7 +632,7 @@ const char* BeltMgr::BeltTypeName(uint8 typeID) {
         case BeltLayout::TripleHelixVortex:	return "Triple-Helix Vortex"; 	break;
         case BeltLayout::GravitationalOrbit:	return "Gravitational Orbit"; 	break;
     }
-    
+
     return "Invalid";
 }
 

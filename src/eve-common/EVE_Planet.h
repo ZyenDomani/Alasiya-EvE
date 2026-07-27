@@ -60,11 +60,11 @@ namespace PI {
         };
     }
 
-    namespace Route {
+    namespace RoutePriority {
         enum {
-            PriorityLow  = -1,
-            PriorityNorm =  0,
-            PriorityHi   =  1
+            Low  = -1,
+            Norm =  0,
+            Hi   =  1
         };
     }
 
@@ -77,6 +77,109 @@ namespace PI {
             Deleted     = 3
         };
     }
+
+    struct Link {
+        int8 state=0;
+        uint8 level=0;
+        uint16 typeID=0;
+        uint32 endpoint1=0;
+        uint32 endpoint2=0;
+    };
+
+    struct Route {
+        int8 state=0;
+        int8 priority=0;
+        uint16 commodityTypeID=0;
+        uint16 commodityQuantity=0;         // current route qty, updated for diminishing returns on each loop
+        uint32 srcPinID=0;
+        uint32 destPinID=0;
+        std::list<uint32> path;
+    };
+
+    struct Heads {
+        uint16 typeID=0;
+        uint32 ecuPinID=0;
+        double latitude=0.0;
+        double longitude=0.0;
+    };
+
+    struct Schematic {
+        uint16 outputQty=0;
+        uint16 outputType=0;
+        uint16 cycleTime=0;                 // in seconds
+
+        // typeID, qty
+        std::map<uint16, uint16> inputs;
+    };
+
+    struct ECU {
+        uint16 headTypeID=0;                // ECU Only   *saved in pins
+        uint16 programType=0;               // extracted resource typeID
+        uint16 cycleCount=0;                // ECU Only   *saved in pins
+
+        int64 expiryTime=0;                 // ECU Only
+
+        double headRadius=0.0;              // ECU Only   *saved in pins
+
+        std::map<uint16, PI::Heads> heads;   // ECU Only
+    };
+
+    struct Plant {
+        // specifically for processing plants. this is not saved in db as a group, but is in pinData
+        // these two are checked in client for the pin.CanActivate() method.  it will return true if either are true.
+        bool hasReceivedInputs :1;          // Process Only  - material received from silo/plant/ecu
+        bool receivedInputsLastCycle :1;    // Process Only  - received all matl/qty for at least one cycle
+
+        uint8 pLevel=0;                     // production level of this plant
+
+        PI::Schematic data=PI::Schematic();
+    };
+
+    struct PinData {
+        bool update :1;                     // specifically for updating pin contents in client.   not saved
+
+        bool isECU :1;                      // common for all pins
+        bool isBase :1;                     // common for all pins
+        bool isStorage :1;                  // common for all pins
+        bool isProcess :1;                  // common for all pins
+        bool isConsumer :1;                 // common for all pins
+        bool isLaunchable :1;               // common for all pins
+        bool isCommandCenter :1;            // common for all pins
+
+        // used to set ECU/Plant currently running;  cc active used for colony.tic()
+        int8 state=-1;                      // common for all pins
+        uint8 level=0;                      // common for all pins
+        uint16 typeID=0;                    // common for all pins
+        uint32 ownerID=0;                   // common for all pins
+        // Process' material data
+        // ignored for other pins
+        // used here for ECU resourceID
+        uint16 schematicID=0;               // Process
+        // ECU data   0 when no installed program
+        // ignored for other pins
+        uint32 qtyPerCycle=0;               // Process, ECU
+        // while !=0, calls update on all colony pins.   used with cycleTime for nextTickTime
+        // xfer time for storage.
+        // must be 0 or not sent for Spaceports and CC
+        int64 lastRunTime=0;                // Process, ECU, Storage
+        // only used for CC and Spaceports
+        // ECU saves expiryTime here
+        // ignored for other pins
+        int64 launchTime=0;                 // Command, Spaceport
+        // used to calculate nextTickTime    base is 60 * SEC (1m in filetime)
+        // hardcoded as 0 for storage (sending not required)
+        int64 cycleTime=0;                  // Process, ECU
+        // used by client to calculate misc data
+        // program install in ecu
+        // no references in other pins
+        // kept here as pin build time
+        int64 installTime=0;                // Process, ECU
+
+        double latitude=0.0;                // planetary location common for all pins
+        double longitude=0.0;               // planetary location common for all pins
+
+        std::map<uint16, uint32> contents;  // Storage    <typeID, qty>
+    };
 
 }
 
@@ -114,109 +217,6 @@ struct PlanetResourceData {
     std::string buffer_5="";
 };
 
-struct PI_Link {
-    int8 state=0;
-    uint8 level=0;
-    uint16 typeID=0;
-    uint32 endpoint1=0;
-    uint32 endpoint2=0;
-};
-
-struct PI_Route {
-    int8 state=0;
-    int8 priority=0;
-    uint16 commodityTypeID=0;
-    uint16 commodityQuantity=0;         // current route qty, updated for diminishing returns on each loop
-    uint32 srcPinID=0;
-    uint32 destPinID=0;
-    std::list<uint32> path;
-};
-
-struct PI_Heads {
-    uint16 typeID=0;
-    uint32 ecuPinID=0;
-    double latitude=0.0;
-    double longitude=0.0;
-};
-
-struct PI_Schematic {
-    uint16 outputQty=0;
-    uint16 outputType=0;
-    uint16 cycleTime=0;                 // in seconds
-
-    // typeID, qty
-    std::map<uint16, uint16> inputs;
-};
-
-struct PI_ECU {
-    uint16 headTypeID=0;                // ECU Only   *saved in pins
-    uint16 programType=0;               // extracted resource typeID
-    uint16 cycleCount=0;                // ECU Only   *saved in pins
-
-    int64 expiryTime=0;                 // ECU Only
-
-    double headRadius=0.0;              // ECU Only   *saved in pins
-
-    std::map<uint16, PI_Heads> heads;   // ECU Only
-};
-
-struct PI_Plant {
-    // specifically for processing plants. this is not saved in db as a group, but is in pinData
-    // these two are checked in client for the pin.CanActivate() method.  it will return true if either are true.
-    bool hasReceivedInputs :1;          // Process Only  - material received from silo/plant/ecu
-    bool receivedInputsLastCycle :1;    // Process Only  - received all matl/qty for at least one cycle
-
-    uint8 pLevel=0;                     // production level of this plant
-
-    PI_Schematic data=PI_Schematic();
-};
-
-struct PI_Pin {
-    bool update :1;                     // specifically for updating pin contents in client.   not saved
-
-    bool isECU :1;                      // common for all pins
-    bool isBase :1;                     // common for all pins
-    bool isStorage :1;                  // common for all pins
-    bool isProcess :1;                  // common for all pins
-    bool isConsumer :1;                 // common for all pins
-    bool isLaunchable :1;               // common for all pins
-    bool isCommandCenter :1;            // common for all pins
-
-    // used to set ECU/Plant currently running;  cc active used for colony.tic()
-    int8 state=-1;                      // common for all pins
-    uint8 level=0;                      // common for all pins
-    uint16 typeID=0;                    // common for all pins
-    uint32 ownerID=0;                   // common for all pins
-    // Process' material data
-    // ignored for other pins
-    // used here for ECU resourceID
-    uint16 schematicID=0;               // Process
-    // ECU data   0 when no installed program
-    // ignored for other pins
-    uint32 qtyPerCycle=0;               // Process, ECU
-    // while !=0, calls update on all colony pins.   used with cycleTime for nextTickTime
-    // xfer time for storage.
-    // must be 0 or not sent for Spaceports and CC
-    int64 lastRunTime=0;                // Process, ECU, Storage
-    // only used for CC and Spaceports
-    // ECU saves expiryTime here
-    // ignored for other pins
-    int64 launchTime=0;                 // Command, Spaceport
-    // used to calculate nextTickTime    base is 60 * SEC (1m in filetime)
-    // hardcoded as 0 for storage (sending not required)
-    int64 cycleTime=0;                  // Process, ECU
-    // used by client to calculate misc data
-    // program install in ecu
-    // no references in other pins
-    // kept here as pin build time
-    int64 installTime=0;                // Process, ECU
-
-    double latitude=0.0;                // planetary location common for all pins
-    double longitude=0.0;               // planetary location common for all pins
-
-    std::map<uint16, uint32> contents;  // Storage    <typeID, qty>
-};
-
 
 class PI_CCData {
 public:
@@ -237,17 +237,17 @@ public:
         colonyID = 0;
     }
 
-    uint8 GetLevel()                                    { return level; }
-    uint32 GetColonyID()                                { return colonyID; }
+    uint8               GetLevel()                      { return level; }
+    uint32              GetColonyID()                   { return colonyID; }
 
-    uint8 level;
-    uint32 colonyID;
+    uint8               level;
+    uint32              colonyID;
 
-    std::map<uint32, PI_ECU> ecus;      // pinID, data   - this dynamic data is not saved
-    std::map<uint32, PI_Pin> pins;      // pinID, data
-    std::map<uint32, PI_Link> links;    // linkID, data
-    std::map<uint16, PI_Route> routes;  // routeID, data
-    std::map<uint32, PI_Plant> plants;  // pinID, data   - this dynamic data is not saved
+    std::map<uint32, PI::ECU>           ecus;           // pinID, data   - this dynamic data is not saved
+    std::map<uint32, PI::PinData>       pins;           // pinID, data
+    std::map<uint32, PI::Link>          links;          // linkID, data
+    std::map<uint16, PI::Route>         routes;         // routeID, data
+    std::map<uint32, PI::Plant>         plants;         // pinID, data   - this dynamic data is not saved
 };
 
 /*  these are internal client state events

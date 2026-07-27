@@ -114,10 +114,10 @@ void AsteroidSE::EncodeDestiny(Buffer& into) {
         head.posY = y();
         head.posZ = z();
         head.flags = 0;
-    into.Append( head );
+    into.Append(head);
     RIGID_Struct main;
         main.formationID = -1;
-    into.Append( main );
+    into.Append(main);
 
     _log(SE__DESTINY, "AsteroidSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }

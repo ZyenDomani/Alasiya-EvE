@@ -112,10 +112,10 @@ void SystemEntity::EncodeDestiny(Buffer& into)
         head.posY = y();
         head.posZ = z();
         head.flags = Ball::Flag::IsGlobal;
-    into.Append( head );
+    into.Append(head);
     RIGID_Struct main;
         main.formationID = -1;
-    into.Append( main );
+    into.Append(main);
     _log(SE__DESTINY, "SE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
@@ -313,10 +313,10 @@ void StaticSystemEntity::EncodeDestiny(Buffer& into) {
         head.posZ = z();
         head.radius = m_self->radius();
         head.flags = Ball::Flag::IsGlobal;
-    into.Append( head );
+    into.Append(head);
     RIGID_Struct main;
         main.formationID = -1;
-    into.Append( main );
+    into.Append(main);
     _log(SE__DESTINY, "SSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X, radius:%.1f", GetName(), head.entityID, head.mode, head.flags, head.radius);
 }
 
@@ -403,23 +403,23 @@ void FieldSystemEntity::EncodeDestiny(Buffer& into) {
     head.posY = y();
     head.posZ = z();
     head.flags = 0 /*(m_harmonic > EVEPOS::Harmonic::Offline ? Ball::Flag::IsMassive : 0)*/; // leave this as 0 to disable client-side bump checks for now
-    into.Append( head );
+    into.Append(head);
     MassSector mass = MassSector();
     mass.mass = 10000000000;    // as seen in packets
     mass.cloak = 0;
     mass.harmonic = m_harmonic;
     mass.corporationID = m_corpID;
     mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
-    into.Append( mass );
+    into.Append(mass);
     if (head.mode == Ball::Mode::FIELD) {
         FIELD_Struct main;
         main.formationID = -1;
-        into.Append( main );
+        into.Append(main);
     } else if (head.mode == Ball::Mode::STOP) {
         // TODO: is this accurate?
         STOP_Struct main;
         main.formationID = -1;
-        into.Append( main );
+        into.Append(main);
     }
 
     _log(SE__DESTINY, "FSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
@@ -451,23 +451,23 @@ void FieldSE::EncodeDestiny(Buffer& into)
     head.posY = y();
     head.posZ = z();
     head.flags = 0 /*(m_harmonic > EVEPOS::Harmonic::Offline ? Ball::Flag::IsMassive : 0)*/; // leave this as 0 to disable client-side bump checks for now
-    into.Append( head );
+    into.Append(head);
     MassSector mass = MassSector();
     mass.mass = 10000000000;    // as seen in packets
     mass.cloak = 0;
     mass.harmonic = m_harmonic;
     mass.corporationID = m_corpID;
     mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
-    into.Append( mass );
+    into.Append(mass);
     if (head.mode == Ball::Mode::FIELD) {
         FIELD_Struct main;
         main.formationID = -1;
-        into.Append( main );
+        into.Append(main);
     } else if (head.mode == Ball::Mode::STOP) {
         // TODO: is this accurate?
         STOP_Struct main;
         main.formationID = -1;
-        into.Append( main );
+        into.Append(main);
     }
 
     _log(SE__DESTINY, "FSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
@@ -578,10 +578,10 @@ void ItemSystemEntity::EncodeDestiny(Buffer& into)
         head.posY = y();
         head.posZ = z();
         head.flags = 0;
-    into.Append( head );
+    into.Append(head);
     RIGID_Struct main;
         main.formationID = -1;
-    into.Append( main );
+    into.Append(main);
 
     _log(SE__DESTINY, "ISE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
@@ -632,10 +632,10 @@ void ObjectSystemEntity::EncodeDestiny(Buffer& into)
         head.posY = y();
         head.posZ = z();
         head.flags = Ball::Flag::IsMassive;
-    into.Append( head );
+    into.Append(head);
     RIGID_Struct main;
         main.formationID = -1;
-    into.Append( main );
+    into.Append(main);
 
     _log(SE__DESTINY, "OSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
@@ -759,14 +759,14 @@ void DynamicSystemEntity::EncodeDestiny(Buffer& into)
         head.posY = y();
         head.posZ = z();
         head.flags = Ball::Flag::IsFree;
-    into.Append( head );
+    into.Append(head);
     MassSector mass = MassSector();
         mass.mass = m_self->mass();
         mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
         mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
-    into.Append( mass );
+    into.Append(mass);
     DataSector data = DataSector();
         data.inertia = m_self->GetAttribute(AttrInertiaMod).get_float();
         data.maxSpeed = m_destiny->GetMaxVelocity();
@@ -774,10 +774,10 @@ void DynamicSystemEntity::EncodeDestiny(Buffer& into)
         data.velY = m_destiny->GetVelocity().y;
         data.velZ = m_destiny->GetVelocity().z;
         data.speedfraction = m_destiny->GetSpeedFraction();
-    into.Append( data );
+    into.Append(data);
     STOP_Struct main;
         main.formationID = -1;
-    into.Append( main );
+    into.Append(main);
 
     _log(SE__DESTINY, "DSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }

@@ -88,7 +88,7 @@ public:
 
     uint32              GetTargetID();
     uint32              GetControllerID()               { return shipSE->GetID(); }
-    uint32              GetFollowDistance();
+    uint32              GetTargetDistance();
 
     // main entry into drone ai
     // called to perform action on target

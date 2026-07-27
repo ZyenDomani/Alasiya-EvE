@@ -713,7 +713,7 @@ void DroneSE::EncodeDestiny(Buffer& into) {
         case Ball::Mode::ORBIT: {
             ORBIT_Struct orbit;
             orbit.targetID = m_AI->GetTargetID();
-            orbit.followRange = m_AI->GetFollowDistance();
+            orbit.followRange = m_AI->GetTargetDistance();
             orbit.formationID = -1;
             into.Append(orbit);
        }  break;

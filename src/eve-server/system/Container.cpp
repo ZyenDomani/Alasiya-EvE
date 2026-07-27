@@ -325,34 +325,52 @@ void ContainerSE::AnchorContainer()
 void ContainerSE::EncodeDestiny(Buffer& into)
 {
     using namespace Destiny;
+    uint8 mode = m_destiny->GetBallMode(); //Ball::Mode::STOP;
+
     BallHeader head = BallHeader();
         head.entityID = GetID();
         head.radius = GetRadius();
         head.posX = x();
         head.posY = y();
         head.posZ = z();
-        head.mode = Ball::Mode::TROLL;
+        head.mode = mode;
         head.flags = Ball::Flag::IsFree | Ball::Flag::IsInteractive;
-    into.Append( head );
+    into.Append(head);
     MassSector mass = MassSector();
         mass.mass = m_self->type().mass();
         mass.cloak = 0;
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
         mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
-    into.Append( mass );
+    into.Append(mass);
     DataSector data = DataSector();
-        data.velX = 0;
-        data.velY = 0;
-        data.velZ = 0;
+        data.maxSpeed = m_destiny->GetMaxVelocity();
+        data.velX = m_destiny->GetVelocity().x;
+        data.velY = m_destiny->GetVelocity().y;
+        data.velZ = m_destiny->GetVelocity().z;
+        data.speedfraction = m_destiny->GetSpeedFraction();
         data.inertia = 1.0f;
-        data.maxSpeed = 1.0f;
-        data.speedfraction = 1;
-    into.Append( data );
-    TROLL_Struct troll;
-        troll.formationID = -1;
-        troll.delay = 10;
-    into.Append( troll );
+    into.Append(data);
+    switch (mode) {
+        case Ball::Mode::FOLLOW: {
+            FOLLOW_Struct follow;
+                follow.formationID = -1;
+                follow.followID = m_destiny->GetTargetID();
+                follow.followRange = m_destiny->GetTargetDistance();
+            into.Append(follow);
+        }  break;
+        case Ball::Mode::TROLL: {
+            TROLL_Struct troll;
+                troll.formationID = -1;
+                troll.delay = sConfig.rates.DestinyTrollTime;
+            into.Append(troll);
+        } break;
+        default: {
+            STOP_Struct main;
+                main.formationID = -1;
+            into.Append(main);
+        } break;
+    }
 
     _log(SE__DESTINY, "ContainerSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
@@ -559,35 +577,52 @@ void WreckSE::Process() {
 
 void WreckSE::EncodeDestiny(Buffer& into) {
     using namespace Destiny;
+    uint8 mode = m_destiny->GetBallMode(); //Ball::Mode::TROLL;
     BallHeader head = BallHeader();
         head.entityID = GetID();
         head.radius = GetRadius();
         head.posX = x();
         head.posY = y();
         head.posZ = z();
-        head.mode = Ball::Mode::TROLL;
+        head.mode = mode;
         head.flags = Ball::Flag::IsFree | Ball::Flag::IsInteractive;
-    into.Append( head );
+    into.Append(head);
     MassSector mass = MassSector();
         mass.mass = m_self->type().mass();
         mass.cloak = 0;
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
         mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
-    into.Append( mass );
+    into.Append(mass);
     DataSector data = DataSector();
-        data.velX = 0;
-        data.velY = 0;
-        data.velZ = 0;
+        data.maxSpeed = m_destiny->GetMaxVelocity();
+        data.velX = m_destiny->GetVelocity().x;
+        data.velY = m_destiny->GetVelocity().y;
+        data.velZ = m_destiny->GetVelocity().z;
+        data.speedfraction = m_destiny->GetSpeedFraction();
         data.inertia = 1.0f;
-        data.maxSpeed = 1.0f;
-        data.speedfraction = 1;
-    into.Append( data );
-    // this isnt right..will be stop, then troll, then rigid
-    TROLL_Struct troll;
-        troll.formationID = -1;
-        troll.delay = 10;
-    into.Append( troll );
+    into.Append(data);
+    switch (mode) {
+        case Ball::Mode::FOLLOW: {
+            FOLLOW_Struct follow;
+                follow.formationID = -1;
+                follow.followID = m_destiny->GetTargetID();
+                follow.followRange = m_destiny->GetTargetDistance();
+            into.Append(follow);
+        }  break;
+        case Ball::Mode::TROLL: {
+            // preliminary implementation:
+            TROLL_Struct troll;
+                troll.formationID = -1;
+                troll.delay = sConfig.rates.DestinyTrollTime;
+            into.Append(troll);
+        } break;
+        default: {
+            STOP_Struct main;
+                main.formationID = -1;
+            into.Append(main);
+        } break;
+    }
     _log(SE__DESTINY, "WreckSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 

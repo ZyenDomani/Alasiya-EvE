@@ -74,7 +74,7 @@
  * AttrAnchoringRequiresSovereigntyLevel = 1215,       //**not in my dump**
  * AttrAnchorDistanceMin = 1590,                  //The minimum distance the object can be anchored, "from what" depends on the object.
  * AttrAnchorDistanceMax = 1591,                  //The minimum distance the object can be anchored, "from what" depends on the object.
- 
+
  * AttrHarvesterType = 709,
  * AttrHarvesterQuality = 710,
  * AttrMoonAnchorDistance = 711,        //How many meters from the standard warp-in distance a moon can be anchored from.
@@ -167,7 +167,7 @@ void TowerSE::Init()
         _log(POS__ERROR, "TowerSE::Init() - m_bubble == null");
         return;
     }
- 
+
     m_bubble->SetTowerSE(this);
 
     /** @todo
@@ -325,11 +325,13 @@ void TowerSE::UpdatePassword()
 
         //  this is for UPDATING forcefield ONLY...do not send on creation.
         std::vector<PyTuple*> updates;
-        //  'massive' enables client-side bounce
-        SetBallMassive sbm;
-            sbm.entityID = m_pShieldSE->GetSelf()->itemID();
-            sbm.is_massive = false;         // disable client-side bump checks
-        updates.push_back(sbm.Encode());
+        //  'massive' enables bounce
+        if (sConfig.cosmic.BumpEnabled) {
+            SetBallMassive sbm;
+                sbm.entityID = m_pShieldSE->GetSelf()->itemID();
+                sbm.is_massive = 1;
+            updates.push_back(sbm.Encode());
+        }
         // harmonic for ForceField
         SetBallHarmonic sbh;
             sbh.itemID = m_pShieldSE->GetSelf()->itemID();

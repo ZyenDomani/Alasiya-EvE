@@ -181,14 +181,13 @@ struct STOP_Struct {
 
 struct WARP_Struct {
     int8  formationID;           // Master layout shape profile index (for fleet warp alignments)
-    // Absolute destination terminal exit coordinates
     double targX;                 // Termination exit coordinates for warp drop
     double targY;
     double targZ;
     int32  effectStamp;           // while aligning <this=countdown> to force warp (anti-stuck fix).  set to current tic once warp starts
-    double distance;              // distance to drop out of warp (-1.0 = Default)
-    double warpInVelocity;        // max warp speed when ships enter new bubble
-    int32  warpFactor;            // warp speed x10
+    double warpDistance;          // total warp distance (followRange)
+    double minRange;              // "warp to within" (followID)
+    int32  warpFactor;            // warp speed x10  (ownerID)
 };
 
 struct ORBIT_Struct {
