@@ -119,8 +119,7 @@ public:
     bool                IsIdle()                        { return (m_state == NPCAI::State::Idle); }
     bool                IsFighting();
     uint16              GetOptimalRange()               { return m_optimalRange; }
-    //uint16              GetSigRes()                     { return m_sigResolution; }
-    uint32              GetFalloff()                    { return m_falloffDistance; }
+    int32               GetFalloff()                    { return m_falloffDistance; }
     double              GetTrackingSpeed()              { return m_trackingSpeed; }
 
     uint16              GetSize()                       { return m_size; }

@@ -177,9 +177,9 @@ bool SystemEntity::ApplyDamage(Damage &damage) {
         ShipTakingDamage(damage.srcSE);
 
     bool killed = false;
-    float total_damage(0.0f);
-    float shield_damage(DamageToShield.GetTotal());
-    float available_shield(m_self->GetAttribute(AttrShieldCharge).get_float());
+    float total_damage = 0.0f;
+    float shield_damage = DamageToShield.GetTotal();
+    float available_shield = m_self->GetAttribute(AttrShieldCharge).get_float();
     if (shield_damage <= available_shield) {
         /** @todo  this works, but still needs work...also check for
     AttrArmorPiercingChance = 122,                      //Chance of piercing the armor.

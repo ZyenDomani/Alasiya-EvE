@@ -344,8 +344,8 @@ void NPCAIMgr::Init() {
 
     if (is_log_enabled(NPC__INFO))
         _log(NPC__INFO, "%s(%u): size: %s, sight:%u, attack:%u, chase:%u, fly:%u, falloff:%u, optimal:%u.", \
-        myNPC->GetName(), myNPC->GetID(), GetSizeName(), m_sightRange, m_attackRange, m_chaseRange, \
-        m_flyRange, m_falloffDistance, m_optimalRange);
+                myNPC->GetName(), myNPC->GetID(), GetSizeName(), m_sightRange, m_attackRange, m_chaseRange, \
+                m_flyRange, m_falloffDistance, m_optimalRange);
 }
 
 //NOTE:  this is also called after npc added to system, before destiny::warp() hits.  this sets them to 'wandering'
