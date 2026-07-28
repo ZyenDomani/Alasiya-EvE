@@ -17,13 +17,14 @@
  *  1m    NPC Corp
  * 2m1    trial-friendly chat channels
  *  3m    Agent
+ *  4m    Agent Skills
  *  9m    Universe (not sure)
  * 10m    K-Space Region  (Known space)
  * 11m    W-Space Region  (Wormhole space)
  * 12m    A-Space Region  (Abyssal space - not in crucible)
  * 20m    K-Space Constellation
- * 20m    W-Space Constellation
- * 20m    A-Space Constellation
+ * 21m    W-Space Constellation
+ * 22m    A-Space Constellation
  * 30m    K-Space Solar System
  * 31m    W-Space  Solar System
  * 32m    A-Space  Solar System
