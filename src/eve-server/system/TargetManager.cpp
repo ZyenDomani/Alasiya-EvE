@@ -358,19 +358,23 @@ void TargetManager::TargetLost(SystemEntity *tSE) {
     }
     _log(TARGET__INFO, "%s(%u) has lost lock on %s(%u)", mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
 
-    if (mySE->IsSentrySE())
+    if (mySE->IsSentrySE()) {
+     // tell sentry it's target is gone.
         return;
+    }
 
     if (mySE->IsDroneSE()) {
         mySE->GetDroneSE()->GetAI()->TargetLost(tSE);
         return;
-    } else {
-        mySE->DestinyMgr()->EntityRemoved(tSE);
     }
+
+    mySE->DestinyMgr()->EntityRemoved(tSE);
+
     if (mySE->IsNPCSE())
         mySE->GetNPCSE()->TargetLost(tSE);
     if (!mySE->HasPilot())
         return;
+    
     Notify_OnTarget te;
         te.mode = "lost";
         te.targetID = tSE->GetID();
@@ -603,7 +607,7 @@ void TargetManager::RemoveTargetModule(ActiveModule* pMod)
     m_modules.erase(pMod->itemID());
 }
 
-// only called by SystemEntity::Killed()
+// called by SystemEntity::Killed() and SystemEntity::Delete()
 void TargetManager::Destroyed()
 {
     _log(TARGET__INFO, "%s(%u) has been destroyed. %lu modules, %lu targets, and %lu targeters in maps.", \
@@ -618,7 +622,7 @@ void TargetManager::Destroyed()
             cur.first->GetDroneSE()->TargetDestroyed(mySE);
     } */
 
-    ActiveModule* module(nullptr);
+    ActiveModule* module = nullptr;
     // iterate thru the map of modules targeting this object, and call Deactivate on each.
     std::map<uint32, ActiveModule*>::iterator itr = m_modules.begin();
     while (itr != m_modules.end()) {

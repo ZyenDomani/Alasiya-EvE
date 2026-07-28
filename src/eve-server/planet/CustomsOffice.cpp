@@ -349,20 +349,22 @@ void CustomsSE::SetAnchor(Client* pClient, Vector3d& pos)
 
     SendSlimUpdate();
 
-    std::vector<PyTuple*> updates;
-    SetBallFree sbf;
-        sbf.entityID = m_self->itemID();
-        sbf.is_free = false;
-    updates.push_back(sbf.Encode());
-    SetBallRadius sbr;
-        sbr.entityID = m_self->itemID();
-        sbr.radius = m_self->radius();
-    updates.push_back(sbr.Encode());
-    m_destiny->SendDestinyUpdates(updates); //consumed
+    if (m_bubble->HasPlayers()) {
+        std::vector<PyTuple*> updates;
+        SetBallFree sbf;
+            sbf.entityID = m_self->itemID();
+            sbf.is_free = false;
+        updates.push_back(sbf.Encode());
+        SetBallRadius sbr;
+            sbr.entityID = m_self->itemID();
+            sbr.radius = m_self->radius();
+        updates.push_back(sbr.Encode());
+            m_destiny->SendDestinyUpdates(updates); //consumed
 
-    //SendEffectUpdate(anchorDropForOrbitals, true);
-    // this also needs a timestamp
-    m_destiny->SendGFX14(m_cData.itemID, m_cData.itemID, m_self->typeID(),0,0,"effects.AnchorDrop",0,1,1,-1,0);
+        //SendEffectUpdate(anchorDropForOrbitals, true);
+        // this also needs a timestamp
+        m_destiny->SendGFX14(m_cData.itemID, m_cData.itemID, m_self->typeID(),0,0,"effects.AnchorDrop",0,1,1,-1,0);
+    }
 }
 
 void CustomsSE::PullAnchor()
@@ -380,7 +382,8 @@ void CustomsSE::PullAnchor()
 
     //SendEffectUpdate(anchorLiftForOrbitals, true);
     // this also needs a timestamp
-    m_destiny->SendGFX14(m_cData.itemID, m_cData.itemID, m_self->typeID(),0,0,"effects.AnchorLift",0,1,1,-1,0);
+    if (m_bubble->HasPlayers())
+        m_destiny->SendGFX14(m_cData.itemID, m_cData.itemID, m_self->typeID(),0,0,"effects.AnchorLift",0,1,1,-1,0);
 }
 
 void CustomsSE::EncodeDestiny(Buffer& into)

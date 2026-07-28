@@ -118,12 +118,18 @@ NPCAIMgr::NPCAIMgr(NPC* mySE)
   m_optimalRange(0),
   m_falloffDistance(0),
   m_flyRange(0),
+  m_sightRangeSq(0.0),
+  m_attackRangeSq(0.0),
+  m_chaseRangeSq(0.0),
+  m_optimalRangeSq(0.0),
+  m_falloffDistanceSq(0.0),
+  m_flyRangeSq(0.0),
   m_actionTime(0),
   m_attackTime(0),
   m_chaseTimeEnd(0),
   m_switchTargChance(0.0f),
   m_trackingSpeed(0.0f),
-  m_damageMultiplier(0.0f),
+  m_damageMultiplier(1.0f),
   m_armorRepairDelayChance(0.0f),
   m_shieldBoosterDelayChance(0.0f),
   // timers
@@ -186,8 +192,9 @@ void NPCAIMgr::Init() {
             m_self->name(), m_self->itemID(), sFxDataMgr.GetEffectName(m_effectID).c_str(), \
             m_effectID, sDataMgr.GetFactionName(myNPC->GetWarFactionID()).c_str());
 
-    m_damageMultiplier = m_self->GetAttribute(AttrDamageMultiplier).get_float();
-    if (m_damageMultiplier < 0.1f)
+    if (sConfig.npc.UseDamageMultiplier)
+        m_damageMultiplier = m_self->GetAttribute(AttrDamageMultiplier).get_float();
+    if (m_damageMultiplier < 0.5f)
         m_damageMultiplier = 1.0f;
 
     // speeds
@@ -197,7 +204,7 @@ void NPCAIMgr::Init() {
     // distances
     m_attackRange = m_self->GetAttribute(AttrEntityAttackRange).get_int();  // max attack distance.  should this be target range also?
     m_optimalRange = m_self->GetAttribute(AttrMaxRange).get_uint32();  // max distance range does not affect the to-hit equation.  (Optimal Range)
-    m_falloffDistance = m_attackRange - m_self->GetAttribute(AttrFalloff).get_int(); // distance at which damage is halved
+    m_falloffDistance = m_self->GetAttribute(AttrFalloff).get_int(); // distance at which damage is halved
     m_trackingSpeed = m_self->GetAttribute(AttrTrackingSpeed).get_float();  //rad/sec
     m_flyRange = m_self->GetAttribute(AttrEntityFlyRange).get_uint32();    //AttrOrbitRange is 0 for npc
     m_chaseRange = m_self->GetAttribute(AttrEntityChaseMaxDistance).get_int();  // npc will activate mwd if target is farther than this distance
@@ -341,6 +348,13 @@ void NPCAIMgr::Init() {
             m_defendFXMap[NPCAI::State::Assisting] = effect.id;
         }
     } */
+
+    m_flyRangeSq        = (m_flyRange * m_flyRange);
+    m_sightRangeSq      = (m_sightRange * m_sightRange);
+    m_attackRangeSq     = (m_attackRange * m_attackRange);
+    m_chaseRangeSq      = (m_chaseRange * m_chaseRange);
+    m_optimalRangeSq    = (m_optimalRange * m_optimalRange);
+    m_falloffDistanceSq = (m_falloffDistance * m_falloffDistance);
 
     if (is_log_enabled(NPC__INFO))
         _log(NPC__INFO, "%s(%u): size: %s, sight:%u, attack:%u, chase:%u, fly:%u, falloff:%u, optimal:%u.", \
@@ -1011,38 +1025,38 @@ void NPCAIMgr::SetSignaling(SystemEntity* pTargetSE) {
 
 bool NPCAIMgr::InOptimalRange(SystemEntity* pTargetSE) {
     Vector3d delta = pTargetSE->GetPosition() - myNPC->GetPosition();
-    double dist = delta.Length();
-    return (dist < m_optimalRange);
+    double distSq = delta.LengthSq();
+    return (distSq < m_optimalRangeSq);
 }
 
 bool NPCAIMgr::InFalloffDistance(SystemEntity* pTargetSE) {
     Vector3d delta = pTargetSE->GetPosition() - myNPC->GetPosition();
-    double dist = delta.Length();
-    return (dist < m_falloffDistance);
+    double distSq = delta.LengthSq();
+    return (distSq < m_falloffDistanceSq);
 }
 
 bool NPCAIMgr::InFlyRange(SystemEntity* pTargetSE) {
     Vector3d delta = pTargetSE->GetPosition() - myNPC->GetPosition();
-    double dist = delta.Length();
-    return (dist < m_flyRange);
+    double distSq = delta.LengthSq();
+    return (distSq < m_flyRangeSq);
 }
 
 bool NPCAIMgr::InChaseRange(SystemEntity* pTargetSE) {
     Vector3d delta = pTargetSE->GetPosition() - myNPC->GetPosition();
-    double dist = delta.Length();
-    return (dist < m_chaseRange);
+    double distSq = delta.LengthSq();
+    return (distSq < m_chaseRangeSq);
 }
 
 bool NPCAIMgr::InAttackRange(SystemEntity* pTargetSE) {
     Vector3d delta = pTargetSE->GetPosition() - myNPC->GetPosition();
-    double dist = delta.Length();
-    return (dist < m_attackRange);
+    double distSq = delta.LengthSq();
+    return (distSq < m_attackRangeSq);
 }
 
 bool NPCAIMgr::InSightRange(SystemEntity* pTargetSE) {
     Vector3d delta = pTargetSE->GetPosition() - myNPC->GetPosition();
-    double dist = delta.Length();
-    return (dist < m_sightRange);
+    double distSq = delta.LengthSq();
+    return (distSq < m_sightRangeSq);
 }
 
 void NPCAIMgr::CheckDistance(SystemEntity* pTargetSE) {
@@ -1050,25 +1064,25 @@ void NPCAIMgr::CheckDistance(SystemEntity* pTargetSE) {
         return;
 
     Vector3d delta = pTargetSE->GetPosition() - myNPC->GetPosition();
-    double dist = delta.Length();
+    double distSq = delta.LengthSq();
     if (is_log_enabled(NPC__TRACE))
         _log(NPC__TRACE, "%s(%u): CheckDistance:  target: %s(%u), state: %s, dist: %.0fm", \
                 myNPC->GetName(), myNPC->GetID(), pTargetSE->GetName(), pTargetSE->GetID(), \
-                GetStateName(m_state), dist);
+                GetStateName(m_state), distSq);
 
     // near to far
-    if (dist < m_optimalRange) {
+    if (distSq < m_optimalRange) {
         SetEngaged(pTargetSE);
-    } else if (dist < m_falloffDistance) {
+    } else if (distSq < m_falloffDistanceSq) {
         SetEngaged(pTargetSE);
-    } else if (dist < m_flyRange) {
+    } else if (distSq < m_flyRangeSq) {
         SetFollowing(pTargetSE);
-    } else if (dist < m_chaseRange) {
+    } else if (distSq < m_chaseRangeSq) {
         SetChasing(pTargetSE);
-    } else if (dist < m_attackRange) {
+    } else if (distSq < m_attackRangeSq) {
         // farthest attack distance for lazors...should we check distance for missiles?
         SetChasing(pTargetSE);
-    } else if (dist < m_sightRange) {
+    } else if (distSq < m_sightRangeSq) {
         SetChasing(pTargetSE);
     } else if (myNPC->TargetMgr()->IsTargetedBy(pTargetSE)) {
         _log(NPC__AI_LOGIC, "CheckDistance();  %s(%u) Out of sight but locked", myNPC->GetName(), myNPC->GetID());
@@ -1847,9 +1861,7 @@ void NPCAIMgr::ShootTarget() {
              m_formula.GetNPCToHit(myNPC, m_attackTarget)
             );
 
-    if (sConfig.npc.UseDamageMultiplier)
-        d *= m_damageMultiplier;
-
+    d *= m_damageMultiplier;
     m_attackTarget->ApplyDamage(d);
 }
 

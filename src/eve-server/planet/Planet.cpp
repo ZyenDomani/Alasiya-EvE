@@ -139,14 +139,14 @@ PyRep* PlanetSE::GetResourceData(Call_ResourceDataDict& dict) {
     if (itr == m_typeBuffers.end())
         return nullptr;
 
-    int size = dict.newBand * dict.newBand * 4;         // 18 band SH (18*18*4)
+    int size = dict.newBand * dict.newBand * 4;         // 18 band SH (18*18*4 = 1296)
     std::string data = itr->second.substr(0, size);
     // adjust data for system security.  not sure how to make it 'less' yet
     if (is_log_enabled(PLANET__DEBUG)) {
         _log(PLANET__DEBUG, "PlanetSE::GetResourceData() for %s (%u) using remoteSense: %u, planetology: %u, advPlanetology: %u - updateTime: %lu, proximity: %s, newBand: %u, oldBand: %u, bufferSize: %u", \
                 sPIDataMgr.GetProductName(dict.resourceTypeID), dict.resourceTypeID, dict.remoteSensing, dict.planetology, dict.advancedPlanetology, \
                 dict.updateTime, sPlanetDataMgr.GetProximity(dict.proximity), dict.newBand, dict.oldBand, size);
-        _log(PLANET__DUMP, "PlanetSE::GetResourceData() for %s:  %s", sPIDataMgr.GetProductName(dict.resourceTypeID), data.c_str());
+        _log(PLANET__DEBUG, "PlanetSE::GetResourceData() for %s:  %s", sPIDataMgr.GetProductName(dict.resourceTypeID), data.c_str());
     }
     PyDict* args = new PyDict();
         args->SetItemString("data", new PyString(data));

@@ -111,7 +111,7 @@ private:
     uint32 m_myID;
     double m_profileStartTime;
 
-    std::vector<InventoryItemRef> SortVector(std::vector<InventoryItemRef> &itemVec);
+    std::vector<InventoryItemRef>& SortVector(std::vector<InventoryItemRef> &itemVec);
     std::map<uint32, InventoryItemRef> mContents;        // itemID/ItemRef
     std::multimap<int16, InventoryItemRef> m_contentsByFlag;  // flagID/ItemRef
 };

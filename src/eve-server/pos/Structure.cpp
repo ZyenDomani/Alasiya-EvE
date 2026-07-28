@@ -459,7 +459,8 @@ void StructureSE::Process()
         {
             SendSlimUpdate();
             // this also needs a timestamp
-            m_destiny->SendGFX14(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.AnchorLift", 0, 0, 0, -1, 0);
+            if (m_bubble->HasPlayers())
+                m_destiny->SendGFX14(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.AnchorLift", 0, 0, 0, -1, 0);
             m_db.UpdateBaseData(m_data);
         }
         break;
@@ -467,7 +468,8 @@ void StructureSE::Process()
         {
             SendSlimUpdate();
             // this also needs a timestamp
-            m_destiny->SendGFX14(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.AnchorDrop", 0, 1, 1, -1, 0);
+            if (m_bubble->HasPlayers())
+                m_destiny->SendGFX14(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.AnchorDrop", 0, 1, 1, -1, 0);
             if (m_tower)
                 m_moonSE->SetTower(this);
             if (m_sbu)
@@ -737,17 +739,19 @@ void StructureSE::SetAnchor(Client* pClient, Vector3d &pos)
 
     SendSlimUpdate();
 
-    std::vector<PyTuple *> updates;
-    SetBallFree sbf;
-     sbf.entityID = m_self->itemID();
-     sbf.is_free = false;
-    updates.push_back(sbf.Encode());
-    SetBallRadius sbr;
-     sbr.entityID = m_self->itemID();
-     sbr.radius = m_self->radius();
-    updates.push_back(sbr.Encode());
-    m_destiny->SendDestinyUpdates(updates); //consumed
-    m_destiny->SendGFX14(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.AnchorDrop", 0, 1, 1, -1, 0);
+    if (m_bubble->HasPlayers()) {
+        std::vector<PyTuple *> updates;
+        SetBallFree sbf;
+            sbf.entityID = m_self->itemID();
+            sbf.is_free = false;
+        updates.push_back(sbf.Encode());
+        SetBallRadius sbr;
+            sbr.entityID = m_self->itemID();
+            sbr.radius = m_self->radius();
+        updates.push_back(sbr.Encode());
+        m_destiny->SendDestinyUpdates(updates); //consumed
+        m_destiny->SendGFX14(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.AnchorDrop", 0, 1, 1, -1, 0);
+    }
 }
 
 void StructureSE::PullAnchor()
@@ -779,7 +783,8 @@ void StructureSE::PullAnchor()
         SendEffectUpdate(EvE::GFXID::anchorLiftForOrbitals, true);
     else
         */
-    m_destiny->SendGFX14(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.AnchorLift", 0, 1, 1, -1, 0);
+    if (m_bubble->HasPlayers())
+        m_destiny->SendGFX14(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.AnchorLift", 0, 1, 1, -1, 0);
 }
 
 /*
@@ -838,7 +843,8 @@ void StructureSE::Activate(int32 effectID)
     m_data.timestamp = GetFileTimeNow();
 
     SendSlimUpdate();
-    m_destiny->SendGFX14(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.StructureOnline", 0, 1, 1, -1, 0);
+    if (m_bubble->HasPlayers())
+        m_destiny->SendGFX14(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.StructureOnline", 0, 1, 1, -1, 0);
 
     // should this be done here?
     if (m_module)
@@ -869,14 +875,12 @@ void StructureSE::SetOnline()
 
     SetTimer(m_duration);
     m_db.UpdateBaseData(m_data);
-    m_destiny->SendGFX14(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.StructureOnlined", 0, 1, 1, -1, 0);
-
-    if (m_generator) {
+    if (m_bubble->HasPlayers())
+        m_destiny->SendGFX14(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.StructureOnlined", 0, 1, 1, -1, 0);
+    if (m_generator)
         svDataMgr.UpdateSystemBeaconID(m_self->locationID(),m_self->itemID());
-    }
-    if (m_jammer) {
+    if (m_jammer)
         svDataMgr.UpdateSystemJammerID(m_self->locationID(),m_self->itemID());
-    }
 }
 
 void StructureSE::SetOffline()

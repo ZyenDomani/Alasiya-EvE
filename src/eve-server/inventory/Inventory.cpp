@@ -354,62 +354,61 @@ void Inventory::GetInventoryVec(std::vector<InventoryItemRef> &itemVec) {
     itemVec = SortVector(itemVecTmp);
 }
 
-std::vector<InventoryItemRef> Inventory::SortVector(std::vector<InventoryItemRef> &itemVec)
-{
-    // my sort
-    //15:53:09 [ItemTrace] Inventory::SortVector: 41 items sorted in 0.177ms with 480 loops.
-    //15:40:20 [ItemTrace] Inventory::SortVector() - 30 items sorted in 28.250us with 87 loops.i
-    //22:09:28 [InvTrace] Inventory::SortVector() - 47 items sorted in 129.250us with 644 loops.
-
-    // std::swap
-    //12:57:36 [ItemTrace] Inventory::SortVector() - 21 items sorted in 16.000us with 60 loops.
-    //13:00:55 [ItemTrace] Inventory::SortVector() - 15 items sorted in 20.750us with 28 loops.
-    //13:01:20 [ItemTrace] Inventory::SortVector() - 19 items sorted in 46.000us with 90 loops.
-    /* sorts a vector of items by category, with loaded modules first(in slot order), then loaded charges(in slot order), then cargo
-     * if there is only one item, no sorting required...
-     *  this should only be called by ships
-     *   -allan
-     */
+std::vector<InventoryItemRef>& Inventory::SortVector(std::vector<InventoryItemRef> &itemVec) {
     if (itemVec.size() < 2)
         return itemVec;
 
-    uint16 count = 0;
-    double start(GetTimeUSeconds());
-
-    //begin basic sort
-    bool done = false;
-    InventoryItemRef tmp(nullptr);
-
-    while(!done) { //check if sorted
-        done = true;  //assume sorted
-        //iterate though list
-        for (int i = 0, i2 = 1;(i < itemVec.size()) &&(i2 < itemVec.size()); i++, i2++) {
-            if ((IsModuleSlot(itemVec[i]->flag())) &&(IsModuleSlot(itemVec[i2]->flag()))) {
-                //check if each pair is sorted by category.  subsystems > charges > modules
-                if (itemVec[i]->categoryID() > itemVec[i2]->categoryID()) {
-                    //it's not, so flip the values
-                    //std::swap(itemVec[i],itemVec[i2]);  // this is ~100x slower on dev server
-                    tmp = itemVec[i];
-                    itemVec[i] = itemVec[i2];
-                    itemVec[i2] = tmp;
-                    done = false;  //we weren't sorted, so now go back and check if we are
-                }
-            //check if each pair is sorted by flag.  cargo > module
-            } else if ((IsCargoHoldFlag(itemVec[i]->flag())) &&(IsModuleSlot(itemVec[i2]->flag()))) {
-                //it's not, so flip the values
-                tmp = itemVec[i];
-                itemVec[i] = itemVec[i2];
-                itemVec[i2] = tmp;
-                done = false;  //we weren't sorted, so now go back and check if we are
-            }
-            ++count;
-        }
+    double start = 0.0;
+    if (sConfig.debug.IsTestServer) {
+        start = GetTimeUSeconds();
     }
 
-    if (sConfig.debug.IsTestServer)
-        _log(INV__TRACE, "Inventory::SortVector() - %lu items sorted in %.3fus with %u loops.", itemVec.size(),(GetTimeUSeconds() - start), count);
+    // C++11 Stable Sort: O(N log N) complexity.
+    // Guaranteed to maintain original FIFO sequence for elements with identical sort keys.
+    std::stable_sort(itemVec.begin(), itemVec.end(), [](const InventoryItemRef& a, const InventoryItemRef& b) {
+        // Cache flags to avoid redundant virtual table or method lookups on the -O0 stack
+        uint32_t flagA = a->flag();
+        uint32_t flagB = b->flag();
 
-    return itemVec;  //returns sorted list
+        bool isModA = IsModuleSlot(flagA);
+        bool isModB = IsModuleSlot(flagB);
+
+        // CASE 1: Both items are actively loaded modules/charges/subsystems
+        if (isModA && isModB) {
+            if (a->categoryID() != b->categoryID()) {
+                return a->categoryID() < b->categoryID(); // Sort ascending by native database priority
+            }
+            // Tie-breaker: If categories match, keep them cleanly arranged by slot order
+            return flagA < flagB;
+        }
+
+        // CASE 2: Item 'a' is a module slot, but Item 'b' is cargo.
+        // 'a' must bubble up to the top of the vector (comes first).
+        if (isModA && IsCargoHoldFlag(flagB)) {
+            return true;
+        }
+
+        // CASE 3: Item 'a' is cargo, but Item 'b' is a module slot.
+        // 'b' must bubble up (comes first), so 'a' is not less than 'b'.
+        if (IsCargoHoldFlag(flagA) && isModB) {
+            return false;
+        }
+
+        // CASE 4: Both items are residing in the cargo hold.
+        // Fall back to native categoryID sorting or preserve exact FIFO insertion order.
+        if (a->categoryID() != b->categoryID()) {
+            return a->categoryID() < b->categoryID();
+        }
+
+        return false; // Tells stable_sort they are identical, preserving strict FIFO positioning
+    });
+
+    if (sConfig.debug.IsTestServer) {
+        _log(INV__TRACE, "Inventory::SortVector() - %lu items optimized-sorted in %.3fus.",
+             itemVec.size(), (GetTimeUSeconds() - start));
+    }
+
+    return itemVec;
 }
 
 InventoryItemRef Inventory::GetByID(uint32 id) const {

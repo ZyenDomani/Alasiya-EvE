@@ -746,7 +746,9 @@ void DestinyManager::InitWarp() {
         --step;
     }
 
-    m_targetDistance -= (decelDistance - distance);
+    // hack to increase stop distance and *hopefully* make warp stop smoother
+    distance += m_speedToLeaveWarp;
+    //m_targetDistance -= (decelDistance - distance);
     //m_decelTime = decelTime;
     decelDistance = distance;
 
@@ -759,7 +761,7 @@ void DestinyManager::InitWarp() {
                 m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, m_targetDistance / ONE_AU_IN_METERS, m_targetDistance);
     }
 
-    float intAccel;
+    float intAccel = 0;
     float accelFraction = std::modf(m_accelTime, &intAccel);
 
     m_warpState = new WarpState(m_ticStamp, m_targetDistance, warpSpeedInMeters, accelDistance, cruiseDistance,
@@ -784,11 +786,12 @@ void DestinyManager::InitWarp() {
     mySE->TargetMgr()->ClearAllTargets();
     //mySE->TargetMgr()->OnTarget(nullptr, TargMgr::Mode::Clear, TargMgr::Msg::WarpingOut);
 
-    // send warp gfx
-    SendGFX10(mySE->GetID(), "effects.Warping");
-
     m_targetEntity.first = 0;
     m_targetEntity.second = nullptr;
+
+    // send warp gfx
+    if (mySE->SysBubble()->HasPlayers())
+        SendGFX10(mySE->GetID(), "effects.Warping");
 
     //TODO:  determine if this ship has assigned drones in space and call drone:shipwarping
 
@@ -796,6 +799,9 @@ void DestinyManager::InitWarp() {
     m_accelDistance = 0;
     m_ticStamp = mySE->SystemMgr()->GetTicCount();
     m_activeSpeedFraction = 1.0f;
+    
+    // ships completely stop before warp
+    m_shipVelocity = NULL_ORIGIN;
 
     WarpAccel(0);
 }
@@ -886,9 +892,9 @@ void DestinyManager::WarpDecel(uint16 sec_into_warp) {
         }
     }
 
-    // change this to use distance?  will have to test with new move code
+    // updated warp drop speed
     if (currentShipSpeed <= m_speedToLeaveWarp)
-        WarpStop(currentShipSpeed);
+        WarpStop(m_speedToLeaveWarp);
 }
 
 void DestinyManager::WarpUpdate(int64 currentShipSpeed, uint16 sec_into_warp, uint8 type/*0*/) {
@@ -988,6 +994,10 @@ bool DestinyManager::ValidTarget() {
         return false;
 
     SystemEntity* pSE = m_targetEntity.second;
+    if (pSE->IsDead()) {
+        EntityRemoved(pSE);
+        return false;
+    }
     if (pSE->IsStationSE() or pSE->IsGateSE() or pSE->IsBeltSE()
     or pSE->IsPOSSE() or pSE->IsItemEntity() or pSE->IsObjectEntity())
         return true;
@@ -1840,9 +1850,9 @@ Battleships                             0.155
     }
 
     if (mySE->IsNPCSE()) {
-        m_speedToLeaveWarp = sRef->GetAttribute(AttrEntityCruiseSpeed).get_float() * 0.5f;
+        m_speedToLeaveWarp = sRef->GetAttribute(AttrEntityCruiseSpeed).get_float() * 0.85f;
     } else {
-        m_speedToLeaveWarp = m_maxSpeed * 0.5f;
+        m_speedToLeaveWarp = m_maxSpeed * 0.85f;
     }
 
     if (m_speedToLeaveWarp < 100)

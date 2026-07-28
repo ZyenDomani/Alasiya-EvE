@@ -240,12 +240,18 @@ private:
 
     //in order of distance  far to close
     int32               m_sightRange;                   //[6] npc sight range
+    double              m_sightRangeSq;
     int32               m_attackRange;                  //[5] maximum engagement distance
+    double              m_attackRangeSq;
     int32               m_chaseRange;                   //[4] min distance to activate mwd, if equipped
+    double              m_chaseRangeSq;
     int32               m_flyRange;                     //[3] distance the npc orbits
+    double              m_flyRangeSq;
     int32               m_falloffDistance;              //[2] distance where accuracy has fallen by half
+    double              m_falloffDistanceSq;
     int32               m_optimalRange;                 //[1] max distance range does not affect the to-hit equation.
-
+    double              m_optimalRangeSq;
+    
     int64               m_actionTime;
     int64               m_attackTime;                   // timestamp when attack started
     int64               m_chaseTimeEnd;                 // timestamp when npc chasing will end (maxChaseDuration)
