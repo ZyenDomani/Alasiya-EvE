@@ -28,7 +28,7 @@
 #define __SYSTEMMANAGER_H_INCL__
 
 #include "system/BubbleManager.h"
-#include "system/DynamicEntityFactory.h"
+#include "system/EntityFactory.h"
 #include "system/SolarSystem.h"
 #include "system/SystemDB.h"
 

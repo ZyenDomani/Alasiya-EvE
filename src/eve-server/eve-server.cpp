@@ -737,6 +737,9 @@ int main( int argc, char* argv[] )
     /* create a single item factory */
     sLog.Green("       ServerInit", "Starting Item Factory");
     sItemFactory.Initialize();
+    /* create a single item factory */
+    sLog.Green("       ServerInit", "Starting Entity Factory");
+    sEntityFactory.Initialize();
     /* initialize EntityMgr singleton, clientID seed and start tic timer */
     sLog.Green("       ServerInit", "Starting Entity List");
     sEntityMgr.Initialize();

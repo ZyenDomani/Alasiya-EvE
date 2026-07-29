@@ -1293,6 +1293,12 @@ void ModuleManager::GetWeapons(std::list< GenericModule* >& weaponList)
                 weaponList.push_back(m_modules[flag]);
 }
 
+void ModuleManager::GetHiSlotModuleRefs(std::vector< InventoryItemRef >& modVec) {
+    for (uint8 flag = flagHiSlot0; flag < flagFixedSlot; ++flag)
+        if (m_modules[flag] != nullptr)
+            modVec.push_back(m_modules[flag]->GetSelf());
+}
+
 void ModuleManager::GetModuleListOfRefsAsc(std::vector<InventoryItemRef>& modVec)
 {
     for (auto &cur : m_modules)
@@ -1305,7 +1311,7 @@ void ModuleManager::GetModuleListOfRefsDec(std::vector< InventoryItemRef >& modV
     std::map<uint8, GenericModule*>::reverse_iterator itr = m_modules.rbegin(), end = m_modules.rend();
     while (itr != end) {
         if (itr->second != nullptr)
-            modVec.push_back( itr->second->GetSelf() );
+            modVec.push_back(itr->second->GetSelf());
         ++itr;
     }
 }

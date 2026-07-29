@@ -515,7 +515,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
 
                 if (entity.groupID == EVEDB::invGroups::Orbital_Infrastructure)
                     entity.planetID = pSysMgr->GetClosestPlanetID(location);
-                SystemEntity* pSE = DynamicEntityFactory::BuildEntity(*pSysMgr, entity);
+                SystemEntity* pSE = sEntityFactory.BuildEntity(*pSysMgr, entity);
                 if (pSE == nullptr) {
                     //couldnt create entity.  move item back to orig location and continue
                     iRef->Donate(pClient->GetCharacterID(), pShip->itemID(), flagCargoHold);
@@ -656,7 +656,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
 
                 entity.position = iRef->position();
 
-                SystemEntity* pSE = DynamicEntityFactory::BuildEntity(*pSysMgr, entity);
+                SystemEntity* pSE = sEntityFactory.BuildEntity(*pSysMgr, entity);
                 if (pSE == nullptr) {
                     //couldnt create entity.  move item back to orig location and continue
                     iRef->Donate(pClient->GetCharacterID(), pShip->itemID(), flagCargoHold);

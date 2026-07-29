@@ -180,7 +180,7 @@ void WormholeMgr::Create(CosmicSignature& sig, uint32 exitSystemID/*0*/, uint32 
     entity.categoryID = iRef->categoryID();
     entity.position = iRef->position();
     entity.planetID = 0;
-    SystemEntity* pSE = DynamicEntityFactory::BuildEntity(*pSysMgr, entity);
+    SystemEntity* pSE = sEntityFactory.BuildEntity(*pSysMgr, entity);
 
     sig.bubbleID = pSE->SysBubble()->GetID();
     // add wormhole to vector

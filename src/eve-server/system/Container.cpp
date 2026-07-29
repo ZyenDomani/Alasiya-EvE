@@ -275,7 +275,6 @@ ContainerSE::~ContainerSE()
     if (m_targMgr != nullptr)
         if (!sConsole.IsShutdown()) {
             m_targMgr->ClearModules();
-            m_targMgr->ClearAllTargets(false);
             //m_targMgr->OnTarget(nullptr, TargMgr::Mode::Clear, TargMgr::Msg::Destroyed);
         }
 

@@ -26,7 +26,6 @@
     */
 
 /** @todo  ai update ideas
- *   bubble call *SomeFunction* to tell ai of new ship arriving in bubble
  *   method to use npc's preferred sig radius for targets
  *   finish flee and signal action methods (and determine who can use them and when)
  *      - this should take system sov, npc anomalies, destruction speed, and pirate faction
@@ -34,27 +33,6 @@
  *
  *  have data...needs coding...
  *   ewar shit, including point/tackle
- *
- *
- *  FOR LATER:
- * The Ultimate Dynamic Event: The Hijack Chance!
- * You mentioned the amazing possibility of an advanced rogue drone intercepting and connecting directly to a player's private
- * drone control channel.
- * This is the ultimate "Oh Shit" mechanic.
- * When an elite rogue carrier or drone boss spawns on grid, it can execute an electronic intrusion action.
- * Instead of a normal broadcast, it hooks into the player's private drone telemetry channel.
- * The Intrusion:
- * The player receives a perfectly clear, uncorrupted binary transmission directly in their main cockpit panel.
- * The Hijack Event:
- * If the rogue drone passes a specific system electronic-warfare calculation check against the player's ship attributes,
- * it completely hijacks one of the player's deployed drones.
- * The Backstab:
- * The server breaks the player's control pointer, flashes a critical binary alert
- * (01100011 01101111 01101101 01101101 01100001 01101110 01100100 00100000 01101100 01101111 01110011 01110100 → "command lost"),
- * toggles the player drone's faction ID to factionUnknown, and commands it to pivot its tracking lasers directly onto its
- * former operator's ship!
- *   - will need method to 'steal drone' from player and xfer control to drone hivemind
- *   will not automatically become a rogue drone, but will be controlled by one.
  *
  *
  * @later:
@@ -202,8 +180,8 @@ void NPCAIMgr::Init() {
     m_cruiseSpeed = m_self->GetAttribute(AttrEntityCruiseSpeed).get_uint32();   // ship speed when not chasing target
 
     // distances
-    m_attackRange = m_self->GetAttribute(AttrEntityAttackRange).get_int();  // max attack distance.  should this be target range also?
-    m_optimalRange = m_self->GetAttribute(AttrMaxRange).get_uint32();  // max distance range does not affect the to-hit equation.  (Optimal Range)
+    m_attackRange = m_self->GetAttribute(AttrEntityAttackRange).get_int();  // max 'see' distance.
+	m_optimalRange = m_self->GetAttribute(AttrMaxRange).get_uint32();  // max distance range does not affect the to-hit equation.  (Optimal Range)
     m_falloffDistance = m_self->GetAttribute(AttrFalloff).get_int(); // distance at which damage is halved
     m_trackingSpeed = m_self->GetAttribute(AttrTrackingSpeed).get_float();  //rad/sec
     m_flyRange = m_self->GetAttribute(AttrEntityFlyRange).get_uint32();    //AttrOrbitRange is 0 for npc
@@ -477,7 +455,6 @@ The squad clears the formationID state, and all members break out into their hig
             }
 
             if (!m_beginFindTarget.Enabled()) {
-                return;
                 if (m_self->HasAttribute(AttrEntityAttackDelayMin)) {
                     uint32 delay = MakeRandomUInt(m_self->GetAttribute(AttrEntityAttackDelayMin).get_uint32(), \
                             m_self->GetAttribute(AttrEntityAttackDelayMax).get_uint32());
@@ -804,6 +781,8 @@ void NPCAIMgr::SetIdle() {
 
 // this one should distinguish between shoot and effect
 void NPCAIMgr::SetEngaged(SystemEntity* pTargetSE) {
+	if (pTargetSE == nullptr)
+		return;
     // are we switching targets?
     if ((m_state == NPCAI::State::Engaged) and (m_attackTarget == pTargetSE))
         return;
@@ -826,23 +805,28 @@ void NPCAIMgr::SetEngaged(SystemEntity* pTargetSE) {
             m_destiny->GetModeNameString().c_str());
 
     // this should only be set once when attack begins unless non-repeating gfx is sent on every loop
-    if (m_action != NPCAI::Action::Attack)
+    if (m_action != NPCAI::Action::Attack) {
+    	m_action = NPCAI::Action::Attack;
         m_attackTime = GetFileTimeNow();
+    	SetAttackTimers();
+	}
 
-    m_state = NPCAI::State::Engaged;
-    m_action = NPCAI::Action::Attack;
-    SetAttackTimers();
+	m_state = NPCAI::State::Engaged;
 
     // update speed
     ChangeSpeed();
     if (sConfig.npc.UseOrbit) {
-        m_destiny->OrbitBall(pTargetSE, m_optimalRange);  //try to get inside orbit range
+		// Safe orbit range is m_optimalRange, or falling back to m_flyRange if optimal is 0
+		double targetOrbitRange = (m_optimalRange > 0) ? m_optimalRange : m_flyRange;
+		m_destiny->OrbitBall(pTargetSE, targetOrbitRange);
     } else {
-        m_destiny->FollowBall(pTargetSE, m_falloffDistance);  //try toget within falloff
+        m_destiny->FollowBall(pTargetSE, m_optimalRange);  //try to get within optimal
     }
 }
 
 void NPCAIMgr::SetFollowing(SystemEntity* pTargetSE) {
+	if (pTargetSE == nullptr)
+		return;
 	// are we switching targets?
     if ((m_state == NPCAI::State::Following) /*and m_destiny->IsFollowing()*/ and (m_attackTarget == pTargetSE))
         return;
@@ -864,19 +848,23 @@ void NPCAIMgr::SetFollowing(SystemEntity* pTargetSE) {
             m_destiny->GetModeNameString().c_str());
 
     // this should only be set once when attack begins unless non-repeating gfx is sent on every loop
-    if (m_action != NPCAI::Action::Attack)
+    if (m_action != NPCAI::Action::Attack) {
+   		m_action = NPCAI::Action::Attack;
         m_attackTime = GetFileTimeNow();
+   		SetAttackTimers();
+	}
 
     m_state = NPCAI::State::Following;
-    m_action = NPCAI::Action::Attack;
-    SetAttackTimers();
 
     // outside optimal range; increase speed to get closer
     ChangeSpeed();
-    m_destiny->FollowBall(pTargetSE, m_falloffDistance);  //try to get inside falloff range
+	double targetApproachRange = (m_optimalRange > 0) ? m_optimalRange : m_flyRange;
+	m_destiny->FollowBall(pTargetSE, targetApproachRange);
 }
 
 void NPCAIMgr::SetChasing(SystemEntity* pTargetSE) {
+	if (pTargetSE == nullptr)
+		return;
 	// are we switching targets?   if not, determine if chase delay was set so we can activate full speed
     if ((m_state == NPCAI::State::Chasing) and (m_attackTarget == pTargetSE) and (m_chaseTimeEnd == 0))
         return;
@@ -947,6 +935,8 @@ void NPCAIMgr::SetChasing(SystemEntity* pTargetSE) {
 
 // not used yet
 void NPCAIMgr::SetFleeing(SystemEntity* pTargetSE) {
+	if (pTargetSE == nullptr)
+		return;
 	// are we switching targets?
     if ((m_state == NPCAI::State::Fleeing) and m_destiny->IsMoving() and (m_attackTarget == pTargetSE))
         return;
@@ -981,25 +971,26 @@ void NPCAIMgr::SetFleeing(SystemEntity* pTargetSE) {
 
 // not used yet
 void NPCAIMgr::SetSignaling(SystemEntity* pTargetSE) {
+	if (pTargetSE == nullptr)
+		return;
     //  this state is only usable by higher-class npcs...maybe
 
     // are we switching targets?
     if ((m_state == NPCAI::State::Signaling) and m_destiny->IsMoving()/*m_destiny->IsOrbiting()*/ and (m_attackTarget == pTargetSE))
         return;
 
+    m_warpOutTimer.Disable();
+    m_attackTarget = pTargetSE;
+
+    m_state = NPCAI::State::Signaling;
+
     // local chat for all players in current bubble -->  "there is a distress signal coming from a nearby ship"
     //  will have to figure out how to code this, then test for spam.   maybe put on config
     BcastLocal(m_state);
 
-    m_warpOutTimer.Disable();
-
-    m_attackTarget = pTargetSE;
-
     //_log(NPC__AI_LOGIC, "SetSignaling(); ");
     _log(NPC__AI_TRACE, "%s(%u): Begin signaling.  Target is %s(%u).", \
             myNPC->GetName(), myNPC->GetID(), m_attackTarget->GetName(), m_attackTarget->GetID());
-
-    m_state = NPCAI::State::Signaling;
 
     // TODO:  this needs work...
     if (m_action == NPCAI::Action::Passive) {
@@ -1068,8 +1059,50 @@ void NPCAIMgr::CheckDistance(SystemEntity* pTargetSE) {
     if (is_log_enabled(NPC__TRACE))
         _log(NPC__TRACE, "%s(%u): CheckDistance:  target: %s(%u), state: %s, dist: %.0fm", \
                 myNPC->GetName(), myNPC->GetID(), pTargetSE->GetName(), pTargetSE->GetID(), \
-                GetStateName(m_state), distSq);
+                GetStateName(m_state), std::sqrt(distSq));
 
+    // updated checks...
+    // total reach is optimal + falloff
+    double totalWeaponReach = static_cast<double>(m_optimalRange) + static_cast<double>(m_falloffDistance);
+
+    // Check hardest ceiling first: Absolute sensory limits
+    bool isLocked = myNPC->TargetMgr()->IsTargetedBy(pTargetSE);
+
+    if (distSq >= m_sightRangeSq and !isLocked) {
+        // Too far away, blind, and no active lock telemetry to follow
+        _log(NPC__AI_LOGIC, "CheckDistance(); %s(%u) Out of sight and unlocked", myNPC->GetName(), myNPC->GetID());
+        SetIdle();
+        ClearTarget(pTargetSE);
+        return;
+    }
+
+    if (distSq >= m_attackRangeSq and distSq >= m_chaseRangeSq && !isLocked) {
+        // Outside of tactical response zones
+        SetIdle();
+        return;
+    }
+
+    if (distSq <= totalWeaponReach) {
+        // Target is within the gun envelope (Optimal or Falloff zone)
+        SetEngaged(pTargetSE);
+
+        // Navigation overlay inside engagement: If we are outside our preferred orbit, close the gap
+        if (distSq > m_flyRangeSq) {
+            // Weapon can hit, but we still need to close to our optimal orbit distance
+            SetFollowing(pTargetSE);
+        }
+    } else if (distSq <= m_chaseRangeSq or isLocked) {
+        // Target is outside gun range but within tactical chase boundaries, or painting us with a lock
+        if (isLocked && distSq >= m_sightRange) {
+            _log(NPC__AI_LOGIC, "CheckDistance(); %s(%u) Out of sight but locked. Chasing.", myNPC->GetName(), myNPC->GetID());
+        }
+        SetChasing(pTargetSE);
+    } else {
+        // Fallback safety
+        SetIdle();
+    }
+
+/*  old checks
     // near to far
     if (distSq < m_optimalRange) {
         SetEngaged(pTargetSE);
@@ -1094,6 +1127,7 @@ void NPCAIMgr::CheckDistance(SystemEntity* pTargetSE) {
         SetIdle();
         ClearTarget(pTargetSE);
     }
+	*/
 }
 
 void NPCAIMgr::Target(SystemEntity* pTargetSE) {
@@ -2166,10 +2200,9 @@ void NPCAIMgr::MissileLaunched(Missile* pMissile) {
     float chance = m_self->GetAttribute(AttrEntityDefenderChance).get_float();
     if (sConfig.npc.DefenderMissileChance)
         chance += sConfig.npc.DefenderMissileChance;
-    // check chance to shoot defender missile at incoming missile (working, ??/??/??)
+    // check chance to shoot defender missile at incoming missile (working, verified 28jul26)
     if (MakeRandomFloat() < chance)
         LaunchMissile(EVEDB::invTypes::DefenderI, pMissile); // defender missile
-    // TODO:  set and test for this every x {timeframe}?   no attribute for it
 }
 
 uint16 NPCAIMgr::GetTargetingTime() {

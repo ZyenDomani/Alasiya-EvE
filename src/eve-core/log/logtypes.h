@@ -20,7 +20,7 @@
  ------------------------------------------------------------------------------------
  Author:        Zhur
  Additions:  Allan
- Log Version: 11.6
+ Log Version: 11.8
  */
 /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -591,6 +591,18 @@ LOG_TYPE( STANDING, INFO, DISABLED, "StandingInfo" )
 LOG_TYPE( STANDING, TRACE, DISABLED, "StandingTrace" )
 LOG_TYPE( STANDING, DUMP, DISABLED, "StandingDump" )
 LOG_TYPE( STANDING, RSPDUMP, DISABLED, "StandingRspDump" )
+
+LOG_CATEGORY( SWARM )
+LOG_TYPE( SWARM, ERROR,   ENABLED, "SWARM Error" )
+LOG_TYPE( SWARM, WARNING, DISABLED, "SWARM Warning" )
+LOG_TYPE( SWARM, MESSAGE, DISABLED, "SWARM Msg" )
+LOG_TYPE( SWARM, INFO, DISABLED, "SWARM Info" )
+LOG_TYPE( SWARM, TRACE, DISABLED, "SWARM Trace" )
+LOG_TYPE( SWARM, MOVE, DISABLED, "SWARM Move" )
+LOG_TYPE( SWARM, DEBUG, DISABLED, "SWARM Debug" )
+LOG_TYPE( SWARM, AI_TRACE, DISABLED, "SWARM AI Trace" )
+LOG_TYPE( SWARM, AI_LOGIC, DISABLED, "SWARM AI Logic" )
+LOG_TYPE( SWARM, AI_MESSAGE, DISABLED, "SWARM AI Msg" )
 
 LOG_CATEGORY( TARGET )
 LOG_TYPE( TARGET, ERROR, ENABLED, "TargetError" )

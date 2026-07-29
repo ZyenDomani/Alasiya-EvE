@@ -2215,13 +2215,14 @@ PyList* ShipItem::ShipGetModuleList() {
     }
 
     PyList* result = new PyList();
-    // Create entries in "onslimitemchange" modules list for ALL modules, rigs, and subsystems present on ship:
+    // Create entries in "onslimitemchange" modules list for only hislot modules on ship:
     std::vector<InventoryItemRef> moduleList;
-    m_ModuleManager->GetModuleListOfRefsAsc(moduleList);
+    //m_ModuleManager->GetModuleListOfRefsAsc(moduleList);
+    m_ModuleManager->GetHiSlotModuleRefs(moduleList);
     for (auto &cur : moduleList) {
         PyTuple* module = new PyTuple(2);
-        module->SetItem(0, new PyInt(cur->typeID()));
-        module->SetItem(1, new PyInt(cur->itemID()));
+        module->SetItem(0, new PyInt(cur->itemID()));
+        module->SetItem(1, new PyInt(cur->typeID()));
         result->AddItem(module);
     }
 

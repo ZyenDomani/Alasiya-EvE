@@ -31,6 +31,7 @@
 #include "character/Character.h"
 #include "inventory/AttributeEnum.h"
 #include "system/DestinyManager.h"
+#include "system/SystemBubble.h"
 #include "ship/Missile.h"
 #include "ship/Ship.h"
 #include "ship/modules/GenericModule.h"
@@ -156,6 +157,7 @@ void Missile::Process() {
     /*   Base call to Process Movement  */
     SystemEntity::Process();
 
+    //TODO:  this is never set?!?!?
     if (m_hitTimer.Check(false)) {
         m_hitTimer.Disable();
         HitTarget();
@@ -233,6 +235,12 @@ void Missile::MakeDamageState(DoDestinyDamageState &into) {
 }
 
 void Missile::HitTarget() {
+    // check for defender missile and blow up target missile when it hits
+    if (m_self->typeID() == EVEDB::invTypes::DefenderI) {
+        m_destiny->SendTerminalExplosion(m_targetSE->GetID(), m_bubble->GetID());
+        m_targetSE->GetMissileSE()->Delete();
+    }
+
     // Create Damage object:
     Damage d(m_fromSE, m_modRef, m_self);
 

@@ -475,7 +475,7 @@ bool SystemManager::LoadSystemDynamics() {
 
     SystemEntity* pSE = nullptr;
     for (auto &cur : entityData) {
-        pSE = DynamicEntityFactory::BuildEntity(*this, cur);
+        pSE = sEntityFactory.BuildEntity(*this, cur);
         if (pSE == nullptr) {
             sLog.Error( "SystemManager::LoadSystemDynamics()", "Failed to create entity for item %u (grp: %u, type %u)",
                                 cur.itemID, cur.groupID, cur.typeID);
@@ -502,7 +502,7 @@ bool SystemManager::LoadPlayerDynamics() {
 
     SystemEntity* pSE = nullptr;
     for (auto &cur : entityData) {
-        pSE = DynamicEntityFactory::BuildEntity(*this, cur);
+        pSE = sEntityFactory.BuildEntity(*this, cur);
         if (pSE == nullptr) {
             sLog.Error( "SystemManager::LoadPlayerDynamics()", "Failed to create entity for item %u (grp: %u, type %u)", cur.itemID, cur.groupID, cur.typeID);
             continue;
@@ -521,7 +521,7 @@ bool SystemManager::LoadPlayerDynamics() {
 }
 
 bool SystemManager::BuildDynamicEntity(const DBSystemDynamicEntity& data, uint32 launcherID/*0*/) {
-    SystemEntity* pSE = DynamicEntityFactory::BuildEntity(*this, data);
+    SystemEntity* pSE = sEntityFactory.BuildEntity(*this, data);
     if (pSE == nullptr) {
         sLog.Error( "SystemManager::BuildDynamicEntity()", "Failed to create entity for item %u (grp: %u, type %u)", data.itemID, data.groupID, data.typeID);
         return false;
@@ -533,10 +533,15 @@ bool SystemManager::BuildDynamicEntity(const DBSystemDynamicEntity& data, uint32
     // this is only used for wrecks...
     if (launcherID) {
         WreckSE* pWE = pSE->GetWreckSE();
+        if (pWE == nullptr) {
+            AddEntity(pSE);
+            return true;
+        }
+        pWE->SetDead();
         pWE->SetLaunchedByID(launcherID);
         if (IsCharacterID(data.ownerID)) {
             Client* pClient = sEntityMgr.FindClientByCharID(data.ownerID);
-            if (pClient->InFleet())
+            if ((pClient != nullptr) and (pClient->InFleet()))
                 pWE->SetFleetID(pClient->GetFleetID());
         }
 
@@ -548,7 +553,6 @@ bool SystemManager::BuildDynamicEntity(const DBSystemDynamicEntity& data, uint32
     }
 
     AddEntity(pSE);
-
     return true;
 }
 

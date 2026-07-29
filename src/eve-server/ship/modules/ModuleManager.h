@@ -110,6 +110,8 @@ public:
     void GetShipRigs(std::vector< uint32 >& modVec);
     void GetShipSubSystems(std::vector< uint32 >& modVec);
     void SortModulesBySlotDec(std::vector< uint32 >& modVec, std::vector< GenericModule* >& pModList);
+    // only hi slot
+    void GetHiSlotModuleRefs(std::vector<InventoryItemRef>& modVec);
     // low, mid, hi, rig, subsys
     void GetModuleListOfRefsAsc(std::vector<InventoryItemRef>& modVec);
     // subsys, rig, hi, mid, low

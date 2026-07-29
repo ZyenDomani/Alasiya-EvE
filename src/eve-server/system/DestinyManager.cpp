@@ -799,7 +799,7 @@ void DestinyManager::InitWarp() {
     m_accelDistance = 0;
     m_ticStamp = mySE->SystemMgr()->GetTicCount();
     m_activeSpeedFraction = 1.0f;
-    
+
     // ships completely stop before warp
     m_shipVelocity = NULL_ORIGIN;
 
@@ -1782,7 +1782,7 @@ void DestinyManager::SetAgilityInertia() {
  * NPC::NPC()
  * Concord::Concord()
  * DestinyManager::UpdateNewShip()
- * DynamicEntityFactory::BuildEntity()  (for abandoned ships)
+ * sEntityFactory.BuildEntity()  (for abandoned ships)
  */
 void DestinyManager::UpdateShipVariables()
 {
