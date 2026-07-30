@@ -33,6 +33,17 @@
 #include "system/Container.h"
 #include "system/SystemManager.h"
 
+EntityFactory::EntityFactory() : m_routingArray(nullptr) {
+    m_routingArray = new EntityClass[255];
+    // set the entire array to 'Unknown' state
+    std::memset(m_routingArray, 0, 255 * sizeof(m_routingArray));
+}
+
+EntityFactory::~EntityFactory() {
+    //SafeDeleteArray(m_routingArray);
+    delete[] m_routingArray;
+}
+
 SystemEntity* EntityFactory::BuildEntity(SystemManager& sysMgr, const DBSystemDynamicEntity& eData) {
     FactionData fData = FactionData();
         fData.allianceID = eData.allianceID;
@@ -397,8 +408,6 @@ SystemEntity* EntityFactory::BuildEntity(SystemManager& sysMgr, const DBSystemDy
 }
 
 void EntityFactory::Initialize() {
-    // set the entire array to 'Unknown' state
-    std::memset(m_routingArray, static_cast<uint8_t>(EntityClass::Unknown), sizeof(m_routingArray));
     // npc ships in catID:11
     m_routingArray[EVEDB::invGroups::Police_Drone] = EntityClass::NPC;
     m_routingArray[EVEDB::invGroups::Pirate_Drone] = EntityClass::NPC;

@@ -1437,7 +1437,7 @@ bool DestinyManager::IsAligned(Vector3d& targHeading) {
     double dot = m_shipVelocity * targHeading;
     //double degrees = EvE::Trig::Rad2Deg(std::acos(dot));
     if (m_ballMode == Destiny::Ball::Mode::WARP) {
-        if (dot > /*WARP_ALIGNMENT*/ 0.99449256)
+        if (dot > /*WARP_ALIGNMENT 0.99449256*/ 0.99756405)
             return true;
     } else if (dot > /*TURN_ALIGNMENT*/ 0.99756405) {
         return true;

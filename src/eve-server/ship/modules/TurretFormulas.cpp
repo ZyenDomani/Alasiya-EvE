@@ -75,11 +75,11 @@ float TurretFormulas::GetToHit(ShipItemRef shipRef, TurretModule* pMod, SystemEn
     double ChanceToHit = std::pow(0.5, c + e);
     double rNum = MakeRandomDouble();
     if (is_log_enabled(DAMAGE__TRACE)) {
-        _log(DAMAGE__TRACE, "Turret::GetToHit - distance:%0.2f, range:%0.2f, falloff:%0.2f", distance, range, falloff);
-        _log(DAMAGE__TRACE, "Turret::GetToHit - transversalV:%.3f, angularV:%.3f, tracking:%.3f, targetSig:%.1f, sigRes:%.1f", \
+        _log(DAMAGE__TRACE, "GetToHit - distance:%0.2f, range:%0.2f, falloff:%0.2f", distance, range, falloff);
+        _log(DAMAGE__TRACE, "GetToHit - transversalV:%0.3f, angularV:%0.3f, tracking:%0.3f, targetSig:%0.1f, sigRes:%0.1f", \
                 transversalV, angularVel, trackSpeed, targSig, sigRes);
-        _log(DAMAGE__TRACE, "Turret::GetToHit - (%0.3f * %0.3f)^2 = c:%0.5f : (%0.3f / %0.1f)^2 = e:%0.5f", a, b, c, d, falloff, e);
-        _log(DAMAGE__TRACE, "Turret::GetToHit - ChanceToHit: %0.5f  - Rand:%0.3f  - %s", ChanceToHit, rNum, \
+        _log(DAMAGE__TRACE, "GetToHit - (%0.3f * %0.3f)^2 = c:%0.5f : (%0.3f / %0.1f)^2 = e:%0.5f", a, b, c, d, falloff, e);
+        _log(DAMAGE__TRACE, "GetToHit - (ChanceToHit:%0.4f > Rand:%0.4f) = %s", ChanceToHit, rNum, \
                 ((rNum <= sConfig.rates.PlayerCritChance) ? "Crit" : (rNum < ChanceToHit ? "Hit" : "Miss")));
     }
     if (rNum <= sConfig.rates.PlayerCritChance)
@@ -130,11 +130,11 @@ float TurretFormulas::GetNPCToHit(NPC* pNPC, SystemEntity* pTarget) {
     double ChanceToHit = std::pow(0.5, c + e);
     double rNum = MakeRandomDouble();
     if (is_log_enabled(DAMAGE__TRACE_NPC)) {
-        _log(DAMAGE__TRACE_NPC, "NPC::GetToHit - distance:%.2f, range:%.u, falloff:%i", distance, range, falloff);
-        _log(DAMAGE__TRACE_NPC, "NPC::GetToHit - transversalV:%.3f, angularVel:%.3f tracking:%.3f, targetSig:%.1f, sigRes:%u", \
+        _log(DAMAGE__TRACE_NPC, "GetToHit - distance:%0.2f, range:%0.1f, falloff:%0.1f", distance, range, falloff);
+        _log(DAMAGE__TRACE_NPC, "GetToHit - transversalV:%0.3f, angularVel:%0.3f tracking:%0.3f, targetSig:%0.1f, sigRes:%0.1f", \
                 transversalV, angularVel, trackSpeed, targSig, sigRes);
-        _log(DAMAGE__TRACE_NPC, "NPC::GetToHit - (%.3f * %.3f)^2 = c:%.5f : (%.3f / %i)^2 = e:%.5f", a, b, c, d, falloff, e);
-        _log(DAMAGE__TRACE_NPC, "NPC::GetToHit - ChanceToHit:%f, Rand:%.3f - %s", ChanceToHit, rNum, \
+        _log(DAMAGE__TRACE_NPC, "GetToHit - (%0.3f * %0.3f)^2 = c:%0.5f : (%0.3f / %0.1f)^2 = e:%0.5f", a, b, c, d, falloff, e);
+        _log(DAMAGE__TRACE_NPC, "GetToHit - (ChanceToHit:%0.4f > Rand:%0.4f) = %s", ChanceToHit, rNum, \
                 ((rNum <= sConfig.rates.NpcCritChance) ? "Crit" : (rNum < ChanceToHit ? "Hit" : "Miss")));
     }
     if (rNum <= sConfig.rates.NpcCritChance)

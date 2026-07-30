@@ -176,11 +176,11 @@ protected:
     // for npcs that have modules
     void                UseModule();
 
-    bool                InOptimalRange(SystemEntity* pTargetSE);        // near    - range 1
-    bool                InFalloffDistance(SystemEntity* pTargetSE);     // close   - range 2
-    bool                InFlyRange(SystemEntity* pTargetSE);            // mid     - range 3
-    bool                InChaseRange(SystemEntity* pTargetSE);          // far     - range 4
-    bool                InAttackRange(SystemEntity* pTargetSE);         // distant - range 5
+    bool                InFlyRange(SystemEntity* pTargetSE);            // near    - range 1
+    bool                InOptimalRange(SystemEntity* pTargetSE);        // close   - range 2
+    bool                InFalloffDistance(SystemEntity* pTargetSE);     // mid     - range 3
+    bool                InAttackRange(SystemEntity* pTargetSE);         // far     - range 4
+    bool                InChaseRange(SystemEntity* pTargetSE);          // distant - range 5
     bool                InSightRange(SystemEntity* pTargetSE);          // sight   - range 6
 
     // checks attack target only
@@ -239,19 +239,19 @@ private:
     float               m_sigRadModifier;
 
     //in order of distance  far to close
-    int32               m_sightRange;                   //[6] npc sight range
+    double              m_sightRange;                   //[6] npc sight range
     double              m_sightRangeSq;
-    int32               m_attackRange;                  //[5] maximum engagement distance
+    double              m_attackRange;                  //[5] maximum engagement distance
     double              m_attackRangeSq;
-    int32               m_chaseRange;                   //[4] min distance to activate mwd, if equipped
+    double              m_chaseRange;                   //[4] min distance to activate mwd, if equipped
     double              m_chaseRangeSq;
-    int32               m_flyRange;                     //[3] distance the npc orbits
-    double              m_flyRangeSq;
-    int32               m_falloffDistance;              //[2] distance where accuracy has fallen by half
+    double              m_falloffDistance;              //[3] distance past optimal where accuracy has fallen by half
     double              m_falloffDistanceSq;
-    int32               m_optimalRange;                 //[1] max distance range does not affect the to-hit equation.
+    double              m_optimalRange;                 //[2] max distance range does not affect the to-hit equation.
     double              m_optimalRangeSq;
-    
+    double              m_flyRange;                     //[1] distance the npc orbits
+    double              m_flyRangeSq;
+
     int64               m_actionTime;
     int64               m_attackTime;                   // timestamp when attack started
     int64               m_chaseTimeEnd;                 // timestamp when npc chasing will end (maxChaseDuration)

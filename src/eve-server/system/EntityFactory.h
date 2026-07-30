@@ -22,6 +22,9 @@ class EntityFactory
 : public Singleton< EntityFactory >
 {
 public:
+    EntityFactory();
+    ~EntityFactory();
+
     // call this on server start to build EntityFactory
     void Initialize();
 
@@ -39,7 +42,7 @@ private:
     };
 
     // The index is the GroupID, the value is the EntityClass enum.
-    EntityClass m_routingArray[250];
+    EntityClass* m_routingArray;
 };
 
 //Singleton
