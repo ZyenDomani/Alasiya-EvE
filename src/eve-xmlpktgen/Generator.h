@@ -4,7 +4,8 @@
     ------------------------------------------------------------------------------------
     This file is part of EVEmu: EVE Online Server Emulator
     Copyright 2006 - 2016 The EVEmu Team
-    For the latest information visit http://evemu.org
+    Copyright 2016 - 2026 Alasiya-EvE by Allan
+    For the latest implementation status visit http://eve.alasiya.net/?p=op_status
     ------------------------------------------------------------------------------------
     This program is free software; you can redistribute it and/or modify it under
     the terms of the GNU Lesser General Public License as published by the Free Software
@@ -44,10 +45,10 @@ public:
      * @param[in] outputFile The output file.
      */
     Generator( FILE* outputFile = NULL );
-    /** @todo  finish this for -Weffc++ */
+    Generator(Generator&&) =delete;
     Generator(const Generator&) =delete;
+    Generator& operator=(Generator&&) =delete;
     Generator& operator=(const Generator&) =delete;
-
     virtual ~Generator()                                { /* do nothing here */ }
 
     /**

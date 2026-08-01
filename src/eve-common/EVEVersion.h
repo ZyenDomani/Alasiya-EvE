@@ -4,7 +4,8 @@
     ------------------------------------------------------------------------------------
     This file is part of EVEmu: EVE Online Server Emulator
     Copyright 2006 - 2016 The EVEmu Team
-    For the latest information visit http://evemu.org
+    Copyright 2016 - 2026 Alasiya-EvE by Allan
+    For the latest implementation status visit http://eve.alasiya.net/?p=op_status
     ------------------------------------------------------------------------------------
     This program is free software; you can redistribute it and/or modify it under
     the terms of the GNU Lesser General Public License as published by the Free Software
@@ -42,7 +43,7 @@ static const int32 EVEBirthday = 170472;
 //static std::string GIT_SHORT_HASH = std::string(GIT_COMMIT_HASH).erase(7, std::string::npos);
 //static std::string REVISION_STRING = std::string("0.72.75-") + std::string(GIT_BRANCH) + std::string("-") + GIT_SHORT_HASH;
 
-static const char* const EVEMU_REVISION = "0.91.13";
+static const char* const EVEMU_REVISION = "0.91.17";
 static const char* const EVEMU_BUILD_DATE = __DATE__;
 
 /*  Allan's Static Definitions */
@@ -50,11 +51,11 @@ static const char* const EVEMU_BUILD_DATE = __DATE__;
 //static const char* const EVEMU_BUILD_DATE = "24 March 2023";
 /* match versions here with stated files for full support */
 static const float Config_Version = 12.10f; /* eve-server.xml and EveServerConfig.cpp */
-static const float Log_Version = 11.6f;    /* logtypes.h and log.ini */
+static const float Log_Version = 11.8f;    /* logtypes.h and log.ini */
 /* AI versions for shitz-n-giggles */
 static const float Joe_Version = 0.25f;   /* MarketBot.xml and MarketBotConf.cpp */
 /* these  dont have separate config files ...yet */
-static const float NPC_AI_Version = 1.65f;
+static const float NPC_AI_Version = 1.75f;
 static const float Swarm_AI_Version = 1.57f;
 static const float Drone_AI_Version = 1.19f;
 static const float Mission_Version = 0.77f;

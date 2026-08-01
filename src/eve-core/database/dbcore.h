@@ -4,7 +4,8 @@
  *    ------------------------------------------------------------------------------------
  *    This file is part of EVEmu: EVE Online Server Emulator
  *    Copyright 2006 - 2016 The EVEmu Team
- *    For the latest information visit http://evemu.org
+ *    Copyright 2016 - 2026 Alasiya-EvE by Allan
+ *    For the latest implementation status visit http://eve.alasiya.net/?p=op_status
  *    ------------------------------------------------------------------------------------
  *    This program is free software; you can redistribute it and/or modify it under
  *    the terms of the GNU Lesser General Public License as published by the Free Software
@@ -45,6 +46,10 @@ class DBerror
 {
 public:
     DBerror();
+    DBerror(DBerror&&) =delete;
+    DBerror(const DBerror&) =delete;
+    DBerror& operator=(DBerror&&) =delete;
+    DBerror& operator=(const DBerror&) =delete;
     ~DBerror();
 
     uint32 GetErrNo() const { return mErrNo; }
@@ -68,6 +73,10 @@ class DBQueryResult
 {
 public:
     DBQueryResult();
+    DBQueryResult(DBQueryResult&&) =delete;
+    DBQueryResult(const DBQueryResult&) =delete;
+    DBQueryResult& operator=(DBQueryResult&&) =delete;
+    DBQueryResult& operator=(const DBQueryResult&) =delete;
     ~DBQueryResult();
 
     /* error during the query, if RunQuery returned false. */
@@ -102,15 +111,15 @@ class DBResultRow
 {
 public:
     DBResultRow();
-    /** @todo  finish this for -Weffc++ */
+    DBResultRow(DBResultRow&&) =delete;
     DBResultRow(const DBResultRow&) =delete;
+    DBResultRow& operator=(DBResultRow&&) =delete;
     DBResultRow& operator=(const DBResultRow&) =delete;
+    ~DBResultRow()                                      { /* do nothing here */ }
 
-    ~DBResultRow() { /* do nothing here */ }
+    bool IsNull( uint32 index ) const                   { return ( NULL == GetText( index ) ); }
 
-    bool IsNull( uint32 index ) const { return ( NULL == GetText( index ) ); }
-
-    const char* GetText( uint32 index ) const { return mRow[ index ]; }
+    const char* GetText( uint32 index ) const           { return mRow[ index ]; }
     bool GetBool( uint32 index ) const;
     int8 GetInt8( uint32 index ) const;
     uint8 GetUInt8( uint32 index ) const;
@@ -123,13 +132,13 @@ public:
     double GetDouble( uint32 index ) const;
 
     //proxy methods up to our query result:
-    uint32 ColumnCount() const { return mResult->ColumnCount(); }
-    const char* ColumnName( uint32 index ) const { return mResult->ColumnName( index ); }
-    DBTYPE ColumnType( uint32 index ) const { return mResult->ColumnType( index ); }
+    uint32 ColumnCount() const                          { return mResult->ColumnCount(); }
+    const char* ColumnName( uint32 index ) const        { return mResult->ColumnName( index ); }
+    DBTYPE ColumnType( uint32 index ) const             { return mResult->ColumnType( index ); }
     uint32 ColumnLength( uint32 index ) const;
 
-    bool IsUnsigned( uint32 index ) const { return mResult->IsUnsigned( index ); }
-    bool IsBinary( uint32 index ) const { return mResult->IsBinary( index ); }
+    bool IsUnsigned( uint32 index ) const               { return mResult->IsUnsigned( index ); }
+    bool IsBinary( uint32 index ) const                 { return mResult->IsBinary( index ); }
 
 protected:
     //for DBQueryResult
@@ -149,11 +158,11 @@ public:
     enum eStatus { Closed, Connected, Error };
 
     DBcore();
-    /** @todo  finish this for -Weffc++ */
+    DBcore(DBcore&&) =delete;
     DBcore(const DBcore&) =delete;
+    DBcore& operator=(DBcore&&) =delete;
     DBcore& operator=(const DBcore&) =delete;
-
-    virtual ~DBcore()                     { /* do nothing here */ }
+    virtual ~DBcore()                                   { /* do nothing here */ }
 
     void    Close();
     void    Initialize(std::string host, std::string user, std::string password, std::string database, bool compress=false, bool SSL=false,
@@ -181,10 +190,10 @@ public:
     //static void ReplaceSlash(const char *str);
     void    ping();
 
-    eStatus GetStatus() const { return pStatus; }
+    eStatus GetStatus() const                           { return pStatus; }
 
 protected:
-    MYSQL*  getMySQL()              { return mysql; }
+    MYSQL*  getMySQL()                                  { return mysql; }
 
     void Connect(uint* errnum = 0, char* errbuf = 0);
 
