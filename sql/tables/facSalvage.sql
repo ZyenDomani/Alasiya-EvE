@@ -27,7 +27,7 @@ CREATE TABLE `facSalvage` (
   `techLvl` tinyint(3) unsigned NOT NULL,
   `itemID` int(10) unsigned NOT NULL,
   `itemName` varchar(45) COLLATE utf8_unicode_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=Aria DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci PAGE_CHECKSUM=1 ROW_FORMAT=PAGE TRANSACTIONAL=1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -49,4 +49,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-06-27  0:42:26
+-- Dump completed on 2026-08-01  9:55:17

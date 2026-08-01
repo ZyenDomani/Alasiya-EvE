@@ -27,7 +27,7 @@ CREATE TABLE `sklBaseSkills` (
   `skillTypeID` smallint(6) NOT NULL,
   `level` tinyint(4) NOT NULL,
   PRIMARY KEY (`ID`)
-) ENGINE=Aria AUTO_INCREMENT=10 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci PAGE_CHECKSUM=1 COMMENT='Basic Skills for All Races';
+) ENGINE=Aria AUTO_INCREMENT=11 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci PAGE_CHECKSUM=1 COMMENT='Basic Skills for All Races';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -36,7 +36,7 @@ CREATE TABLE `sklBaseSkills` (
 
 LOCK TABLES `sklBaseSkills` WRITE;
 /*!40000 ALTER TABLE `sklBaseSkills` DISABLE KEYS */;
-INSERT INTO `sklBaseSkills` VALUES (1,3300,2),(2,3327,2),(3,3386,1),(4,3392,2),(5,3402,1),(6,3413,2),(7,3416,1),(8,3426,2),(9,3449,2);
+INSERT INTO `sklBaseSkills` VALUES (3,3359,1),(2,3327,2),(1,3356,1),(4,3392,2),(10,3418,2),(6,3413,2),(7,3416,2),(8,3426,2),(9,3449,2);
 /*!40000 ALTER TABLE `sklBaseSkills` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -49,4 +49,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-06-27  0:42:49
+-- Dump completed on 2026-08-01  9:55:39

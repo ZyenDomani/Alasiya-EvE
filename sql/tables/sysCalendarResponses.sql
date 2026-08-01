@@ -28,16 +28,6 @@ CREATE TABLE `sysCalendarResponses` (
   `response` tinyint(1) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='response list for calendar events';
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `sysCalendarResponses`
---
-
-LOCK TABLES `sysCalendarResponses` WRITE;
-/*!40000 ALTER TABLE `sysCalendarResponses` DISABLE KEYS */;
-INSERT INTO `sysCalendarResponses` VALUES (1,90000000,4),(2,90000000,5);
-/*!40000 ALTER TABLE `sysCalendarResponses` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -48,4 +38,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-06-27  0:42:49
+-- Dump completed on 2026-08-01  9:55:39

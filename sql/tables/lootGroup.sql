@@ -28,7 +28,7 @@ CREATE TABLE `lootGroup` (
   `groupDropChance` float(6,4) NOT NULL,
   `itemGroupID` int(11) DEFAULT NULL,
   `itemGroupName` text COLLATE utf8_bin
-) ENGINE=Aria DEFAULT CHARSET=utf8 COLLATE=utf8_bin PAGE_CHECKSUM=1;
+) ENGINE=Aria DEFAULT CHARSET=utf8 COLLATE=utf8_bin PAGE_CHECKSUM=1 ROW_FORMAT=PAGE TRANSACTIONAL=1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -50,4 +50,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-06-27  0:42:27
+-- Dump completed on 2026-08-01  9:55:18

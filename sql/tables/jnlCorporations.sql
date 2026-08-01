@@ -37,7 +37,7 @@ CREATE TABLE `jnlCorporations` (
   `description` text,
   PRIMARY KEY (`transactionID`),
   KEY `ownerID` (`ownerID`)
-) ENGINE=InnoDB AUTO_INCREMENT=88 DEFAULT CHARSET=utf8 COMMENT='Corporation Journal Data';
+) ENGINE=InnoDB AUTO_INCREMENT=93 DEFAULT CHARSET=utf8 COMMENT='Corporation Journal Data';
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -49,4 +49,4 @@ CREATE TABLE `jnlCorporations` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-06-27  0:42:27
+-- Dump completed on 2026-08-01  9:55:18

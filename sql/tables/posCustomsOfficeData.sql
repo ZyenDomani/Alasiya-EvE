@@ -52,16 +52,6 @@ CREATE TABLE `posCustomsOfficeData` (
   KEY `ownerID` (`ownerID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='POS Customs Office Data';
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `posCustomsOfficeData`
---
-
-LOCK TABLES `posCustomsOfficeData` WRITE;
-/*!40000 ALTER TABLE `posCustomsOfficeData` DISABLE KEYS */;
-INSERT INTO `posCustomsOfficeData` VALUES (140027942,1000125,1,-4,4,0,0,0,0,0,0,0.05,0.07,0.02,0.08,0.05,0.1,0.2,0,-137.181,-0.00714,0,0),(140028007,1000125,1,-4,4,0,0,0,0,0,0,0.05,0.07,0.02,0.08,0.05,0.1,0.2,0,41.3782,-2.5315,0,0),(140028018,1000125,1,-4,4,0,0,0,0,0,0,0.05,0.07,0.02,0.08,0.05,0.1,0.2,0,24.6967,-4.22075,0,0),(140028093,1000125,1,-4,4,0,0,1,1,0,127,0.05,0.07,0.02,0.08,0.05,0.1,0.2,0,-54.4945,-3.41787,0,0);
-/*!40000 ALTER TABLE `posCustomsOfficeData` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -72,4 +62,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-06-27  0:42:47
+-- Dump completed on 2026-08-01  9:55:36
