@@ -429,7 +429,7 @@ enum EveAttrEnum {
     AttrShipBonusCF = 463,
     AttrShipBonusAF = 464,
     AttrEntityEquipmentGroupMax = 465,
-    AttrEntityReactionFactor = 466,                     //The chance of an entity attacking the same person as its group members.  Scales delay in joining in on fights too.
+    AttrEntityReactionFactor = 466,                     //The chance of an entity attacking the same target as its group members.  Scales delay in joining in on fights too.
     AttrMaxLaborotorySlots = 467,
     AttrMineralNeedResearchBonus = 468,
     AttrEntityBluePrintDropChance = 469,

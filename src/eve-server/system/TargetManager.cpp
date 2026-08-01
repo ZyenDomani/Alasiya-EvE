@@ -238,7 +238,7 @@ bool TargetManager::StartTargeting(SystemEntity* tSE, uint16 lockTime, uint8 max
     tSE->TargetMgr()->TargetedAdd(mySE);
 
     _log(TARGET__INFO, "%s(%u) started targeting %s(%u) (%.2fs lock time)", \
-            mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID(), (lockTime / 1000));
+            mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID(), static_cast<float>(lockTime / 1000.0f));
 
     sEntityMgr.AddTargMgr(mySE, this);
 
@@ -374,7 +374,7 @@ void TargetManager::TargetLost(SystemEntity *tSE) {
         mySE->GetNPCSE()->TargetLost(tSE);
     if (!mySE->HasPilot())
         return;
-    
+
     Notify_OnTarget te;
         te.mode = "lost";
         te.targetID = tSE->GetID();

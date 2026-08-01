@@ -32,7 +32,7 @@ public:
 
     void Process();
     void SetDungMgr(DungeonMgr* pDmgr)                  { m_dungMgr = pDmgr; }
-    // not working... warp a spawned npc group from one location to another (change bubbles)
+    // warp a spawn group from one location to another (change bubbles)
     void WarpOutSpawn(NPC* pNPC, SystemBubble* pBubble);
     // update SpawnMgr on npcs new location (change bubbles)
     void MoveSpawn(NPC* pNPC, SystemBubble* pBubble);

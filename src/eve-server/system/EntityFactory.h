@@ -15,6 +15,16 @@
 #include "system/SolarSystem.h"
 #include "system/SystemDB.h"
 
+namespace EntityClass {
+    // dataset to ease runtime lookups
+    enum : uint8_t {
+        Unknown = 0,
+        NPC,
+        Sentry,
+        Container,
+        Max_Classes
+    };
+}
 
 class SystemManager;
 
@@ -32,17 +42,8 @@ public:
     SystemEntity* BuildEntity( SystemManager& sysMgr, const DBSystemDynamicEntity& eData );
 
 private:
-    // dataset to ease runtime lookups
-    enum class EntityClass : uint8_t {
-        Unknown = 0,
-        NPC,
-        Sentry,
-        Container,
-        Max_Classes
-    };
-
     // The index is the GroupID, the value is the EntityClass enum.
-    EntityClass* m_routingArray;
+    std::unordered_map<uint16, uint8> m_routingArray;
 };
 
 //Singleton

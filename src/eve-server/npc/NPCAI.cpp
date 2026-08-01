@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:        Zhur
     Rewrite:    Allan
-    AI Version: 2.61
+    AI Version: 1.61
     */
 
 /** @todo  ai update ideas
@@ -37,6 +37,7 @@
  *
  * @later:
  *   advanced npc fleets can change formation shape during maneuvers.  send ball update with new shape but ONLY for slaves
+ *   (idea...warpout...see same pc...localchat "you again??" or bcast "hey guys, that <shiptype>'s back")
  *
  * NPC__AI_LOGIC
  * NPC__AI_TRACE
@@ -118,7 +119,8 @@ NPCAIMgr::NPCAIMgr(NPC* mySE)
   m_armorRepairTimer(0),
   m_beginFindTarget(0),
   m_warpOutTimer(0),
-  m_retargetTimer(0)
+  m_retargetTimer(0),
+  m_homePoint(NULL_ORIGIN)
 {
     assert(m_self.get() != nullptr);
 }
@@ -134,21 +136,21 @@ void NPCAIMgr::Init() {
         case factionBloodRaider:
         case factionSanshas:
         case factionAmarr:
-        case factionCONCORD:    // testing.  these do omni
-        case factionSleeper:   // testing.  these do omni
-        case factionThukker:    // testing.  these do exp/therm
-        case factionSociety:    // SoCT   testing.  these do exp/therm
+        case factionCONCORD:    	// testing.  these do omni
+        case factionSleeper:    	// testing.  these do omni
+        case factionThukker:    	// testing.  these do exp/therm
+        case factionSociety:    	// SoCT   testing.  these do exp/therm
         case factionKhanid:
-        case factionUnknown: {  // rogue drones
+        case factionUnknown: {  	// rogue drones (will be moved to their own class)
             // lasers;  mostly thermal and em damage
             m_effectID = EvE::GFXID::targetAttack;
         } break;
         case factionAngel:
         case factionSerpentis:
         case factionSyndicate:
-        case factionMordusLegion: // testing.  these do kin/therm
-        case factionGuristas:   // testing.  these do kin/therm
-        case factionGallente:   // testing.  these do kin/therm
+        case factionMordusLegion: 	// testing.  these do kin/therm
+        case factionGuristas:    	// testing.  these do kin/therm
+        case factionGallente:     	// testing.  these do kin/therm
         case factionSistersOfEVE: {
             // projectiles (hybrid, railgun, cannon);  mostly kinetic and explosive damage
             m_effectID = EvE::GFXID::projectileFiredForEntities;
@@ -160,27 +162,26 @@ void NPCAIMgr::Init() {
             m_effectID = EvE::GFXID::projectileFired;
         } break;
 
-        case factionORE:        // non-aggressive gallente faction
-        case factionInterBus: {  // non-aggressive
+        case factionORE:        	// non-aggressive gallente faction
+        case factionInterBus: {  	// non-aggressive
             m_effectID = 0;
         } break;
     }
 
-    _log(NPC__INFO, "%s(%u): default effect is %s(%u) for %s.", \
+    if (is_log_enabled(NPC__INFO))
+        _log(NPC__INFO, "%s(%u): default effect is %s(%u) for %s using turretID: %u.", \
             m_self->name(), m_self->itemID(), sFxDataMgr.GetEffectName(m_effectID).c_str(), \
-            m_effectID, sDataMgr.GetFactionName(myNPC->GetWarFactionID()).c_str());
+            m_effectID, sDataMgr.GetFactionName(myNPC->GetWarFactionID()).c_str(), m_turretID);
 
     if (sConfig.npc.UseDamageMultiplier)
         m_damageMultiplier = m_self->GetAttribute(AttrDamageMultiplier).get_float();
-    if (m_damageMultiplier < 0.5f)
-        m_damageMultiplier = 1.0f;
 
     // speeds
-    m_maxSpeed = m_self->GetAttribute(AttrMaxVelocity).get_uint32();
+    m_maxSpeed = m_self->GetAttribute(AttrMaxVelocity).get_uint32();	// absolute
     m_cruiseSpeed = m_self->GetAttribute(AttrEntityCruiseSpeed).get_uint32();   // ship speed when not chasing target
     m_trackingSpeed = m_self->GetAttribute(AttrTrackingSpeed).get_float();  //rad/sec
 
-    // distances
+    // sizes
     if (EvE::icontains(m_self->type().groupName(), "Frigate")) {
         m_size = NPCAI::Size::Frigate;
     } else if (EvE::icontains(m_self->type().groupName(), "Destroyer")) {
@@ -200,45 +201,55 @@ void NPCAIMgr::Init() {
         // d31,d45,dn50,dn150,d250,dn350
         if (radius < 55.0f) {
             m_size = NPCAI::Size::Frigate;
-        } else if (radius < 170.0f) {
+        } else if (radius < 170.0f) {	// check this...may be too large
             m_size = NPCAI::Size::Destroyer;
         } else if (radius < 270.0f) {
             m_size = NPCAI::Size::Cruiser;
         } else if (radius < 350.0f) {
-            m_size = NPCAI::Size::BCruiser; //22824
+            m_size = NPCAI::Size::BCruiser;
         } else { // 350+
             m_size = NPCAI::Size::BShip;
         }
     } else {
         // not sure what to do here.
-    	_log(NPC__WARNING, "%s(%u):  %s(ID %u) - no match found in 'contains' test ", \
+    	_log(NPC__WARNING, "%s(%u):  %s(ID %u) - no match found in 'icontains' test ", \
                 m_self->name(), m_self->itemID(), m_self->type().groupName().c_str(), m_self->groupID());
     }
 
-    // distance beyond optimal at which damage is halved ~660 rows
+    //TODO:  should these be calculated on the fly for active module fx that would alter tracking?
+    // NOTE:  between both maxRange and Falloff, there are 5587 db rows.  i have not filtered it further
+    // this is based on 'weapon type' for optimal ranges,
+    m_optimalRange = m_self->GetAttribute(AttrMaxRange).get_double();  // no distance penality
+    if (m_optimalRange < 100.0) {
+        // this should not hit for most npcs
+        _log(NPC__WARNING, "%s(%u):  no data for AttrMaxRange.", m_self->name(), m_self->itemID());
+        m_optimalRange = m_size * 18;
+    }
+    // distance beyond optimal at which damage is halved, also based on 'weapon type'
     m_falloffDistance = m_self->GetAttribute(AttrFalloff).get_double(); //optimal + falloff = 50%, optimal + 2falloff = ~6%
-    // this is based on weapon type for optimal ranges, ~660 rows
-    m_optimalRange = m_self->GetAttribute(AttrMaxRange).get_double();  // no toHit penality for distance
-    // 30 rows for AttrEntityAttackRange - 15000 default
-    m_attackRange = m_optimalRange + m_falloffDistance;  // distance npc will start shooting target
-    // 0 rows for AttrEntityChaseMaxDistance - 2500 default
-    m_chaseRange = m_attackRange + EvE::max(1500.0, m_falloffDistance);// distance npc will activate mwd/ab
-    //AttrOrbitRange(0) and AttrEntityFlyRange (500) are 0 for npc
-    m_flyRange = EvE::max(500.0, m_optimalRange * 0.75);    // preferred orbit range (empty)
+    if (m_falloffDistance < 100.0) {
+        // this should not hit for most npcs
+        _log(NPC__WARNING, "%s(%u):  no data for AttrFalloff.", m_self->name(), m_self->itemID());
+        m_falloffDistance = m_size * 80;
+    }
+    // distance npc will start shooting target.   default: optimal + falloff
+    m_attackRange = m_optimalRange + m_falloffDistance;
+    // distance npc will activate mwd/ab.  default: attack + falloff
+    m_chaseRange = m_attackRange + EvE::max(1500.0, m_falloffDistance);
+    //AttrOrbitRange and AttrEntityFlyRange are empty for npc
+    m_flyRange = EvE::max(500.0, m_optimalRange * 0.75);
+    // set max sensor range based on above distances.  this is also target range...if they can see you, they can target you.
+    // there is chance npc will wander closer to objects in sensor range
+    m_sightRange = m_chaseRange + m_optimalRange;
+    // maybe add "m_targetRange" later?  can see ship but outside targetrange...move in for better look?
 
-    m_sightRange = m_optimalRange + m_optimalRange;
-
-    // distance checks and corrections
+    // distance checks and corrections.  these should never hit now
     if (m_attackRange < 1000)
         m_attackRange = m_size * 10;
     if (m_attackRange > m_sightRange)
         m_sightRange = m_attackRange * 2;
-    if (m_optimalRange < 1.0f)
-        m_optimalRange = m_attackRange / 2;
-    if (m_flyRange < 1)
-        m_flyRange = m_optimalRange + (m_sightRange / 30);
-    if (m_flyRange > m_chaseRange)
-        m_chaseRange = m_flyRange * 3;
+    if (m_attackRange > m_chaseRange)
+        m_chaseRange = m_attackRange + m_falloffDistance;
 
     // check for elite npcs and adjust sigRadMod accordingly
     std::string name = m_self->name();
@@ -253,7 +264,7 @@ void NPCAIMgr::Init() {
     // 542 - A relative strength that indicates how powerful this NPC entity is in combat
 
     // ship targets
-    //m_self->GetAttribute(AttrMaxAttackTargets).get_uint32()     may use this later...
+    //m_self->GetAttribute(AttrMaxAttackTargets).get_uint32()     most npc have no data here.  use <size>+1
     m_maxLockedTargets = m_self->GetAttribute(AttrMaxLockedTargets).get_uint32();
     if ((m_maxLockedTargets < 1) or (m_attackSpeed < 1)) {
         //NOTE:  these are passive npcs
@@ -266,9 +277,9 @@ void NPCAIMgr::Init() {
         m_flyRange /= 10;             // these are all set to 200k
     }
 
-    // this is for npc to rep itself   NOTE:  both these are also in fx data
+    // repper cycle time
     m_armorRepairDuration = m_self->GetAttribute(AttrEntityArmorRepairDuration).get_uint32();
-    // this is chance an npc has of delaying it's rep (if applicable)
+    // this is chance an npc has of delaying rep (if applicable)
     if (m_self->HasAttribute(AttrEntityArmorRepairDelayChance)) {
         m_armorRepairDelayChance = m_self->GetAttribute(AttrEntityArmorRepairDelayChance).get_float();
     } else if (m_self->HasAttribute(AttrEntityArmorRepairDelayChanceSmall)) {
@@ -279,9 +290,9 @@ void NPCAIMgr::Init() {
         m_armorRepairDelayChance = m_self->GetAttribute(AttrEntityArmorRepairDelayChanceLarge).get_float();
     }
 
-    // this is for npc to boost itself
+    // booster cycle time
     m_shieldBoosterDuration = m_self->GetAttribute(AttrEntityShieldBoostDuration).get_uint32();
-    // this is chance an npc has of delaying it's boost (if applicable)
+    // this is chance an npc has of delaying boost (if applicable)
     if (m_self->HasAttribute(AttrEntityShieldBoostDelayChance)) {
         m_shieldBoosterDelayChance = m_self->GetAttribute(AttrEntityShieldBoostDelayChance).get_float();
     } else if (m_self->HasAttribute(AttrEntityShieldBoostDelayChanceSmall)) {
@@ -319,16 +330,16 @@ void NPCAIMgr::Init() {
     } */
 
     m_flyRangeSq        = (m_flyRange * m_flyRange);
+    m_chaseRangeSq      = (m_chaseRange * m_chaseRange);
     m_sightRangeSq      = (m_sightRange * m_sightRange);
     m_attackRangeSq     = (m_attackRange * m_attackRange);
-    m_chaseRangeSq      = (m_chaseRange * m_chaseRange);
     m_optimalRangeSq    = (m_optimalRange * m_optimalRange);
     m_falloffDistanceSq = (m_falloffDistance * m_falloffDistance);
 
     if (is_log_enabled(NPC__INFO))
-        _log(NPC__INFO, "%s(%u): size: %s, sight:%0.1f, attack:%0.1f, chase:%0.1f, fly:%0.1f, falloff:%0.1f, optimal:%0.1f.  fxMap: %lli", \
-                myNPC->GetName(), myNPC->GetID(), GetSizeName(), m_sightRange, m_attackRange, m_chaseRange, \
-                m_flyRange, m_falloffDistance, m_optimalRange, m_effectMap.size());
+        _log(NPC__INFO, "%s(%u): size: %s, sight:%0.0f, chase:%0.0f, attack(f+o):%0.0f, falloff:%0.0f, optimal:%0.0f, fly:%0.0f.  fxMap: %lli", \
+                myNPC->GetName(), myNPC->GetID(), GetSizeName(), m_sightRange, m_chaseRange, m_attackRange, \
+                m_falloffDistance, m_optimalRange, m_flyRange, m_effectMap.size());
 }
 
 //NOTE:  this is also called after npc added to system, before destiny::warp() hits.  this sets them to 'wandering'
@@ -337,41 +348,60 @@ void NPCAIMgr::Process() {
         return;
 
     if (m_warpOutTimer.Check(false)) {
-        // disallow warpout if spawn has active respawn timer (spawn is being chained)
-        if (myNPC->GetSpawnMgr()->IsChaining(myNPC->SysBubble()->GetID())) {
-            m_state = NPCAI::State::Idle;
-            m_warpOutTimer.Disable();
-        }
+        // timer hit, time to warp away....
+        WarpOut();
+        return;
     }
 
-    // Inside the Squad Leader's AI cycle frame:
-    if (myNPC->IsSquadLeader() && m_attackTarget != nullptr) {
+/* works but not implemented yet
+ * 20:14:24 [NPC AI Msg] Squad Leader 750000001 commanding all squad members to <FOCUS FIRE> on kitty
+ *
+    // Inside the Squad Leader's AI cycle frame:  (not implemented yet)
+    if (myNPC->IsSquadLeader() and (m_attackTarget != nullptr)) {
         NPCSquad* mySquad = myNPC->GetSquad();
 
         // Check if the squad needs a focus-fire target reassignment
-        if (mySquad && mySquad->GetSquadTarget() != m_attackTarget) {
+        if ((mySquad != nullptr) and (mySquad->GetSquadTarget() != m_attackTarget)) {
 
-            // AttrEntityReactionFactor handles the statistical probability
-            // of a squad working together as a tactical unit!
+            // use leaders reaction factor to determine group effort
+            // should also take 'tacticalTier' into consideration here
+            mySquad->GetTier();  will return Squad::Tier::x
+
             float reactionChance = m_self->GetAttribute(AttrEntityReactionFactor).get_float();
 
             if (MakeRandomFloat() < reactionChance) {
-                _log(NPC__AI_MESSAGE, "Squad Leader %u commanding all squad members to FOCUS FIRE on %s!",
+                _log(NPC__AI_MESSAGE, "Squad Leader %u commanding all squad members to <FOCUS FIRE> on %s",
                      myNPC->GetID(), m_attackTarget->GetName());
 
                 mySquad->SetSquadTarget(m_attackTarget);
 
-                // Wake up the other rats in the squad to re-evaluate their locks immediately!
+                // Wake up the other rats in the squad to re-evaluate their locks immediately
                 for (NPC* member : mySquad->GetMembers()) {
                     if (member && member != myNPC && member->GetAI()) {
-                        member->GetAI()->SwitchTarget(); // Forces a rapid PickTarget evaluation
+                        member->GetAI()->SwitchTarget(); // force update
+                    }
+                }
+            }
+        }
+        // Every few processing frames, the leader directs the squad
+        if (MakeRandomUInt() < 25) {
+            // Directive 1: Broadcast the Focus-Fire Target to the squad
+            myNPC->GetSquad()->SetSquadTarget(m_attackTarget);
+            // Directive 2: Special Commander Ability (e.g., Fleet Shield Boost Signal)
+            if (myNPC->GetCommandRank() == NPCAI::Rank::Commander && InOptimalRange(m_attackTarget)) {
+                _log(NPC__AI_MESSAGE, "Leader %u activating fleet-wide Tracking Link enhancement!", myNPC->GetID());
+                // Execute an overarching broadcast effect to buff all teammates in the vector
+                for (NPC* member : myNPC->GetSquad()->GetMembers()) {
+                    if (member && member != myNPC) {
+                        // update this to use config option
+                        member->ApplyTrackingBoost(15.0f); // +15% tracking speed buff
                     }
                 }
             }
         }
     }
-
-    // Inside your active NPCAIMgr::Process() case loop for FORMATION mode:
+*/
+    //  (not implemented yet)
     if (myNPC->DestinyMgr()->GetBallMode() == Destiny::Ball::Mode::FORMATION) {
         if (m_attackTarget != nullptr) {
             Vector3d delta = m_attackTarget->GetPosition() - myNPC->GetPosition();
@@ -379,20 +409,29 @@ void NPCAIMgr::Process() {
 
             // If a brawling frigate realizes the target is far beyond its
             // optimal range, it breaks ranks to execute an independent tackle burn!
-            // should we check for ability to tackle first?
+            // should we check for ability to tackle first?  well, yeah...duh
             if (m_size == NPCAI::Size::Frigate && currentDistance > (m_optimalRange * 1.5f)) {
                 _log(NPC__AI_LOGIC, "%s breaking formation to engage independent tackle at %.0fm.",
                      myNPC->GetName(), currentDistance);
 
-                // Throttle up MicroWarpDrive to close the distance gap
-                ChangeSpeed();
-                // Break the shared destiny local-space anchor
-                //myNPC->DestinyMgr()->SetBallMode(Destiny::Ball::Mode::FOLLOW);
-                // Pivot instantly into a high-speed pursuit state
                 SetChasing(m_attackTarget);
+                // we should also set m_actionTarget here...
                 return;
             }
         }
+    }
+
+    if (m_retargetTimer.Check()) {
+        // make sure player count is still high enough to target-switch
+        if (myNPC->SysBubble()->CountPlayers() > 1) {
+            if (is_log_enabled(NPC__AI_LOGIC))
+                _log(NPC__AI_LOGIC, "%s retarget hit. Clear target for re-evaluation.", myNPC->GetName());
+
+            ClearTarget(m_attackTarget);
+        }
+
+        // either way, kill the timer
+        m_retargetTimer.Disable();
     }
 
     /* NPCAI::State definitions   -allan 25July15  (UD 1June16)  (UD/RW Sept25)
@@ -400,12 +439,12 @@ void NPCAIMgr::Process() {
      *   Chasing,    // target within npc sight range.  attacking begins here.  use m_maxSpeed to get within falloff
      *   Following,  // between optimal and falloff.  try to get closer, but still orbiting and attacking
      *   Engaged,    // actively fighting (in orbit).  use m_cruiseSpeed.
-     *   Fleeing,    // running away....use m_maxSpeed then warp away when out of range	(does this make sense??)
+     *   Fleeing,    // running away....use m_maxSpeed then warp away once out of range	(does this make sense??)
      *   Signaling   // calling for help..use m_cruiseSpeed *2 to speed tank while calling for reinforcements
      *   WarpOut
      *   WarpFollow
      *   Passive     // no attack
-     *   Delay       // timer delay
+     *   Delay       // speedboost timed delay
      */
 
 /*************************************
@@ -417,107 +456,158 @@ The squad clears the formationID state, and all members break out into their hig
  brawling or kiting free-for-all orbits (SetEngaged() / SetFollowing()).
  ********************/
 
+// should this be based on action instead of state?  could be cleaner...
     switch(m_state) {
         // passive npcs can warp out, so check this first
         case NPCAI::State::WarpOut: {
-            if (!m_destiny->IsWarping()) {
-                _log(NPC__AI_TRACE, "%s(%u): Warping Complete.  Return to Idle.", myNPC->GetName(), myNPC->GetID());
-                SetIdle();
-            }
+            // do nothing here until warp is complete
             return;
         } break;
 
         case NPCAI::State::Idle: {
-            if (m_action == NPCAI::Action::Wandering)
-                return;
-            if (m_action == NPCAI::Action::Passive) {
-                // passives can be set to idle after some calls (like warpout)
-                m_state = NPCAI::State::Passive;
-                return;
-            }
-            // spawned rats start in normal bubble warp in belt. this avoids them from being set to 'wandering'
-            if (myNPC->SysBubble()->IsNormal())
-                return;
+            switch (m_action) {
+                case NPCAI::Action::Wandering: {
+                    return;
+                } break;
+                case NPCAI::Action::Passive: {
+                    // passives can be set to idle after some calls (like warpout);  reset to passive
+                    m_state = NPCAI::State::Passive;
+                    return;
+                } break;
+                case NPCAI::Action::Idle: {
+                    SystemBubble* pBubble = myNPC->SysBubble();
+                    // these npcs dont wander; should we switch to passive until player enters?
+                    if (pBubble->IsAnomaly() or pBubble->IsIncursion() or pBubble->IsMission()) {
+                        if (m_destiny->IsMoving())
+                            m_destiny->Stop();
+                        return;
+                    }
 
-            if (!myNPC->SysBubble()->HasPlayers()) {
-                if (sConfig.npc.IdleWander)
-                    SetWander();
-                return;
+                    // spawned rats start as 'Idle' in normal bubble then warp to belt.
+                    //  this avoids them from being set to 'wandering' before they warp out
+                    if (pBubble->IsNormal())
+                        return;
+
+                    if (!pBubble->HasPlayers() and (myNPC->SystemMgr()->PlayerCount() > 0)) {
+                        if (sConfig.npc.IdleWander)
+                            SetWander();
+                        return;
+                    }
+                } break;
+                default: {
+                    // invalid action for this state.
+                    sLog.Warning("NPCAI::Proc()", "%s(%u) invalid Action: %s  for State: %s", \
+                        myNPC->GetName(), myNPC->GetID(), GetStateName(m_state), GetActionName(m_action));
+                    SetIdle();
+                    return;
+                }
             }
 
+            // we are truly idle and there are players in bubble
             if (!m_beginFindTarget.Enabled()) {
-                if (m_self->HasAttribute(AttrEntityAttackDelayMin)) {
+                if (m_self->HasAttribute(AttrEntityAttackDelayMin) and IsEven(MakeRandomInt())) {
                     uint32 delay = MakeRandomUInt(m_self->GetAttribute(AttrEntityAttackDelayMin).get_uint32(), \
                             m_self->GetAttribute(AttrEntityAttackDelayMax).get_uint32());
                     m_beginFindTarget.Start(delay);
-                    _log(NPC__AI_LOGIC, "%s(%u) has attack delay.  Setting target delay timer of %ums.", \
+                    if (is_log_enabled(NPC__AI_TRACE))
+                    	_log(NPC__AI_LOGIC, "%s(%u) has attack delay.  Setting target delay timer of %ums.", \
                             myNPC->GetName(), myNPC->GetID(), delay);
                 } else if (m_attackSpeed) {
                     m_beginFindTarget.Start(m_attackSpeed);
+                    if (is_log_enabled(NPC__AI_TRACE))
                     _log(NPC__AI_LOGIC, "%s(%u) has no attack delay.  Setting target timer to %ims", \
-                            myNPC->GetName(), myNPC->GetID(), m_attackSpeed);
+                        myNPC->GetName(), myNPC->GetID(), m_attackSpeed);
                 } else {
-                    _log(NPC__INFO, "%s(%u) has no attack delay or speed.  Setting to passive", myNPC->GetName(), myNPC->GetID());
-                            m_state = NPCAI::State::Passive;
-                            m_action = NPCAI::Action::Passive;
+                    if (is_log_enabled(NPC__AI_TRACE))
+                    	_log(NPC__INFO, "%s(%u) has no attack delay or speed.  Setting to passive", \
+                            myNPC->GetName(), myNPC->GetID());
+                    m_state = NPCAI::State::Passive;
+                    m_action = NPCAI::Action::Passive;
                 }
 
                 return;
             }
 
-            if (m_beginFindTarget.Check())
-                PickTarget();
+            // revert to old working code until i get time to update all the new shit
+            if (m_beginFindTarget.Check()) {
+                std::vector<Client*> clientVec;
+                DestinyManager* pDestiny = nullptr;
+                myNPC->SysBubble()->GetPlayers(clientVec); // what about player drones?  yes...later
+                for (auto &cur : clientVec) {
+                    if (cur->IsInvul())
+                        continue;
+                    if (cur->GetShipSE() == nullptr)
+                        continue;
+                    if (cur->InPod()) {
+                        if (sConfig.npc.TargetPod) {
+                            if (myNPC->SystemMgr()->GetSecurityRating() > sConfig.npc.TargetPodSec)
+                                continue;
+                        } else {
+                            continue;
+                        }
+                    }
+                    pDestiny = cur->GetShipSE()->DestinyMgr();
+                    if (pDestiny == nullptr)   // this shouldnt be needed, but whatever...
+                        continue;
+                    if (pDestiny->IsCloaked() or pDestiny->IsWarping())
+                        continue;
+                    // also check to see if <cur> is targeting us before return
+                    if (!InSightRange(cur->GetShipSE()))
+                        continue;
+
+                    // got a good target.  get out of here
+                    Target(cur->GetShipSE());
+                    return;
+                }
+            }
 
             return;
         } break;
 
         case NPCAI::State::Engaged: {
+            if (!isValidTarget()) {
+                // invalid target.  check for more or reset to idle?
+                SetIdle();
+                return;
+            }
+
             // If the retargeting timer isn't running yet, initialize it based on space depth
-            if (!m_retargetTimer.Enabled()) {
+            if (!m_retargetTimer.Enabled() and (myNPC->SysBubble()->CountPlayers() > 1)) {
                 float secStatus = myNPC->SystemMgr()->GetSecurityRating();
                 int32 countdownMS = 180000; // Default High-Sec: 3 minutes
 
-                if (secStatus <= 0.0f) {
-                    countdownMS = MakeRandomUInt(30000, 45000);   // Null-Sec: 30-45 seconds!
+                if (secStatus <= -0.3f) {
+                    countdownMS = MakeRandomUInt(30000, 45000);   // Null-Sec: 30-45 seconds
                 } else if (secStatus <= 0.4f) {
                     countdownMS = MakeRandomUInt(60000, 90000);   // Low-Sec: 60-90 seconds
                 }
 
                 m_retargetTimer.Start(countdownMS);
             }
+        } break;
 
-            // THE COMFORT-BREAKER TRIGGER
-            if (m_retargetTimer.Check()) {
-                _log(NPC__AI_LOGIC, "%s combat timer expired. Re-evaluating grid to find soft targets.", myNPC->GetName());
-
-                // Wipe the current target memory to force a deep recalculation
-                ClearTarget(m_attackTarget);
-                PickTarget(); // Runs your single-pass loop!
-
-                m_retargetTimer.Disable(); // Will reset on next tick cycle
-                return;
-            }
-        }
         case NPCAI::State::Following: {
-            if (!VerifyTarget()) {
+            if (!isValidTarget()) {
                 // invalid target.  check for more or reset to idle?
-                _log(NPC__AI_TRACE, "%s(%u):%s; VerifyTarget() failed.", myNPC->GetName(), myNPC->GetID(), GetStateName(m_state));
                 SetIdle();
                 return;
             }
         } break;
 
         case NPCAI::State::Chasing: {
-            if (!VerifyTarget()) {
+            if (!isValidTarget()) {
                 // invalid target.  check for more or reset to idle?
-                _log(NPC__AI_TRACE, "%s(%u):Chasing;  VerifyTarget() failed.", myNPC->GetName(), myNPC->GetID());
                 SetIdle();
                 return;
             }
             if ((m_chaseTimeEnd > 0) and (m_chaseTimeEnd < GetFileTimeNow())) {
                 // chase time exceeded.  cancel chase
-                _log(NPC__AI_TRACE, "%s(%u): chaseTime exceeded.", myNPC->GetName(), myNPC->GetID());
+                if (is_log_enabled(NPC__AI_TRACE))
+                    _log(NPC__AI_TRACE, "%s(%u): chaseTime exceeded.", myNPC->GetName(), myNPC->GetID());
                 SetIdle();
+                // return to bubble center?
+                //if (!InAttackRange(getbeltse)
+                //    destiny.follow(beltse);
                 return;
             }
             // can we still doaction while chasing?  depends on distance, but missiles should be ok
@@ -526,6 +616,10 @@ The squad clears the formationID state, and all members break out into their hig
         case NPCAI::State::Fleeing:
 			//  note:  higher-class ships have a chance of warping away once thier support is destroyed.
         case NPCAI::State::WarpFollow: {
+            if (!isValidTarget()) {
+                SetIdle();
+                return;
+            }
             //  not sure yet
             _log(NPC__AI_TRACE, "%s(%u): Called %s - needs to be completed.", \
                     myNPC->GetName(), myNPC->GetID(), GetStateName(m_state));
@@ -537,11 +631,25 @@ The squad clears the formationID state, and all members break out into their hig
             if (m_action == NPCAI::Action::Passive) {
                 // hauler escort signaling will orbit hauler while hauler boosts
             }
+            //  not sure yet
+            _log(NPC__AI_TRACE, "%s(%u): Called %s - needs to be completed.", \
+                    myNPC->GetName(), myNPC->GetID(), GetStateName(m_state));
+            SetIdle();
+            return;
         } break;
 
         case NPCAI::State::Assisting: {
+            if (!isValidTarget()) {
+                SetIdle();
+                return;
+            }
             // hauler escort signaling will orbit hauler while hauler boosts
 
+            //  not sure yet
+            _log(NPC__AI_TRACE, "%s(%u): Called %s - needs to be completed.", \
+                    myNPC->GetName(), myNPC->GetID(), GetStateName(m_state));
+            SetIdle();
+            return;
         } break;
 
         case NPCAI::State::Passive: {
@@ -559,8 +667,6 @@ The squad clears the formationID state, and all members break out into their hig
             return;
         } break;
     }
-
-    // should we make a call to check self-rep/-boost here?
 
     // how often should we check distance?  do we need it every tic?  yeah, because ships move
     CheckDistance(m_attackTarget);
@@ -630,26 +736,28 @@ void NPCAIMgr::WarpOut()
     SystemManager* pSys = myNPC->SystemMgr();
     if (pSys->PlayerCount()) {
         // pSys->GetAnomMgr();
-        uint32 newBeltID(pSys->GetRandBeltID());
+        uint32 newBeltID = pSys->GetRandBeltID();
         if (newBeltID == sBubbleMgr.GetBeltID(myNPC->SysBubble()->GetID()))
             newBeltID = pSys->GetRandBeltID();
         if (newBeltID == sBubbleMgr.GetBeltID(myNPC->SysBubble()->GetID()))
             newBeltID = pSys->GetRandBeltID();
 
         SystemEntity* newBeltSE = pSys->GetSE(newBeltID);
-        SystemBubble* pBubble(sBubbleMgr.FindBubble(newBeltSE));
-        _log(NPC__AI_LOGIC, "%s(%u):  Calling WarpOut.  Headed to bubble %u", \
+        SystemBubble* pBubble = sBubbleMgr.FindBubble(newBeltSE);
+        if (is_log_enabled(NPC__AI_LOGIC))
+            _log(NPC__AI_LOGIC, "%s(%u):  Calling WarpOut.  Headed to bubble %u", \
                 myNPC->GetName(), myNPC->GetID(), pBubble->GetID());
 
+        m_homePoint = NULL_ORIGIN;
         m_state = NPCAI::State::WarpOut;
-        myNPC->GetSpawnMgr()->MoveSpawn(myNPC, pBubble);
-        m_destiny->WarpTo(newBeltSE->GetPosition());
+        myNPC->GetSpawnMgr()->WarpOutSpawn(myNPC, pBubble);
     }
 }
 
 void NPCAIMgr::WarpOutComplete() {
     m_warpOutTimer.Disable();
     m_state = NPCAI::State::Idle;
+    m_homePoint = m_destiny->GetPosition();
 }
 
 void NPCAIMgr::SetWander() {
@@ -658,53 +766,51 @@ void NPCAIMgr::SetWander() {
     if (m_action == NPCAI::Action::Wandering)
         return;
 
-    _log(NPC__AI_TRACE, "%s(%u): Wandering - Active sight range threshold: %um",
+    if (is_log_enabled(NPC__AI_TRACE))
+        _log(NPC__AI_TRACE, "%s(%u): Wandering - Active sight range threshold: %0.0fm",
          myNPC->GetName(), myNPC->GetID(), m_sightRange);
 
-    m_action = NPCAI::Action::Wandering;
     SystemBubble* pBubble = myNPC->SysBubble();
-
     if (pBubble == nullptr) {
+        m_state = NPCAI::State::Idle;
+        m_action = NPCAI::Action::Idle;
         if (m_destiny->IsMoving())
             m_destiny->Stop();
         return;
     }
 
-    if (pBubble->IsAnomaly() || pBubble->IsIncursion() || pBubble->IsMission()) {
-        // Combat rats in pockets do not roam. They halt at their spawn nodes
-        // and scan for incoming warp arrivals.
-        if (m_destiny->IsMoving()) {
-            m_destiny->Stop();
-        }
-        return;
-    }
+    m_action = NPCAI::Action::Wandering;
 
+    // also check if bubble has players but outside sensor range.  this will allow players to get creative with ship positioning to avoid aggro
+    //   no, right now this is only called when there are no players in bubble
     if (pBubble->IsBelt()) {
-        if (!pBubble->HasPlayers() && m_actionTarget == nullptr) {
-            _log(NPC__WARNING, "%s(%u): Wandering - Structural fallback warp required.", myNPC->GetName(), myNPC->GetID());
-            WarpOut();
-            return;
-        } else if (pBubble->HasDynamics()) {
+        //if (pBubble->HasPlayers())
+        if (pBubble->HasDynamics())
             m_actionTarget = pBubble->GetRandomEntity();
-            if (m_actionTarget == nullptr) {
-                m_actionTarget = myNPC->SystemMgr()->GetSE(sBubbleMgr.GetBeltID(pBubble->GetID()));
-            }
-        } else {
-            _log(NPC__AI_TRACE, "%s(%u): Bubble devoid of life assets. Warping out.", myNPC->GetName(), myNPC->GetID());
-            WarpOut();
-            return;
-        }
-
         if (m_actionTarget == nullptr)
             return;
 
-        Target(m_actionTarget);
-        return;
+        // loosely orbit target;  should we change this to beltSE?  yes
+        ChangeSpeed();
+        myNPC->DestinyMgr()->OrbitBall(m_actionTarget, m_falloffDistance);
+    } else {
+        // not belt, can we see our warp-in point?
+        Vector3d delta = m_homePoint - myNPC->GetPosition();
+        double distSq = delta.LengthSq();
+        if (distSq < m_sightRangeSq) {
+            // yeah, so just stop where you are...
+            m_state = NPCAI::State::Idle;
+            m_action = NPCAI::Action::Idle;
+            if (m_destiny->IsMoving())
+                m_destiny->Stop();
+        } else {
+            // nope, return to your warp-in point
+            CheckHomePoint();
+        }
     }
 }
 
-
-    // not doing anything....idle.
+// not doing anything....idle.
 void NPCAIMgr::SetIdle() {
     // should we check passive here?
     if ((m_state == NPCAI::State::Idle) and (m_action = NPCAI::Action::Idle))
@@ -723,31 +829,33 @@ void NPCAIMgr::SetIdle() {
         // cancel other actions if applicable
     }
 
-    //_log(NPC__AI_LOGIC, "SetIdle(); ");
-    _log(NPC__AI_TRACE, "%s(%u): SetIdle: returning to idle.", myNPC->GetName(), myNPC->GetID());
+    if (is_log_enabled(NPC__AI_TRACE))
+        _log(NPC__AI_TRACE, "%s(%u): SetIdle: returning to idle.", myNPC->GetName(), myNPC->GetID());
     m_state = NPCAI::State::Idle;
     m_action = NPCAI::Action::Idle;
-	// do we need to cancel gfx here?
-    ChangeSpeed();
-    m_destiny->Stop();
 
+    // do we need to cancel gfx here?
     ClearAllTimers();
 
     //disallow warpout checks if anomaly, incursion or mission
-    if (pBubble->IsAnomaly() or pBubble->IsIncursion() or pBubble->IsMission())
+    if (pBubble->IsAnomaly() or pBubble->IsIncursion() or pBubble->IsMission()) {
+        m_destiny->Stop();
         return;
+    } else {
+        ChangeSpeed();
+        CheckHomePoint();
+    }
 
-    //disallow warpout by NOT setting timer.
-    //   should this wait (delay/speed) before test/set?
-    if (sConfig.npc.WarpOut > 0)
-        if (myNPC->GetSpawnMgr() != nullptr)
-            m_warpOutTimer.Start(sConfig.npc.WarpOut * 1000); // s to ms
+    if ((sConfig.npc.WarpOut > 0)
+    and (myNPC->GetSpawnMgr() != nullptr)
+    and !(myNPC->GetSpawnMgr()->IsChaining(myNPC->SysBubble()->GetID())))
+        m_warpOutTimer.Start(sConfig.npc.WarpOut * EvE::Timer::Second); // s to ms
 }
 
 // this one should distinguish between shoot and effect
 void NPCAIMgr::SetEngaged(SystemEntity* pTargetSE) {
-	if (pTargetSE == nullptr)
-		return;
+    if (pTargetSE == nullptr)
+        return;
     // are we switching targets?
     if ((m_state == NPCAI::State::Engaged) and (m_attackTarget == pTargetSE))
         return;
@@ -764,26 +872,25 @@ void NPCAIMgr::SetEngaged(SystemEntity* pTargetSE) {
         }
     }
 
-    _log(NPC__AI_TRACE, "%s(%u): Begin engaging.  Target is %s(%u).  state:%s", \
-            myNPC->GetName(), myNPC->GetID(), pTargetSE->GetName(), pTargetSE->GetID(), \
-            m_destiny->GetModeNameString().c_str());
+    m_state = NPCAI::State::Engaged;
 
     // this should only be set once when attack begins unless non-repeating gfx is sent on every loop
     if (m_action != NPCAI::Action::Attack) {
-        //_log(NPC__AI_LOGIC, "SetEngaged(); ");
+        if (is_log_enabled(NPC__AI_TRACE))
+            _log(NPC__AI_TRACE, "%s(%u): Begin engaging.  Target is %s(%u).  state:%s", \
+                myNPC->GetName(), myNPC->GetID(), pTargetSE->GetName(), pTargetSE->GetID(), \
+                m_destiny->GetModeNameString().c_str());
     	m_action = NPCAI::Action::Attack;
         m_attackTime = GetFileTimeNow();
     	SetAttackTimers();
     }
 
-    m_state = NPCAI::State::Engaged;
-
     // update speed
     ChangeSpeed();
     if (sConfig.npc.UseOrbit) {
-        m_destiny->OrbitBall(pTargetSE, m_flyRange);
+        m_destiny->OrbitBall(pTargetSE, m_optimalRange);
     } else {
-        m_destiny->FollowBall(pTargetSE, m_optimalRange);  //try to get within optimal
+        m_destiny->FollowBall(pTargetSE, m_attackRange);
     }
 }
 
@@ -805,13 +912,13 @@ void NPCAIMgr::SetFollowing(SystemEntity* pTargetSE) {
         }
     }
 
-    //_log(NPC__AI_LOGIC, "SetFollowing(); ");
-    _log(NPC__AI_TRACE, "%s(%u): Begin following.  Target is %s(%u).  state:%s", \
-            myNPC->GetName(), myNPC->GetID(), pTargetSE->GetName(), pTargetSE->GetID(), \
-            m_destiny->GetModeNameString().c_str());
-
     // this should only be set once when attack begins unless non-repeating gfx is sent on every loop
     if (m_action != NPCAI::Action::Attack) {
+        if (is_log_enabled(NPC__AI_TRACE))
+            _log(NPC__AI_TRACE, "%s(%u): Begin following.  Target is %s(%u).  state:%s", \
+                myNPC->GetName(), myNPC->GetID(), pTargetSE->GetName(), pTargetSE->GetID(), \
+                m_destiny->GetModeNameString().c_str());
+
         m_action = NPCAI::Action::Attack;
         m_attackTime = GetFileTimeNow();
         SetAttackTimers();
@@ -819,9 +926,8 @@ void NPCAIMgr::SetFollowing(SystemEntity* pTargetSE) {
 
     m_state = NPCAI::State::Following;
 
-    // outside optimal range; increase speed to get closer
     ChangeSpeed();
-    m_destiny->FollowBall(pTargetSE, m_optimalRange);
+    m_destiny->FollowBall(pTargetSE, m_attackRange);
 }
 
 void NPCAIMgr::SetChasing(SystemEntity* pTargetSE) {
@@ -846,11 +952,6 @@ void NPCAIMgr::SetChasing(SystemEntity* pTargetSE) {
         }
     }
 
-    //_log(NPC__AI_LOGIC, "SetChasing(); ");
-    _log(NPC__AI_TRACE, "%s(%u): Begin chasing.  Target is %s(%u).  %s target.  state:%s", \
-            myNPC->GetName(), myNPC->GetID(), m_attackTarget->GetName(), m_attackTarget->GetID(), \
-            newTarg?"new":"same", m_destiny->GetModeNameString().c_str());
-
     if (m_action != NPCAI::Action::Attack) {
         if (m_chaseTimeEnd == 0) {
             // check chance for npc to delay activating mwd while chasing
@@ -858,19 +959,22 @@ void NPCAIMgr::SetChasing(SystemEntity* pTargetSE) {
                 m_state = NPCAI::State::Delay;
                 ChangeSpeed();
                 m_chaseTimeEnd = GetFileTimeNow() + (m_self->GetAttribute(AttrEntityChaseMaxDelay).get_long() * EvE::Time::mSecond);
-                _log(NPC__AI_LOGIC, "%s(%u): SetChasing(0) - Delay MWD speed for %llims", \
+                if (is_log_enabled(NPC__AI_TRACE))
+                    _log(NPC__AI_LOGIC, "%s(%u): SetChasing(0) - Delay MWD speed for %llims", \
                         myNPC->GetName(), myNPC->GetID(), m_self->GetAttribute(AttrEntityChaseMaxDelay).get_long());
             } else {
                 m_state = NPCAI::State::Chasing;
                 ChangeSpeed();
-                _log(NPC__AI_LOGIC, "%s(%u): SetChasing(1) - Not Delayed - Full speed of %um/s enabled", \
+                if (is_log_enabled(NPC__AI_TRACE))
+                    _log(NPC__AI_LOGIC, "%s(%u): SetChasing(1) - Not Delayed - Full speed of %um/s enabled", \
                         myNPC->GetName(), myNPC->GetID(), m_maxSpeed);
             }
         } else {
             m_chaseTimeEnd = 0;
             m_state = NPCAI::State::Chasing;
             ChangeSpeed();
-            _log(NPC__AI_LOGIC, "%s(%u): SetChasing(2) - Delay Complete. Full speed of %um/s enabled", \
+            if (is_log_enabled(NPC__AI_TRACE))
+                _log(NPC__AI_LOGIC, "%s(%u): SetChasing(2) - Delay Complete. Full speed of %um/s enabled", \
                     myNPC->GetName(), myNPC->GetID(), m_maxSpeed);
         }
     }
@@ -891,8 +995,13 @@ void NPCAIMgr::SetChasing(SystemEntity* pTargetSE) {
         }
     }
 
+    if (is_log_enabled(NPC__AI_TRACE))
+        _log(NPC__AI_TRACE, "%s(%u): Begin chasing.  Target is %s(%u).  %s target.  state:%s", \
+            myNPC->GetName(), myNPC->GetID(), m_attackTarget->GetName(), m_attackTarget->GetID(), \
+            newTarg?"new":"same", m_destiny->GetModeNameString().c_str());
+
     // start chasing / still chasing
-    m_destiny->FollowBall(m_attackTarget, m_optimalRange);  //head towards target
+    m_destiny->FollowBall(m_attackTarget, m_attackRange);  //head towards target
 }
 
 // not used yet
@@ -906,22 +1015,23 @@ void NPCAIMgr::SetFleeing(SystemEntity* pTargetSE) {
     m_warpOutTimer.Disable();
     m_attackTarget = pTargetSE;
 
-    //_log(NPC__AI_LOGIC, "SetFleeing(); ");
-    _log(NPC__AI_TRACE, "%s(%u): Begin fleeing.  Target is %s(%u).  state:%s", \
-            myNPC->GetName(), myNPC->GetID(), m_attackTarget->GetName(), \
-            m_attackTarget->GetID(), m_destiny->GetModeNameString().c_str());
     // actively fleeing
     m_state = NPCAI::State::Fleeing;
     // reset action before clearing timers
     m_action = NPCAI::Action::Idle;
     ClearAttackTimers();
 
+    if (is_log_enabled(NPC__AI_TRACE))
+        _log(NPC__AI_TRACE, "%s(%u): Begin fleeing.  Target is %s(%u).  state:%s", \
+            myNPC->GetName(), myNPC->GetID(), m_attackTarget->GetName(), \
+            m_attackTarget->GetID(), m_destiny->GetModeNameString().c_str());
+
     //  disengage, then warp out.  << both these will need to be written.
     //  this state is only usable by higher-class npcs.
     ChangeSpeed();
 
     if (sConfig.npc.UseOrbit) {
-        m_destiny->OrbitBall(m_attackTarget, (m_optimalRange + m_falloffDistance));
+        m_destiny->OrbitBall(m_attackTarget, m_attackRange);
     } else {
         // we will need a better direction here...like to local stronghold (which is not written yet)   (idea...warpout...see same pc...localchat "you again??")
         // for now, go opposite from target
@@ -935,8 +1045,6 @@ void NPCAIMgr::SetFleeing(SystemEntity* pTargetSE) {
 void NPCAIMgr::SetSignaling(SystemEntity* pTargetSE) {
 	if (pTargetSE == nullptr)
 		return;
-    //  this state is only usable by higher-class npcs...maybe
-
     // are we switching targets?
     if ((m_state == NPCAI::State::Signaling) and m_destiny->IsMoving()/*m_destiny->IsOrbiting()*/ and (m_attackTarget == pTargetSE))
         return;
@@ -950,7 +1058,8 @@ void NPCAIMgr::SetSignaling(SystemEntity* pTargetSE) {
     //  will have to figure out how to code this, then test for spam.   maybe put on config
     BcastLocal(m_state);
 
-    _log(NPC__AI_TRACE, "%s(%u): Begin signaling.  Target is %s(%u).", \
+    if (is_log_enabled(NPC__AI_TRACE))
+        _log(NPC__AI_TRACE, "%s(%u): Begin signaling.  Target is %s(%u).", \
             myNPC->GetName(), myNPC->GetID(), m_attackTarget->GetName(), m_attackTarget->GetID());
 
     // TODO:  this needs work...
@@ -969,9 +1078,9 @@ void NPCAIMgr::SetSignaling(SystemEntity* pTargetSE) {
     //  start speedtanking while signaling.  (im sure this is cheating, but fuckem.)
     ChangeSpeed();
     if (sConfig.npc.UseOrbit) {
-        m_destiny->OrbitBall(m_attackTarget, (m_optimalRange + m_falloffDistance));
+        m_destiny->OrbitBall(m_attackTarget, m_attackRange);
     } else {
-        // we will need a better direction here...like to local stronghold (which is not written yet)   (idea...warpout...see same pc...localchat "you again??")
+        // we will need a better direction here...like to local stronghold (which is not written yet)
         // for now, go opposite from target
         Vector3d head = myNPC->GetPosition() - pTargetSE->GetPosition();
         head.Normalize();
@@ -1026,23 +1135,23 @@ void NPCAIMgr::CheckDistance(SystemEntity* pTargetSE) {
     // Check hardest ceiling first: Absolute sensory limits
     if (distSq >= m_sightRangeSq) {
         if (myNPC->TargetMgr()->IsTargetedBy(pTargetSE)) {
-            // Target is outside gun range but within tactical chase boundaries, or painting us with a lock
-            _log(NPC__AI_LOGIC, "CheckDistance(); %s(%u) - %s(%u) is Out of my sensor sight but locked me. Chasing.", \
+            // Target is outside sensor range but has telementry via taretlock
+            if (is_log_enabled(NPC__AI_LOGIC))
+                _log(NPC__AI_LOGIC, "CheckDistance(); %s(%u) - %s(%u) is sut of my sensor range but locked me. Chasing.", \
                     myNPC->GetName(), myNPC->GetID(), pTargetSE->GetName(), pTargetSE->GetID());
             SetChasing(pTargetSE);
         } else {
             // Too far away, blind, and no active lock telemetry to follow
-            _log(NPC__AI_LOGIC, "CheckDistance(); %s(%u) - %s(%u) is Out of my sensor sight", \
+            if (is_log_enabled(NPC__AI_LOGIC))
+                _log(NPC__AI_LOGIC, "CheckDistance(); %s(%u) - %s(%u) is Out of my sensor range", \
                     myNPC->GetName(), myNPC->GetID(), pTargetSE->GetName(), pTargetSE->GetID());
             SetIdle();
         }
         return;
     // target within sensor distance.  check near to far for action
-    } else if (distSq <= m_optimalRangeSq) {
-        SetEngaged(pTargetSE);
-    } else if (distSq <= m_optimalRangeSq + m_falloffDistanceSq) {
-        SetChasing(pTargetSE);
     } else if (distSq <= m_attackRangeSq) {
+        SetEngaged(pTargetSE);
+    } else if (distSq <= m_chaseRangeSq) {
         SetChasing(pTargetSE);
     } else {
         // Fallback safety
@@ -1055,19 +1164,43 @@ void NPCAIMgr::CheckDistance(SystemEntity* pTargetSE) {
                 GetStateName(m_state), std::sqrt(distSq));
 }
 
+// called from state::idle, state::wander, set*()
 void NPCAIMgr::Target(SystemEntity* pTargetSE) {
-    // npc haulers (and maybe others) that dont have weapons do not have locked targets attrib
+    // passives that dont have weapons do not have locked targets attrib either
     if (m_maxLockedTargets < 1)
         return;
+    // do a couple sanity checks...
     if (pTargetSE == nullptr)
         return;
     if (myNPC->TargetMgr()->IsTargeting(pTargetSE))
         return;
 
+    // determine if we are adding a target, changing targets, or just idle here....
+    switch (m_action) {
+        case NPCAI::Action::Invalid:
+        case NPCAI::Action::Passive: {
+            return;
+        } break;
+        case NPCAI::Action::Wandering: {
+        } break;
+        case NPCAI::Action::Idle: {
+        } break;
+        case NPCAI::Action::Attack: {
+        } break;
+        case NPCAI::Action::ArmorRep:
+        case NPCAI::Action::ShieldRep: {
+        } break;
+        case NPCAI::Action::Web:
+        case NPCAI::Action::EWar:
+        case NPCAI::Action::Scram: {
+        } break;
+    }
+
     bool chase = false;
     if (!myNPC->TargetMgr()->StartTargeting(pTargetSE, GetTargetingTime(), m_maxLockedTargets, m_sightRange, chase)) {
         if (!chase) {
-            _log(NPC__AI_TRACE, "%s(%u): Targeting of %s(%u) failed and not chasing.  Returning to Idle.", \
+            if (is_log_enabled(NPC__AI_TRACE))
+                _log(NPC__AI_TRACE, "%s(%u): Targeting of %s(%u) failed and not chasing.  Returning to Idle.", \
                     myNPC->GetName(), myNPC->GetID(), pTargetSE->GetName(), pTargetSE->GetID());
             SetIdle();
             return;
@@ -1080,11 +1213,48 @@ void NPCAIMgr::Target(SystemEntity* pTargetSE) {
     CheckDistance(pTargetSE);
 }
 
+void NPCAIMgr::CheckHomePoint() {
+    // avoid roaming too far from warp-in point
+    bool tooFar = false;
+    double distance = 1500.0;
+    Vector3d delta = m_homePoint - myNPC->GetPosition();
+    double distSq = delta.LengthSq();
+    switch (m_state) {
+        case NPCAI::State::Idle:
+        case NPCAI::State::Passive:
+        case NPCAI::State::Wandering: {
+            // nothing going on here.  keep kinda close
+            if (distSq > m_falloffDistanceSq)
+                tooFar = true;
+        } break;
+        case NPCAI::State::Engaged:
+        case NPCAI::State::Chasing:
+        case NPCAI::State::Assisting: {
+            // we are actively busy; not too concerned yet
+            if (distSq > m_sightRangeSq + m_sightRangeSq)
+                tooFar = true;
+        } break;
+        case NPCAI::State::Fleeing:
+        case NPCAI::State::Following:
+        case NPCAI::State::Signaling: {
+            if (distSq > m_chaseRangeSq)
+                tooFar = true;
+        } break;
+    }
+
+    if (tooFar) {
+        // we are too far away.  wander back at current speed
+        m_destiny->GotoPoint(m_homePoint);
+    }
+
+}
+
 void NPCAIMgr::Targeted(SystemEntity* pTargetSE) {
     if (pTargetSE == nullptr)
         return;
 
-    _log(NPC__AI_TRACE, "%s(%u): Targeted by %s(%u) while %s.", \
+    if (is_log_enabled(NPC__AI_TRACE))
+    	_log(NPC__AI_TRACE, "%s(%u): Targeted by %s(%u) while %s.", \
             myNPC->GetName(), myNPC->GetID(), pTargetSE->GetName(), pTargetSE->GetID(), GetStateName(m_state));
 
     switch(m_state) {
@@ -1118,17 +1288,21 @@ void NPCAIMgr::TargetLost(SystemEntity* pTargetSE) {
     switch(m_state) {
 	// may evetually do different things based on current state.
         case NPCAI::State::Idle:
+        case NPCAI::State::Fleeing:
+    	case NPCAI::State::WarpOut: {
+            // we dont care
+            return;
+        } break;
         case NPCAI::State::Delay:
     	case NPCAI::State::Chasing:
     	case NPCAI::State::Engaged:
-        case NPCAI::State::Fleeing:
         case NPCAI::State::Following:
         case NPCAI::State::Signaling:
-    	case NPCAI::State::WarpOut:
         case NPCAI::State::WarpFollow: {
-            _log(NPC__AI_TRACE, "%s(%u): Target %s(%u) lost, but more targets remain.", \
+            if (is_log_enabled(NPC__AI_LOGIC))
+                _log(NPC__AI_TRACE, "%s(%u): Target %s(%u) lost, but more targets remain.", \
                     myNPC->GetName(), myNPC->GetID(), pTargetSE->GetName(), pTargetSE->GetID());
-            PickTarget();
+            //PickTarget();
         }
     }
 }
@@ -1139,172 +1313,60 @@ void NPCAIMgr::TargetWarping(SystemEntity* pSE) {
     // NPCAI::State::WarpFollow
 }
 
+bool NPCAIMgr::isValidTarget() {
+    // there will be more to this here...wip
+	SystemEntity* pTarget = nullptr;
+    switch (m_action) {
+        case NPCAI::Action::Invalid:
+        case NPCAI::Action::Wandering:
+        case NPCAI::Action::Passive:
+        case NPCAI::Action::Idle: {
+            // these should not have a target
+            sLog.Warning("NPCAI", "%s(%u) is calling isValidTarget()", myNPC->GetName(), myNPC->GetID());
+            if (m_attackTarget != nullptr)
+                ClearTarget(m_attackTarget);
+            if (m_actionTarget != nullptr)
+                ClearTarget(m_actionTarget);
+            return false;
+        } break;
+        case NPCAI::Action::Attack: {
+            // this should be attack target
+            pTarget = m_attackTarget;
+        } break;
+        case NPCAI::Action::Web:
+        case NPCAI::Action::Scram:
+        case NPCAI::Action::EWar:
+        case NPCAI::Action::ShieldRep:
+        case NPCAI::Action::ArmorRep: {
+            // these should be action target
+            pTarget = m_actionTarget;
+        } break;
+    }
 
-bool NPCAIMgr::VerifyTarget() {
-    // there will be more to this here
-
-    if (myNPC->TargetMgr()->HasNoTargets())
+    if (pTarget == nullptr)
         return false;
 
-    if (m_attackTarget->SysBubble() == nullptr) {
-        // target has no bubble?  make error
-        sLog.Error("NPCAI::VerifyTarget()", "NPCs Target %s(%u) has no bubble", m_attackTarget->GetName(), m_attackTarget->GetID());
+    DestinyManager* pDestiny = pTarget->DestinyMgr();
+    if (pDestiny == nullptr) {
+        sLog.Error("NPCAI::isValidTarget()", "NPC Target %s(%u) has no destiny manager.", \
+            pTarget->GetName(), pTarget->GetID());
         return false;
     }
-    if (m_attackTarget->DestinyMgr() == nullptr) {
-        sLog.Error("NPCAI::VerifyTarget()", "NPCs Target %s(%u) has no destiny manager.", m_attackTarget->GetName(), m_attackTarget->GetID());
-        return false;
+    if (pDestiny->IsCloaked()) {
+        if (is_log_enabled(NPC__AI_TRACE))
+            _log(NPC__AI_TRACE, "NPCAI::isValidTarget() - %s(%u): Target %s(%u) is cloaked.",
+                    myNPC->GetName(), myNPC->GetID(), pTarget->GetName(), pTarget->GetID());
+    	return false;
     }
-    if (m_attackTarget->DestinyMgr()->IsCloaked()) {
-        _log(NPC__AI_TRACE, "VerifyTarget() - %s(%u): Target %s(%u) is cloaked.  Clear target and move on",
-             myNPC->GetName(), myNPC->GetID(), m_attackTarget->GetName(), m_attackTarget->GetID());
-        return false;
+    if (pDestiny->IsWarping()) {
+        if (is_log_enabled(NPC__AI_TRACE))
+            _log(NPC__AI_TRACE, "NPCAI::isValidTarget() - %s(%u): Target %s(%u) is warping.",
+                    myNPC->GetName(), myNPC->GetID(), pTarget->GetName(), pTarget->GetID());
+    	return false;
     }
 
+    // do we need more checks here?  maybe later as system matures more...
     return true;
-}
-
-void NPCAIMgr::PickTarget() {
-    // 1. If we already have targets recorded on our tracker manager, grab the first one
-    if (myNPC->TargetMgr()->HasNoTargets()) {
-        m_attackTarget = nullptr;
-    } else {
-        m_attackTarget = myNPC->TargetMgr()->GetFirstTarget();
-        m_beginFindTarget.Disable();
-        // what about action targets?
-        return;
-    }
-
-    // 2. Fetch both sets of data from pre-segregated maps
-    std::vector<Client*> clientVec;
-    myNPC->SysBubble()->GetPlayers(clientVec);
-
-    std::vector<DroneSE*> droneVec;
-    myNPC->SysBubble()->GetDrones(droneVec);
-
-    if (clientVec.empty() && droneVec.empty()) {
-        m_beginFindTarget.Disable();
-        return;
-    }
-
-    SystemEntity* bestCandidate = nullptr;
-    float highestThreatScore = -1.0f;
-
-    // Calculate total candidate pool size to handle the unified iteration cleanly
-    size_t totalCandidates = clientVec.size() + droneVec.size();
-
-    // UNIFIED PROCESSING LOOP (Zero double-passing)
-    for (size_t i = 0; i < totalCandidates; ++i) {
-        SystemEntity* targetEntity = nullptr;
-        bool isDrone = false;
-        Client* pClient = nullptr;
-
-        // Pull sequentially from our unified virtual stream
-        if (i < clientVec.size()) {
-            pClient = clientVec[i];
-            if (!pClient || pClient->IsInvul())
-                continue;
-            targetEntity = pClient->GetShipSE();
-        } else {
-            size_t droneIndex = i - clientVec.size();
-            DroneSE* pDrone = droneVec[droneIndex];
-            if (!pDrone || pDrone->IsDead())
-                continue;
-            targetEntity = pDrone;  //pDrone->GetSE();
-            isDrone = true;
-        }
-
-        if (!targetEntity || !InSightRange(targetEntity))
-            continue;
-
-        // Pod protection gating matching your original security check rules
-        if (!isDrone && pClient->InPod() && sConfig.npc.TargetPod) {
-            if (myNPC->SystemMgr()->GetSecurityRating() > sConfig.npc.TargetPodSec)
-                continue;
-        }
-
-        DestinyManager* pDestiny = targetEntity->DestinyMgr();
-        if (!pDestiny || pDestiny->IsCloaked() || pDestiny->IsWarping())
-            continue;
-
-        float targetRadius = targetEntity->GetRadius();
-
-        // If we are a Battleship (m_size == 350) or Battlecruiser (300),
-        // our tracking speed is too slow to hit tiny drones. Skip them entirely!
-        if (m_size >= NPCAI::Size::BCruiser && targetRadius <= NPCAI::Size::Swarm)
-            continue;
-
-        Vector3d delta = targetEntity->GetPosition() - myNPC->GetPosition();
-        double distance = delta.Length();
-        if (distance <= 0.0f)
-            distance = 1.0f;
-
-        // If target is beyond our maximum attack capabilities, do not waste locks
-        if (distance > m_attackRange) {
-            continue;
-
-            // Base Scoring: Signature vs Proximity
-            float currentScore = (targetRadius * 1000.0f) / distance;
-
-            // Prioritize targets sitting inside our weapon's optimal combat profile
-            if (distance <= m_optimalRange) {
-                currentScore *= 2.0f; // Perfect accuracy zone!
-            } else if (distance <= m_falloffDistance) {
-                currentScore *= 1.2f; // Falloff accuracy zone
-            } else {
-                currentScore *= 0.5f; // Heavy accuracy degradation zone
-            }
-
-            // Dynamic Elite Target Switching
-            if (isDrone && m_useTargSwitching) {
-                currentScore *= 12.5f;
-            } else if (isDrone) {
-                // basic rats ignore drones unless forced
-                currentScore *= 0.2f;
-            }
-
-            // Apply your dynamic accumulative situational modifiers (EWar, Points, Scrams)
-            currentScore *= AggroModifiers(targetEntity);
-
-            if (currentScore > highestThreatScore) {
-                highestThreatScore = currentScore;
-                bestCandidate = targetEntity;
-            }
-        }
-
-        if (m_useSecondTarget) {
-            // If our primary attack target is set, but we have no separate action target yet
-            if (m_attackTarget != nullptr && m_actionTarget == nullptr) {
-                // Find a secondary candidate on the grid (e.g., the second highest threat or an EWar target)
-                m_actionTarget = FindSecondaryTarget();
-
-                if (m_actionTarget != nullptr) {
-                    _log(NPC__AI_MESSAGE, "Elite NPC %u splitting focus. Shooting %s, applying EWar to %s",
-                         myNPC->GetID(), m_attackTarget->GetName(), m_actionTarget->GetName());
-                }
-            }
-        } else {
-            // Standard basic rat: Action target always mirrors the attack target
-            m_actionTarget = m_attackTarget;
-        }
-
-        // if no combat ships were scored:
-        /*
-        if (bestCandidateIsOnlyAMiner && pCurrentSquad != nullptr) {
-            _log(NPC__AI_TRACE, "Only miners detected on belt. Initiating Squad Intimidation Formation.");
-
-            // Command the entire squad to enter formation mode around the miners
-            pCurrentSquad->SetFormationID(EVEDB::Formations::Wedge);
-            pCurrentSquad->StartIntimidationHoldTimer(20000); // Hold for 20 seconds
-        } */
-
-        // Single clean lock execution per system tick frame
-        if (bestCandidate != nullptr) {
-            Target(bestCandidate);
-        }
-
-        m_beginFindTarget.Disable();
-    }
 }
 
 void NPCAIMgr::ClearTarget(SystemEntity* pTargetSE) {
@@ -1317,17 +1379,6 @@ void NPCAIMgr::ClearTarget(SystemEntity* pTargetSE) {
 
     if (myNPC->TargetMgr()->HasNoTargets())
         SetIdle();
-}
-
-// not used yet (incomplete)
-void NPCAIMgr::SwitchTarget() {
-    _log(NPC__AI_LOGIC, "SwitchTarget(); ");
-    // find a way to get all targets, are we picking by preferred here?   probably so
-    std::map<SystemEntity*, TargetEntry*> targets;
-    myNPC->TargetMgr()->GetAllTargets(targets);
-    std::map<SystemEntity*, TargetedByEntry*> targetby;
-    myNPC->TargetMgr()->GetAllTargeters(targetby);
-    m_attackTarget = nullptr;
 }
 
 void NPCAIMgr::ShipArrived(Client* pClient) {
@@ -1407,39 +1458,17 @@ void NPCAIMgr::ShipArrived(Client* pClient) {
 }
 
 void NPCAIMgr::DoAction() {
-    // all actions here.  check for effect
-    if ((m_attackTarget == nullptr) and (m_actionTarget == nullptr))
-        return;
-    if (m_attackTarget != nullptr) {
-        if (m_attackTarget->IsWreckSE())
+    // wandering npcs can target wrecks for 'wander orbit'.  dont shoot them
+    if ((m_attackTarget != nullptr) and m_attackTarget->IsWreckSE() and (m_actionTarget == nullptr))
             return;
-    }
 
-    if (myNPC->IsSquadLeader() && m_attackTarget != nullptr) {
-        // Every few processing frames, the leader directs the squad
-        if (MakeRandomUInt() < 25) {
-            // Directive 1: Broadcast the Focus-Fire Target to the squad
-            myNPC->GetSquad()->SetSquadTarget(m_attackTarget);
-            // Directive 2: Special Commander Ability (e.g., Fleet Shield Boost Signal)
-            if (myNPC->GetCommandRank() == NPCAI::Rank::Commander && InOptimalRange(m_attackTarget)) {
-                _log(NPC__AI_MESSAGE, "Leader %u activating fleet-wide Tracking Link enhancement!", myNPC->GetID());
-                // Execute an overarching broadcast effect to buff all teammates in the vector
-                for (NPC* member : myNPC->GetSquad()->GetMembers()) {
-                    if (member && member != myNPC) {
-                        // update this to use config option
-                        member->ApplyTrackingBoost(15.0f); // +15% tracking speed buff
-                    }
-                }
-            }
-        }
-    }
-
-    // npc do single actions at a time, no matter how many 'modules' they have.   test on creation?
+    // all actions here.  check for effect
+    // npc do single actions at a time, no matter how many 'modules' they have.
     //   may change this later, if i can code circumstances to do so
     //  maybe test npcs in area for action to avoid dupes (multiple ewar, etc)
     switch (m_action) {
         case NPCAI::Action::Idle: {
-            // not doing anything...
+            // not doing anything...this should not hit
             return;
         } break;
         case NPCAI::Action::Attack: {
@@ -1463,7 +1492,8 @@ void NPCAIMgr::DoAction() {
                     myNPC->UseShieldRecharge();
         } break;
 
-        // these do not need re-up on every cycle.  or do they?
+        // these do not need re-up on every cycle.
+    /*  move to apply gfx on initial call.  will have to figure out how to stop gfx
         case NPCAI::Action::Web:
         case NPCAI::Action::EWar:
         case NPCAI::Action::Scram: {
@@ -1473,12 +1503,8 @@ void NPCAIMgr::DoAction() {
                 EffectTarget();
             }
         } break;
+    */
     }
-
-    // fx is proc when npc created.  data stored on npc item (like modules)  ...may have to change this; cant determine specific data
-
-    // get all npcs effects, check for offensive and attack?
-    //  what about healers?  do npc remote rep?   sure, why not??
 }
 
 void NPCAIMgr::UseModule() {
@@ -1643,7 +1669,8 @@ void NPCAIMgr::SendGFX(Client* pClient /*nullptr*/) {
     // TODO:  make note that this sends start/stop based on NPC's current action status.
     if (m_effectID < 1) {
         // not necessarily an error.  just make note
-        _log(NPC__WARNING, "SendGFX(): m_effectID < 1 for typeID:%u (%s/%u).", \
+        if (is_log_enabled(NPC__WARNING))
+            _log(NPC__WARNING, "SendGFX(): m_effectID < 1 for typeID:%u (%s/%u).", \
                 myNPC->GetTypeID(), myNPC->GetName(), myNPC->GetID());
         return;
     }
@@ -1678,7 +1705,8 @@ void NPCAIMgr::SendGFX(Client* pClient /*nullptr*/) {
 
     if (active and (pTargetSE == nullptr)) {
         // not necessarily an error.  just make note
-        _log(NPC__WARNING, "SendGFX(): %s(%u) - %s and pTargetSE == nullptr.", \
+        if (is_log_enabled(NPC__WARNING))
+            _log(NPC__WARNING, "SendGFX(): %s(%u) - %s and pTargetSE == nullptr.", \
                 myNPC->GetName(), myNPC->GetID(),  GetStateName(m_state));
     }
 
@@ -1696,7 +1724,7 @@ void NPCAIMgr::SendGFX(Client* pClient /*nullptr*/) {
         /*  still working on these...(from activemodule code)
          * !start - remove effect
          * start and !active - start ONE-SHOT event of (duration) - SuperWeapon only
-         * repeat > 0 - start REPEAT event of <duration>
+         * repeat > 0 - start REPEAT event of <duration> for <repeat> cycles (turn off with !start)
          * !repeat - start TOGGLE event (turn off with !start)
          */
     OnSpecialFX14 effect;
@@ -1705,7 +1733,7 @@ void NPCAIMgr::SendGFX(Client* pClient /*nullptr*/) {
         effect.moduleTypeID     = myNPC->GetTypeID();                   // npc typeID
         effect.targetID         = (pTargetSE == nullptr ? PyStatic.NewNone() : new PyInt(pTargetSE->GetID()));
         effect.otherTypeID      = PyStatic.NewNone();                   // charge typeID
-        effect.area             = PyStatic.mtList();                    // no data.  not used in client
+        effect.area             = PyStatic.mtList();                    // may be used later.  advanced data
         effect.guid             = std::move(guidStr);                   // based on m_effectID  (effect.xxx)
         effect.isOffensive      = sFxDataMgr.isOffensive(m_effectID);   // bool
         effect.start            = start;                                // int bool
@@ -1733,7 +1761,8 @@ void NPCAIMgr::ReportDamage(uint8 type, SystemEntity* pSourceSE) {
     if (pSourceSE == nullptr or pSourceSE->IsDead())
         return;
 
-    _log(NPC__AI_LOGIC, "ReportDamage: %s(%u) has %s.", \
+    if (is_log_enabled(NPC__AI_LOGIC))
+        _log(NPC__AI_LOGIC, "ReportDamage: %s(%u) has %s.", \
             myNPC->GetName(), myNPC->GetID(), sDataMgr.GetDmgRptName(type));
 
     if (m_state == NPCAI::State::Chasing) {
@@ -1745,13 +1774,13 @@ void NPCAIMgr::ReportDamage(uint8 type, SystemEntity* pSourceSE) {
         }
     }
 
-    if (m_useTargSwitching && pSourceSE != m_attackTarget) {
-        float roll = MakeRandomFloat(); // 0.0 to 1.0
+    if (m_useTargSwitching and (pSourceSE != m_attackTarget)) {
+        float roll = MakeRandomFloat();
         if (roll <= m_switchTargChance) {
-            _log(NPC__AI_TRACE, "%s(%u) passed fuzzy logic check. Switching to attacker %s.", \
+            if (is_log_enabled(NPC__AI_LOGIC))
+                _log(NPC__AI_TRACE, "%s(%u): Switching targets to %s.", \
                         myNPC->GetName(), myNPC->GetID(), pSourceSE->GetName());
 
-            // Gracefully clear current lock and shift aggression natively
             ClearTarget(m_attackTarget);
             Target(pSourceSE);
             return;
@@ -1762,7 +1791,7 @@ void NPCAIMgr::ReportDamage(uint8 type, SystemEntity* pSourceSE) {
     switch (type) {
         case Dmg::Type::None:
         case Dmg::Type::HullHalf: {
-            // nothing here yet... no npcs have hull reppers
+            // nothing here; no npcs have hull reppers...yet
         } break;
         case Dmg::Type::ArmorHalf:
         case Dmg::Type::ArmorZero: {
@@ -1776,9 +1805,9 @@ void NPCAIMgr::ReportDamage(uint8 type, SystemEntity* pSourceSE) {
                 //TODO:  need to know what fxID they using here.
                 m_effectID = EvE::GFXID::armorRepair;    // this is hacked for now.
                 m_actionSpeed = m_armorRepairDuration;
-                m_actionTarget = myNPC;
                 m_actionTime = GetFileTimeNow();
                 // update to target self
+                m_actionTarget = myNPC;
                 SendGFX();
                 m_armorRepairTimer.Start(m_armorRepairDuration);
             }
@@ -1799,8 +1828,8 @@ void NPCAIMgr::ReportDamage(uint8 type, SystemEntity* pSourceSE) {
                 //TODO:  need to know what fxID they using here.
                 m_effectID = EvE::GFXID::shieldBoosting;  //this is hacked for now.
                 m_actionSpeed = m_shieldBoosterDuration;
-                m_actionTarget = myNPC;
                 m_actionTime = GetFileTimeNow();
+                m_actionTarget = myNPC;
                 SendGFX();
                 m_shieldBoosterTimer.Start(m_shieldBoosterDuration);
             }
@@ -1817,10 +1846,6 @@ void NPCAIMgr::ReportDamage(uint8 type, SystemEntity* pSourceSE) {
 void NPCAIMgr::ShootTarget() {
     Damage d(myNPC,
              m_self,
-             myNPC->GetKinetic(),
-             myNPC->GetThermal(),
-             myNPC->GetEM(),
-             myNPC->GetExplosive(),
              m_formula.GetNPCToHit(myNPC, m_attackTarget)
             );
 
@@ -1830,16 +1855,15 @@ void NPCAIMgr::ShootTarget() {
 
 void NPCAIMgr::EffectTarget() {
     //  apply 'module' effects to target
-    if (m_actionTarget == nullptr || !myNPC->TargetMgr()->CanAttack())
-        return;
 
-    // Check if the target hull is immune to offensive modifiers (like Sleeper bosses)
     if (m_actionTarget->IsImmuneToEWar()) {
-        _log(NPC__AI_TRACE, "%s is immune to our offensive effects.", m_actionTarget->GetName());
+        // target is immune to offensive mods (like Sleeper bosses)
+        if (is_log_enabled(NPC__AI_TRACE))
+            _log(NPC__AI_TRACE, "%s is immune to our offensive effects.", m_actionTarget->GetName());
         return;
     }
 
-    // Translate your m_action state to the specific database effect profile
+    // set proper fxID
     uint16 activeFxID = 0;
     if (m_action == NPCAI::Action::Web)
         activeFxID = EvE::GFXID::newEwTestsdecreaseTargetSpeed;
@@ -1854,17 +1878,6 @@ void NPCAIMgr::EffectTarget() {
     NPCGroupArmorAssist =   4689,     // effects.ElectronicAttributeModifyActivate
     */
     if (activeFxID > 0) {
-        // Build the active environmental modifier envelope
-        /*
-        EnvModifier mod;
-        mod.sourceID = myNPC->GetID();
-        mod.effectID = activeFxID;
-        mod.durationMS = m_actionSpeed;
-        */
-        // Inject the effect straight into the target space entity's active modifier map
-        //m_actionTarget->ApplyModifier(mod);
-
-        // Turn on the visual effect layer for local client visibility
         m_effectID = activeFxID;
         m_actionTime = GetFileTimeNow();
         SendGFX();
@@ -1886,168 +1899,6 @@ void NPCAIMgr::Assist(SystemEntity* pTargetSE) {
 
 }
 
-float NPCAIMgr::AggroModifiers(SystemEntity* pTargetSE) {
-    if (!pTargetSE)
-        return 1.0f;
-
-    float modifier = 1.0f;
-
-    // 1. Is this entity actively tracking/targeting us? (Basic situational awareness)
-    if (myNPC->TargetMgr()->IsTargetedBy(pTargetSE))
-        modifier *= 1.3f;
-
-    // 2. Is this entity actively firing weapons or applying damage to us?
-    /*
-    if (myNPC->TargetMgr()->IsAttackedBy(pTargetSE))
-        modifier *= 1.5f;
-    */
-/** @todo:  this needs more work...
-
-    if (myNPC->GetWarFactionID() == factionUnknown) {
-        // MACHINE BRAIN: Completely ignore EWar emotional biases.
-        // Electronic warfare doesn't anger a drone; it just computes physics.
-        // Drones prioritize target size scaling perfectly matching their weapons.
-        // If a drone weapon tracks a target perfectly, its priority spikes.
-        float trackingOptimal = m_formula.CalculateTrackingEfficiency(myNPC, pTargetSE);
-        modifier *= trackingOptimal;
-
-        // Machines focus-fire on the weakest link to clear DPS off the field.
-        // Scale threat inversely to the target's current shield/armor percentage!
-        float targetHealthPct = pTargetSE->GetTotalHealthPercentage();
-        modifier *= (2.5f - targetHealthPct); // Damaged ships become primary targets instantly
-
-    } else {
-        // HUMANOID BRAIN: Emotional responses (Your original ruleset)
-        if (myNPC->TargetMgr()->IsActivelyJammingMe(pTargetSE->GetID()))
-            modifier *= 2.5f;
-        if (myNPC->TargetMgr()->IsActivelyScramblingMe(pTargetSE->GetID()))
-            modifier *= 3.5f;
-        if (pTargetSE->IsActivelyHealingAllies())
-            modifier *= 3.0f;
-    }
-
-    // 5. Macro Logistics Check: Is this ship a healer keeping our enemies alive?
-    // (Crucial for advanced Sleeper / Incursion target prioritization)
-    if (pTargetSE->IsActivelyHealingAllies()) {
-        modifier *= 3.0f; // Target the Logistics Cruisers first!
-    }
-
-    // INDUSTRIALS / MINING HULL THREAT REDUCTION
-    if (pTargetSE->IsMiningHull() || pTargetSE->GetWarFactionID() == factionORE) {
-        // Drastically reduce its aggro footprint from the combat perspective
-        modifier *= 0.15f;
-
-        // CRITICAL LOGIC EXCEPTIONS: Did they release combat drones?
-        if (pTargetSE->HasActiveCombatDronesOnGrid()) {
-            // They have chosen to fight! Restore their threat modifier back to normal parameters
-            modifier *= 6.67f;
-        }
-    }
-*/
-
-    return modifier;
-}
-
-SystemEntity* NPCAIMgr::EvaluateThreats() {
-    SystemEntity* bestTarget = nullptr;
-    float highestThreatScore = -1.0f;
-
-    // Get the list of all active entities on our current grid/bubble
-    std::map<uint32, SystemEntity*>  visibleEntities;
-    myNPC->SysBubble()->GetEntities(visibleEntities);
-
-    Vector3d delta;
-    double distance;
-    for (auto &cur : visibleEntities) {
-        // 1. Ensure target is valid, alive, and attackable
-        if (cur.second->IsNPCSE() || cur.second->IsDead())
-            continue;
-
-        delta = cur.second->GetPosition() - myNPC->GetPosition();
-        distance = delta.Length();
-        if (distance > m_attackRange)
-            continue; // Out of locking range
-
-        // 2. Base Threat: Signature Radius vs Distance
-        // Large ships close by are highly attractive targets. Prevent division by zero.
-        float baseThreat = cur.second->GetSelf()->GetAttribute(AttrSignatureRadius).get_float();
-        baseThreat /= std::max(distance, 1.0);
-
-        // 3. Modifiers Layer (EWAR & Logistics tracking)
-        float ewarModifier = 0.0f;
-        float logiModifier = 0.0f;
-        float droneBias = 0.0f;
-        /*  TODO:  not sure where/how to do these checks yet...
-        if (cur.second->IsJammingMe(m_id))
-            ewarModifier += 50.0f; // NPCs absolutely HATE ECM
-        if (cur.second->IsWebbingMe(m_id))
-            ewarModifier += 20.0f;
-        if (cur.second->IsPaintingMe(m_id))
-            ewarModifier += 15.0f;
-
-        if (cur.second->IsHealing()) {
-            // Priority target: Switch to the logistics cruiser keeping players alive
-            logiModifier += 40.0f;
-        }
-
-        // 4. Advanced Hull Drone Bias (Sleeper/Incursion AI behaviors)
-        if (entity->IsDrone()) {
-            if (m_attributes.aiClass == AI_CLASS_SLEEPER || m_attributes.aiClass == AI_CLASS_AMARR_ELITE) {
-                // This hull actively prioritizes clearing drones off the field!
-                droneBias += 35.0f;
-            } else {
-                // Normal pirate hulls generally ignore drones unless unprovoked
-                droneBias -= 10.0f;
-            }
-        }
-        */
-
-        // 5. Calculate Final Score
-        float finalThreatScore = baseThreat + ewarModifier + logiModifier + droneBias;
-
-        // 6. Retain the apex threat
-        if (finalThreatScore > highestThreatScore) {
-            highestThreatScore = finalThreatScore;
-            bestTarget = cur.second;
-        }
-    }
-
-    return bestTarget;
-}
-
-SystemEntity* NPCAIMgr::FindSecondaryTarget() {
-    //  finish this...
-    return nullptr;
-}
-
-void NPCAIMgr::ExecuteCombatMovement(SystemEntity* pPlayerTarget) {
-    NPCSquad* pSquad = myNPC->GetSquad();
-/** todo:  will need more thought and infrastructure to implement this
-    // Fallback: If no squad or formation is active, run your original free-for-all pathfinding
-    if (pSquad == nullptr || !pSquad->IsFormationActive()) {
-        m_destiny->OrbitBall(pPlayerTarget, m_flyRange);
-        return;
-    }
-
-    if (myNPC->IsSquadLeader()) {
-        // The Leader acts as the master absolute world navigator
-        m_destiny->OrbitBall(pPlayerTarget, m_flyRange);
-
-        _log(NPC__AI_TRACE, "Squad Leader %u executing master orbit path around %s.",
-             myNPC->GetID(), pPlayerTarget->GetName());
-    } else {
-        // The Subordinates completely ignore the player target!
-        NPC* leader = pSquad->GetLeader();
-        uint8 mySlotIndex = myNPC->GetMemberSlotIndex();
-
-        // Command Destiny to execute a relative follow lock on the Leader entity,
-        // passing your static sDataMgr offset index to prevent collisions!
-        m_destiny->FollowInFormation(leader, mySlotIndex);
-    }
-    */
-}
-
-
 // not used yet
 // this is called from ?
 void NPCAIMgr::Heal() {
@@ -2062,7 +1913,7 @@ void NPCAIMgr::Heal() {
     float lowestHealthPct = 1.0f;
 
     for (NPC* pNPC : npcVec) {
-        if (!pNPC || pNPC->IsDead() /*|| pNPC == myNPC*/)
+        if ((pNPC == nullptr) or pNPC->IsDead() /*or pNPC == myNPC*/)
             continue;
         if (!InSightRange(pNPC))
             continue;
@@ -2117,6 +1968,7 @@ void NPCAIMgr::LaunchMissile(uint16 typeID, SystemEntity* pTargetSE) {
     if (travelTime < 1)
         travelTime = 1;
     pMissile->SetSpeed(missileSpeed);
+    // if this is a defender missile, update timer for combined missiles' speed  (this may not be checked in <missile> code)
     pMissile->SetHitTimer(travelTime * EvE::Timer::Second);
     pMissile->DestinyMgr()->MakeMissile(pMissile);
 
@@ -2208,21 +2060,24 @@ void NPCAIMgr::DisableRepTimers(bool shield/*true*/, bool armor/*true*/) {
 }
 
 void NPCAIMgr::SetAttackTimers() {
-    //TODO:  find a better way to engage missiles.  they have longer range than turrets
-    // missiles are different from other attack types.  set these first in case of early return on timer check
-    if (!m_missileTimer.Enabled() and m_self->HasAttribute(AttrEntityMissileTypeID) and m_self->HasAttribute(AttrMissileLaunchDuration))
+    //set missiles (if available) first in case of early return on timer check
+    if (!m_missileTimer.Enabled()
+    and m_self->HasAttribute(AttrEntityMissileTypeID)
+    and m_self->HasAttribute(AttrMissileLaunchDuration))
         m_missileTimer.Start(m_self->GetAttribute(AttrMissileLaunchDuration).get_uint32());
 
     if (m_attackTimer.Enabled()) {
-        _log(NPC__AI_LOGIC, "SetAttackTimers() - %s(%u) m_attackTimer already enabled for fxid %u with %ums left.", \
+        if (is_log_enabled(NPC__AI_LOGIC))
+            _log(NPC__AI_LOGIC, "SetAttackTimers() - %s(%u) m_attackTimer already enabled for fxid %u with %ums left.", \
                 myNPC->GetName(), myNPC->GetID(), m_effectID, m_attackTimer.GetRemainingTime());
         return;
     }
 
+	/*  i dont think we need this here anymore....
     switch (m_effectID) {
-        case EvE::GFXID::targetAttack:
+        case EvE::GFXID::targetAttack:  // effects.laser
         case EvE::GFXID::projectileFired:
-        case EvE::GFXID::projectileFiredForEntities: {  // effects.laser
+        case EvE::GFXID::projectileFiredForEntities: {
             m_attackSpeed = m_self->GetAttribute(AttrSpeed).get_int();
         } break;
 
@@ -2230,13 +2085,14 @@ void NPCAIMgr::SetAttackTimers() {
             _log(NPC__WARNING, "SetAttackTimers() - %s(%u) has no effectID", myNPC->GetName(), myNPC->GetID());
             return;
         } break;
-    }
+    } */
 
     // set timer
     m_attackTimer.Start(m_attackSpeed);
     SendGFX();
 
-    _log(NPC__AI_LOGIC, "SetAttackTimers() - %s(%u) m_attackTimer set to %ims.  fxid: %u(%s), turretID: %u", \
+    if (is_log_enabled(NPC__AI_LOGIC))
+        _log(NPC__AI_LOGIC, "SetAttackTimers() - %s(%u) m_attackTimer set to %ims.  fxid: %u(%s), turretID: %u", \
             myNPC->GetName(), myNPC->GetID(), m_attackSpeed, m_effectID, \
             sFxDataMgr.GetEffectName(m_effectID).c_str(), m_turretID);
 }
@@ -2249,8 +2105,9 @@ void NPCAIMgr::SetActionTimers() {
 
     // may get complicated based on npc abilities
     if (m_actionTimer.Enabled()) {
-        _log(NPC__AI_LOGIC, "SetActionTimers() - %s(%u) m_actionTimer already enabled for fxid %u with %ums left.", \
-        myNPC->GetName(), myNPC->GetID(), m_effectID, m_actionTimer.GetRemainingTime());
+        if (is_log_enabled(NPC__AI_LOGIC))
+            _log(NPC__AI_LOGIC, "SetActionTimers() - %s(%u) m_actionTimer already enabled for fxid %u with %ums left.", \
+                myNPC->GetName(), myNPC->GetID(), m_effectID, m_actionTimer.GetRemainingTime());
         return;
     }
 
@@ -2263,7 +2120,8 @@ void NPCAIMgr::SetActionTimers() {
         case EvE::GFXID::shieldBoosting: 	// 4 = effects.shieldBoost(self-boost)
         case EvE::GFXID::armorRepair: {	// 27 = effects.armorRep(self-rep)
             // these should not hit here...separate timer
-            _log(NPC__AI_LOGIC, "SetActionTimers() - %s(%u) self-heal called for action.  fxid: %u", \
+            if (is_log_enabled(NPC__AI_LOGIC))
+                _log(NPC__AI_LOGIC, "SetActionTimers() - %s(%u) self-heal called for action.  fxid: %u", \
                     myNPC->GetName(), myNPC->GetID(), m_effectID);
             EvE::traceStack();
             return;
@@ -2297,7 +2155,7 @@ void NPCAIMgr::SetActionTimers() {
         case EvE::GFXID::entityTrackingDisruptOld: {
             m_actionSpeed = m_self->GetAttribute(AttrEntityTrackingDisruptDuration).get_int();
         } break;
-        /*  this one doesnt exist??
+        /*  this one doesnt exist, nor does ewTargetJam
         case EvE::GFXID::entityTargetJam: {
             m_actionSpeed = m_self->GetAttribute(AttrEntityTargetJamDuration).get_int();
         } break;
@@ -2315,7 +2173,8 @@ void NPCAIMgr::SetActionTimers() {
     // set timer
     m_actionTimer.Start(m_actionSpeed);
 
-    _log(NPC__AI_LOGIC, "SetActionTimers() - %s(%u) m_actionTimer set to %ims.  fxid: %u(%s), turretID: %u", \
+    if (is_log_enabled(NPC__AI_LOGIC))
+        _log(NPC__AI_LOGIC, "SetActionTimers() - %s(%u) m_actionTimer set to %ims.  fxid: %u(%s), turretID: %u", \
             myNPC->GetName(), myNPC->GetID(), m_actionSpeed, m_effectID,  \
             sFxDataMgr.GetEffectName(m_effectID).c_str(), m_turretID);
 
@@ -2332,7 +2191,6 @@ void NPCAIMgr::ClearAttackTimers() {
         m_effectID = 0;
     }
 
-    m_attackSpeed = 0;
     m_chaseTimeEnd = 0;
     m_actionTimer.Disable();
     m_attackTimer.Disable();
@@ -2365,13 +2223,14 @@ void NPCAIMgr::ClearAllTimers() {
 
 void NPCAIMgr::ChangeSpeed() {
     // helper method to add/remove mwd speed on npcs
-    // start with current sigRad (this will allow mod both ways)
-    float sigRadius = m_self->GetAttribute(AttrSignatureRadius).get_float(); //552
+    // start with default sigRad
+    float sigRadius = m_self->GetDefaultAttribute(AttrSignatureRadius).get_float();
+    double mass = m_self->GetDefaultAttribute(AttrMass).get_double();
     uint16 speed = m_cruiseSpeed;
     uint16 maxSpeed = m_cruiseSpeed;
 
     // modify sigRad based on set speed (full mwd speed = full modifier)
-    // npc dont have data in dump for AttrEntityMaxVelocitySignatureRadiusMultiplier
+    // npc dont have AttrEntityMaxVelocitySignatureRadiusMultiplier
     float multiplier = m_sigRadModifier;
 
     //  increase sig radius and speed
@@ -2396,26 +2255,29 @@ void NPCAIMgr::ChangeSpeed() {
             maxSpeed = m_cruiseSpeed * 2;
             multiplier *= (speed / m_maxSpeed);
         } break;
-        case NPCAI::State::Idle: {
+        case NPCAI::State::Idle:
+        case NPCAI::State::Wandering: {
             speed = m_cruiseSpeed / 2;
             maxSpeed = m_cruiseSpeed / 2;
             multiplier *= (speed / m_cruiseSpeed);
         } break;
     }
+    //  other states default to cruise speed
 
-    m_destiny->SetNPCSpeed(speed, maxSpeed);
     if (speed > m_cruiseSpeed) {
         // if npc is running higher than cruise speed, modify sigRad.
+        // this also affect mass/agility like player ships
         multiplier *= (speed / m_maxSpeed);
         if (multiplier > 0.05f) {
             sigRadius *= multiplier;
         }
     }
 
-    // reset in case we're dropping back down to cruise speed.
+    // reset for updated speed
+    m_self->SetAttribute(AttrMass, mass, false);
     m_self->SetAttribute(AttrSignatureRadius, sigRadius, false);
 
-    //TODO:  should this also affect mass/agility like player ships?
+    m_destiny->SetNPCSpeedMass(speed, maxSpeed, mass);
 }
 
 void NPCAIMgr::BcastLocal(uint8 state) {
@@ -2445,6 +2307,22 @@ const char* NPCAIMgr::GetStateName(int8 stateID) {
     }
 }
 
+const char* NPCAIMgr::GetActionName(int8 actionID) {
+    switch (actionID) {
+        case NPCAI::Action::Invalid:       return "Invalid";
+        case NPCAI::Action::Wandering:     return "Wandering";
+        case NPCAI::Action::Idle:          return "Idle";
+        case NPCAI::Action::Attack:        return "Attacking";
+        case NPCAI::Action::Passive:       return "Passive";
+        case NPCAI::Action::ShieldRep:     return "Shield Repping";
+        case NPCAI::Action::ArmorRep:      return "Armor Repping";
+        case NPCAI::Action::Web:           return "Webbing";
+        case NPCAI::Action::Scram:         return "Warp Scrambling";
+        case NPCAI::Action::EWar:          return "Elec Warfare";
+        default:                           return "None";
+    }
+}
+
 const char* NPCAIMgr::GetSizeName() {
     switch (m_size) {
         case NPCAI::Size::None:            return "None";
@@ -2460,19 +2338,19 @@ const char* NPCAIMgr::GetSizeName() {
 }
 
 /*
- switch (m_state) {
+    switch (m_state) {
         case NPCAI::State::Invalid: {
-            } break;
+        } break;
         case NPCAI::State::Passive: {
-            } break;
+        } break;
         case NPCAI::State::Wandering: {
-            } break;
+        } break;
         case NPCAI::State::Assisting: {
-            } break;
+        } break;
         case NPCAI::State::Idle: {
     	} break;
         case NPCAI::State::Delay: {
-        } break;
+    	} break;
     	case NPCAI::State::Chasing: {
     	} break;
     	case NPCAI::State::Engaged: {
@@ -2491,31 +2369,101 @@ const char* NPCAIMgr::GetSizeName() {
 
     switch (m_action) {
         case NPCAI::Action::Invalid: {
-            } break;
+        } break;
         case NPCAI::Action::Wandering: {
-            } break;
-            case NPCAI::Action::Idle: {
-            } break;
-            case NPCAI::Action::Attack: {
-            } break;
-            case NPCAI::Action::Passive: {
-            } break;
-            case NPCAI::Action::ShieldRep: {
-            } break;
-            case NPCAI::Action::ArmorRep: {
-            } break;
-            case NPCAI::Action::Web: {
-            } break;
-            case NPCAI::Action::Scram: {
-            } break;
-            case NPCAI::Action::EWar: {
-            } break;
-        }
+        } break;
+        case NPCAI::Action::Idle: {
+        } break;
+        case NPCAI::Action::Attack: {
+        } break;
+        case NPCAI::Action::Passive: {
+        } break;
+        case NPCAI::Action::ShieldRep: {
+        } break;
+        case NPCAI::Action::ArmorRep: {
+        } break;
+        case NPCAI::Action::Web: {
+        } break;
+        case NPCAI::Action::Scram: {
+        } break;
+        case NPCAI::Action::EWar: {
+        } break;
+    }
 
  */
 
-/*
-	//
+ /* valid actions by state
+
+    NPCAI::State::Invalid:
+       	NPCAI::Action::Invalid:
+
+    NPCAI::State::Passive:
+        NPCAI::Action::Idle:
+        NPCAI::Action::Wandering:
+        NPCAI::Action::ShieldRep:
+        NPCAI::Action::ArmorRep:
+
+    NPCAI::State::Wandering:
+        NPCAI::Action::Idle:
+        NPCAI::Action::Wandering:
+        NPCAI::Action::ShieldRep:
+        NPCAI::Action::ArmorRep:
+
+    NPCAI::State::Assisting:
+        NPCAI::Action::Attack:
+        NPCAI::Action::ShieldRep:
+        NPCAI::Action::ArmorRep:
+        NPCAI::Action::Web:
+        NPCAI::Action::Scram:
+        NPCAI::Action::EWar:
+
+    NPCAI::State::Idle:
+        NPCAI::Action::Idle:
+        NPCAI::Action::Wandering:
+        NPCAI::Action::Passive:
+
+    NPCAI::State::Delay:
+        NPCAI::Action::Idle:
+
+    NPCAI::State::Chasing:
+        NPCAI::Action::Attack:
+        NPCAI::Action::ShieldRep:
+        NPCAI::Action::ArmorRep:
+
+    NPCAI::State::Engaged:
+        NPCAI::Action::Attack:
+        NPCAI::Action::ShieldRep:
+        NPCAI::Action::ArmorRep:
+        NPCAI::Action::Web:
+        NPCAI::Action::Scram:
+        NPCAI::Action::EWar:
+
+    NPCAI::State::Fleeing:
+        NPCAI::Action::Idle:
+        NPCAI::Action::Attack:
+        NPCAI::Action::ShieldRep:
+        NPCAI::Action::ArmorRep:
+
+    NPCAI::State::Following:
+        NPCAI::Action::Attack:
+        NPCAI::Action::Web:
+        NPCAI::Action::Scram:
+        NPCAI::Action::EWar:
+
+    NPCAI::State::Signaling:
+        NPCAI::Action::Idle:
+        NPCAI::Action::Attack:
+        NPCAI::Action::ShieldRep:
+        NPCAI::Action::ArmorRep:
+
+    NPCAI::State::WarpOut:
+        NPCAI::Action::Wandering:
+        NPCAI::Action::Passive:
+
+    NPCAI::State::WarpFollow:
+        NPCAI::Action::Attack:
+        NPCAI::Action::Web:
+        NPCAI::Action::Scram:
  */
 
 /*
@@ -2537,7 +2485,7 @@ const char* NPCAIMgr::GetSizeName() {
         }
 */
 
-/*  these werent right.  testing diff way
+/*  these werent completely right.
 
     float radius = m_self->radius();
     // d31,d45,dn50,dn150,d250,dn350
@@ -2556,3 +2504,298 @@ const char* NPCAIMgr::GetSizeName() {
         m_size = NPCAI::Size::BShip;
     }
 */
+
+
+// this needs more work
+void NPCAIMgr::PickTarget() {
+    // check for existing target
+    if (myNPC->TargetMgr()->HasNoTargets()) {
+        m_attackTarget = nullptr;
+    } else {
+        m_attackTarget = myNPC->TargetMgr()->GetFirstTarget();
+        m_beginFindTarget.Disable();
+        // what about action targets?   will need code more complete for better testing
+        return;
+    }
+
+    // get possible targets in bubble
+    std::vector<Client*> clientVec;
+    myNPC->SysBubble()->GetPlayers(clientVec);
+
+    std::vector<DroneSE*> droneVec;
+    myNPC->SysBubble()->GetDrones(droneVec);
+
+    if (clientVec.empty() && droneVec.empty()) {
+        m_beginFindTarget.Disable();
+        return;
+    }
+
+    float highestThreatScore = -1.0f;
+    size_t totalCandidates = clientVec.size() + droneVec.size();
+
+    SystemEntity* bestCandidate = nullptr;
+    SystemEntity* targetEntity = nullptr;
+    bool isDrone = false;
+    Client* pClient = nullptr;
+    // threat assessment loop
+    for (size_t i = 0; i < totalCandidates; ++i) {
+        if (i < clientVec.size()) {
+            pClient = clientVec[i];
+            if ((pClient == nullptr) or pClient->IsInvul() or pClient->GetShipSE()->IsDead())
+                continue;
+            targetEntity = pClient->GetShipSE();
+        } else {
+            size_t droneIndex = i - clientVec.size();
+            DroneSE* pDrone = droneVec[droneIndex];
+            if ((pDrone == nullptr) or pDrone->IsDead())
+                continue;
+            targetEntity = pDrone;  //pDrone->GetSE();
+            isDrone = true;
+        }
+
+        if (!targetEntity || !InSightRange(targetEntity))
+            continue;
+
+        // Pod protection gating matching your original security check rules
+        if (!isDrone && pClient->InPod() && sConfig.npc.TargetPod) {
+            if (myNPC->SystemMgr()->GetSecurityRating() > sConfig.npc.TargetPodSec)
+                continue;
+        }
+
+        DestinyManager* pDestiny = targetEntity->DestinyMgr();
+        if ((pDestiny == nullptr) or pDestiny->IsCloaked() or pDestiny->IsWarping())
+            continue;
+
+        float targetRadius = targetEntity->GetRadius();
+
+        // If we are a Battleship (m_size == 350) or Battlecruiser (300),
+        // our tracking speed is too slow to hit tiny drones. Skip them entirely!
+        if (m_size >= NPCAI::Size::BCruiser && targetRadius <= NPCAI::Size::Swarm)
+            continue;
+
+        Vector3d delta = targetEntity->GetPosition() - myNPC->GetPosition();
+        double distance = delta.Length();
+        if (distance <= 1.0f)
+            distance = 1.0f;
+
+        // If target is beyond our maximum attack capabilities, do not waste locks
+        if (distance > m_attackRange) {
+            continue;
+
+            // Base Scoring: Signature vs Proximity
+            float currentScore = (targetRadius * 1000.0f) / distance;
+
+            // Prioritize targets sitting inside our weapon's optimal combat profile
+            if (distance <= m_optimalRange) {
+                currentScore *= 2.0f; // Perfect accuracy zone!
+            } else if (distance <= m_falloffDistance) {
+                currentScore *= 1.2f; // Falloff accuracy zone
+            } else {
+                currentScore *= 0.5f; // Heavy accuracy degradation zone
+            }
+
+            // Dynamic Elite Target Switching
+            if (isDrone && m_useTargSwitching) {
+                currentScore *= 12.5f;
+            } else if (isDrone) {
+                // basic rats ignore drones unless forced
+                currentScore *= 0.2f;
+            }
+
+            // Apply your dynamic accumulative situational modifiers (EWar, Points, Scrams)
+            currentScore *= AggroModifiers(targetEntity);
+
+            if (currentScore > highestThreatScore) {
+                highestThreatScore = currentScore;
+                bestCandidate = targetEntity;
+            }
+        }
+
+        if (m_useSecondTarget) {
+            // If our primary attack target is set, but we have no separate action target yet
+            if (m_attackTarget != nullptr && m_actionTarget == nullptr) {
+                // Find a secondary candidate on the grid (e.g., the second highest threat or an EWar target)
+                m_actionTarget = FindSecondaryTarget();
+
+                if (m_actionTarget != nullptr) {
+                    _log(NPC__AI_MESSAGE, "Elite NPC %u splitting focus. Shooting %s, applying EWar to %s",
+                         myNPC->GetID(), m_attackTarget->GetName(), m_actionTarget->GetName());
+                }
+            }
+        } else {
+            // Standard basic rat: Action target always mirrors the attack target
+            m_actionTarget = m_attackTarget;
+        }
+
+        // if no combat ships were scored:
+        /*
+        if (bestCandidateIsOnlyAMiner && pCurrentSquad != nullptr) {
+            _log(NPC__AI_TRACE, "Only miners detected on belt. Initiating Squad Intimidation Formation.");
+
+            // Command the entire squad to enter formation mode around the miners
+            pCurrentSquad->SetFormationID(EVEDB::Formations::Wedge);
+            pCurrentSquad->StartIntimidationHoldTimer(20000); // Hold for 20 seconds
+        } */
+
+        // Single clean lock execution per system tick frame
+        if (bestCandidate != nullptr) {
+            Target(bestCandidate);
+        }
+
+        m_beginFindTarget.Disable();
+    }
+}
+
+// not used yet (incomplete)
+void NPCAIMgr::SwitchTarget() {
+    _log(NPC__AI_LOGIC, "SwitchTarget(); ");
+    // find a way to get all targets, are we picking by preferred here?   probably so
+    std::map<SystemEntity*, TargetEntry*> targets;
+    myNPC->TargetMgr()->GetAllTargets(targets);
+    std::map<SystemEntity*, TargetedByEntry*> targetby;
+    myNPC->TargetMgr()->GetAllTargeters(targetby);
+    m_attackTarget = nullptr;
+}
+
+float NPCAIMgr::AggroModifiers(SystemEntity* pTargetSE) {
+    if (pTargetSE == nullptr)
+        return 0.0f;
+
+    float modifier = 1.0f;
+
+    // 1. Is this entity actively tracking/targeting us? (Basic situational awareness)
+    if (myNPC->TargetMgr()->IsTargetedBy(pTargetSE))
+        modifier *= 1.3f;
+
+    // 2. Is this entity actively firing weapons or applying damage to us?
+    if (pTargetSE->TargetMgr()->GetFirstTarget(true) == myNPC)
+        modifier *= 1.5f;
+
+/** @todo:  this needs more work...
+
+    if (myNPC->TargetMgr()->IsActivelyJammingMe(pTargetSE->GetID()))
+        modifier *= 2.5f;
+    if (myNPC->TargetMgr()->IsActivelyScramblingMe(pTargetSE->GetID()))
+        modifier *= 3.5f;
+
+    // 5. Macro Logistics Check: Is this ship a healer keeping our enemies alive?
+    // (Crucial for advanced Sleeper / Incursion target prioritization)
+    if (pTargetSE->IsActivelyHealingAllies())
+        modifier *= 3.0f; // Target the Logistics Cruisers first!
+
+    // INDUSTRIALS / MINING HULL THREAT REDUCTION
+    if (pTargetSE->groupID() == mining ship, including frigates) {
+        // Drastically reduce its aggro footprint from the combat perspective
+        modifier *= 0.15f;
+
+        // CRITICAL LOGIC EXCEPTIONS: Did they release combat drones?
+        if (pTargetSE->HasActiveCombatDronesOnGrid()) {
+            // They have chosen to fight! Restore their threat modifier back to normal parameters
+            modifier *= 6.67f;
+        }
+    }
+*/
+
+    return modifier;
+}
+
+// poll this at 1/10s or less
+SystemEntity* NPCAIMgr::EvaluateThreats() {
+    // sConfig.npc.ThreatRadius
+    SystemEntity* bestTarget = nullptr;
+    float highestThreatScore = -1.0f;
+
+    // Get the list of all active entities on our current grid/bubble
+    std::map<uint32, SystemEntity*> visibleEntities;
+    myNPC->SysBubble()->GetEntities(visibleEntities);
+
+    Vector3d delta;
+    double distanceSq;
+    for (auto &cur : visibleEntities) {
+        // 1. Ensure target is valid, alive, and attackable
+        if (cur.second->IsNPCSE() or cur.second->IsDead())
+            continue;
+
+        delta = cur.second->GetPosition() - myNPC->GetPosition();
+        distanceSq = delta.LengthSq();
+        if (distanceSq > m_chaseRangeSq)
+            continue; // Out of locking range
+
+        // 2. Base Threat: Signature Radius vs Distance
+        float baseThreat = cur.second->GetSelf()->GetAttribute(AttrSignatureRadius).get_float();
+		baseThreat *= baseThreat;
+        baseThreat /= std::max(distanceSq, 1.0);
+
+        // 3. Modifiers Layer (EWAR & Logistics tracking)
+        float droneBias = 0.0f;
+        float ewarModifier = 0.0f;
+        float logiModifier = 0.0f;
+        /*  TODO:  not sure where/how to do these checks yet...
+        if (cur.second->IsJammingMe(m_id))
+            ewarModifier += 0.5f; // NPCs absolutely HATE ECM
+        if (cur.second->IsWebbingMe(m_id))
+            ewarModifier += 0.2f;
+        if (cur.second->IsPaintingMe(m_id))
+            ewarModifier += 0.15f;
+
+        if (cur.second->IsHealing()) {
+            // Priority target: Switch to the logistics cruiser keeping players alive
+            logiModifier += 0.4f;
+        }
+
+        // 4. Advanced Hull Drone Bias
+        if (entity->IsDrone()) {
+            if (m_attributes.aiClass == AI_CLASS_SLEEPER || m_attributes.aiClass == AI_CLASS_AMARR_ELITE) {
+                // This hull actively prioritizes clearing drones off the field!
+                droneBias += 0.35f;
+            } else {
+                // Normal pirate hulls generally ignore drones unless provoked
+                droneBias -= 0.1f;
+            }
+        }
+        */
+
+        // 5. Calculate Final Score
+        float finalThreatScore = baseThreat * (ewarModifier + logiModifier + droneBias);
+
+        // 6. Retain the apex threat
+        if (finalThreatScore > highestThreatScore) {
+            highestThreatScore = finalThreatScore;
+            bestTarget = cur.second;
+        }
+    }
+
+    return bestTarget;
+}
+
+SystemEntity* NPCAIMgr::FindSecondaryTarget() {
+    //  finish this...
+    return nullptr;
+}
+
+void NPCAIMgr::ExecuteCombatMovement(SystemEntity* pPlayerTarget) {
+    NPCSquad* pSquad = myNPC->GetSquad();
+/** todo:  will need more thought and infrastructure to implement this
+    // Fallback: If no squad or formation is active, run your original free-for-all pathfinding
+    if (pSquad == nullptr || !pSquad->IsFormationActive()) {
+        m_destiny->OrbitBall(pPlayerTarget, m_flyRange);
+        return;
+    }
+
+    if (myNPC->IsSquadLeader()) {
+        // The Leader acts as the master absolute world navigator
+        m_destiny->OrbitBall(pPlayerTarget, m_flyRange);
+
+        _log(NPC__AI_TRACE, "Squad Leader %u executing master orbit path around %s.",
+             myNPC->GetID(), pPlayerTarget->GetName());
+    } else {
+        // The Subordinates completely ignore the player target!
+        NPC* leader = pSquad->GetLeader();
+        uint8 mySlotIndex = myNPC->GetMemberSlotIndex();
+
+        // Command Destiny to execute a relative follow lock on the Leader entity,
+        // passing your static sDataMgr offset index to prevent collisions!
+        m_destiny->FollowInFormation(leader, mySlotIndex);
+    }
+    */
+}

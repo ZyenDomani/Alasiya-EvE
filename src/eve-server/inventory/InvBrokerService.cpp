@@ -290,7 +290,7 @@ PyResult InvBrokerBound::Handle_GetInventory(PyCallArgs &call) {
 
     uint32 ownerID = args.ownerID;
     sItemFactory.SetUsingClient(call.client);
-    InventoryItemRef iRef;
+    InventoryItemRef iRef(nullptr);
     /** @todo fix/update this shit.... */
     if (m_groupID == EVEDB::invGroups::Station) {
         _log(INV__WARNING, "GetInventory called for station %u", m_locationID);

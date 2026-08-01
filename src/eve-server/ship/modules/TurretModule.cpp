@@ -75,7 +75,6 @@ void TurretModule::ApplyDamage()
 
     // add data to StatisticMgr
     sStatMgr.Increment(Stat::pcShots);
-
     Damage d(m_shipRef->GetPilot()->GetShipSE(),
             m_modRef,
             m_chargeRef->GetAttribute(AttrKineticDamage).get_float(),
@@ -84,7 +83,7 @@ void TurretModule::ApplyDamage()
             m_chargeRef->GetAttribute(AttrExplosiveDamage).get_float(),
             m_formula.GetToHit(m_shipRef, this, m_targetSE)
     );
-
+    
     d *= GetAttribute(AttrDamageMultiplier).get_float();
     d *= sConfig.rates.turretDamage;
 

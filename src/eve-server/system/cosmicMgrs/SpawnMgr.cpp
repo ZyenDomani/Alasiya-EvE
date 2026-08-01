@@ -71,9 +71,11 @@ bool SpawnMgr::Init() {
 
     m_groupTimerSetTime = 150;  // (in seconds) 2.5m default check time. this will allow a max wait time of 7.5m for respawn
 
-    _log(COSMIC_MGR__INIT, "SpawnMgr Initialized for %s(%u)", m_system->GetName(), m_system->GetID());
-    _log(COSMIC_MGR__INIT, "Roaming Belt Spawns are %s", sConfig.npc.RoamingSpawns ? "enabled" : "disabled");
-    _log(COSMIC_MGR__INIT, "Static Gate Spawns are %s", sConfig.npc.StaticSpawns ? "enabled" : "disabled");
+    if (is_log_enabled(COSMIC_MGR__INIT)) {
+        _log(COSMIC_MGR__INIT, "SpawnMgr Initialized for %s(%u)", m_system->GetName(), m_system->GetID());
+        _log(COSMIC_MGR__INIT, "Roaming Belt Spawns are %s", sConfig.npc.RoamingSpawns ? "enabled" : "disabled");
+        _log(COSMIC_MGR__INIT, "Static Gate Spawns are %s", sConfig.npc.StaticSpawns ? "enabled" : "disabled");
+    }
 
     return m_initalized;
 }
@@ -149,6 +151,9 @@ void SpawnMgr::MoveSpawn(NPC* pNPC, SystemBubble* pBubble) {
 
     // get npc spawn data and add to new location
     auto range = m_spawns.equal_range(pNPC->SysBubble()->GetID());
+    // safety check
+    if (range.first == range.second)
+        return;
     auto itr = range.first;
     while (itr != range.second) {
         if (itr->second.itemID == npcID) {
@@ -173,11 +178,10 @@ void SpawnMgr::MoveSpawn(NPC* pNPC, SystemBubble* pBubble) {
 }
 
 void SpawnMgr::WarpOutSpawn(NPC* pNPC, SystemBubble* pBubble) {
-    if (pNPC == nullptr)
+    if ((pNPC == nullptr) or (pBubble == nullptr))
         return;
-    if (pBubble == nullptr)
-        return;
-    _log(SPAWN__TRACE, "WarpOutSpawn() called by %s(%u) from bubbleID %u to bubbleID %u", \
+    if (is_log_enabled(SPAWN__TRACE))
+        _log(SPAWN__TRACE, "WarpOutSpawn() called by %s(%u) from bubbleID %u to bubbleID %u", \
             pNPC->GetName(), pNPC->GetID(), pNPC->SysBubble()->GetID(), pBubble->GetID() );
 
     // set bubblespawn false before warping spawn
@@ -185,22 +189,33 @@ void SpawnMgr::WarpOutSpawn(NPC* pNPC, SystemBubble* pBubble) {
 
     NPC* rNPC = nullptr;
     auto range = m_spawns.equal_range(pNPC->SysBubble()->GetID());
+    // safety check
+    if (range.first == range.second)
+        return;
+
+    std::unordered_multimap<uint16, Spawn::Entry> ratsToMove;
     auto itr = range.first;
     while (itr != range.second) {
         if (itr->second.respawn) {
+            // should this negate the entire spawn move?
             ++itr;
             continue;
         }
         rNPC = m_system->GetNPCSE(itr->second.itemID);
         if (rNPC == nullptr) {
+            // if npc is null, this should also be removed
             ++itr;
             continue;
         }
-        rNPC->DestinyMgr()->WarpTo(pBubble->GetCenter(), MakeRandomFloat(10, 30) * 100);
         rNPC->GetAI()->DisableWarpOutTimer();
-        m_spawns.emplace(pBubble->GetID(), itr->second);
-        itr = m_spawns.erase(itr);
+        rNPC->DestinyMgr()->WarpTo(pBubble->GetCenter(), MakeRandomFloat(10, 30) * 100);
+        ratsToMove.emplace(pBubble->GetID(), itr->second);
+        ++itr;
     }
+
+    m_spawns.erase(range.first, range.second);
+    for (const auto& pair : ratsToMove)
+        m_spawns.emplace(pair.first, pair.second);
 
     // set new bubblespawn true
     pBubble->SetSpawned(true);
@@ -268,6 +283,9 @@ void SpawnMgr::SpawnKilled(SystemBubble* pBubble, uint32 itemID) {
         // if any SpawnEntry still exists for this bubble, reset group timer.
         // this enables chain ratting
         auto range = m_spawns.equal_range(pBubble->GetID());
+        // safety check
+        if (range.first == range.second)
+            return;
         auto itr = range.first;
         while (itr != range.second) {
             if (itr->second.itemID == itemID) {
@@ -779,8 +797,10 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
         // ratspawn will warp in, others will not.
         /*  NOTE:  rats warping into bubbles has been iffy at best for years.  discovered why today (16jul24)
          * npc accel dist < bubble radius.  WarpAccel.BubbleCheck is complete before npc is removed from bubble
+         * warping from 1-1.5mm out isnt enough time to do things and get in new bubble decently.  ~55km from center
          */
-        startPos.MakeRandomPointOnSphere(MakeRandomFloat(10.0f, 15.0f) * 100000.0f); //1m-1.5m meters from target bubble center
+        // 0.5AU from target bubble center.  this will give ship time to warp, change bubbles, warp-in target and be on overview >1s
+        startPos.MakeRandomPointOnSphere(ONE_AU_IN_METERS * 0.5);
         SystemBubble* pBubble = sBubbleMgr.GetBubble(m_system, startPos);
         uint32 bubbleID = 0;
         if (pBubble != nullptr)
@@ -788,11 +808,10 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
         _log(SPAWN__POP, "SpawnMgr::MakeSpawn - NPC starting bubbleID %u", bubbleID);
     }
 
-    // ─────────────────────────────────────────────────────────────────
-    // NEW SQUAD CONTEXT INITIALIZATION
-    // ─────────────────────────────────────────────────────────────────
+    // only create squad if there are more than 3 ships and it's beltrats
+    //TODO:  this check isnt right...toSpawn is types, and each have qty...this only checks if there are >3 types
     NPCSquad* pCurrentSquad = nullptr;
-    if (sClass <= Spawn::Class::BeltSpawn) {
+    if ((sClass <= Spawn::Class::BeltSpawn) and (m_toSpawn.size() > 3)) {
         pCurrentSquad = new NPCSquad(m_squadID++);
 
         // Track the pointer under the Spawn Manager's absolute ownership map
@@ -816,9 +835,8 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
     }
 
     for (auto &cur : m_toSpawn) {
-        /*
-         *        ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, const char *_name = "",
-         *                  const Vector3d &_position = NULL_ORIGIN, const char *_customInfo = "", bool _contraband = false);
+        /* ItemData(uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, const char *_name = "",
+         *          const Vector3d &_position = NULL_ORIGIN, const char *_customInfo = "", bool _contraband = false);
          */
         ItemData idata(cur.typeID, corpID, m_system->GetID(), flagAutoFit, "", startPos, name.c_str());
         for (uint8 x = 0; x < cur.quantity;) {
@@ -862,33 +880,22 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
 
             m_system->AddNPC(pNPC);
 
-            // ─────────────────────────────────────────────────────────────────
-            // NEW SQUAD REGISTRATION LAYER
-            // ─────────────────────────────────────────────────────────────────
-            if (pCurrentSquad != nullptr) {
-                // Register raw pointer to squad vector.
-                // This invokes our Rank Hierarchy checks to assign/promote leaders!
-                pCurrentSquad->RegisterMember(pNPC);
-            }
-            // ─────────────────────────────────────────────────────────────────
-            // NEW HOOK: AUTOMATED SQUAD TACTICAL TIERING
-            // ─────────────────────────────────────────────────────────────────
-            uint8 tacticalTier = 0; // 0 = Rookie (No Formations), 1 = Coordinated (Assemble Post-Warp), 2 = Elite (Warp In Formation)
+            uint8 tacticalTier = Squad::Tier::Rookie;
             float systemSec = m_system->GetSecurityRating();
 
             if (pCurrentSquad != nullptr) {
+                // Register npc and invoke Rank Hierarchy checks to assign/promote leaders
+                pCurrentSquad->RegisterMember(pNPC);
                 // Determine tier based on security space and spawn difficulty class
                 if (systemSec <= -0.5f || sClass == Spawn::Class::Insane || sClass == Spawn::Class::Hell || sClass == Spawn::Class::Sanctum) {
                     // Star Pilots: Fully coordinated null-sec squads or end-game anomalies
-                    tacticalTier = 2;
-                }
-                else if (systemSec <= 0.3f || (sClass >= Spawn::Class::Medium && sClass <= Spawn::Class::Crazy)) {
+                    tacticalTier = Squad::Tier::Apex;
+                } else if (systemSec <= 0.3f || (sClass >= Spawn::Class::Medium && sClass <= Spawn::Class::Crazy)) {
                     // Tactical Pilots: Low-sec, mid-sec, or moderate anomaly/belt groups
-                    tacticalTier = 1;
-                }
-                else {
+                    tacticalTier = Squad::Tier::Veteran;
+                } else {
                     // Rookies: High-Sec space or low-tier belt rats
-                    tacticalTier = 0;
+                    tacticalTier = Squad::Tier::Soldier;
                 }
 
                 // Assign the tracking parameters right onto the squad manager instance
@@ -901,6 +908,8 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
             if (sClass <= Spawn::Class::BeltSpawn /*|| isFormation*/) {
                 Vector3d warpTo = warpToPoint;
 /*
+                //this will need more work to properly set leader/follower positions
+
                 // If Elite Tier (Null-Sec / High End Anomaly), they warp directly in formation!
                 if (sConfig.npc.enableFormation and tacticalTier == 2 and x < formationOffsets.size()) {
                     warpTo.x += formationOffsets[x].x;

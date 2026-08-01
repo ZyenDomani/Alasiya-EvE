@@ -59,6 +59,9 @@ Damage::Damage(SystemEntity* pSE, InventoryItemRef wRef,
 : srcSE(pSE), weaponRef(wRef), chargeRef(InventoryItemRef(nullptr)),
 em(emp), kinetic(kin), thermal(ther), explosive(exp), modifier(mod)
 {
+    if (is_log_enabled(DAMAGE__WARNING))
+        _log(DAMAGE__WARNING, "Damage:C'tor - Called by %s(%u) using %s(%u).",
+         srcSE->GetName(), srcSE->GetID(), wRef->name(), wRef->itemID() );
 }
 
 // this is for npcs
@@ -69,8 +72,8 @@ kinetic(wRef->GetAttribute(AttrKineticDamage).get_float()),
 thermal(wRef->GetAttribute(AttrThermalDamage).get_float()),
 explosive(wRef->GetAttribute(AttrExplosiveDamage).get_float())
 {
-    _log(DAMAGE__WARNING, "Damage:C'tor - Called by source %s(%u) with weapon %s(%u).",
-         srcSE->GetName(), srcSE->GetID(), wRef->name(), wRef->itemID() );
+    if (is_log_enabled(DAMAGE__WARNING))
+        _log(DAMAGE__WARNING, "Damage:C'tor - Called by %s(%u).", srcSE->GetName(), srcSE->GetID());
 }
 
 // this is for missiles
@@ -81,7 +84,8 @@ kinetic(cRef->GetAttribute(AttrKineticDamage).get_float()),
 thermal(cRef->GetAttribute(AttrThermalDamage).get_float()),
 explosive(cRef->GetAttribute(AttrExplosiveDamage).get_float())
 {
-    _log(DAMAGE__WARNING, "Damage:C'tor - Called by source %s(%u) with weapon %s(%u) using charge %s(%u).",
+    if (is_log_enabled(DAMAGE__WARNING))
+        _log(DAMAGE__WARNING, "Damage:C'tor - Called by %s(%u) using %s(%u) loaded with %s(%u).",
          srcSE->GetName(), srcSE->GetID(), wRef->name(), wRef->itemID(), cRef->name(), cRef->itemID() );
 }
 
@@ -96,6 +100,49 @@ chargeRef(InventoryItemRef(nullptr))
 
 bool SystemEntity::ApplyDamage(Damage &damage) {
     double profileStartTime = GetTimeUSeconds();
+    if ((damage.GetTotal() < 0.0f) or (damage.GetModifier() < 0.1f)) {
+        // no damage. exit early
+        if (HasPilot()) {
+            //  notify player of damage received
+            PyDict* dict = new PyDict();
+                dict->SetItemString("source", new PyInt(damage.srcSE->GetID()));
+                dict->SetItemString("weapon", new PyInt((damage.chargeRef.get() != nullptr ? damage.chargeRef->typeID() : damage.weaponRef->typeID())));
+                dict->SetItemString("target", new PyInt(GetID()));
+                dict->SetItemString("damage", new PyFloat(0));
+            PyTuple* tuple = new PyTuple(3);
+                tuple->SetItem(0, new PyString("OnDamageMessage"));
+                tuple->SetItem(1, new PyString(Dmg::Msg::Taken[0]));
+                tuple->SetItem(2, dict);
+            GetPilot()->QueueDestinyEvent(&tuple);
+        } else if (damage.srcSE->HasPilot()) {
+            //notify to player of damage done:
+            PyDict* dict = new PyDict();
+                dict->SetItemString("weapon", new PyInt((damage.chargeRef.get() != nullptr ? damage.chargeRef->typeID() : damage.weaponRef->typeID())));
+                dict->SetItemString("target", new PyInt(GetID()));
+                dict->SetItemString("damage", new PyFloat(0));
+            PyTuple* tuple = new PyTuple(3);
+                tuple->SetItem(0, new PyString("OnDamageMessage"));
+            bool banked = false;
+            if (damage.weaponRef->IsModuleItem()) {
+                GenericModule* pMod = damage.srcSE->GetShipSE()->GetShipItemRef()->GetModule(damage.weaponRef->flag());
+                if (pMod != nullptr)
+                    if (pMod->IsLinked())
+                        banked = true;
+            }
+            if (banked) {
+                tuple->SetItem(1, new PyString(Dmg::Msg::Banked[0]));
+            } else {
+                tuple->SetItem(1, new PyString(Dmg::Msg::Given[0]));
+            }
+            tuple->SetItem(2, dict);
+            damage.srcSE->GetPilot()->QueueDestinyEvent(&tuple);
+        }
+
+        if (sConfig.debug.UseProfiling)
+            sProfiler.AddTime(Profile::damage, GetTimeUSeconds() - profileStartTime);
+        
+        return false;
+    }
 
     if (is_log_enabled(DAMAGE__MESSAGE)) {
         if (damage.srcSE->IsNPCSE()) {
@@ -149,14 +196,15 @@ bool SystemEntity::ApplyDamage(Damage &damage) {
         default: {
             float modifier = damage.GetModifier();
             damage *= modifier;
+            // updated modifier checks for better/more hits
                  if (modifier == 3.0f)   { damageID = 8; } //strikes perfectly, wrecking
-            else if (modifier > 1.2501f) { damageID = 7; } //places an excellent hit
-            else if (modifier > 0.9999f) { damageID = 6; } //aims well
-            else if (modifier > 0.7501f) { damageID = 5; } //hits
-            else if (modifier > 0.6251f) { damageID = 4; } //lightly hits
-            else if (modifier > 0.4121f) { damageID = 3; } //barely scratches
-            else if (modifier > 0.3751f) { damageID = 2; } //glances off
-            else if (modifier > 0.2501f) { damageID = 1; } //barely misses
+            else if (modifier > 1.1501f) { damageID = 7; } //places an excellent hit
+            else if (modifier > 0.8999f) { damageID = 6; } //aims well
+            else if (modifier > 0.6501f) { damageID = 5; } //hits
+            else if (modifier > 0.5251f) { damageID = 4; } //lightly hits
+            else if (modifier > 0.3121f) { damageID = 3; } //barely scratches
+            else if (modifier > 0.2251f) { damageID = 2; } //glances off
+            else if (modifier > 0.1201f) { damageID = 1; } //barely misses
             else                         { damageID = 0; } //misses completely
             _log(DAMAGE__TRACE, "%s(%u): Modifier: %.3f, damageID: %u.", GetName(), GetID(), modifier, damageID);
         } break;
@@ -291,8 +339,12 @@ bool SystemEntity::ApplyDamage(Damage &damage) {
     }
 
     if (killed) {
-        if (m_killed)
+        if (m_killed) {
+            if (sConfig.debug.UseProfiling)
+                sProfiler.AddTime(Profile::damage, GetTimeUSeconds() - profileStartTime);
+
             return true;
+        }
 
         m_killed = true;
         m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID(), isGlobal());
@@ -310,6 +362,9 @@ bool SystemEntity::ApplyDamage(Damage &damage) {
         // check for srcSE destroyed before missile hit
         if ((damage.srcSE == nullptr) or (damage.srcSE->IsDead())) {
             SendDamageStateChanged();
+            if (sConfig.debug.UseProfiling)
+                sProfiler.AddTime(Profile::damage, GetTimeUSeconds() - profileStartTime);
+
             return killed;
         }
         if (HasPilot()) {
@@ -333,8 +388,8 @@ bool SystemEntity::ApplyDamage(Damage &damage) {
                 dict->SetItemString("target", new PyInt(GetID()));
                 dict->SetItemString("damage", new PyFloat(total_damage));
             PyTuple* tuple = new PyTuple(3);
+                tuple->SetItem(0, new PyString("OnDamageMessage"));
             bool banked = false;
-            tuple->SetItem(0, new PyString("OnDamageMessage"));
             if (damage.weaponRef->IsModuleItem()) {
                 GenericModule* pMod = damage.srcSE->GetShipSE()->GetShipItemRef()->GetModule(damage.weaponRef->flag());
                 if (pMod != nullptr)

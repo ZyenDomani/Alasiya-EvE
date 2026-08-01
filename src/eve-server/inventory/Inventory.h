@@ -70,7 +70,7 @@ public:
     float GetCapacity(EVEItemFlags flag) const;
     float GetStoredVolume(EVEItemFlags flag, bool combined=true) const;
     float GetCorpHangerCapyUsed() const;
-    float GetRemainingCapacity(EVEItemFlags flag) const { return GetCapacity( flag ) - GetStoredVolume( flag ); }
+    float GetRemainingCapacity(EVEItemFlags flag) const;
 
     InventoryItemRef GetByID(uint32 id) const;
     InventoryItemRef GetByTypeFlag(uint32 typeID, EVEItemFlags flag) const;

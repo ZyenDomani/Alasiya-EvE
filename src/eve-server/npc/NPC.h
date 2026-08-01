@@ -119,6 +119,19 @@ private:
     uint32              m_orbitingID;
 };
 
+
+namespace Squad {
+    namespace Tier {
+        enum {
+            Rookie      = 1,
+            Soldier     = 2,
+            Veteran     = 3,
+            Elite       = 4,
+            Apex        = 5
+        };
+    }
+}
+
 // A lightweight, transient group coordinator
 class NPCSquad {
 public:
@@ -138,6 +151,7 @@ public:
     uint16              GetID()                         { return m_squadID; }
     uint8               GetFormID()                     { return m_formationID; }
     float               GetSpacing()                    { return m_spacing; }
+    uint8               GetTier()                       { return m_tacticalTier; }
 
     // Formation Handles
     void                AssignLeader(NPC* pNPC)         { m_squadLeader = pNPC; }
@@ -151,7 +165,7 @@ private:
     uint8               m_formationID;
     float               m_spacing;
     NPC*                m_squadLeader;
-    SystemEntity*       m_squadTarget; // The authoritative focus-fire target for this fleet spawn
+    SystemEntity*       m_squadTarget;
     std::vector<NPC*>   m_members;     // Safe transient references to active grid rats
 };
 

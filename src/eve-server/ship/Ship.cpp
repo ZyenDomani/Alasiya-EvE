@@ -2405,7 +2405,8 @@ float ShipSE::CalculateRechargeRate(float Capacity, float Current, float Recharg
 void ShipSE::Process() {
     if (m_killed)
         return;
-    /*  Enable base call to Process Targeting and Movement  */
+    
+    /*  Enable base call to Process Movement  */
     SystemEntity::Process();
 
     // check to see if this is an empty ship, and return if so.

@@ -1221,7 +1221,7 @@ bool InventoryItem::Populate(Rsp_CommonGetInfo_Entry& result )
 
     // only send "online" effect for fitted modules
     if ((m_type.categoryID() == EVEDB::invCategories::Module)
-    and (pAttributeMgr->GetAttribute(AttrOnline).get_bool()) {
+    and (pAttributeMgr->GetAttribute(AttrOnline).get_bool())) {
         EntityEffectState es;
             es.env_itemID = m_itemID;
             es.env_charID = m_data.ownerID;

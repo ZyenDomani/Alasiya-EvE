@@ -60,6 +60,7 @@ PlanetSE::~PlanetSE()
     }
 }
 
+//TODO:  update this to change data on *some yet-unknown* timeframe
 bool PlanetSE::LoadExtras() {
     // this is called after SE is created.
     if (!StaticSystemEntity::LoadExtras())

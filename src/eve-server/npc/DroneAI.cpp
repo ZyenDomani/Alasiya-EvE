@@ -1355,12 +1355,8 @@ void DroneAIMgr::AttackTarget() {
             // damage attack here...
             Damage dam(mySE,
                        mySE->GetSelf(),
-                       mySE->GetKinetic(),
-                       mySE->GetThermal(),
-                       mySE->GetEM(),
-                       mySE->GetExplosive(),
                        m_formula.GetDroneToHit(mySE, targSE)
-            );
+                      );
 
             dam *= mySE->GetSelf()->GetAttribute(AttrDamageMultiplier).get_float();
             targSE->ApplyDamage(dam);

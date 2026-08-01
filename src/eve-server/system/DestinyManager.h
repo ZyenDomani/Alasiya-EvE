@@ -141,7 +141,7 @@ public:
     // reset speed variables and bubblecast ship's AB/MWD modified speed (module activate/deactivate)
     void SpeedBoost(bool deactivate=false);
     void SetPosition(const Vector3d& pt, bool update=false);
-    void SetNPCSpeed(uint16 newSpeed, uint16 maxSpeed);
+    void SetNPCSpeedMass(uint16 newSpeed, uint16 maxSpeed, double mass);
     void UpdateShipVariables();
     // set all movement vars for missile and add to system
     void MakeMissile(Missile* missile);  //  this is used by all entities (pc, npc, drone, sentry, pos, etc)

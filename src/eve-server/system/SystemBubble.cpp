@@ -45,7 +45,7 @@
 
 SystemBubble::SystemBubble(SystemManager* pSystem, const Vector3d& center, double radius)
 : m_tcuSE(nullptr), m_sbuSE(nullptr), m_ihubSE(nullptr), m_towerSE(nullptr),
-m_system(pSystem), m_center(center), m_radius(radius), m_radiusSq(radius * radius),
+m_system(pSystem), m_center(center), m_radius(radius), m_radiusSq(90000000000.0), // testing 300km for warp
 m_centerSE(nullptr), m_hasMarkers(false),m_hasBubble(false), m_spawnTimer(0),
 m_type(Bubble::Type::Normal), m_spawned(false), m_bubbleID(sBubbleMgr.GetBubbleID())
 {
@@ -501,9 +501,9 @@ bool SystemBubble::InBubble(const Vector3d& pt, bool inWarp/*false*/) const {
     Vector3d delta =  m_center - pt;
     double distanceSq = delta.LengthSq();
     if (inWarp)
-        return (distanceSq < (m_radiusSq + 100000.0));
+        return (distanceSq < m_radiusSq);
 
-    return (distanceSq < m_radiusSq);
+    return (distanceSq < (m_radius * m_radius));
 }
 
 bool SystemBubble::IsOverlap(const Vector3d& pt) const {

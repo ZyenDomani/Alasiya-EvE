@@ -344,6 +344,13 @@ float Inventory::GetCorpHangerCapyUsed() const {
     return totalVolume;
 }
 
+float Inventory::GetRemainingCapacity(EVEItemFlags flag) const {
+    // separated components for debugging
+    float capacity = GetCapacity(flag);
+    float stored = GetStoredVolume(flag);
+    return capacity - stored;
+}
+
 void Inventory::GetInventoryVec(std::vector<InventoryItemRef> &itemVec) {
     std::vector<InventoryItemRef> itemVecTmp;
     for (auto &cur : mContents)
@@ -720,8 +727,9 @@ bool Inventory::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef) const
     float volume = iRef->GetAttribute(AttrVolume).get_float();
     float totalVolume = iRef->quantity() * volume;
 
-    _log(INV__CAPY, "Inventory::ValidateAddItem() - Testing %s's %s available capy of %.2f to add %i %s at %.2f(%.3f each)",
-         m_self->name(), sDataMgr.GetFlagName(flag), capacity, iRef->quantity(), iRef->name(), totalVolume, volume);
+    if (is_log_enabled(INV__CAPY))
+        _log(INV__CAPY, "Inventory::ValidateAddItem() - Testing %s's available %s capy of %.2f to add %i %s at %.2f(%.3f each)",
+            m_self->name(), sDataMgr.GetFlagName(flag), capacity, iRef->quantity(), iRef->name(), totalVolume, volume);
 
     /** modify checks for splitting items in same container or moving items between a container's corp hangars
      * flag and iRef->flag() will be same(or same type).

@@ -459,10 +459,13 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
 
     SetModuleState(Module::State::Activated);
 
-    // add module to bubble's active module map
-    m_bubble->AddActiveModule(this);
-    // send gfx
-    SendGFX();
+    // activating isWarpSafe modules while warping may not have bubble
+    if (m_bubble != nullptr) {
+        // add module to bubble's active module map
+        m_bubble->AddActiveModule(this);
+        // send gfx
+        SendGFX();
+    }
 
     if (m_linkMaster) {
         std::vector<GenericModule*> modules;
@@ -1463,8 +1466,8 @@ void ActiveModule::SendShipEffect(bool start/*false*/, bool abortCycle/*false*/)
         tuple->Dump(EFFECTS__DUMP, "");
 
     if ((m_destinyMgr == nullptr)
-    or  (m_bubble == nullptr)
-    or   m_destinyMgr->IsWarping()) {
+    or   m_destinyMgr->IsWarping()
+    or  (m_bubble == nullptr)) {
         m_shipRef->GetPilot()->QueueDestinyEvent(&tuple);
     } else {
         m_bubble->BubblecastDestinyEvent(&tuple, "DestinyEvent");

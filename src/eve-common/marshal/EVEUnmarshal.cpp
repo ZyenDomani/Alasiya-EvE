@@ -57,7 +57,7 @@ PyRep* InflateUnmarshal( const Buffer& data )
 
 UnmarshalStream::~UnmarshalStream()
 {
-    PySafeDecRef(mStoredObjects);
+    //PySafeDecRef(mStoredObjects);
 }
 
 /************************************************************************/

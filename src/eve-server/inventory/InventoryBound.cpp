@@ -82,7 +82,8 @@ InventoryBound::~InventoryBound()
 }
 
 PyResult InventoryBound::Handle_GetItem(PyCallArgs &call) {
-    _log(INV__MESSAGE, "Calling InventoryBound::GetItem() for %s(%u)", m_self->name(), m_itemID);
+    if (is_log_enabled(INV__MESSAGE))
+        _log(INV__MESSAGE, "Calling InventoryBound::GetItem() for %s(%u)", m_self->name(), m_itemID);
     return m_self->GetItem();
 }
 
@@ -93,7 +94,8 @@ PyResult InventoryBound::Handle_StripFitting(PyCallArgs &call)
 }
 
 PyResult InventoryBound::Handle_DestroyFitting(PyCallArgs &call) {
-    _log(INV__MESSAGE, "Calling InventoryBound::DestroyFitting() for %s(%u)", m_self->name(), m_itemID);
+    if (is_log_enabled(INV__MESSAGE))
+        _log(INV__MESSAGE, "Calling InventoryBound::DestroyFitting() for %s(%u)", m_self->name(), m_itemID);
     SingleIntegerArg args;
     if (!args.Decode(&call.tuple)){
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
@@ -119,7 +121,8 @@ PyResult InventoryBound::Handle_StackAll(PyCallArgs &call) {
         stackFlag = (EVEItemFlags)arg.arg;
     }
 
-    _log(INV__MESSAGE, "Calling InventoryBound::StackAll() for %s(%u) in %s.  Bound flag is %s", \
+    if (is_log_enabled(INV__MESSAGE))
+        _log(INV__MESSAGE, "Calling InventoryBound::StackAll() for %s(%u) in %s.  Bound flag is %s", \
             m_self->name(), m_itemID, sDataMgr.GetFlagName(stackFlag), sDataMgr.GetFlagName(m_flag));
 
     //Stack Items contained in this inventory
@@ -232,7 +235,8 @@ PyResult InventoryBound::Handle_RemoveChargeToCargo(PyCallArgs &call) {
 }
 
 PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
-    _log(INV__MESSAGE, "IB::MultiMerge() called by %s(%u)", m_self->name(), m_itemID);
+    if (is_log_enabled(INV__MESSAGE))
+        _log(INV__MESSAGE, "IB::MultiMerge() called by %s(%u)", m_self->name(), m_itemID);
     call.Dump(INV__DUMP);
     //Decode Args
     Call_MultiMerge args;
@@ -304,7 +308,7 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
         return nullptr;
     }
 
-    uint16 toFlag(m_flag);
+    uint16 toFlag = m_flag;
     if (call.byname.find("flag") != call.byname.end())
         toFlag = PyRep::IntegerValueU32(call.byname.find("flag")->second);
     if (toFlag == flagLocked) {
@@ -356,14 +360,15 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
         quantity = iRef->quantity();
     }
 
-    float capacity(0.0f);
+    float capacity = 0.0f;
     if (call.byname.find("capacity") != call.byname.end())
         capacity = PyRep::IntegerValueU32(call.byname.find("capacity")->second);
 
     if (quantity < 1)
         quantity = 1;
 
-    _log(INV__MESSAGE, "IB::Handle_Add() - moving %u %s(%u) from (%u:%s) to me(%s:%u:%s).", \
+    if (is_log_enabled(INV__MESSAGE))
+        _log(INV__MESSAGE, "IB::Handle_Add() - moving %u %s(%u) from (%u:%s) to me(%s:%u:%s).", \
             quantity, iRef->name(), args.itemID, args.containerID, sDataMgr.GetFlagName(iRef->flag()),\
             m_self->name(), m_itemID, sDataMgr.GetFlagName(toFlag));
 
@@ -449,7 +454,8 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
         }
     }
 
-    _log(INV__MESSAGE, "IB::Handle_MultiAdd() - moving %lu item%s from (%u:%s) to me(%s:%u:%s).", \
+    if (is_log_enabled(INV__MESSAGE))
+        _log(INV__MESSAGE, "IB::Handle_MultiAdd() - moving %lu item%s from (%u:%s) to me(%s:%u:%s).", \
                 args.itemIDs.size(), args.itemIDs.size() > 1?"s":"", args.containerID, \
                 sDataMgr.GetFlagName(m_flag), m_self->name(), m_itemID, sDataMgr.GetFlagName(toFlag));
 
@@ -557,8 +563,8 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
     }
 //TODO:  check for wrecks and cans in fleet and call donate to allow salvager to take
 
-    EVEItemFlags fromFlag(flagAutoFit);
-    EVEItemFlags origFlag(toFlag);
+    EVEItemFlags fromFlag = flagAutoFit;
+    EVEItemFlags origFlag = toFlag;
     InventoryItemRef iRef(nullptr);
     sItemFactory.SetUsingClient(pClient);
 
@@ -728,6 +734,8 @@ std::vector< int32 > InventoryBound::CatSortItems(std::vector< InventoryItemRef 
      * if there is only one item, no sorting required...
      *  this is called on fitting a group of modules from MultiAdd
      *   -allan
+     * 18:23:34 W IB::CatSortItems: 4 items sorted in 6.000us with 3 loops.
+     *
      */
     std::vector<int32> items;
     if (itemVec.size() < 2) {
@@ -798,7 +806,8 @@ PyResult InventoryBound::Handle_List(PyCallArgs &call) {
             flag = (EVEItemFlags)arg.flag;
     }
 
-    _log(INV__MESSAGE, "IB::List() called by %s with ownerID %u for %s(%u:%s%s) - origFlag: %s", \
+    if (is_log_enabled(INV__MESSAGE))
+        _log(INV__MESSAGE, "IB::List() called by %s with ownerID %u for %s(%u:%s%s) - origFlag: %s", \
             call.client->GetName(), ownerID, m_self->name(), m_itemID, sDataMgr.GetFlagName(flag), \
             (m_passive ? ":passive" : ":active"), sDataMgr.GetFlagName(oldFlag));
 

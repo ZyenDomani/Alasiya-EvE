@@ -347,7 +347,7 @@ void ConcordAI::Process() {
                 case Chasing: {
                     //NOTE: getting our target like this is pretty weak...
                     SystemEntity* pTarget = m_npc->TargetMgr()->GetFirstTarget(true);
-                    if (!pTarget) {
+                    if (pTarget == nullptr) {
                         if (m_npc->TargetMgr()->HasNoTargets()) {
                             //_log(CONCORD__AI_TRACE, "%s(%u): Stopped chasing, GetFirstTarget() returned NULL.",  m_npc->GetName(), m_npc->GetID());
                             m_state = Idle;
@@ -364,7 +364,7 @@ void ConcordAI::Process() {
                 case Following: {
                     //NOTE: getting our target like this is pretty weak...
                     SystemEntity* pTarget = m_npc->TargetMgr()->GetFirstTarget(true);
-                    if (!pTarget) {
+                    if (pTarget == nullptr) {
                         if (m_npc->TargetMgr()->HasNoTargets()) {
                             //_log(CONCORD__AI_TRACE, "%s(%u): Stopped following, GetFirstTarget() returned NULL.",  m_npc->GetName(), m_npc->GetID());
                             m_state = Idle;
@@ -381,7 +381,7 @@ void ConcordAI::Process() {
                 case Engaged: {
                     //NOTE: getting our pTarget like this is pretty weak...
                     SystemEntity* pTarget = m_npc->TargetMgr()->GetFirstTarget(true);
-                    if (!pTarget) {
+                    if (pTarget == nullptr) {
                         if (m_npc->TargetMgr()->HasNoTargets()) {
                             //_log(CONCORD__AI_TRACE, "%s(%u): Stopped engagement, GetFirstTarget() returned NULL.", m_npc->GetName(), m_npc->GetID());
                             SetIdle();
@@ -607,7 +607,8 @@ void ConcordAI::TargetLost(SystemEntity* pTarget) {
 void ConcordAI::Attack(SystemEntity* pSE)
 {
     if (m_mainAttackTimer.Check()) {
-        if (!pSE) return;
+        if (pSE == nullptr)
+            return;
         // Check to see if the target still in the bubble (Client warped out)
         if (!m_npc->SysBubble()->InBubble(pSE->GetPosition())) {
             _log(CONCORD__AI_TRACE, "%s(%u): Target %s(%u) no longer in bubble.  Clear target and move on",
@@ -618,7 +619,7 @@ void ConcordAI::Attack(SystemEntity* pSE)
             return;
         }
         DestinyManager* pDestiny = pSE->DestinyMgr();
-        if (!pDestiny) {
+        if (pDestiny == nullptr) {
             _log(CONCORD__AI_TRACE, "%s(%u): Target %s(%u) has no destiny manager.  Clear target and move on",
                  m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID());
 

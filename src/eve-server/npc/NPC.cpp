@@ -70,7 +70,7 @@ m_orbitingID(0)
     m_self->SetAttribute(AttrShieldCharge,        m_self->GetAttribute(AttrShieldCapacity), false);
     m_self->SetAttribute(AttrCapacitorCharge,     m_self->GetAttribute(AttrCapacitorCapacity), false);
 
-    // get 'module' count for this npc
+    // get 'module' count for this npc;  i dont know where i saw data for this, but cant find it now
     uint8 mininum = 0; //m_self->GetAttribute(AttrCapacitorCapacity).get_uint32();
     uint8 maximum = 5; //m_self->GetAttribute(AttrCapacitorCapacity).get_uint32();
     m_moduleCount = MakeRandomUInt(mininum, maximum);
@@ -103,11 +103,11 @@ void NPC::Process() {
 
     double profileStartTime = GetTimeUSeconds();
 
-    /*  Process AI before moving */
-    m_AI->Process();
-
     /*   Base call to Process Movement  */
     SystemEntity::Process();
+
+    /*  Process AI after moving */
+    m_AI->Process();
 
     // make random chance to reset buffs (wip)
 
@@ -431,44 +431,37 @@ void NPC::ApplyTrackingBoost(float mod/*1.0f*/) {
 
 }
 
-
 void NPCSquad::RegisterMember(NPC* pNPC) {
-    if (!pNPC)
+    if (pNPC == nullptr)
         return;
-    m_members.push_back(pNPC);
 
+    m_members.push_back(pNPC);
     pNPC->SetSquad(this);
 
     // Dynamic Promotion Engine
     uint8 newRank = pNPC->GetCommandRank();
-
     if (m_squadLeader == nullptr) {
         // First ship on grid is leader by default
         m_squadLeader = pNPC;
         pNPC->SetSquadLeader(true);
     } else if (newRank > m_squadLeader->GetCommandRank()) {
-        // A heavier tactical hull just dropped out of warp! Demote the old leader cleanly
         m_squadLeader->SetSquadLeader(false);
-        // Promote the heavy reinforcement hull
         m_squadLeader = pNPC;
         pNPC->SetSquadLeader(true);
 
-        _log(NPC__AI_MESSAGE, "Squad ID %u Hierarchy Shift: Heavy hull %u has assumed tactical fleet command.",
-             m_squadID, pNPC->GetID());
+        _log(NPC__AI_MESSAGE, "Squad ID %u Hierarchy Shift: %s(%u) is assuming fleet command.",
+             m_squadID, pNPC->GetName(), pNPC->GetID());
     }
 }
 
 void NPCSquad::UnregisterMember(NPC* pNPC) {
-    if (!pNPC)
+    if (pNPC == nullptr)
         return;
 
-    // 1. Linearly scan our vector stack to find and erase the dead pointer
     auto it = std::find(m_members.begin(), m_members.end(), pNPC);
-    if (it != m_members.end()) {
+    if (it != m_members.end())
         m_members.erase(it);
-    }
 
-    // 2. SQUAD LEADER RE-ALLOCATION
     if (m_squadLeader == pNPC) {
         m_squadLeader = nullptr;
         if (!m_members.empty()) {
@@ -478,7 +471,6 @@ void NPCSquad::UnregisterMember(NPC* pNPC) {
         }
     }
 
-    // 3. SECURE STATE DETACHMENT
     if (m_members.empty()) {
         _log(NPC__AI_MESSAGE, "Squad ID %u has been completely wiped out from grid partition.", m_squadID);
         m_squadTarget = nullptr;

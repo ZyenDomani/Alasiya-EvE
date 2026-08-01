@@ -552,11 +552,13 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
 
             // send data to calculator
             newValue = CalculateAttributeValue(targValue, srcValue, cur.first);
-            // set new calculated value for target attribute
-            _log(EFFECTS__MESSAGE, "FxProc::ApplyEffects(%i): %s(%u) - src(%s:%u)=%.3f <%s> targ(%s:%u) set targ from %.3f to %.3f.", \
+
+            if (is_log_enabled(EFFECTS__MESSAGE))
+                _log(EFFECTS__MESSAGE, "FxProc::ApplyEffects(%i): %s(%u) - src(%s:%s[%u])=%.3f <%s> targ(%s:%s[%u]) set targ from %.3f to %.3f.", \
                     cur.first, cur.second.srcRef->name(), cur.second.srcRef->itemID(), \
-                    GetSourceName(cur.second.fxSrc), cur.second.srcAttr, srcValue.get_float(), GetMathMethodName(cur.first), \
-                    GetTargLocName(cur.second.targLoc), cur.second.targAttr, targValue.get_float(), newValue.get_float());
+                    GetSourceName(cur.second.fxSrc), sDataMgr.GetAttrName(cur.second.srcAttr), cur.second.srcAttr, srcValue.get_float(), \
+                    GetMathMethodName(cur.first), GetTargLocName(cur.second.targLoc), sDataMgr.GetAttrName(cur.second.targAttr), \
+                    cur.second.targAttr, targValue.get_float(), newValue.get_float());
 
             // set new calculated value for target attribute
             // update is used to send attrib changes to client when changing module states while in space, but NOT for pilot login. (client acts funky)

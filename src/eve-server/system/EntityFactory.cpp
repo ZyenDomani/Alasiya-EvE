@@ -33,15 +33,14 @@
 #include "system/Container.h"
 #include "system/SystemManager.h"
 
-EntityFactory::EntityFactory() : m_routingArray(nullptr) {
-    m_routingArray = new EntityClass[255];
+EntityFactory::EntityFactory() {
     // set the entire array to 'Unknown' state
-    std::memset(m_routingArray, 0, 255 * sizeof(m_routingArray));
+    //std::memset(m_routingArray, m_routingArray, sizeof(m_routingArray));
 }
 
 EntityFactory::~EntityFactory() {
     //SafeDeleteArray(m_routingArray);
-    delete[] m_routingArray;
+    //delete[] m_routingArray;
 }
 
 SystemEntity* EntityFactory::BuildEntity(SystemManager& sysMgr, const DBSystemDynamicEntity& eData) {
@@ -310,7 +309,7 @@ SystemEntity* EntityFactory::BuildEntity(SystemManager& sysMgr, const DBSystemDy
             }
         } break;
         case EVEDB::invCategories::Entity: {            // Entities
-            EntityClass eClass = m_routingArray[eData.groupID];
+            uint8 eClass = m_routingArray[eData.groupID];
 
             switch (eClass) {
         	case EntityClass::Container: {     // these are destructible objects found in dungeons

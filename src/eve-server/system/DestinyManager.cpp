@@ -840,10 +840,10 @@ void DestinyManager::WarpAccel(uint16 sec_into_warp) {
 
     if (mySE->SysBubble() != nullptr) {
         //if (currentDistance > BUBBLE_RADIUS_METERS) { // this will not account for warping from one side of bubble to other
-        if (!mySE->SysBubble()->InBubble(m_position, true)) {  // check actual bubble center here
+        if (!mySE->SysBubble()->InBubble(m_position)) {  // check actual bubble center here
             if (is_log_enabled(DESTINY__WARP_TRACE))
-                _log(DESTINY__WARP_TRACE, "Destiny::WarpAccel(): %s(%u) is being removed from bubble %u.",\
-                mySE->GetName(), mySE->GetID(), mySE->SysBubble()->GetID());
+                _log(DESTINY__WARP_TRACE, "Destiny::WarpAccel(): %s(%u) is being removed from bubble %u.", \
+                        mySE->GetName(), mySE->GetID(), mySE->SysBubble()->GetID());
             mySE->SysBubble()->Remove(mySE);
         }
     }
@@ -882,9 +882,7 @@ void DestinyManager::WarpDecel(uint16 sec_into_warp) {
 
     // how will this work for edge-case where dest is 5k inside bubble?
     if (mySE->SysBubble() == nullptr) {
-        //if (m_targBubble->InBubble(m_position, true)) {   // check actual bubble center here
-        // testing remaining distance instead of calling Length() on every decel tic
-        if (m_targetDistance < (BUBBLE_RADIUS_METERS + 100000)) {
+        if (m_targBubble->InBubble(m_position, true)) {   // check modified bubble center here
             if (is_log_enabled(DESTINY__WARP_TRACE))
                 _log(DESTINY__WARP_TRACE, "Destiny::WarpDecel(): %s(%u) is being added to bubble %u.",\
                 mySE->GetName(), mySE->GetID(), m_targBubble->GetID());
@@ -1437,7 +1435,7 @@ bool DestinyManager::IsAligned(Vector3d& targHeading) {
     double dot = m_shipVelocity * targHeading;
     //double degrees = EvE::Trig::Rad2Deg(std::acos(dot));
     if (m_ballMode == Destiny::Ball::Mode::WARP) {
-        if (dot > /*WARP_ALIGNMENT 0.99449256*/ 0.99756405)
+        if (dot > /*WARP_ALIGNMENT 0.99449256*/ 0.99556405)
             return true;
     } else if (dot > /*TURN_ALIGNMENT*/ 0.99756405) {
         return true;
@@ -1586,7 +1584,7 @@ void DestinyManager::SetPosition(const Vector3d &pt, bool update /*false*/) {
 }
 
 // set npc speed as fraction of maxSpeed
-void DestinyManager::SetNPCSpeed(uint16 newSpeed, uint16 maxSpeed) {
+void DestinyManager::SetNPCSpeedMass(uint16 newSpeed, uint16 maxSpeed, double mass) {
     if (mySE->HasPilot()) {
         // error
         _log(DESTINY__ERROR, "Destiny::SetMaxVelocity(%u) - Called by Player Ship %s(%u)", \
@@ -1596,6 +1594,10 @@ void DestinyManager::SetNPCSpeed(uint16 newSpeed, uint16 maxSpeed) {
 
     m_maxSpeed = maxSpeed;
     SetSpeedFraction(newSpeed / maxSpeed);
+
+    // if mass changed, reset ship vars
+    if (mass != mySE->GetSelf()->mass())
+        SetAgilityInertia();
 
     if (is_log_enabled(DESTINY__TRACE))
         _log(DESTINY__TRACE, "Destiny::SetMaxVelocity() - Ship:%s(%u) - newSpeed: %u, maxSpeed: %u, usf: %0.2f", \
@@ -1761,17 +1763,6 @@ void DestinyManager::SetAgilityInertia() {
     m_alignTime = 1.3862943611198906 * m_agility;
     sRef->SetAttribute(AttrAgility, m_agility, false);
 
-    // for npc, this is mwd/ab speed, not sub-warp speed, but will be adjusted based on npc activity
-    if (sRef->HasAttribute(AttrMaxVelocity)) {
-        m_maxSpeed = sRef->GetAttribute(AttrMaxVelocity).get_float();
-    }
-
-    // verify hull overspeed isnt reached
-    if (sRef->HasAttribute(AttrMaxDirectionalVelocity)) {
-        if (m_maxSpeed > sRef->GetAttribute(AttrMaxDirectionalVelocity).get_float())
-            m_maxSpeed = sRef->GetAttribute(AttrMaxDirectionalVelocity).get_float();
-    }
-
     if (is_log_enabled(DESTINY__TRACE))
         _log(DESTINY__TRACE, "Destiny::SetAgilityInertia() %s(%u) - m_maxSpeed: %0.1f, m_alignTime: %0.1f, mass: %0.1f * inertiaMod: %f = m_agility: %f, radius: %i", \
                 mySE->GetName(), mySE->GetID(), m_maxSpeed, m_alignTime, mass, inertiaMod, m_agility, sRef->radius());
@@ -1850,13 +1841,26 @@ Battleships                             0.155
     }
 
     if (mySE->IsNPCSE()) {
-        m_speedToLeaveWarp = sRef->GetAttribute(AttrEntityCruiseSpeed).get_float() * 0.85f;
+        // w're setting initial max speed to cruise speed
+        m_maxSpeed = sRef->GetAttribute(AttrEntityCruiseSpeed).get_float();
+    } else if (sRef->HasAttribute(AttrMaxVelocity)) {
+        m_maxSpeed = sRef->GetAttribute(AttrMaxVelocity).get_float();
     } else {
-        m_speedToLeaveWarp = m_maxSpeed * 0.85f;
+        sLog.Warning("DM::UpdateShipVariables", "%s(%u) is !npc and has no AttrMaxVelocity.", \
+                mySE->GetName(), mySE->GetTypeID());
+        m_maxSpeed = 150.0f;
     }
+
+    m_speedToLeaveWarp = m_maxSpeed * 0.85f;
 
     if (m_speedToLeaveWarp < 100)
         m_speedToLeaveWarp = 100;
+
+    // verify hull overspeed isnt reached
+    if (sRef->HasAttribute(AttrMaxDirectionalVelocity)) {
+        if (m_maxSpeed > sRef->GetAttribute(AttrMaxDirectionalVelocity).get_float())
+            m_maxSpeed = sRef->GetAttribute(AttrMaxDirectionalVelocity).get_float();
+    }
 
     if (!mySE->HasPilot() or (mySE->GetPilot() == nullptr) or mySE->GetPilot()->IsLogin())
         return;

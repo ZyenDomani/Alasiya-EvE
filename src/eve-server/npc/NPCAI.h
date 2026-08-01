@@ -78,14 +78,16 @@ namespace NPCAI {
         };
     }
 
-    enum Rank {
-        None    = 0,
-        Frigate = 1,
-        Cruiser = 2,
-        Elite   = 3,
-        BShip   = 4,
-        Commander = 5 // Specialized Overseer/Boss hulls
-    };
+    namespace Rank {
+        enum  {
+            None    = 0,
+            Frigate = 1,
+            Cruiser = 2,
+            Elite   = 3,
+            BShip   = 4,
+            Commander = 5 // Specialized Overseer/Boss hulls
+        };
+    }
 }
 
 
@@ -158,6 +160,8 @@ protected:
     void                ChangeSpeed();
     // Method to broadcast misc tidbits to local channel of all players in bubble
     void                BcastLocal(uint8 state);
+    // method to tether npc to bubble to avoid excessive kiting and extreme distance wandering
+    void                CheckHomePoint();       //NOTE:  this is not for deadspace or anomaly
 
     //actual attacking methods
     // target within npc sight range. range 4+  use m_maxSpeed to get within falloff
@@ -183,8 +187,8 @@ protected:
     bool                InChaseRange(SystemEntity* pTargetSE);          // distant - range 5
     bool                InSightRange(SystemEntity* pTargetSE);          // sight   - range 6
 
-    // checks attack target only
-    bool                VerifyTarget();
+    // checks all targets
+    bool                isValidTarget();
 
     void                ClearAllTimers();
     void                SetActionTimers();
@@ -194,6 +198,7 @@ protected:
     uint16              GetTargetingTime();
 
     const char*         GetStateName(int8 stateID);
+    const char*         GetActionName(int8 actionID);
     const char*         GetSizeName();
 
     // advanced AI methods
@@ -251,7 +256,7 @@ private:
     double              m_optimalRangeSq;
     double              m_flyRange;                     //[1] preferred orbit distance
     double              m_flyRangeSq;
-    
+
     int64               m_actionTime;
     int64               m_attackTime;                   // timestamp when attack started
     int64               m_chaseTimeEnd;                 // timestamp when npc chasing will end (maxChaseDuration)
@@ -270,6 +275,8 @@ private:
     Timer               m_beginFindTarget;              // main targeting timer (used as delay after warp-in)
     Timer               m_warpOutTimer;                 // as stated
     Timer               m_retargetTimer;                // comfort breaker (allow npcs to change targets)
+
+    Vector3d            m_homePoint;                    // tether for idle and wander distance check
 
     // not sure how im gonna do this yet...160 fx types
     std::vector<TypeEffects>   m_effectMap;             //  all 'modules' this npc has (using effect data)
