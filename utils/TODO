@@ -74,13 +74,14 @@ many unimplemented salvage error msgs noted in prospector.h
 *******************************************************
 **********  liveupdates code improvements ... hi priority
 update all 16 references to www.eveonline.com and create pages on server to respond properly
+    - started
 
 *******************************************************
 *******************************************************
 **********  coding errors/corrections/improvements ... med priority
 
 finish rule of 5 for all classes
-  - use systementity.h or PyRep.h as template
+  - use systementity.h or PyRep.h or xmlpGen* as template
 
 any client message errors like  [no messageID: xxxxxx]
 needs the call sent as text, not as integer  i.e. send message as follows:
@@ -89,19 +90,11 @@ PyString("UI/Agents/DefaultMessages/NoMission1")
 quantity is off (in db) on some items (purchased or gifted)
   - see items around 140027931
 
-
-update this to use static data instead of db hits:  ~8k rows
-StationSvc::Handle_GetSolarSystem
-
 replace all (<type>)(<math result>) c-type casting to use static_cast<type>(<math result>)
 
 npc ai - update for better ai. add advanced ai for advanced ship classes   -priority level: med-hi  wip
 NOTE:  copy idea from drones (state/actions) using lessons gleaned
-    - will need updates based on drone findings and learned methods
     - npc will attack drones based on class
-    - npc lost target <- this method needs better thought to pick next target
-    - should npc have 'pool' of available/preferred targets
-     can warp-scramble and/or web you.
 
     NPCs targeting drones (from eveuni)
     Frigate rats may attack your light drones and above.
@@ -114,7 +107,6 @@ lsc system better, but incomplete and needs revisiting    -priority level: med-l
     - may need xmlp code instead of muddled python decoding
     - whole system needs update or possible rewrite
     - "join channel" window->corp has "None" as corp name
-
 
 entire Inv codebase is slow.  loading chars (and their inventory) is biggest bottleneck in server (>400ms avg)
   updated as much as i know how right now
@@ -173,14 +165,11 @@ RAM code - implement invention, re    -priority level: low
     - (LocationRolesCheck) - incomplete
     - (ItemLocationCheck)  unfinished for POS/Outpost
     - (InstallationCheck)  - incomplete
-    - add Almanu's cal'c fix from official?  not sure what he 'fixed'
     - verify char prod efficiency skill for Calculate()
     - many messages not implemented   see common/EVE_RAM.h
     make note in customInfo on bp for ram activity and location
 
 blueprints - look over data and verify...so far seems mostly accurate.
-    - rifter 691 - RE needs criminal connections l5???
-        invention needs no skills?
     - LPRR = -11??  (runs remaining)
     - research copy time.  huge discrepancy here....  3h20m base, <1m with skills???
 
@@ -204,7 +193,6 @@ when t3 ship killed, pilot will lose sp in a required skill for each of the 5 su
     not sure how this is determined, or how many sp lost.
 
 market code
-    - determine and code methods for using arum as credit type?
     - still needs more review for update/rewrite/improvements
     - fix price shit....db uses double, code uses double, both should be long
     - client has prices to 2 places (xxx.xx).  this is x100 to store/modify as integer.  ALL price data should be updated to use this
@@ -269,9 +257,6 @@ is DataClasses.h used?  will it be?
 *******************************************************
 **********  attributes and dogma...med/low priority
 
-AttributeMap::Change() has data for updated cap charge sending....not sure how/when/if to implement it
-
-
 OnItemsChanged is for multiple changes in a single return.  -priority level: low
     - look into how we can implement this return, if needed, instead of using multiple returns (consolidate packet sending)
 
@@ -288,21 +273,10 @@ DogmaIMBound::Handle_StopOverloadRack
 *******************************************************
 *****************  MEMORY MANAGEMENT and code compliance
 
-DATA RACE!!
-    found data race on console log while running under valgrind.(imageSvr and BoundObject calls at same time)
-    go thru log and verify MT safe status   -log uses mutex...wtf?   if mutex is right, this is impossible
-    found this in logs....maybe not data race, but inserted log into current dump....dunno yet.
-19:07:07 [SetStateDump]           [16]   Args:   [ 8] Value:    Integer: 98000001
-19:07:0719:07:07 [SetStateDump]           [16]   Args:   [ 9]   Key:     String: 'name'
- C       ImageServer: 19:07:07 [SetStateDump]           [16]   Args:   [ 9] Value:     String: 'Hulk'
- GetImage() called. Cat: Character, id: 90000000, size:32
-19:07:07 [SetStateDump]           [16]   Args:   [10]   Key:     String: 'allianceID'
-
-
 review all classes to add rule of 5 or =delete as required
     - PyRep Classes  all c'tor =delete'd
-    - InventoryItem done?  (copy, move c'tor assert'd.  assign =delete'd   -- no hits on any yet)
-    - others?)
+    - InventoryItem done  (copy, move c'tor assert'd.  assign =delete'd   -- no hits on any yet)
+    - others?
 
 *******************************************************
 *******************************************************
@@ -399,7 +373,7 @@ this includes fx14 and fx10 calls
 
 all module gfx seem to be working properly
 all drone gfx seem to be working properly
-currently rewriting npc gfx code  wip
+currently rewriting npc gfx code  wip  not working properly yet
 
 
 finish DestinyManager::SendCloakFx()
@@ -415,7 +389,7 @@ finish DestinyManager::SendCloakFx()
 
 client/script/ui/shared/neocom/locationInfoSvc.py
     this file has data for some items we dont have info/data/code for yet
-    includes facWar systemStatus info, w-space info, sov info, 
+    includes facWar systemStatus info, w-space info, sov info,
 
 asteroid/belt grow
   - idea is roids' gravity will accumulate more ore in areas unmolested by ships...after 6h or so
@@ -464,10 +438,6 @@ arbitrator, osprey, scythe, vexor
   - 10000000001 (office) - has no name
 
 check james' alliance code for proper functionality...not sure about some of those variables or calls
-
-base price estimator code 95% complete.
-few prices wrong and not in crucible mkt data dump
-static category names are a bit off (semantics)
 
 EVEDB::invGroups::Spawn_Container needs it own class
     - mostly for dungeons/deadspace
@@ -764,7 +734,7 @@ trader joe (market bot)
     - add data/info to getmultiownersex call
     - is this single fleet or multiple?
     - only in active systems?  update market in systems that have been active in x timeframe?
-    - (advanced)  accept/deliver contracts?  would be interesting, but not easy. 
+    - (advanced)  accept/deliver contracts?  would be interesting, but not easy.
 for later?  will require removal from civ class to implement, then tracking as player/npc ship
     - can be attacked, but VERY tough.  will call reinforcements (arrival time tbd)
     - items in haulers for sale at docked station (random)  remove item from hauler when order placed.

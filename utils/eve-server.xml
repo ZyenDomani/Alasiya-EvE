@@ -1,6 +1,6 @@
 
 <!-- Alasiya EvEmu Server Config
-Version: 11.6 -->
+Version: 12.12 -->
 
 <!--
 unless otherwise noted, ALL fractional values use fuzzy logic.
@@ -28,13 +28,12 @@ boolean can use either 0/1 OR true/false.
                     &lt;b&gt;Alasiya EvE Development Server&lt;/b&gt;&lt;br&gt;
                 &lt;/head&gt;
                 &lt;body&gt;
-                    Revision 0.71.89&lt;br&gt;
-                    28 January 2025&lt;br&gt;
+                    Revision 0.88.97&lt;br&gt;
+                    27 June 2026&lt;br&gt;
                 &lt;/body&gt;
             &lt;/html&gt;
         </loginMessage>
         -->
-
     </account>
 
     <server>
@@ -44,7 +43,7 @@ boolean can use either 0/1 OR true/false.
         <idleSleepTime>1000</idleSleepTime><!-- in ms (1 sec default) -->
         <processTic>1.0</processTic><!-- used to slow down server process tics.  <1.0 is faster, >1.0 slower -->
         <MaxThreadReport>20</MaxThreadReport>
-        <TraderJoe>true</TraderJoe><!-- this will (en/dis)able TraderJoe (market bot) and assiciated code (civilian trade fleet) -->
+        <TraderJoe>false</TraderJoe><!-- this will (en/dis)able TraderJoe (market bot) and assiciated code (civilian trade fleet) -->
         <DisableIGB>false</DisableIGB>
         <BulkDataOD>true</BulkDataOD>  <!-- bool  -OD = OnDemand.  false loads data on server startup.  true loads data on first call -->
         <ModuleAutoOff>true</ModuleAutoOff><!-- bool  - automatically deactivate rr-type module when target is full -->
@@ -55,10 +54,10 @@ boolean can use either 0/1 OR true/false.
         <FleetShareDelayed>true</FleetShareDelayed><!-- bool - switch to put fleet bounty shares in system bounty timer (vs immediate), if enabled -->
         <BountyPayoutTimer>5</BountyPayoutTimer><!-- time for system bounty timer to run (in minutes - 20m default - 256 max) -->
         <!-- LoadOldMissions not completely working yet.....AgentMgrService::Handle_GetMyJournalDetails() will need work to implement this. -->
-        <LoadOldMissions>false</LoadOldMissions><!-- bool - allow display of expired/completed missions in journal -->
+        <!--<LoadOldMissions>false</LoadOldMissions>--><!-- bool - allow display of expired/completed missions in journal -->
         <AsteroidsOnDScan>true</AsteroidsOnDScan><!-- bool - show asteroids on directional scanner -->
         <StackTrace>false</StackTrace><!-- bool - allow reporting of EvE::traceStack()-->
-        <CargoMassAdditive>true</CargoMassAdditive><!-- bool - add mass of cargo to ship's mass (will effect mobility) -->
+        <CargoMassAdditive>false</CargoMassAdditive><!-- bool - ***BORKED - DONT USE***   add mass of cargo to ship's mass (will effect mobility) -->
         <DelOnZero>false</DelOnZero><!-- bool - allow deleting Py* items when refcount < 0 -->
         <!-- these 2 aren't used as i have them coded...needs more work -->
         <LoadStaticRecyclable>false</LoadStaticRecyclable><!-- bool - load recyclable status of item into static data. -- adds ~15s to startup time -->
@@ -87,21 +86,22 @@ boolean can use either 0/1 OR true/false.
 
     <rates>
         <secRate>1.0</secRate><!-- only used if != 1.0 -->
-        <damageRate>1.0</damageRate><!-- ALL damage multiplier.  Includes player drones.  DO NOT USE 0.0 -->
-        <missileDamage>1.0</missileDamage><!-- ALL missiles multiplier.  DO NOT USE 0.0 -->
-        <missileTime>1.0</missileTime><!--  ALL missiles multiplier.  DO NOT USE 0.0 -->
+        <damageRate>1.1</damageRate><!-- core damage multiplier added to ALL damage. DO NOT USE 0.0 -->
+        <!-- these multipliers are in addtiion to above multipler -->
+        <missileDamage>1.2</missileDamage><!-- ALL missiles multiplier.  DO NOT USE 0.0 -->
+        <missileTime>1.1</missileTime><!--  ALL missiles multiplier.  DO NOT USE 0.0 -->
         <missileRoF>1.0</missileRoF><!-- ALL missiles multiplier.  DO NOT USE 0.0 -->
-        <turretDamage>1.0</turretDamage><!-- PC turrets multiplier.  DO NOT USE 0.0 -->
+        <turretDamage>1.1</turretDamage><!-- PC turrets multiplier.  DO NOT USE 0.0 -->
         <turretRoF>1.0</turretRoF><!-- PC turrets multiplier.  DO NOT USE 0.0 -->
-        <npcBountyMultiply>1.0</npcBountyMultiply><!-- only used if != 1.0 -->
+        <npcBountyMultiply>1.2</npcBountyMultiply><!-- only used if != 1.0 -->
         <corpCost>20000000</corpCost>
         <medalCreateCost>8000000</medalCreateCost>
         <medalAwardCost>5000000</medalAwardCost>
-        <WorldDecay>20</WorldDecay><!-- in minutes (2 hour default - 250 max)-->
+        <WorldDecay>130</WorldDecay><!-- in minutes (2 hour default - 250 max)-->
         <NPCDecay>30</NPCDecay><!-- in minutes (30 min default) -->
         <WebUpdate>15</WebUpdate><!-- save current server status in db.  in minutes  15m default -->
         <!-- salvage max items -->
-        <DropSalvage>2</DropSalvage><!--  only used if != 1 -->
+        <DropSalvage>4</DropSalvage><!--  only used if != 1 -->
         <!-- these rates are not implemented yet -->
         <DropItem>1</DropItem><!--  only used if != 1 -->
         <DropMoney>1.0</DropMoney><!--  only used if != 1.0 -->
@@ -123,6 +123,12 @@ boolean can use either 0/1 OR true/false.
         <StationServiceFee>0.01</StationServiceFee><!-- default:1%   - this is charge for station services.  load/unload/build/repack/etc   -->
         <CSPA>2950</CSPA><!-- default: 2950 -->
         <WanderTimer>5</WanderTimer><!-- minutes to run bubble wander code   default:5  -->
+        <!-- for PI/Colony -->
+        <ColonyTimer>0</ColonyTimer><!-- in minutes.  colony timer set value.  default:0  max: 255-->
+        <ECUDiminish>1.0</ECUDiminish><!-- float % **not used**  diminishing returns hack for ECU processing  default:1.0 -->
+        <DrillCycleMod>0.5</DrillCycleMod><!-- float %  multiplied to ecu cycletime   default:1 -->
+        <PlantCycleMod>1.0</PlantCycleMod><!-- float %  multiplied to plant cycletime   default:1 -->
+        <DestinyTrollTime>20</DestinyTrollTime><!-- seconds  - time moving object remains in troll mode -->
     </rates>
 
     <market>
@@ -166,28 +172,35 @@ boolean can use either 0/1 OR true/false.
 
     <npc>
         <IdleWander>true</IdleWander><!-- bool  npc will wander when idle   must be set to 'true' for WarpOut (below) to work -->
-        <WarpOut>600</WarpOut><!-- uint16  time npc wanders around bubble before leaving, in sec (5 min default) -->
+        <WarpOut>600</WarpOut><!-- uint16  time npc wanders around bubble before leaving, in sec (15 min default) -->
         <WarpFollowChance>0.15</WarpFollowChance><!-- float  chance for npc to follow warping player (15% default) -->
         <!-- npc podkilling not implemented yet -->
         <TargetPod>false</TargetPod><!-- bool   npc target/attack pod -->
         <TargetPodSec>0.2</TargetPodSec><!-- npc target/attack pod in truSec lower than this  -->
         <!-- Threat not implemented yet -->
-        <ThreatRadius>1.0</ThreatRadius> <!-- used in conjunction with npc ai target switching -->
+        <ThreatRadius>1.0</ThreatRadius> <!-- used in conjunction with npc ai targeting -->
         <!-- Spawns are implemented -->
         <RoamingSpawns>true</RoamingSpawns><!-- bool  these are roid rats.  they move -->
         <StaticSpawns>true</StaticSpawns><!-- bool  these are gate rats.  they dont move -->
-        <DefenderMissileChance>0</DefenderMissileChance><!-- chance to use defender.  overrides npc default from db. 0 default -->
-        <RoamingTimer>300</RoamingTimer><!-- max time between spawn checks, in seconds  5m default -->
-        <StaticTimer>600</StaticTimer><!-- max time between spawn checks, in seconds  10m default -->
+        <DefenderMissileChance>0</DefenderMissileChance><!-- chance to use defender.  additive to npc default -->
+        <RoamingTimer>300</RoamingTimer><!-- max time between spawn checks, in seconds  5m default (min 30)-->
+        <StaticTimer>600</StaticTimer><!-- max time between spawn checks, in seconds  10m default (min 60)-->
         <RespawnTimer>300</RespawnTimer><!-- static time between respawn checks, in seconds.  this affects chain-ratting  5m default -->
-        <RatFaction>0</RatFaction><!-- force spawn to this faction if !=0 -->
+        <RatFaction>0</RatFaction><!-- force spawn to this faction if != 0 -->
         <LootDropChance>0.85</LootDropChance><!-- % chance for NPC to drop loot.  75% default -->
-        <UseDamageMultiplier>true</UseDamageMultiplier><!-- bool  - use the damage multiplier in npc data -->
-        <UseRegen>false</UseRegen><!-- bool  - (en/dis)able shield regernation -->
-        <UseRepair>false</UseRepair><!-- bool  - use repair modules, if equipped -->
+        <UseDamageMultiplier>true</UseDamageMultiplier><!-- bool  - use the damage multiplier in npc data default: hell yeah -->
+        <TrackingMod></TrackingMod><!-- percent -->
+        <DistanceMod></DistanceMod><!-- percent -->
+        <UseRegen>true</UseRegen><!-- bool  - (en/dis)able shield regernation -->
+        <UseRepair>true</UseRepair><!-- bool  - use repair modules, if equipped -->
         <UseOrbit>false</UseOrbit><!-- bool -- secondary    this is actually for testing -->
+        <!-- spawn chances.  these are additive, checked in this order.   default is 5% each -->
+        <OfficerChance>0.05</OfficerChance><!-- float  - chance for Officer Spawn -->
+        <CommanderChance>0.1</CommanderChance><!-- float  - chance for Commander Spawn -->
+        <HaulerChance>0.15</HaulerChance><!-- float  - chance for Hauler Spawn (ex. Rogue Drones)-->
     </npc>
 
+    <!-- Player Drones -->
     <drone><!-- some of these are not implemented yet - ideas for later -->
         <Enabled>true</Enabled><!-- bool  main drone system -->
         <InteractDistace>600</InteractDistace><!-- uint16  min distance for drone to xfer, regen, repair  -->
@@ -200,29 +213,51 @@ boolean can use either 0/1 OR true/false.
         <RegenShields>true</RegenShields><!-- bool  allow shield regeneration (same as ships) -->
         <RepairInBay>false</RepairInBay><!-- bool  allow repairing drones in drone bay -->
         <RepairCostInBay>1000</RepairCostInBay><!-- float  cost to repair drones when docked in bay -->
-        <ProcessAll>true</ProcessAll><!-- bool  - when enabled, dont check for time=0 to skip processing -->
+        <ProcessAll>false</ProcessAll><!-- bool  - when enabled, dont check for time=0 to skip processing -->
     </drone>
+
+    <!-- Rogue Drone settings
+    <swarm>
+        <?>
+    </swarm>
+    -->
 
     <standings><!-- these are in percent -->
         <!--  base mission modifiers  -->
         <MissionBonus>1.0</MissionBonus><!-- 1.0 default -->
-        <MissionFailure>-0.5</MissionFailure><!-- -0.5 default -->
-        <MissionDeclined>-0.2</MissionDeclined><!-- -0.2 default -->
+        <MissionFailure>-0.5</MissionFailure><!-- -50% default -->
+        <MissionDeclined>-0.5</MissionDeclined><!-- 50% default -->
         <MissionCompleted>1.0</MissionCompleted><!-- 1.0 default -->
-        <MissionOfferExpired>-0.1</MissionOfferExpired><!-- -0.1 default -->
-        <ImportantMissionBonus>3.0</ImportantMissionBonus><!-- 3.0 default -->
-        <MissionFailedRollback>-0.5</MissionFailedRollback><!-- -0.5 default -->
-        <FleetMissionMultiplier>0.5</FleetMissionMultiplier><!-- 0.5 default  -->
+        <MissionOfferExpired>-0.05</MissionOfferExpired><!-- -5% default -->
+        <ImportantMissionBonus>1.5</ImportantMissionBonus><!-- 150% default -->
+        <MissionFailedRollback>-0.5</MissionFailedRollback><!-- -50% default -->
+        <FleetMissionMultiplier>0.75</FleetMissionMultiplier><!-- 75% default  -->
+        <BaseMissionMultiplier>0.75</BaseMissionMultiplier><!-- 75% default  -->
         <!-- agent to char modifiers -->
-        <BaseMissionMultiplier>1.0</BaseMissionMultiplier><!-- 1.0 default  -->
-        <Agent2CharMissionMultiplier>1.0</Agent2CharMissionMultiplier><!-- 1.0 default  -->
-        <ACorp2CharMissionMultiplier>0.25</ACorp2CharMissionMultiplier><!-- 0.25 default  -->
-        <AFaction2CharMissionMultiplier>0.125</AFaction2CharMissionMultiplier><!-- 0.125 default  -->
-        <!-- agent to player corp modifiers -->
-        <Agent2PCorpMissionMultiplier>0.1</Agent2PCorpMissionMultiplier><!-- 0.1 default  -->
-        <ACorp2PCorpMissionMultiplier>0.025</ACorp2PCorpMissionMultiplier><!-- 0.025 default  -->
-        <AFaction2PCorpMissionMultiplier>0.0125</AFaction2PCorpMissionMultiplier><!-- 0.0125 default  -->
+        <Agent2CharMissionMultiplier>1.0</Agent2CharMissionMultiplier><!-- 100% default  -->
+        <ACorp2CharMissionMultiplier>0.375</ACorp2CharMissionMultiplier><!-- 37.5% default  -->
+        <AFaction2CharMissionMultiplier>0.25</AFaction2CharMissionMultiplier><!-- 25% default  -->
+        <!-- agent to player corp modifiers, if applicable -->
+        <Agent2PCorpMissionMultiplier>0.375</Agent2PCorpMissionMultiplier><!-- 37.5% default  -->
+        <ACorp2PCorpMissionMultiplier>0.25</ACorp2PCorpMissionMultiplier><!-- 25% default  -->
+        <AFaction2PCorpMissionMultiplier>0.125</AFaction2PCorpMissionMultiplier><!-- 12.5% default  -->
+        <!--  derived standings modifier -->
+        <FactionDerivedMultiplier>0.125</FactionDerivedMultiplier><!-- 12.5% default  -->
     </standings>
+
+    <agent>
+        <AllowAdminMenu>false</AllowAdminMenu><!-- bool  dont know what this does yet -->
+    </agent>
+
+    <mission><!--  expiry times differ on mission types -->
+        <OfferExpiryTime>10</OfferExpiryTime> <!-- hours  mission offer expiry time  24h default -->
+        <AcceptExpiryTime>45</AcceptExpiryTime> <!-- minutes  mission expiry time after accepting, per level  30m default -->
+        <!-- do i want to put isk values here? -->
+        <IskRewardLo>11500</IskRewardLo>
+        <IskRewardHi>16500</IskRewardHi>
+        <!-- LoadOldMissions not completely working yet.....AgentMgrService::Handle_GetMyJournalDetails() will need work to implement this. -->
+        <LoadOldMissions>false</LoadOldMissions><!-- bool - allow display of expired/completed missions in journal -->
+    </mission>
 
     <chat>
         <EnableFleetChat>true</EnableFleetChat><!-- bool -->
@@ -242,7 +277,10 @@ boolean can use either 0/1 OR true/false.
         <BeltGrowPct>0.05</BeltGrowPct><!-- float  - increase by this percent (1% default) dont use 0 here-->
         <roidRadiusMultiplier>1.0</roidRadiusMultiplier><!-- float  modifiy roid size and the belt radius  dont use 0 here -->
         <WormHoleEnabled>true</WormHoleEnabled><!-- bool -->
-        <CiviliansEnabled>false</CiviliansEnabled><!-- bool -->
+        <CiviliansEnabled>true</CiviliansEnabled><!-- bool -->
+        <CivilianTic>60</CivilianTic><!-- seconds - spawn check tic counter, this is max  where range[1, max]  default:60 -->
+        <minCivConvoys>2</minCivConvoys>
+        <maxCivConvoys>20</maxCivConvoys>
         <BumpEnabled>false</BumpEnabled><!-- bool -->
     </cosmic>
 
@@ -269,8 +307,9 @@ boolean can use either 0/1 OR true/false.
         <EnableDrones>true</EnableDrones><!-- bool -->
     </testing>
 
-    <debug><!-- switches for various server methods -->
-        <UseOrbit>false</UseOrbit><!-- bool -- main switch  this is actually for testing -->
+    <debug><!-- switches for various server test methods -->
+        <UseOrbit>true</UseOrbit><!-- bool -- main switch  this is actually for testing -->
+        <MarkOrbitNormals>false</MarkOrbitNormals> <!-- bool - no longer used (old system) -->
         <UseBeanCount>true</UseBeanCount>  <!-- bool  -client python error reporting -->
         <UseStackTrace>false</UseStackTrace><!-- bool -log client python error reports to evemu_client_stack_trace.txt-->
         <BubbleTrack>false</BubbleTrack><!-- bool - create jetcans at center and edges of bubble (7 per bubble) -->
@@ -279,7 +318,7 @@ boolean can use either 0/1 OR true/false.
         <UseProfiling>true</UseProfiling><!-- bool  - use internal memobj code profiling system -->
         <ProfileTraceTime>0</ProfileTraceTime><!-- msec  -profile time above this will print StackTrace  default: 250  disable:0-->
         <UseShipTracking>false</UseShipTracking><!-- bool -->
-        <ShipTrackingTime>0.01</ShipTrackingTime><!-- float  -max time to show tracking cans -->
+        <ShipTrackingTime>0.01</ShipTrackingTime><!-- float  - min ship asf to show tracking cans -->
         <PositionHack>false</PositionHack><!-- bool -->
         <DeleteTrackingCans>false</DeleteTrackingCans><!-- bool - no longer used -->
         <AnomalyFaction>0</AnomalyFaction><!-- force anomaly to this faction if !=0   -this is for testing dung spawn system -->
@@ -302,9 +341,10 @@ boolean can use either 0/1 OR true/false.
         <ssl>false</ssl><!-- bool   enable ssl for db connection (NOTE: NOT coded. DO NOT USE) -not needed when using socket under linux-->
         <compress>false</compress><!-- bool   compressed protocol for client server communication - not sure if needed. -->
         <useSocket>true</useSocket><!-- bool  use socket connection instead of port (MUST be local)  (SIGPIPE hits on debug code) -->
-        <autoReconnect>true</autoReconnect><!-- bool  enable auto Reconnect on lost connection -->
+        <autoReconnect>false</autoReconnect><!-- bool  enable auto Reconnect on lost connection *doesnt work right* -->
+        <connectionPoolSize>3</connectionPoolSize><!--  default: 3   **NOT USED** -->
         <dbTimeout>2</dbTimeout><!-- seconds  timeout value for db response, in seconds  default: 2s  **NOT USED** -->
-        <pingTime>10</pingTime><!-- minutes  ping db every x minutes  default: 10m  **NOT USED**  hard-coded to 5m in EntityMgr -->
+        <pingTime>10</pingTime><!-- minutes  ping db every x minutes  default: 10m  **NOT USED**  -->
     </database>
 
     <files>
