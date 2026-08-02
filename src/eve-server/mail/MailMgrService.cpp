@@ -76,6 +76,9 @@ MailMgrService::~MailMgrService() {
 
 PyResult MailMgrService::Handle_SendMail(PyCallArgs &call)
 {
+    call.client->SendNotifyMsg("Mail Service is undergoing a complete rewrite and is currently unavailable.");
+    return PyStatic.NewNone();
+
     Call_SendMail args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
@@ -88,6 +91,9 @@ PyResult MailMgrService::Handle_SendMail(PyCallArgs &call)
 
 PyResult MailMgrService::Handle_PrimeOwners(PyCallArgs &call)
 {
+    call.client->SendNotifyMsg("Mail Service is undergoing a complete rewrite and is currently unavailable.");
+    return PyStatic.NewNone();
+
     Call_SingleIntList args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
@@ -99,6 +105,9 @@ PyResult MailMgrService::Handle_PrimeOwners(PyCallArgs &call)
 
 PyResult MailMgrService::Handle_SyncMail(PyCallArgs &call)
 {
+    call.client->SendNotifyMsg("Mail Service is undergoing a complete rewrite and is currently unavailable.");
+    return PyStatic.NewNone();
+
     int firstId = 0, secondId = 0;
 
     if (call.tuple->size() == 2 && !call.tuple->GetItem(0)->IsNone() && !call.tuple->GetItem(1)->IsNone())
@@ -122,6 +131,9 @@ PyResult MailMgrService::Handle_SyncMail(PyCallArgs &call)
 
 PyResult MailMgrService::Handle_AssignLabels(PyCallArgs &call)
 {
+    call.client->SendNotifyMsg("Mail Service is undergoing a complete rewrite and is currently unavailable.");
+    return PyStatic.NewNone();
+
     Call_AssignLabels args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
@@ -136,6 +148,9 @@ PyResult MailMgrService::Handle_AssignLabels(PyCallArgs &call)
 
 PyResult MailMgrService::Handle_CreateLabel(PyCallArgs &call)
 {
+    call.client->SendNotifyMsg("Mail Service is undergoing a complete rewrite and is currently unavailable.");
+    return PyStatic.NewNone();
+
     Call_CreateLabel args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
@@ -150,6 +165,9 @@ PyResult MailMgrService::Handle_CreateLabel(PyCallArgs &call)
 
 PyResult MailMgrService::Handle_DeleteLabel(PyCallArgs &call)
 {
+    call.client->SendNotifyMsg("Mail Service is undergoing a complete rewrite and is currently unavailable.");
+    return PyStatic.NewNone();
+
     SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
@@ -163,6 +181,9 @@ PyResult MailMgrService::Handle_DeleteLabel(PyCallArgs &call)
 
 PyResult MailMgrService::Handle_DeleteMail(PyCallArgs &call)
 {
+    call.client->SendNotifyMsg("Mail Service is undergoing a complete rewrite and is currently unavailable.");
+    return PyStatic.NewNone();
+
     Call_SingleIntList args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
@@ -181,6 +202,9 @@ PyResult MailMgrService::Handle_DeleteMail(PyCallArgs &call)
 
 PyResult MailMgrService::Handle_EditLabel(PyCallArgs &call)
 {
+    call.client->SendNotifyMsg("Mail Service is undergoing a complete rewrite and is currently unavailable.");
+    return PyStatic.NewNone();
+
     Call_EditLabel args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
@@ -193,6 +217,9 @@ PyResult MailMgrService::Handle_EditLabel(PyCallArgs &call)
 
 PyResult MailMgrService::Handle_EmptyTrash(PyCallArgs &call)
 {
+    call.client->SendNotifyMsg("Mail Service is undergoing a complete rewrite and is currently unavailable.");
+    return PyStatic.NewNone();
+
     // @TODO: TEST
     m_db->EmptyTrash(call.client->GetCharacterID());
     return nullptr;
@@ -200,6 +227,9 @@ PyResult MailMgrService::Handle_EmptyTrash(PyCallArgs &call)
 
 PyResult MailMgrService::Handle_GetBody(PyCallArgs &call)
 {
+    call.client->SendNotifyMsg("Mail Service is undergoing a complete rewrite and is currently unavailable.");
+    return PyStatic.NewNone();
+
     Call_MailGetBody args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
@@ -217,11 +247,17 @@ PyResult MailMgrService::Handle_GetBody(PyCallArgs &call)
 
 PyResult MailMgrService::Handle_GetLabels(PyCallArgs &call)
 {
+    call.client->SendNotifyMsg("Mail Service is undergoing a complete rewrite and is currently unavailable.");
+    return PyStatic.NewNone();
+
     return m_db->GetLabels(call.client->GetCharacterID());
 }
 
 PyResult MailMgrService::Handle_GetMailHeaders(PyCallArgs &call)
 {
+    call.client->SendNotifyMsg("Mail Service is undergoing a complete rewrite and is currently unavailable.");
+    return PyStatic.NewNone();
+
     // @TODO: Stub
     // contains message ids
     Call_SingleIntList args;
@@ -235,6 +271,9 @@ PyResult MailMgrService::Handle_GetMailHeaders(PyCallArgs &call)
 
 PyResult MailMgrService::Handle_MarkAllAsRead(PyCallArgs &call)
 {
+    call.client->SendNotifyMsg("Mail Service is undergoing a complete rewrite and is currently unavailable.");
+    return PyStatic.NewNone();
+
     m_db->MarkAllAsRead(call.client->GetCharacterID());
 
     return nullptr;
@@ -242,12 +281,18 @@ PyResult MailMgrService::Handle_MarkAllAsRead(PyCallArgs &call)
 
 PyResult MailMgrService::Handle_MarkAllAsUnread(PyCallArgs &call)
 {
+    call.client->SendNotifyMsg("Mail Service is undergoing a complete rewrite and is currently unavailable.");
+    return PyStatic.NewNone();
+
     m_db->MarkAllAsUnread(call.client->GetCharacterID());
     return nullptr;
 }
 
 PyResult MailMgrService::Handle_MarkAsRead(PyCallArgs &call)
 {
+    call.client->SendNotifyMsg("Mail Service is undergoing a complete rewrite and is currently unavailable.");
+    return PyStatic.NewNone();
+
     // message id list
     Call_SingleIntList args;
     if (!args.Decode(&call.tuple)) {
@@ -262,6 +307,9 @@ PyResult MailMgrService::Handle_MarkAsRead(PyCallArgs &call)
 
 PyResult MailMgrService::Handle_MarkAsReadByLabel(PyCallArgs &call)
 {
+    call.client->SendNotifyMsg("Mail Service is undergoing a complete rewrite and is currently unavailable.");
+    return PyStatic.NewNone();
+
     SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
@@ -276,6 +324,9 @@ PyResult MailMgrService::Handle_MarkAsReadByLabel(PyCallArgs &call)
 
 PyResult MailMgrService::Handle_MarkAsReadByList(PyCallArgs &call)
 {
+    call.client->SendNotifyMsg("Mail Service is undergoing a complete rewrite and is currently unavailable.");
+    return PyStatic.NewNone();
+
     SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
@@ -289,6 +340,9 @@ PyResult MailMgrService::Handle_MarkAsReadByList(PyCallArgs &call)
 
 PyResult MailMgrService::Handle_MarkAsUnread(PyCallArgs &call)
 {
+    call.client->SendNotifyMsg("Mail Service is undergoing a complete rewrite and is currently unavailable.");
+    return PyStatic.NewNone();
+
     // message id list
     Call_SingleIntList args;
     if (!args.Decode(&call.tuple)) {
@@ -303,6 +357,9 @@ PyResult MailMgrService::Handle_MarkAsUnread(PyCallArgs &call)
 
 PyResult MailMgrService::Handle_MarkAsUnreadByLabel(PyCallArgs &call)
 {
+    call.client->SendNotifyMsg("Mail Service is undergoing a complete rewrite and is currently unavailable.");
+    return PyStatic.NewNone();
+
     SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
@@ -317,6 +374,9 @@ PyResult MailMgrService::Handle_MarkAsUnreadByLabel(PyCallArgs &call)
 
 PyResult MailMgrService::Handle_MarkAsUnreadByList(PyCallArgs &call)
 {
+    call.client->SendNotifyMsg("Mail Service is undergoing a complete rewrite and is currently unavailable.");
+    return PyStatic.NewNone();
+
     // @TODO: Stub
     SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
@@ -331,18 +391,27 @@ PyResult MailMgrService::Handle_MarkAsUnreadByList(PyCallArgs &call)
 
 PyResult MailMgrService::Handle_MoveAllFromTrash(PyCallArgs &call)
 {
+    call.client->SendNotifyMsg("Mail Service is undergoing a complete rewrite and is currently unavailable.");
+    return PyStatic.NewNone();
+
     m_db->MoveAllFromTrash(call.client->GetCharacterID());
     return nullptr;
 }
 
 PyResult MailMgrService::Handle_MoveAllToTrash(PyCallArgs &call)
 {
+    call.client->SendNotifyMsg("Mail Service is undergoing a complete rewrite and is currently unavailable.");
+    return PyStatic.NewNone();
+
     m_db->MoveAllToTrash(call.client->GetCharacterID());
     return nullptr;
 }
 
 PyResult MailMgrService::Handle_MoveFromTrash(PyCallArgs &call)
 {
+    call.client->SendNotifyMsg("Mail Service is undergoing a complete rewrite and is currently unavailable.");
+    return PyStatic.NewNone();
+
     // message id list
     Call_SingleIntList args;
     if (!args.Decode(&call.tuple)) {
@@ -357,6 +426,9 @@ PyResult MailMgrService::Handle_MoveFromTrash(PyCallArgs &call)
 
 PyResult MailMgrService::Handle_MoveToTrash(PyCallArgs &call)
 {
+    call.client->SendNotifyMsg("Mail Service is undergoing a complete rewrite and is currently unavailable.");
+    return PyStatic.NewNone();
+
     // message id list
     Call_SingleIntList args;
     if (!args.Decode(&call.tuple)) {
@@ -371,6 +443,9 @@ PyResult MailMgrService::Handle_MoveToTrash(PyCallArgs &call)
 
 PyResult MailMgrService::Handle_MoveToTrashByLabel(PyCallArgs &call)
 {
+    call.client->SendNotifyMsg("Mail Service is undergoing a complete rewrite and is currently unavailable.");
+    return PyStatic.NewNone();
+
     // @TODO: Stub
     SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
@@ -386,6 +461,9 @@ PyResult MailMgrService::Handle_MoveToTrashByLabel(PyCallArgs &call)
 
 PyResult MailMgrService::Handle_MoveToTrashByList(PyCallArgs &call)
 {
+    call.client->SendNotifyMsg("Mail Service is undergoing a complete rewrite and is currently unavailable.");
+    return PyStatic.NewNone();
+
     // @TODO: Stub
     SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
@@ -400,6 +478,9 @@ PyResult MailMgrService::Handle_MoveToTrashByList(PyCallArgs &call)
 
 PyResult MailMgrService::Handle_RemoveLabels(PyCallArgs &call)
 {
+    call.client->SendNotifyMsg("Mail Service is undergoing a complete rewrite and is currently unavailable.");
+    return PyStatic.NewNone();
+    
     // we reuse Call_AssignLabels here because the arguments match
     Call_AssignLabels args;
     if (!args.Decode(&call.tuple)) {
