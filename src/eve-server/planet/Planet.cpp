@@ -6,6 +6,7 @@
   *
   * @Author:         Allan
   * @date:   30 April 2016
+  * @update: 02 August 2026
   */
 
  /*
@@ -54,10 +55,25 @@ m_data(PlanetResourceData())
 
 PlanetSE::~PlanetSE()
 {
+    // update depleted resources as needed before close
+    if (m_colonies.size() > 0) {
+        // assume there are ecus on any colony.
+
+        m_data.buffer_1 = m_typeBuffers[m_data.type_1];
+        m_data.buffer_2 = m_typeBuffers[m_data.type_2];
+        m_data.buffer_3 = m_typeBuffers[m_data.type_3];
+        m_data.buffer_4 = m_typeBuffers[m_data.type_4];
+        m_data.buffer_5 = m_typeBuffers[m_data.type_5];
+
+        PlanetDB::SavePlanetResourceData(m_self->itemID(), m_data);
+    }
+
+    // now we can clear the colony map
     for (auto &cur : m_colonies) {
         cur.second->Shutdown();
         SafeDelete(cur.second);
     }
+
 }
 
 //TODO:  update this to change data on *some yet-unknown* timeframe
@@ -296,7 +312,7 @@ void PlanetSE::CreateCustomsOffice() {
 }
 
 
-// Procedural array builder generating up to 25 layered SH hotspots per material type
+// Procedural array builder generating up to 25 layered SH hotspots per material type  (by Gemini)
 std::string PlanetSE::GenerateResourceBuffer(float baseScarcityMultiplier, float abundanceMod) {
     // 225 continuous floats storing our 25 discrete nodes
     std::vector<float> resourceFloatArray(225, 0.0f);

@@ -62,9 +62,8 @@ INCLUDE( "DetectScm" )
 # override the setup.
 #
 # Switch to the C++11 standard (required)
-SET( CMAKE_CXX_FLAGS "-std=gnu++11 -mtune=native -march=nocona -ffast-math -mfpmath=sse -msse3 -Werror=return-type -ggdb ${CMAKE_CXX_FLAGS}" )
+SET( CMAKE_CXX_FLAGS "-std=gnu++11 -mtune=native -march=native -ffast-math -mfpmath=sse -Werror=return-type -ggdb ${CMAKE_CXX_FLAGS}" )
 # SET( CMAKE_CXX_FLAGS "-Wall -Wextra -Weffc++ -Wconversion -Wdouble-promotion ${CMAKE_CXX_FLAGS}" )
-#  -msse4.1 -march=harpertown  <<--  main server
 # -pg (for using gprof) -ggdb (gdb-specific additions for debug) -pedantic (warning if code isnt standards-compliant)
 
 #SET( CMAKE_CXX_FLAGS "-fsanitize=address  ${CMAKE_CXX_FLAGS}" )

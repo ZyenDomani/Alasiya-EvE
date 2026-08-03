@@ -112,9 +112,10 @@ sql/tables_old/
 # misc shit
 sql/tables.tar.gz
 sql/testScripts/
+sql/updating/
 utils/liveupdategen/tmp
 utils/liveupdategen/patches/disabled
 utils/liveupdategen/patches/to fix
 utils/liveupdategen/patches/wip
 test/
-
+rogueDrones/

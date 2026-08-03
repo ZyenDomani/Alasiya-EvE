@@ -8,6 +8,7 @@
   * @update:  4 November 2016  - began rewrite
   *          16 November 2016  - basic system working
   *          19 July 2019      - all systems working properly
+  *          02 August 2026    - added real spherical harmonics
   */
 
 
@@ -79,7 +80,8 @@ bool PlanetMgr::UpgradeCommandCenter(UUNCommand& nc)
 {
     // the return here is used to cancel loop in UpdateNetwork.  return false = continue
 
-    int8 oldLevel = m_colony->GetLevel(), newLevel = (int8)PyRep::IntegerValue(nc.command_data->GetItem(1));
+    int8 oldLevel = m_colony->GetLevel();
+    int8 newLevel = (int8)PyRep::IntegerValue(nc.command_data->GetItem(1));
     int32 cost = 0;
     using namespace PI::Pin;
     while (oldLevel != newLevel) {
@@ -93,6 +95,9 @@ bool PlanetMgr::UpgradeCommandCenter(UUNCommand& nc)
         }
         ++oldLevel;
     }
+    // run the upgrade.  if it fails, it will throw and negate remaining block
+    m_colony->UpgradeCommandCenter(PyRep::IntegerValue(nc.command_data->GetItem(0)), newLevel);
+
     //take the money, send wallet blink event record the transaction in their journal.
     std::string reason = "DESC:  Command Center upgrade on ";
     reason += m_planet->GetName();
@@ -108,7 +113,6 @@ bool PlanetMgr::UpgradeCommandCenter(UUNCommand& nc)
                     m_planet->GetID(),
                     Account::KeyType::Cash);
 
-    m_colony->UpgradeCommandCenter(PyRep::IntegerValue(nc.command_data->GetItem(0)), newLevel);
     return false;
 }
 
@@ -354,6 +358,7 @@ void PlanetMgr::RemoveRoute(UUNCommand& nc)
 
 void PlanetMgr::SetLinkLevel(UUNCommand& nc)
 {
+    // is there a charge for this?
     m_colony->UpgradeLink(PyRep::IntegerValue(nc.command_data->GetItem(0)),
                           PyRep::IntegerValue(nc.command_data->GetItem(1)),
                           PyRep::IntegerValue(nc.command_data->GetItem(2)));

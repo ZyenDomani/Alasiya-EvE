@@ -121,7 +121,7 @@ namespace PI {
 
         double headRadius=0.0;              // ECU Only   *saved in pins
 
-        std::map<uint16, PI::Heads> heads;   // ECU Only
+        std::unordered_map<uint16, PI::Heads> heads;   // ECU Only
     };
 
     struct Plant {
@@ -243,11 +243,12 @@ public:
     uint8               level;
     uint32              colonyID;
 
-    std::map<uint32, PI::ECU>           ecus;           // pinID, data   - this dynamic data is not saved
-    std::map<uint32, PI::PinData>       pins;           // pinID, data
-    std::map<uint32, PI::Link>          links;          // linkID, data
-    std::map<uint16, PI::Route>         routes;         // routeID, data
-    std::map<uint32, PI::Plant>         plants;         // pinID, data   - this dynamic data is not saved
+    std::unordered_map<uint32, PI::ECU>           ecus;           // pinID, data   - this dynamic data is not saved
+    std::unordered_map<uint32, PI::PinData>       pins;           // pinID, data
+    // update this to use std::map<<std::pair<uint32, uint32>, PI::Link> for easier/faster/better searching
+    std::unordered_map<uint32, PI::Link>          links;          // linkID, data
+    std::unordered_map<uint16, PI::Route>         routes;         // routeID, data
+    std::unordered_map<uint32, PI::Plant>         plants;         // pinID, data   - this dynamic data is not saved
 };
 
 /*  these are internal client state events

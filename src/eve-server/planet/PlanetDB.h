@@ -58,7 +58,7 @@ public:
     void CreatePin(uint32 colonyID, uint32 pinID, PI::PinData &data);
     void UpdateECUPin(uint32 ecuID, PI_CCData* data);
     void SavePins(PI_CCData* data); // this does NOT save contents, heads, or schematic data
-    void SaveHeads(uint32 colonyID, uint32 ownerID, uint32 ecuID, std::map< uint16, PI::Heads >& heads);
+    void SaveHeads(uint32 colonyID, uint32 ownerID, uint32 ecuID, std::unordered_map< uint16, PI::Heads >& heads);
     void SaveLinks(PI_CCData* data);
     void SaveRoutes(PI_CCData* data);
     void SavePinContents(uint32 pinID, PI_CCData* data);
@@ -69,11 +69,11 @@ public:
     void RemoveRoute(uint16 routeID);
     void RemoveContents(uint32 pinID);
     void DeleteColony(uint32 colonyID, uint32 planetID, uint32 charID);
-    void LoadPins(uint32 colonyID, std::map<uint32, PI::PinData>& pins);
+    void LoadPins(uint32 colonyID, std::unordered_map<uint32, PI::PinData>& pins);
     void LoadECU(uint32 ecuID, DBQueryResult& res);
-    void LoadHeads(uint32 ecuID, std::map< uint16, PI::Heads >& heads);
-    void LoadLinks(uint32 colonyID, std::map<uint32, PI::Link>& links);
-    void LoadRoutes(uint32 colonyID, std::map< uint16, PI::Route >& routes);
+    void LoadHeads(uint32 ecuID, std::unordered_map< uint16, PI::Heads >& heads);
+    void LoadLinks(uint32 colonyID, std::unordered_map<uint32, PI::Link>& links);
+    void LoadRoutes( uint32 colonyID, std::unordered_map< uint16, PI::Route >& routes );
     void LoadContents(uint32 pinID, std::map< uint16, uint32 >& contents);
     void SaveCCLevel(uint32 colonyID, uint8 level);
     void UpdateCCLaunch(uint32 pinID, int64 launchTime);

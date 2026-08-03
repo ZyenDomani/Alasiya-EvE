@@ -4,6 +4,7 @@
   *   Specific Class for managing planet and pi data
   * @Author:         Allan
   * @date:   30 November 2016
+  * @update: 02 August 2026
   */
 
 
@@ -292,10 +293,10 @@ void PIDataMgr::GetSchematicData(uint8 schematicID, PI::Schematic& data)
  *    AttrExtractorDepletionRange = 1644,
  *    AttrExtractorDepletionRate = 1645,        // 1
  *    AttrCommandCenterHoldCapacity = 1646,
- *    AttrECUDecayFactor = 1683,            // this attr is empty
+ *    AttrECUDecayFactor = 1683,            // this attr is empty (0.012f)
  *    AttrECUMaxVolume = 1684,
  *    AttrECUOverlapFactor = 1685,
- *    AttrECUNoiseFactor = 1687,            // this attr is empty
+ *    AttrECUNoiseFactor = 1687,            // this attr is empty (0.8f)
  *    AttrECUAreaOfInfluence = 1689,
  *    AttrECUExtractorHeadCPU = 1690,
  *    AttrECUExtractorHeadPower = 1691,
@@ -333,10 +334,10 @@ PyRep* PIDataMgr::GetProgramResultInfo(Colony* pColony, uint32 pinID, uint16 typ
      */
     InventoryItemRef iRef = sItemFactory.GetItemRef(pinID);
     //float cycleTime = iRef->GetAttribute(AttrPinCycleTime).get_float()/*300*/;
-    double one((headRadius - 0.01) / 0.04);
-    float length(one * 335.0f + 1.0f);  //length in hours between 1 and 336  (336h = 14d)
+    double one = (headRadius - 0.01) / 0.04;
+    float length = one * 335.0f + 1.0f;  //length in hours between 1 and 336  (336h = 14d)
     double two = std::log(length / 25.0);  //3.584962501
-    uint8 three = static_cast<uint8>(EvE::max(std::floor(two) + 1.0f));    //4
+    uint8 three = static_cast<uint8>(EvE::max(std::floor(two) + 1));    //4
     float cycleTime = 0.25f * (2 xor three);  // this is (float) in hours (0.25, 0.5, etc)
 
     if (cycleTime < 0.01f) {
@@ -347,11 +348,13 @@ PyRep* PIDataMgr::GetProgramResultInfo(Colony* pColony, uint32 pinID, uint16 typ
     cycleTime *= sConfig.rates.DrillCycleMod;
     _log(PLANET__TRACE, "PlanetMgr::GetProgramResultInfo(test) - 0.5 mod cycleTime:%.2fh", cycleTime * 0.5f);
 
-    uint16 numCycles = (uint16)(floor(length / cycleTime));   //73
+    uint16 numCycles = static_cast<uint16>(std::floor(length / cycleTime));   //73
     int64 iCycleTime = (cycleTime * EvE::Time::Hour); // should be around 9000000000
 
     uint32 qtyPerCycle = GetProgramOutput(iRef, iCycleTime);
     qtyPerCycle *= heads->size();
+
+    pColony->SetProgramResults(pinID, typeID, numCycles, headRadius, cycleTime, qtyPerCycle);
 
     _log(PLANET__TRACE, "PlanetMgr::GetProgramResultInfo() - cycleTime:%.2fh, iCycleTime:%llius, length:%.2fh, numCycles:%u, qtyPerCycle:%u, headRadius:%.4f", \
                 cycleTime, iCycleTime, length, numCycles, qtyPerCycle, headRadius);
@@ -363,94 +366,59 @@ PyRep* PIDataMgr::GetProgramResultInfo(Colony* pColony, uint32 pinID, uint16 typ
 
     if (is_log_enabled(PLANET__RES_DUMP))
         res->Dump(PLANET__RES_DUMP, "    ");
-
-    pColony->SetProgramResults(pinID, typeID, numCycles, headRadius, cycleTime, qtyPerCycle);
-
-    /*  based on values noted in GetProgramOutput()
-    13:17:37 [PlanetTrace] PlanetMgr::GetProgramResultInfo() -  cycleTime:0.25, iCycleTime:1251639296, length:8.28, numCycles:33, qtyPerCycle:1380 (one:0.02172, two:-1.59504) headRadius:0.0109
-    13:17:37 [PlanetResDump]      Tuple: 3 elements
-    13:17:37 [PlanetResDump]       [ 0]    Integer: 1380
-    13:17:37 [PlanetResDump]       [ 1]       Long: 1251639296
-    13:17:37 [PlanetResDump]       [ 2]    Integer: 33
-    */
     return res;
 }
 
 // ecu program methods from client
-
 uint32 PIDataMgr::GetProgramOutput(InventoryItemRef iRef, int64 cycleTime, int64 startTime/*0*/, int64 currentTime/*0*/)
 {
-    // this is in client to display the Extractor window program results.
-    /*
-    def GetProgramOutput(self, currentTime, baseValue = None, cycleTime = None, startTime = None):
-        if baseValue is None:
-            baseValue = self.qtyPerCycle
-        if cycleTime is None:
-            cycleTime = self.cycleTime
-        if startTime is None:
-            startTime = self.installTime
-        decayFactor = self.GetAttribute(const.attributeEcuDecayFactor)
-        noiseFactor = self.GetAttribute(const.attributeEcuNoiseFactor)
-        timeDiff = currentTime - startTime
-        cycleNum = max((timeDiff + const.SEC) / cycleTime - 1, 0)
-        barWidth = cycleTime / SEC / 900.0
-        t = (cycleNum + 0.5) * barWidth
-        decayValue = baseValue / (1 + t * decayFactor)
-        f1 = 1.0 / 12
-        f2 = 1.0 / 5
-        f3 = 1.0 / 2
-        phaseShift = baseValue ** 0.7
-        sinA = math.cos(phaseShift + t * f1)
-        sinB = math.cos(phaseShift / 2 + t * f2)
-        sinC = math.cos(t * f3)
-        sinStuff = (sinA + sinB + sinC) / 3
-        sinStuff = max(0, sinStuff)
-        barHeight = decayValue * (1 + noiseFactor * sinStuff)
-        return int(barWidth * barHeight)
-    */
-
     if (startTime == 0)
         startTime = GetFileTimeNow() - (2 * EvE::Time::Second);
     if (currentTime == 0)
         currentTime = GetFileTimeNow();
 
-    int8 cycleNum = EvE::max((currentTime - startTime + EvE::Time::Second) / cycleTime, 1);
+    float cycleNum = static_cast<float>(EvE::max((currentTime - startTime + EvE::Time::Second) / (cycleTime - 1), 1));
     float barWidth = cycleTime / EvE::Time::Second / 900.0f; //0.13888
     float t = (cycleNum + 0.5f) * barWidth; // 0.20833
-    uint32 qtyPerCycle = iRef->GetDefaultAttribute(AttrPinExtractionQuantity).get_uint32();
-    float decayValue = qtyPerCycle / (1 + t * 1/*iRef->GetAttribute(AttrECUDecayFactor).get_float()*/);     // 1000
-    float phaseShift = std::pow(qtyPerCycle, 0.7);   // 125.89254
-    float sinA = EvE::Trig::FastCos(phaseShift + t * 0.08333f);      // 0.96985
+    float qtyPerCycle = iRef->GetDefaultAttribute(AttrPinExtractionQuantity).get_float();
+    float decayValue = qtyPerCycle / (1.0f + t * 0.012f/*iRef->GetAttribute(AttrECUDecayFactor).get_float()*/);     // 1000
+    float phaseShift = std::pow(qtyPerCycle, 0.7f);   // 125.89254
+    float sinA = EvE::Trig::FastCos(phaseShift + t * 0.08333333f);      // 0.96985
     float sinB = EvE::Trig::FastCos(phaseShift / 2 + t * 0.2f);  // 0.98784
     float sinC = EvE::Trig::FastCos(t * 0.5f);                   // 0.99457
-    float sinStuff = (sinA + sinB + sinC) / 3;  // 0.98408
+    float sinStuff = (sinA + sinB + sinC) / 3.0f;  // 0.98408
     sinStuff = EvE::max(sinStuff);
-    float barHeight = decayValue * (1 + 1/*iRef->GetAttribute(AttrECUNoiseFactor).get_float()*/ * sinStuff);     //0.8
+    float barHeight = decayValue * (1.0f + (0.8f/*iRef->GetAttribute(AttrECUNoiseFactor).get_float()*/ * sinStuff));     //0.8
 
     return static_cast<uint32>(std::floor(barHeight * barWidth));     // 0.13888 * 1000          16
 }
 
 uint32 PIDataMgr::GetProgramOutputPrediction(InventoryItemRef iRef, int64 cycleTime, uint32 numCycles/*0*/)
 {
-    uint32 val = 0;
     if (numCycles > 120)    // hardcoded in client
         numCycles = 120;
-    for (int i(1); i <= numCycles; ++i)
-        val += GetProgramOutput(iRef, cycleTime, i * cycleTime);
+
+    uint32 val = 0;
+    int64 startTime = GetFileTimeNow();
+
+    for (int i(1); i <= numCycles; ++i) {
+        int64 curTime = startTime + (i * cycleTime);
+        val += GetProgramOutput(iRef, cycleTime, startTime, curTime);
+    }
     return val;
 }
 
-uint32 PIDataMgr::GetMaxOutput(InventoryItemRef iRef, uint32 qtyPerCycle/*0*/, int64 cycleTime/*0*/)
+float PIDataMgr::GetMaxOutput(InventoryItemRef iRef, uint32 qtyPerCycle/*0*/, int64 cycleTime/*0*/)
 {
     if (qtyPerCycle == 0)
         qtyPerCycle = iRef->GetAttribute(AttrPinExtractionQuantity).get_uint32();
     if (cycleTime == 0)
         cycleTime = iRef->GetAttribute(AttrPinCycleTime).get_long() * EvE::Time::Second; // base time is 300s
-    float scalar = iRef->GetAttribute(AttrECUNoiseFactor).get_float() + 1;
-    return (scalar * qtyPerCycle) * cycleTime / EvE::Time::Second / 900.0;
+    //float scalar = iRef->GetAttribute(AttrECUNoiseFactor).get_float() + 1;
+    return (1.8f * qtyPerCycle) * cycleTime / EvE::Time::Second / 900.0f;
 }
 
-// Evaluates a single 9-float Order-2 Real SH block at a target vector location
+// Evaluates a single 9-float Order-2 Real SH block at a target vector location (by Gemini)
 float PIDataMgr::EvaluateSingleNodeSH(const float* c, float x, float y, float z) {
     // Basis functions matching the generator
     float Y_0_0  = 0.2820948f;
@@ -464,7 +432,11 @@ float PIDataMgr::EvaluateSingleNodeSH(const float* c, float x, float y, float z)
     float Y_2_2  = 0.5462742f * (x * x - y * y);
 
     float density = (c[0]*Y_0_0) + (c[1]*Y_1_m1) + (c[2]*Y_1_0) + (c[3]*Y_1_1) +
-    (c[4]*Y_2_m2) + (c[5]*Y_2_m1) + (c[6]*Y_2_0) + (c[7]*Y_2_1) + (c[8]*Y_2_2);
+                    (c[4]*Y_2_m2) + (c[5]*Y_2_m1) + (c[6]*Y_2_0) + (c[7]*Y_2_1) + (c[8]*Y_2_2);
+
+    // This stops negative interference from breaking your extraction totals.
+    if (density < 0.0f)
+        return 0.0f;
 
     return density;
 }
@@ -486,36 +458,11 @@ std::vector<float> PIDataMgr::DecodeHexBufferToFloats(const std::string& hexBuff
     return floats;
 }
 
-// Evaluates a single 9-float Order-2 Real SH block at a target vector location
-float EvaluateSingleNodeSH(const float* c, float x, float y, float z) {
-    // Basis functions matching the generator
-    float Y_0_0  = 0.2820948f;
-    float Y_1_m1 = 0.4886025f * y;
-    float Y_1_0  = 0.4886025f * z;
-    float Y_1_1  = 0.4886025f * x;
-    float Y_2_m2 = 1.0925484f * x * y;
-    float Y_2_m1 = 1.0925484f * y * z;
-    float Y_2_0  = 0.3153916f * (3.0f * z * z - 1.0f);
-    float Y_2_1  = 1.0925484f * x * z;
-    float Y_2_2  = 0.5462742f * (x * x - y * y);
-
-    float density = (c[0]*Y_0_0) + (c[1]*Y_1_m1) + (c[2]*Y_1_0) + (c[3]*Y_1_1) +
-                    (c[4]*Y_2_m2) + (c[5]*Y_2_m1) + (c[6]*Y_2_0) + (c[7]*Y_2_1) + (c[8]*Y_2_2);
-
-        // CRITICAL MATCH UNCOVERED TODAY: Clamp negative wave valleys to zero
-    // This stops negative interference from breaking your extraction totals.
-    if (density < 0.0f) {
-        return 0.0f;
-    }
-
-    return density;
-}
-
-// Core Execution: Calculates raw output yield and reduces the local heatmap intensity
+// Core Execution: Calculates raw output yield and reduces the local heatmap intensity (by Gemini)
 float PIDataMgr::ExtractAndDepletePlanetResource(std::string& io_dbBuffer, const PI::Heads& headPin,
-                                                 float durationFactor/*1.0f*/, float headRadius/*1.0f*/) {
+                                                 float duration/*1.0f*/, float headRadius/*1.0f*/) {
     std::vector<float> floatArray = DecodeHexBufferToFloats(io_dbBuffer);
-    float totalExtractedYield(0.0f);
+    float totalExtractedYield = 0.0f;
 
     float pinX = EvE::Trig::FastCos(headPin.latitude) * EvE::Trig::FastCos(headPin.longitude);
     float pinY = EvE::Trig::FastCos(headPin.latitude) * EvE::Trig::FastSin(headPin.longitude);
@@ -524,24 +471,22 @@ float PIDataMgr::ExtractAndDepletePlanetResource(std::string& io_dbBuffer, const
     // 1. Loop through all 25 structural nodes to compile total local density
     for (int nodeIdx = 0; nodeIdx < 25; ++nodeIdx) {
         float* nodeCoeffs = &floatArray[nodeIdx * 9];
-
         // Skip uninitialized or dead structural cells
-        if (nodeCoeffs[0] <= 0.001f) continue;
-
+        if (nodeCoeffs[0] <= 0.001f)
+            continue;
         // Evaluate baseline yield contributed specifically by this node mesh
         float localNodeDensity = EvaluateSingleNodeSH(nodeCoeffs, pinX, pinY, pinZ);
-
         // Clean out negative valleys so they don't break the calculator
-        if (localNodeDensity <= 0.0f) continue;
+        if (localNodeDensity <= 0.0f)
+            continue;
 
         totalExtractedYield += localNodeDensity * headRadius;
-
         // 2. Dynamic Depletion Rule: Reduce the local node amplitude (c0) based on extraction
         // Nodes directly under or close to the pin deplete significantly faster
-        float depletionAmount = localNodeDensity * 0.02f * durationFactor;
-
+        float depletionAmount = localNodeDensity * 0.02f * duration;
         nodeCoeffs[0] -= depletionAmount; // Reduce base amplitude height
-        if (nodeCoeffs[0] < 0.0f) nodeCoeffs[0] = 0.0f; // Prevent flipping to negative resources
+        if (nodeCoeffs[0] < 0.0f)
+            nodeCoeffs[0] = 0.0f; // Prevent flipping to negative resources
     }
 
     // 3. Re-encode the newly depleted map back into hex code for your database update

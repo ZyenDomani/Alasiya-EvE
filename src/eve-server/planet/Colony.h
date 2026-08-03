@@ -117,7 +117,7 @@ private:
     int64 m_procTime;           // filetime  last processed time
 
     std::vector<uint32> tempECUs;
-    std::map<uint32, uint32> tempPinIDs;
+    std::unordered_map<uint32, uint32> tempPinIDs;
     // pLevel, pinID
     std::multimap<uint8, uint32> m_plantMap;        // map plant's P level to pinID.  to be used during Update()
     // srcPinID, routeData
@@ -223,4 +223,29 @@ private:
  * {'messageKey': 'RouteRemoveNotFound', 'dataID': 17875539, 'suppressable': False, 'bodyID': 256546, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3295}
  * {'messageKey': 'RouteRemoveRouteNotYours', 'dataID': 17875542, 'suppressable': False, 'bodyID': 256547, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3296}
  * {'messageKey': 'RunProcessCycle', 'dataID': 17881150, 'suppressable': False, 'bodyID': 258668, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 258667, 'messageID': 1969}
+ *
+ { 'FullPath': u'UI/Messages', 'messageID': 256525, 'label': u'CannotBuildMultipleCommandPinsBody'}(u'You cannot place multiple command centers on a single planet.', None, None)                                                 *
+ {'FullPath': u'UI/Messages', 'messageID': 256526, 'label': u'CannotManagePlanetWithoutCommandCenterBody'}(u'You are unable to manage your planetary affairs without the assistance of your own command center.', None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 256527, 'label': u'CannotBuildCommandPinBody'}(u'Command centers require imported equipment, and cannot be simply constructed. Please purchase a planetary command center on the market and try again.', None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 256528, 'label': u'InvalidPinTypeBody'}(u'That action cannot be performed; the structure you selected is invalid.', None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 256529, 'label': u'PinDoesNotExistBody'}(u'The structure you specified no longer exists.', None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 256530, 'label': u'CanOnlyManageOwnPinsBody'}(u'You cannot perform that action, as you are only permitted to meddle in the affairs of your own structures.', None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 256531, 'label': u'CannotDecommissionCommandPinBody'}(u'Due to union rules, command center staff cannot be fired. As a result, you cannot decommission a command center.', None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 256532, 'label': u'CannotLinkPinsAlreadyLinkedBody'}(u'A link already exists between the two structures you specified.', None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 256533, 'label': u'CannotLaunchCommandPinNotReadyBody'}(u'Mission Control has not yet prepared the launch pad for the next orbital insertion mission. Please wait for the control center staff to finish fetching fresh coffee.', None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 256534, 'label': u'PleaseSelectCommoditiesToLaunchBody'}(u'Mission Control would like to advise you that an empty launch would be a waste of their valuable time. Please select a payload to launch into space.', None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 256535, 'label': u'CanOnlyLaunchFromCommandCentersBody'}(u'You are unable to reach Mission Control at the specified structure. You can only create orbital launch missions from your Command Center.', None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 256536, 'label': u'InvalidSchematicBody'}(u'The schematic specified does not seem to exist. Perhaps you have been the victim of industrial espionage?', None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 256537, 'label': u'CannotInstallExtractorNotReadyBody'}(u"You cannot begin exploiting the specified deposit. The facility's foreman does not appear to be answering his communicator, as he is likely out supervising the current deposit.", None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 256538, 'label': u'CannotLaunchCommoditiesNotFoundBody'}(u'Mission Control advises you that they are unable to fulfill your launch order; the stevedores are unable to locate some or all of the commodities you have specified in your payload.', None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 256539, 'label': u'CannotRouteStorageMustGoToConsumerBody'}(u'That route cannot be created. Supply routes sourced from storage facilities must terminate at an appropriate consumption facility.', None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 256540, 'label': u'CreateRouteWithoutCommoditiesBody'}(u'While the Teamsters Union applauds your support, Ground Control advises you against wasting precious time and money routing empty trucks between your facilities.', None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 256541, 'label': u'RouteFailedValidationPinDoesNotExistBody'}(u'That route cannot be created, as it appears to travel through an imaginary facility.', None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 256542, 'label': u'RouteFailedValidationPinNotYoursBody'}(u'You cannot route commodities through facilities which you do not control.', None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 256543, 'label': u'RouteFailedValidationLinkDoesNotExistBody'}(u'That route cannot be created, as it appears to travel via an imaginary link.', None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 256544, 'label': u'RouteFailedValidationCannotRouteCommoditiesBody'}(u'That route cannot be created, as adding traffic to one of the links over which it travels would create dangerous levels of congestion.', None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 256545, 'label': u'CannotRouteTooManyWaypointsBody'}(u'That route cannot be created, as it exceeds the maximum number of logistical waypoints which your operations are capable of managing.', None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 256546, 'label': u'RouteRemoveNotFoundBody'}(u"The route which you've marked for removal could not be found.", None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 256547, 'label': u'RouteRemoveRouteNotYoursBody'}(u'You cannot cancel a route which you do not control.', None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 256548, 'label': u'CreateRoutePathNotFoundBody'}(u'You cannot create that route, as there do not appear to be sufficient transportation links to connect the facilities.', None, None)
  */

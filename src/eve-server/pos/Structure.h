@@ -316,6 +316,7 @@ private:
      {'FullPath': u'UI/Messages', 'messageID': 260208, 'label': u'CannotPlacePilotedShipInStructureBody'}(u'This {[item]container.name} cannot accept the {[item]type.name} as it still has a pilot inside it.', None, {u'{[item]container.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'container'}, u'{[item]type.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'type'}})
      {'FullPath': u'UI/Messages', 'messageID': 260209, 'label': u'CannotPlaceTypeInStructureBody'}(u'This {[item]container.name} can only contain one or more specific types of which the {[item]type.name} you gave was not one.', None, {u'{[item]container.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'container'}, u'{[item]type.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'type'}})
 
+     {'FullPath': u'UI/Messages', 'messageID': 256380, 'label': u'CannotUpgradeMustAnchorFirstBody'}(u'Cannot upgrade when not anchored.', None, None)
 
      */
 

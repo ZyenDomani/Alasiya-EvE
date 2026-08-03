@@ -71,9 +71,12 @@ public:
     uint8 GetProductLevel(uint16 typeID);
     uint16 GetHeadType(uint16 ecuTypeID, uint16 programType);
 
-    uint32 GetMaxOutput(InventoryItemRef iRef, uint32 qtyPerCycle = 0, int64 cycleTime = 0);
+    float GetMaxOutput( InventoryItemRef iRef, uint32 qtyPerCycle = 0, int64 cycleTime = 0 );
     uint32 GetProgramOutput(InventoryItemRef iRef, int64 cycleTime, int64 startTime=0, int64 currentTime=0);
     uint32 GetProgramOutputPrediction(InventoryItemRef iRef, int64 cycleTime, uint32 numCycles = 0);
+    // Core Execution: Calculates raw output yield and reduces the local heatmap intensity
+    float ExtractAndDepletePlanetResource( std::string& io_dbBuffer, const PI::Heads& headPin,
+                                           float duration=1.0f, float headRadius=1.0f);
 
     const char* GetPinName(uint32 pinID);
     const char* GetProductName(uint16 typeID);
@@ -86,9 +89,6 @@ protected:
     float EvaluateSingleNodeSH(const float* c, float x, float y, float z);
     // Converts your database string back into raw float data for evaluation
     std::vector<float> DecodeHexBufferToFloats(const std::string& hexBuffer);
-    // Core Execution: Calculates raw output yield and reduces the local heatmap intensity
-    float ExtractAndDepletePlanetResource( std::string& io_dbBuffer, const PI::Heads& headPin,
-                                           float durationFactor=1.0f, float headRadius=1.0f );
 
 private:
     PlanetDB m_db;

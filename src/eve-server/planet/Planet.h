@@ -66,10 +66,14 @@ public:
 
     bool                        HasCOSE()               { return pCO != nullptr; }
     void                        CreateCustomsOffice();
-    void                SetCustomsOffice(CustomsSE* pSE){ pCO = pSE; }
+    void                        SetCustomsOffice(CustomsSE* pSE)
+                                                        { pCO = pSE; }
     CustomsSE*                  GetCustomsOffice()      { return pCO; }
 
     bool                        HasColony()             { return !m_colonies.empty(); }
+
+    std::string&                GetResourceBuffer(uint16 typeID)
+                                                        { return m_typeBuffers[typeID]; }
 
 protected:
     CustomsSE*                  pCO;  // our Customs Office SE  - we dont own this
