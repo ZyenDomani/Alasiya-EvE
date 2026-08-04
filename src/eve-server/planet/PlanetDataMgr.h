@@ -82,13 +82,15 @@ public:
     const char* GetProductName(uint16 typeID);
     const char* GetPinTypeName(uint16 typeID);
 
+    std::string EncodeFloatsToHexBuffer(std::vector<float>& data);
+    // Converts your database string back into raw float data for evaluation
+    std::vector<float> DecodeHexBufferToFloats(const std::string& hexBuffer);
+
 protected:
     void Populate();
 
     // Evaluates a single 9-float Order-2 Real SH block at a target vector location
     float EvaluateSingleNodeSH(const float* c, float x, float y, float z);
-    // Converts your database string back into raw float data for evaluation
-    std::vector<float> DecodeHexBufferToFloats(const std::string& hexBuffer);
 
 private:
     PlanetDB m_db;

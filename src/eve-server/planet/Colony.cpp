@@ -476,8 +476,7 @@ void Colony::CreateRoute(uint16 routeID, uint32 typeID, uint32 qty, PyList* path
         route.destPinID = list1.back();
         route.path = list1;
 
-    // route has been created and added to list.  check for materials being moved, and if source has the mat, remove qty and send to dest.
-        std::unordered_map<uint32, PI::PinData>::iterator srcItr = ccData->pins.find(route.srcPinID);
+    std::unordered_map<uint32, PI::PinData>::iterator srcItr = ccData->pins.find(route.srcPinID);
     if (srcItr == ccData->pins.end()) {
          // source not found.
         throw UserError("RouteFailedValidationPinDoesNotExist");
@@ -487,17 +486,25 @@ void Colony::CreateRoute(uint16 routeID, uint32 typeID, uint32 qty, PyList* path
         // destination not found.
         throw UserError("RouteFailedValidationPinDoesNotExist");
     }
-    std::map<uint16, uint32>::iterator itemItr = srcItr->second.contents.find(route.commodityTypeID);
-    if (itemItr == srcItr->second.contents.end()) {
-        // this material wasnt found in source container....cant move what we aint got..
-        throw UserError("RouteFailedValidationExpeditedSourceLacksCommodity");
-    }
 
     routeID = m_db.SaveRoute(m_colonyID, route);
     ccData->routes[routeID] = route;
 
     m_srcRoutes.emplace(route.srcPinID, route);
     m_destRoutes.emplace(route.destPinID, route);
+
+    if (is_log_enabled(COLONY__INFO))
+        _log(COLONY__INFO, "Colony::CreateRoute() - Created route id %u for %u of typeID %u, making %u hops.", routeID, qty, typeID, (uint32)path->size() - 1);
+
+    // we're just creating the route here....do we really wanna move contents?  no, live doesnt do this.
+    /*
+    std::map<uint16, uint32>::iterator itemItr = srcItr->second.contents.find(route.commodityTypeID);
+    if (itemItr == srcItr->second.contents.end()) {
+        // this material wasnt found in source container....cant move what we aint got..
+        //throw UserError("RouteFailedValidationExpeditedSourceLacksCommodity") \
+                    .AddTypeID(typeID);
+        return;
+    }
 
     uint16 amount = route.commodityQuantity;
     // remove contents from storage pin
@@ -516,9 +523,7 @@ void Colony::CreateRoute(uint16 routeID, uint32 typeID, uint32 qty, PyList* path
     } else {
         destItr->second.contents[route.commodityTypeID] = amount;
     }
-
-    if (is_log_enabled(COLONY__INFO))
-        _log(COLONY__INFO, "Colony::CreateRoute() - Created route id %u for %u of typeID %u, making %u hops.", routeID, qty, typeID, (uint32)path->size() - 1);
+    */
 }
 
 void Colony::UpgradeCommandCenter(uint32 pinID, int8 level) {

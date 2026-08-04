@@ -341,12 +341,12 @@ PyRep* PIDataMgr::GetProgramResultInfo(Colony* pColony, uint32 pinID, uint16 typ
     float cycleTime = 0.25f * (2 xor three);  // this is (float) in hours (0.25, 0.5, etc)
 
     if (cycleTime < 0.01f) {
-        _log(COLONY__ERROR, "Colony::SetProgramResults() - ecuPinID %u cycleTime < 0.01f.  setting to 1.0", pinID);
-        cycleTime = 1.0f;
+        _log(COLONY__ERROR, "PlanetMgr::GetProgramResultInfo() - ecuPinID %u cycleTime < 0.01f.  setting to 1.0", pinID);
+        cycleTime = 0.25f;
     }
     // modify time
     cycleTime *= sConfig.rates.DrillCycleMod;
-    _log(PLANET__TRACE, "PlanetMgr::GetProgramResultInfo(test) - 0.5 mod cycleTime:%.2fh", cycleTime * 0.5f);
+    _log(PLANET__TRACE, "PlanetMgr::GetProgramResultInfo(test) - mod:%0.2f  cycleTime:%.2fh", sConfig.rates.DrillCycleMod, cycleTime);
 
     uint16 numCycles = static_cast<uint16>(std::floor(length / cycleTime));   //73
     int64 iCycleTime = (cycleTime * EvE::Time::Hour); // should be around 9000000000
@@ -441,10 +441,34 @@ float PIDataMgr::EvaluateSingleNodeSH(const float* c, float x, float y, float z)
     return density;
 }
 
-// Converts your database string back into raw float data for evaluation
+// Fast float-to-hex stream encoder (by Gemini)
+std::string PIDataMgr::EncodeFloatsToHexBuffer(std::vector<float>& data) {
+    std::string hexResult = "";
+    if (data.empty())
+        return hexResult;
+
+    size_t length = data.size() * 8;
+    hexResult.resize(length);
+
+    // cast to raw byte stream
+    const uint8* byteStream = reinterpret_cast<const uint8*>(data.data());
+    size_t totalBytes = data.size() * sizeof(float);
+
+    size_t writeIdx = 0;
+    for (size_t i = 0; i < totalBytes; ++i) {
+        uint8 curByte = byteStream[i];
+        // extract high and low nibbles from the byte
+        hexResult[writeIdx++] = hexList[(curByte >> 4)] & 0x0F;
+        hexResult[writeIdx++] = hexList[curByte & 0x0F];
+    }
+    return hexResult;
+}
+
+// Converts your database string back into raw float data for evaluation (by Gemini)
 std::vector<float> PIDataMgr::DecodeHexBufferToFloats(const std::string& hexBuffer) {
     std::vector<float> floats(225, 0.0f);
-    if (hexBuffer.length() < 3600) return floats;
+    if (hexBuffer.length() < 1800)
+        return floats;
 
     for (size_t i = 0; i < 225; ++i) {
         uint32_t pattern = 0;

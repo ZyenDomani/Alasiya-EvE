@@ -210,11 +210,27 @@ struct PlanetResourceData {
     float dist_3=0.0f;
     float dist_4=0.0f;
     float dist_5=0.0f;
+    int64 replenishTime=0;
     std::string buffer_1="";
     std::string buffer_2="";
     std::string buffer_3="";
     std::string buffer_4="";
     std::string buffer_5="";
+    std::string origBuf_1="";
+    std::string origBuf_2="";
+    std::string origBuf_3="";
+    std::string origBuf_4="";
+    std::string origBuf_5="";
+};
+
+struct PlanetResourceBuffer {
+    std::string current;
+    std::string spawned;
+
+    PlanetResourceBuffer() : current(""), spawned("") {}
+    
+    PlanetResourceBuffer(std::string cur, std::string orig)
+        : current(cur), spawned(orig) {}
 };
 
 

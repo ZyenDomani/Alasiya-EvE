@@ -73,7 +73,7 @@ public:
     bool                        HasColony()             { return !m_colonies.empty(); }
 
     std::string&                GetResourceBuffer(uint16 typeID)
-                                                        { return m_typeBuffers[typeID]; }
+                                                        { return m_typeBuffers[typeID].current; }
 
 protected:
     CustomsSE*                  pCO;  // our Customs Office SE  - we dont own this
@@ -81,6 +81,8 @@ protected:
 
     // Procedural array builder generating up to 25 layered SH hotspots per material type
     std::string GenerateResourceBuffer(float baseScarcityMultiplier, float abundanceMod);
+    // as stated
+    void ReplenishResources();
 
     struct PlanetResourceProfile {
         uint32 types[5];        // array holding the typeIDs for this planet
@@ -88,7 +90,7 @@ protected:
     };
 
 private:
-    std::unordered_map<uint16, std::string> m_typeBuffers;
+    std::unordered_map<uint16, PlanetResourceBuffer> m_typeBuffers;
 
     /* map of charID, Colony* for this planet.
      *   this is a hack, as the client will not reuse planet bound objects, instead calling for a new object on every call.

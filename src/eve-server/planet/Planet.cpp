@@ -59,11 +59,16 @@ PlanetSE::~PlanetSE()
     if (m_colonies.size() > 0) {
         // assume there are ecus on any colony.
 
-        m_data.buffer_1 = m_typeBuffers[m_data.type_1];
-        m_data.buffer_2 = m_typeBuffers[m_data.type_2];
-        m_data.buffer_3 = m_typeBuffers[m_data.type_3];
-        m_data.buffer_4 = m_typeBuffers[m_data.type_4];
-        m_data.buffer_5 = m_typeBuffers[m_data.type_5];
+        m_data.buffer_1 = m_typeBuffers[m_data.type_1].current;
+        m_data.buffer_2 = m_typeBuffers[m_data.type_2].current;
+        m_data.buffer_3 = m_typeBuffers[m_data.type_3].current;
+        m_data.buffer_4 = m_typeBuffers[m_data.type_4].current;
+        m_data.buffer_5 = m_typeBuffers[m_data.type_5].current;
+        m_data.origBuf_1 = m_typeBuffers[m_data.type_1].spawned;
+        m_data.origBuf_2 = m_typeBuffers[m_data.type_2].spawned;
+        m_data.origBuf_3 = m_typeBuffers[m_data.type_3].spawned;
+        m_data.origBuf_4 = m_typeBuffers[m_data.type_4].spawned;
+        m_data.origBuf_5 = m_typeBuffers[m_data.type_5].spawned;
 
         PlanetDB::SavePlanetResourceData(m_self->itemID(), m_data);
     }
@@ -111,16 +116,28 @@ bool PlanetSE::LoadExtras() {
         m_data.buffer_4 = GenerateResourceBuffer(baseScarcityMultiplier, abundanceMod);
         m_data.buffer_5 = GenerateResourceBuffer(baseScarcityMultiplier, abundanceMod);
 
+        m_data.origBuf_1 = m_data.buffer_1;
+        m_data.origBuf_2 = m_data.buffer_2;
+        m_data.origBuf_3 = m_data.buffer_3;
+        m_data.origBuf_4 = m_data.buffer_4;
+        m_data.origBuf_5 = m_data.buffer_5;
+
+        m_data.replenishTime = GetFileTimeNow();
+
         PlanetDB::SavePlanetResourceData(m_self->itemID(), m_data);
     }
 
     // load resource data into local container for faster/easier lookups
     m_typeBuffers.reserve(5);
-    m_typeBuffers.emplace(m_data.type_1, m_data.buffer_1);
-    m_typeBuffers.emplace(m_data.type_2, m_data.buffer_2);
-    m_typeBuffers.emplace(m_data.type_3, m_data.buffer_3);
-    m_typeBuffers.emplace(m_data.type_4, m_data.buffer_4);
-    m_typeBuffers.emplace(m_data.type_5, m_data.buffer_5);
+    m_typeBuffers.emplace(m_data.type_1, PlanetResourceBuffer(m_data.buffer_1, m_data.origBuf_1));
+    m_typeBuffers.emplace(m_data.type_2, PlanetResourceBuffer(m_data.buffer_2, m_data.origBuf_2));
+    m_typeBuffers.emplace(m_data.type_3, PlanetResourceBuffer(m_data.buffer_3, m_data.origBuf_3));
+    m_typeBuffers.emplace(m_data.type_4, PlanetResourceBuffer(m_data.buffer_4, m_data.origBuf_4));
+    m_typeBuffers.emplace(m_data.type_5, PlanetResourceBuffer(m_data.buffer_5, m_data.origBuf_5));
+
+    // just in case...
+    if (m_data.replenishTime == 0)
+        m_data.replenishTime = GetFileTimeNow();
 
     return true;
 }
@@ -152,12 +169,12 @@ PyRep* PlanetSE::GetResourceData(Call_ResourceDataDict& dict) {
     dict.oldBand;               <- is this used?  how?
     dict.updateTime;
     */
-    std::unordered_map<uint16, std::string>::iterator itr = m_typeBuffers.find(dict.resourceTypeID);
+    std::unordered_map<uint16, PlanetResourceBuffer>::iterator itr = m_typeBuffers.find(dict.resourceTypeID);
     if (itr == m_typeBuffers.end())
         return nullptr;
 
     int size = dict.newBand * dict.newBand * 4;         // 18 band SH (18*18*4 = 1296)
-    std::string data = itr->second.substr(0, size);
+    std::string data = itr->second.current.substr(0, size);
     // adjust data for system security.  not sure how to make it 'less' yet
     if (is_log_enabled(PLANET__DEBUG)) {
         _log(PLANET__DEBUG, "PlanetSE::GetResourceData() for %s (%u) using remoteSense: %u, planetology: %u, advPlanetology: %u - updateTime: %lu, proximity: %s, newBand: %u, oldBand: %u, bufferSize: %u", \
@@ -350,4 +367,50 @@ std::string PlanetSE::GenerateResourceBuffer(float baseScarcityMultiplier, float
 
     // Remaining node blocks default to 0.0f, acting as clean padding
     return sPlanetDataMgr.EncodeMultiNodeHexBuffer(resourceFloatArray);
+}
+
+// Dynamic-Length Resource Replenishment Routine (by Gemini)
+void PlanetSE::ReplenishResources() {
+    if (m_typeBuffers.empty())
+        return;
+
+    float regenRate = 0.05f;  //sConfig.cosmic.PIRegenRate;
+    // this will need to be in hours.
+    float elapsedTime = GetElapsedHours(m_data.replenishTime);
+    if (elapsedTime <= 0.1f)
+        return;
+
+    bool change = false;
+    for (auto &buffer : m_typeBuffers) {
+        change = false;
+        PlanetResourceBuffer &resource = buffer.second;
+        std::vector<float> currentHeat = sPIDataMgr.DecodeHexBufferToFloats(resource.current);
+        std::vector<float> spawnedHeat = sPIDataMgr.DecodeHexBufferToFloats(resource.spawned);
+
+        int64 activeNodes = currentHeat.size() / 9;
+
+        for (uint16 nodeIdx = 0; nodeIdx < activeNodes; ++nodeIdx) {
+            if ((nodeIdx * 9) >= spawnedHeat.size())
+                break;
+
+            float* currentCoeffs = &currentHeat[nodeIdx * 9];
+            const float* spawnedCoeffs = &spawnedHeat[nodeIdx * 9];
+            float maxAmplitude = spawnedCoeffs[0];
+            if (maxAmplitude <=0.01f)
+                continue;
+            if (currentCoeffs[0] < maxAmplitude) {
+                float growth = maxAmplitude * regenRate * elapsedTime;
+                currentCoeffs[0] += growth;
+
+                if (currentCoeffs[0] > maxAmplitude)
+                    currentCoeffs[0] = maxAmplitude;
+                change = true;
+            }
+        }
+
+        if (change) {
+            resource.current = sPIDataMgr.EncodeFloatsToHexBuffer(currentHeat);
+        }
+    }
+
 }

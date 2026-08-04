@@ -47,9 +47,10 @@
 bool PlanetDB::LoadPlanetResourceData(uint32 planetID, PlanetResourceData& data) {
     DBQueryResult res;
 
-    if (!sDatabase.RunQuery(res, "SELECT Resource1, Resource2, Resource3, Resource4, Resource5,"
+    if (!sDatabase.RunQuery(res, "SELECT replenishTime,Resource1, Resource2, Resource3, Resource4, Resource5,"
             " Distributon1, Distributon2, Distributon3, Distributon4, Distributon5,"
-            " Buffer1, Buffer2, Buffer3, Buffer4, Buffer5"
+            " curBuffer1, curBuffer2, curBuffer3, curBuffer4, curBuffer5,"
+            " origBuffer1, origBuffer2, origBuffer3, origBuffer4, origBuffer5"
             " FROM PlanetData"
             " WHERE PlanetID=%u", planetID)) {
         _log(DATABASE__ERROR, "Error in LoadPlanetResourceData Query: %s", res.error.c_str());
@@ -64,21 +65,27 @@ bool PlanetDB::LoadPlanetResourceData(uint32 planetID, PlanetResourceData& data)
     if (!res.GetRow(row))
         return false;
 
-    data.type_1 = row.GetUInt16(0);
-    data.type_2 = row.GetUInt16(1);
-    data.type_3 = row.GetUInt16(2);
-    data.type_4 = row.GetUInt16(3);
-    data.type_5 = row.GetUInt16(4);
-    data.dist_1 = row.GetFloat(5);
-    data.dist_2 = row.GetFloat(6);
-    data.dist_3 = row.GetFloat(7);
-    data.dist_4 = row.GetFloat(8);
-    data.dist_5 = row.GetFloat(9);
-    data.buffer_1 = row.GetText(10);
-    data.buffer_2 = row.GetText(11);
-    data.buffer_3 = row.GetText(12);
-    data.buffer_4 = row.GetText(13);
-    data.buffer_5 = row.GetText(14);
+    data.replenishTime = row.GetInt64(0);
+    data.type_1 = row.GetUInt16(1);
+    data.type_2 = row.GetUInt16(2);
+    data.type_3 = row.GetUInt16(3);
+    data.type_4 = row.GetUInt16(4);
+    data.type_5 = row.GetUInt16(5);
+    data.dist_1 = row.GetFloat(6);
+    data.dist_2 = row.GetFloat(7);
+    data.dist_3 = row.GetFloat(8);
+    data.dist_4 = row.GetFloat(9);
+    data.dist_5 = row.GetFloat(10);
+    data.buffer_1 = row.GetText(11);
+    data.buffer_2 = row.GetText(12);
+    data.buffer_3 = row.GetText(13);
+    data.buffer_4 = row.GetText(14);
+    data.buffer_5 = row.GetText(15);
+    data.origBuf_1 = row.GetText(16);
+    data.origBuf_2 = row.GetText(17);
+    data.origBuf_3 = row.GetText(18);
+    data.origBuf_4 = row.GetText(19);
+    data.origBuf_5 = row.GetText(20);
 
     return true;
 }
@@ -87,28 +94,37 @@ void PlanetDB::SavePlanetResourceData(uint32 planetID, PlanetResourceData& data)
     DBerror err;
     if (!sDatabase.RunQuery(err,
         "INSERT INTO PlanetData "
-            " (PlanetID, Resource1,Resource2,Resource3,Resource4,Resource5,"
+            " (PlanetID, replenishTime, Resource1,Resource2,Resource3,Resource4,Resource5,"
             "Distributon1,Distributon2,Distributon3,Distributon4,Distributon5,"
-            "Buffer1,Buffer2,Buffer3,Buffer4,Buffer5)"
+            " curBuffer1, curBuffer2, curBuffer3, curBuffer4, curBuffer5,"
+            " origBuffer1, origBuffer2, origBuffer3, origBuffer4, origBuffer5)"
             " VALUES"
-            " (%u,%u,%u,%u,%u,%u,"
+            " (%u,%lli,%u,%u,%u,%u,%u,"
             "%f,%f,%f,%f,%f,"
+            "'%s','%s','%s','%s','%s',"
             "'%s','%s','%s','%s','%s')"
             " ON DUPLICATE KEY UPDATE"
+            " replenishTime=VALUES(replenishTime),"
             " Distributon1=VALUES(Distributon1),"
             " Distributon2=VALUES(Distributon2),"
             " Distributon3=VALUES(Distributon3),"
             " Distributon4=VALUES(Distributon4),"
             " Distributon5=VALUES(Distributon5),"
-            " Buffer1=VALUES(Buffer1),"
-            " Buffer2=VALUES(Buffer2),"
-            " Buffer3=VALUES(Buffer3),"
-            " Buffer4=VALUES(Buffer4),"
-            " Buffer5=VALUES(Buffer5);",
-            planetID, data.type_1, data.type_2, data.type_3, data.type_4, data.type_5,
+            " curBuffer1=VALUES(curBuffer1),"
+            " curBuffer2=VALUES(curBuffer2),"
+            " curBuffer3=VALUES(curBuffer3),"
+            " curBuffer4=VALUES(curBuffer4),"
+            " curBuffer5=VALUES(curBuffer5),"
+            " origBuffer1=VALUES(origBuffer1),"
+            " origBuffer2=VALUES(origBuffer2),"
+            " origBuffer3=VALUES(origBuffer3),"
+            " origBuffer4=VALUES(origBuffer4),"
+            " origBuffer5=VALUES(origBuffer5);",
+            planetID, data.replenishTime, data.type_1, data.type_2, data.type_3, data.type_4, data.type_5,
             data.dist_1, data.dist_2, data.dist_3, data.dist_4, data.dist_5,
             data.buffer_1.c_str(), data.buffer_2.c_str(), data.buffer_3.c_str(), data.buffer_4.c_str(),
-            data.buffer_5.c_str()))
+            data.buffer_5.c_str(), data.origBuf_1.c_str(), data.origBuf_2.c_str(), data.origBuf_3.c_str(),
+            data.origBuf_4.c_str(), data.origBuf_5.c_str()))
         _log(DATABASE__ERROR, "SavePlanetResourceData - Unable to update planetID %u : %s", planetID, err.GetError());
 }
 
