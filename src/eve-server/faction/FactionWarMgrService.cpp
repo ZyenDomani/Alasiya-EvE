@@ -177,7 +177,8 @@ PyResult FactionWarMgrService::Handle_GetMyCharacterRankOverview( PyCallArgs& ca
 }
 
 PyResult FactionWarMgrService::Handle_GetMyCharacterRankInfo( PyCallArgs& call ) {
-  _log(FACWAR__CALL, "FacWarMgr::Handle_GetMyCharacterRankInfo() size= %lu", call.tuple->size() );
+    _log(FACWAR__CALL, "FacWarMgr::Handle_GetMyCharacterRankInfo() size= %lu", call.tuple->size() );
+    if (is_log_enabled(FACWAR__CALL_DUMP))
   call.Dump(FACWAR__CALL_DUMP);
   util_Rowset rs;
 
@@ -196,7 +197,8 @@ PyResult FactionWarMgrService::Handle_GetFactionMilitiaCorporation(PyCallArgs &c
      * 05:39:07 [SvcCall]       Tuple: 1 elements
      * 05:39:07 [SvcCall]         [ 0] Integer field: 500002
      */
-  _log(FACWAR__CALL, "FacWarMgr::Handle_GetFactionMilitiaCorporation() size= %lu", call.tuple->size() );
+    _log(FACWAR__CALL, "FacWarMgr::Handle_GetFactionMilitiaCorporation() size= %lu", call.tuple->size() );
+    if (is_log_enabled(FACWAR__CALL_DUMP))
   call.Dump(FACWAR__CALL_DUMP);
     SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
@@ -223,6 +225,7 @@ PyResult FactionWarMgrService::Handle_GetSystemStatus(PyCallArgs &call) {
      */
 
     _log(FACWAR__CALL, "FacWarMgr::Handle_GetSystemStatus()");
+    if (is_log_enabled(FACWAR__CALL_DUMP))
     call.Dump(FACWAR__CALL_DUMP);
     return new PyInt(FacWar::SysStatus::None);
 }
@@ -238,6 +241,7 @@ PyResult FactionWarMgrService::Handle_IsEnemyFaction(PyCallArgs &call) {
      * 05:39:09 [SvcCall]         [ 1] Integer field: 500001   <- this one changes
      */
     _log(FACWAR__CALL, "FacWarMgr::Handle_IsEnemyFaction()");
+    if (is_log_enabled(FACWAR__CALL_DUMP))
     call.Dump(FACWAR__CALL_DUMP);
 
     // return boolean
@@ -247,6 +251,7 @@ PyResult FactionWarMgrService::Handle_IsEnemyFaction(PyCallArgs &call) {
 PyResult FactionWarMgrService::Handle_IsEnemyCorporation(PyCallArgs &call) {
     //return self.facWarMgr.IsEnemyCorporation(enemyID, factionID)
     _log(FACWAR__CALL, "FacWarMgr::Handle_IsEnemyCorporation()");
+    if (is_log_enabled(FACWAR__CALL_DUMP))
     call.Dump(FACWAR__CALL_DUMP);
 
     // return boolean
@@ -258,7 +263,8 @@ PyResult FactionWarMgrService::Handle_IsEnemyCorporation(PyCallArgs &call) {
  */
 
 PyResult FactionWarMgrService::Handle_GetCharacterRankInfo(PyCallArgs &call) {
-  _log(FACWAR__CALL, "FacWarMgr::Handle_GetCharacterRankInfo()");
+    _log(FACWAR__CALL, "FacWarMgr::Handle_GetCharacterRankInfo()");
+    if (is_log_enabled(FACWAR__CALL_DUMP))
   call.Dump(FACWAR__CALL_DUMP);
 
   return nullptr;
@@ -266,14 +272,16 @@ PyResult FactionWarMgrService::Handle_GetCharacterRankInfo(PyCallArgs &call) {
 
 //22:48:28 L FactionWarMgrService::Handle_GetFactionalWarStatus(): size= 0
 PyResult FactionWarMgrService::Handle_GetFactionalWarStatus(PyCallArgs &call) {
-  _log(FACWAR__CALL, "FacWarMgr::Handle_GetFactionalWarStatus()");
+    _log(FACWAR__CALL, "FacWarMgr::Handle_GetFactionalWarStatus()");
+    if (is_log_enabled(FACWAR__CALL_DUMP))
   call.Dump(FACWAR__CALL_DUMP);
 
   return nullptr;
 }
 
 PyResult FactionWarMgrService::Handle_JoinFactionAsCharacter(PyCallArgs &call) {
-  _log(FACWAR__CALL, "FacWarMgr::Handle_JoinFactionAsCharacter()");
+    _log(FACWAR__CALL, "FacWarMgr::Handle_JoinFactionAsCharacter()");
+    if (is_log_enabled(FACWAR__CALL_DUMP))
   call.Dump(FACWAR__CALL_DUMP);
 
   return nullptr;
@@ -282,6 +290,7 @@ PyResult FactionWarMgrService::Handle_JoinFactionAsCharacter(PyCallArgs &call) {
 PyResult FactionWarMgrService::Handle_GetCorporationWarFactionID(PyCallArgs &call) {
     //ret = self.facWarMgr.GetCorporationWarFactionID(corpID)
     _log(FACWAR__CALL, "FacWarMgr::Handle_GetCorporationWarFactionID()");
+    if (is_log_enabled(FACWAR__CALL_DUMP))
     call.Dump(FACWAR__CALL_DUMP);
 
     return nullptr;
@@ -294,6 +303,7 @@ PyResult FactionWarMgrService::Handle_GetSystemsConqueredThisRun(PyCallArgs &cal
         cfg.eveowners.Prime([ d['occupierID'] for d in systemsThatWillSwitchNextDownTime ])
         */
     _log(FACWAR__CALL, "FacWarMgr::Handle_GetSystemsConqueredThisRun()");
+    if (is_log_enabled(FACWAR__CALL_DUMP))
     call.Dump(FACWAR__CALL_DUMP);
 
     return nullptr;
@@ -302,6 +312,7 @@ PyResult FactionWarMgrService::Handle_GetSystemsConqueredThisRun(PyCallArgs &cal
 PyResult FactionWarMgrService::Handle_GetFactionCorporations(PyCallArgs &call) {
     //return self.facWarMgr.GetFactionCorporations(factionID)
     _log(FACWAR__CALL, "FacWarMgr::Handle_GetFactionCorporations()");
+    if (is_log_enabled(FACWAR__CALL_DUMP))
     call.Dump(FACWAR__CALL_DUMP);
 
     return nullptr;
@@ -313,6 +324,7 @@ PyResult FactionWarMgrService::Handle_JoinFactionAsCharacterRecommendationLetter
     // they can join provided they have a 'recommendation letter', typeID 30906
     // dunno if the letter is removed after joining.
     _log(FACWAR__CALL, "FacWarMgr::Handle_JoinFactionAsCharacterRecommendationLetter()");
+    if (is_log_enabled(FACWAR__CALL_DUMP))
     call.Dump(FACWAR__CALL_DUMP);
 
     return nullptr;
@@ -321,6 +333,7 @@ PyResult FactionWarMgrService::Handle_JoinFactionAsCharacterRecommendationLetter
 PyResult FactionWarMgrService::Handle_JoinFactionAsAlliance(PyCallArgs &call) {
     //self.facWarMgr.JoinFactionAsAlliance(factionID)
     _log(FACWAR__CALL, "FacWarMgr::Handle_JoinFactionAsAlliance()");
+    if (is_log_enabled(FACWAR__CALL_DUMP))
     call.Dump(FACWAR__CALL_DUMP);
 
     return nullptr;
@@ -329,6 +342,7 @@ PyResult FactionWarMgrService::Handle_JoinFactionAsAlliance(PyCallArgs &call) {
 PyResult FactionWarMgrService::Handle_JoinFactionAsCorporation(PyCallArgs &call) {
     //self.facWarMgr.JoinFactionAsCorporation(factionID)
     _log(FACWAR__CALL, "FacWarMgr::Handle_JoinFactionAsCorporation()");
+    if (is_log_enabled(FACWAR__CALL_DUMP))
     call.Dump(FACWAR__CALL_DUMP);
 
     return nullptr;
@@ -337,6 +351,7 @@ PyResult FactionWarMgrService::Handle_JoinFactionAsCorporation(PyCallArgs &call)
 PyResult FactionWarMgrService::Handle_GetStats_FactionInfo(PyCallArgs &call) {
     //return self.facWarMgr.GetStats_FactionInfo()
     _log(FACWAR__CALL, "FacWarMgr::Handle_GetStats_FactionInfo()");
+    if (is_log_enabled(FACWAR__CALL_DUMP))
     call.Dump(FACWAR__CALL_DUMP);
 
     return nullptr;
@@ -345,6 +360,7 @@ PyResult FactionWarMgrService::Handle_GetStats_FactionInfo(PyCallArgs &call) {
 PyResult FactionWarMgrService::Handle_GetStats_TopAndAllKillsAndVPs(PyCallArgs &call) {
     //self.topStats = self.facWarMgr.GetStats_TopAndAllKillsAndVPs()
     _log(FACWAR__CALL, "FacWarMgr::Handle_GetStats_TopAndAllKillsAndVPs()");
+    if (is_log_enabled(FACWAR__CALL_DUMP))
     call.Dump(FACWAR__CALL_DUMP);
 
     return nullptr;
@@ -353,6 +369,7 @@ PyResult FactionWarMgrService::Handle_GetStats_TopAndAllKillsAndVPs(PyCallArgs &
 PyResult FactionWarMgrService::Handle_GetStats_Character(PyCallArgs &call) {
     //for k, v in self.facWarMgr.GetStats_Character().items():
     _log(FACWAR__CALL, "FacWarMgr::Handle_GetStats_Character()");
+    if (is_log_enabled(FACWAR__CALL_DUMP))
     call.Dump(FACWAR__CALL_DUMP);
 
     return nullptr;
@@ -361,6 +378,7 @@ PyResult FactionWarMgrService::Handle_GetStats_Character(PyCallArgs &call) {
 PyResult FactionWarMgrService::Handle_GetStats_Corp(PyCallArgs &call) {
     // for k, v in self.facWarMgr.GetStats_Corp().items():
     _log(FACWAR__CALL, "FacWarMgr::Handle_GetStats_Corp()");
+    if (is_log_enabled(FACWAR__CALL_DUMP))
     call.Dump(FACWAR__CALL_DUMP);
 
     return nullptr;
@@ -369,6 +387,7 @@ PyResult FactionWarMgrService::Handle_GetStats_Corp(PyCallArgs &call) {
 PyResult FactionWarMgrService::Handle_GetStats_Alliance(PyCallArgs &call) {
     //for k, v in self.facWarMgr.GetStats_Alliance().items():
     _log(FACWAR__CALL, "FacWarMgr::Handle_GetStats_Alliance()");
+    if (is_log_enabled(FACWAR__CALL_DUMP))
     call.Dump(FACWAR__CALL_DUMP);
 
     return nullptr;
@@ -377,6 +396,7 @@ PyResult FactionWarMgrService::Handle_GetStats_Alliance(PyCallArgs &call) {
 PyResult FactionWarMgrService::Handle_GetStats_Militia(PyCallArgs &call) {
     //return self.facWarMgr.GetStats_Militia()
     _log(FACWAR__CALL, "FacWarMgr::Handle_GetStats_Militia()");
+    if (is_log_enabled(FACWAR__CALL_DUMP))
     call.Dump(FACWAR__CALL_DUMP);
 
     return nullptr;
@@ -385,6 +405,7 @@ PyResult FactionWarMgrService::Handle_GetStats_Militia(PyCallArgs &call) {
 PyResult FactionWarMgrService::Handle_GetStats_CorpPilots(PyCallArgs &call) {
     //return self.facWarMgr.GetStats_CorpPilots()
     _log(FACWAR__CALL, "FacWarMgr::Handle_GetStats_CorpPilots()");
+    if (is_log_enabled(FACWAR__CALL_DUMP))
     call.Dump(FACWAR__CALL_DUMP);
 
     return nullptr;
@@ -393,6 +414,7 @@ PyResult FactionWarMgrService::Handle_GetStats_CorpPilots(PyCallArgs &call) {
 PyResult FactionWarMgrService::Handle_LeaveFactionAsAlliance(PyCallArgs &call) {
     //self.facWarMgr.LeaveFactionAsAlliance(factionID)
     _log(FACWAR__CALL, "FacWarMgr::Handle_LeaveFactionAsAlliance()");
+    if (is_log_enabled(FACWAR__CALL_DUMP))
     call.Dump(FACWAR__CALL_DUMP);
 
     return nullptr;
@@ -401,6 +423,7 @@ PyResult FactionWarMgrService::Handle_LeaveFactionAsAlliance(PyCallArgs &call) {
 PyResult FactionWarMgrService::Handle_LeaveFactionAsCorporation(PyCallArgs &call) {
     //self.facWarMgr.LeaveFactionAsCorporation(factionID)
     _log(FACWAR__CALL, "FacWarMgr::Handle_()");
+    if (is_log_enabled(FACWAR__CALL_DUMP))
     call.Dump(FACWAR__CALL_DUMP);
 
     return nullptr;
@@ -409,6 +432,7 @@ PyResult FactionWarMgrService::Handle_LeaveFactionAsCorporation(PyCallArgs &call
 PyResult FactionWarMgrService::Handle_WithdrawJoinFactionAsAlliance(PyCallArgs &call) {
     //self.facWarMgr.WithdrawJoinFactionAsAlliance(factionID)
     _log(FACWAR__CALL, "FacWarMgr::Handle_()");
+    if (is_log_enabled(FACWAR__CALL_DUMP))
     call.Dump(FACWAR__CALL_DUMP);
 
     return nullptr;
@@ -417,6 +441,7 @@ PyResult FactionWarMgrService::Handle_WithdrawJoinFactionAsAlliance(PyCallArgs &
 PyResult FactionWarMgrService::Handle_WithdrawJoinFactionAsCorporation(PyCallArgs &call) {
     //self.facWarMgr.WithdrawJoinFactionAsCorporation(factionID)
     _log(FACWAR__CALL, "FacWarMgr::Handle_()");
+    if (is_log_enabled(FACWAR__CALL_DUMP))
     call.Dump(FACWAR__CALL_DUMP);
 
     return nullptr;
@@ -425,6 +450,7 @@ PyResult FactionWarMgrService::Handle_WithdrawJoinFactionAsCorporation(PyCallArg
 PyResult FactionWarMgrService::Handle_WithdrawLeaveFactionAsAlliance(PyCallArgs &call) {
     //self.facWarMgr.WithdrawLeaveFactionAsAlliance(factionID)
     _log(FACWAR__CALL, "FacWarMgr::Handle_()");
+    if (is_log_enabled(FACWAR__CALL_DUMP))
     call.Dump(FACWAR__CALL_DUMP);
 
     return nullptr;
@@ -433,6 +459,7 @@ PyResult FactionWarMgrService::Handle_WithdrawLeaveFactionAsAlliance(PyCallArgs 
 PyResult FactionWarMgrService::Handle_WithdrawLeaveFactionAsCorporation(PyCallArgs &call) {
     //self.facWarMgr.WithdrawLeaveFactionAsCorporation(factionID)
     _log(FACWAR__CALL, "FacWarMgr::Handle_WithdrawLeaveFactionAsCorporation()");
+    if (is_log_enabled(FACWAR__CALL_DUMP))
     call.Dump(FACWAR__CALL_DUMP);
 
     return nullptr;
@@ -441,6 +468,7 @@ PyResult FactionWarMgrService::Handle_WithdrawLeaveFactionAsCorporation(PyCallAr
 PyResult FactionWarMgrService::Handle_RefreshCorps(PyCallArgs &call) {
     //return self.facWarMgr.RefreshCorps()
     _log(FACWAR__CALL, "FacWarMgr::Handle_RefreshCorps()");
+    if (is_log_enabled(FACWAR__CALL_DUMP))
     call.Dump(FACWAR__CALL_DUMP);
 
     return nullptr;

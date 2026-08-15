@@ -126,6 +126,7 @@ PyResult CorporationService::Handle_GetCorpInfo(PyCallArgs &call)
 PyResult CorporationService::Handle_GetRecruitmentAdRegistryData( PyCallArgs& call )
 {   // working
     _log(CORP__CALL, "CorporationService::Handle_GetRecruitmentAdRegistryData()");
+    if (is_log_enabled(CORP__CALL_DUMP))
     call.Dump(CORP__CALL_DUMP);
 
     PyDict* dict = new PyDict();
@@ -140,6 +141,7 @@ PyResult CorporationService::Handle_GetRecruitmentAdRegistryData( PyCallArgs& ca
 PyResult CorporationService::Handle_GetRecruitmentAdsByCriteria( PyCallArgs& call )
 {    //   return sm.RemoteSvc('corporationSvc').GetRecruitmentAdsByCriteria(typeMask, isInAlliance, minMembers, maxMembers)
     _log(CORP__CALL, "CorporationService::Handle_GetRecruitmentAdsByCriteria()");
+    if (is_log_enabled(CORP__CALL_DUMP))
     call.Dump(CORP__CALL_DUMP);
 
     Call_GetRecruitmentAdsByCriteria args;
@@ -155,6 +157,7 @@ PyResult CorporationService::Handle_GetRecruitmentAdsForCorporation( PyCallArgs&
 {
     // recruitments = self.GetCorpRegistry().GetRecruitmentAdsForCorporation()
     _log(CORP__CALL, "CorporationService::Handle_GetRecruitmentAdsForCorporation()");
+    if (is_log_enabled(CORP__CALL_DUMP))
     call.Dump(CORP__CALL_DUMP);
 
     return m_db.GetAdRegistryData();
@@ -239,6 +242,7 @@ PyResult CorporationService::Handle_GetMedalsReceived(PyCallArgs &call) {
      * 13:25:05 [CorpCallDump]       [ 0]    Integer: 90000000
      */
     _log(CORP__CALL, "CorporationService::Handle_GetMedalsReceived()");
+    if (is_log_enabled(CORP__CALL_DUMP))
     call.Dump(CORP__CALL_DUMP);
 
     SingleIntegerArg arg;
@@ -258,6 +262,7 @@ PyResult CorporationService::Handle_GetMedalsReceived(PyCallArgs &call) {
 PyResult CorporationService::Handle_GetMedalDetails(PyCallArgs &call)
 {   // working
     _log(CORP__CALL, "CorporationService::Handle_GetMedalDetails()");
+    if (is_log_enabled(CORP__CALL_DUMP))
     call.Dump(CORP__CALL_DUMP);
 
     SingleIntegerArg arg;
@@ -273,6 +278,7 @@ PyResult CorporationService::Handle_GetAllCorpMedals( PyCallArgs& call )
 {   //working
     // medals, medalDetails = sm.RemoteSvc('corporationSvc').GetAllCorpMedals(corpID)
     _log(CORP__CALL, "CorporationService::Handle_GetAllCorpMedals()");
+    if (is_log_enabled(CORP__CALL_DUMP))
     call.Dump(CORP__CALL_DUMP);
 
     SingleIntegerArg arg;
@@ -294,6 +300,7 @@ PyResult CorporationService::Handle_GetRecipientsOfMedal(PyCallArgs &call)
     //   recipients = sm.RemoteSvc('corporationSvc').GetRecipientsOfMedal(medalID)
     //          called from GetMedalSubContent in corp_ui_member_deco
     _log(CORP__CALL, "CorporationService::Handle_GetRecipientsOfMedal()");
+    if (is_log_enabled(CORP__CALL_DUMP))
     call.Dump(CORP__CALL_DUMP);
 
     SingleIntegerArg arg;
@@ -323,6 +330,7 @@ PyResult CorporationService::Handle_GiveMedalToCharacters(PyCallArgs &call)
      * 13:24:32 [CorpCallDump]       [ 2]    WString: 'testing this shit'
      */
     _log(CORP__CALL, "CorporationService::Handle_GiveMedalToCharacters()");
+    if (is_log_enabled(CORP__CALL_DUMP))
     call.Dump(CORP__CALL_DUMP);
 
     Call_AwardMedal args;
@@ -359,6 +367,7 @@ PyResult CorporationService::Handle_GetMedalStatuses(PyCallArgs &call)
     //  return sm.RemoteSvc('corporationSvc').GetMedalStatuses()
     //  statusID, statusName = self.GetStatus(theyareallthesame.status)
     _log(CORP__CALL, "CorporationService::Handle_GetMedalStatuses()");
+    if (is_log_enabled(CORP__CALL_DUMP))
     call.Dump(CORP__CALL_DUMP);
 
     //  cant find any other references to this, so it's hacked in the db call
@@ -395,6 +404,7 @@ PyResult CorporationService::Handle_SetMedalStatus(PyCallArgs &call)
      *
      */
     _log(CORP__CALL, "CorporationService::Handle_SetMedalStatus()");
+    if (is_log_enabled(CORP__CALL_DUMP))
     call.Dump(CORP__CALL_DUMP);
 
     call.client->SendInfoModalMsg("Sorry, %s.  Saving Permissions for Medals isn't functional yet.", call.client->GetName());

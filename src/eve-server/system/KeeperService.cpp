@@ -107,8 +107,10 @@ KeeperService::~KeeperService() {
 }
 
 PyBoundObject *KeeperService::CreateBoundObject(Client *pClient, const PyRep *bind_args) {
-    _log(DUNG__TRACE, "KeeperService bind request for:");
-    bind_args->Dump(DUNG__TRACE, "    ");
+    if (is_log_enabled(DUNG__TRACE)) {
+        _log(DUNG__TRACE, "KeeperService bind request for:");
+        bind_args->Dump(DUNG__TRACE, "    ");
+    }
 
     return new KeeperBound(m_manager, &m_db);
 }
@@ -116,8 +118,10 @@ PyBoundObject *KeeperService::CreateBoundObject(Client *pClient, const PyRep *bi
 PyResult KeeperService::Handle_GetLevelEditor(PyCallArgs &call)
 {
     // self.ed = sm.RemoteSvc('keeper').GetLevelEditor()  (this object is for method chaining)
-    _log(DUNG__CALL,  "KeeperService::Handle_GetLevelEditor  size: %lu", call.tuple->size());
-    call.Dump(DUNG__CALL_DUMP);
+    if (is_log_enabled(DUNG__CALL)) {
+        _log(DUNG__CALL,  "KeeperService::Handle_GetLevelEditor  size: %lu", call.tuple->size());
+        call.Dump(DUNG__CALL_DUMP);
+    }
 
     KeeperBound *ib = new KeeperBound(m_manager, &m_db);
 
@@ -127,8 +131,10 @@ PyResult KeeperService::Handle_GetLevelEditor(PyCallArgs &call)
 PyResult KeeperBound::Handle_GetCurrentlyEditedRoomID(PyCallArgs &call)
 {
     //return sm.RemoteSvc('keeper').GetLevelEditor().GetCurrentlyEditedRoomID()
-    _log(DUNG__CALL,  "KeeperBound::Handle_GetCurrentlyEditedRoomID  size: %lu", call.tuple->size());
-    call.Dump(DUNG__CALL_DUMP);
+    if (is_log_enabled(DUNG__CALL)) {
+        _log(DUNG__CALL,  "KeeperBound::Handle_GetCurrentlyEditedRoomID  size: %lu", call.tuple->size());
+        call.Dump(DUNG__CALL_DUMP);
+    }
 
     // how do we get roomID being edited?
 
@@ -147,16 +153,20 @@ PyResult KeeperService::Handle_CanWarpToPathPlex(PyCallArgs &call) {
                         dist = (foo.Vector3(resp) - foo.Vector3(me.x, me.y, me.z)).Length()
 
                         */
-    _log(DUNG__CALL,  "KeeperService::Handle_CanWarpToPathPlex  size: %lu", call.tuple->size());
-    call.Dump(DUNG__CALL_DUMP);
+    if (is_log_enabled(DUNG__CALL)) {
+        _log(DUNG__CALL,  "KeeperService::Handle_CanWarpToPathPlex  size: %lu", call.tuple->size());
+        call.Dump(DUNG__CALL_DUMP);
+    }
 
-	return nullptr;
+    return nullptr;
 }
 
 PyResult KeeperBound::Handle_Bind(PyCallArgs &call)
 {
-    _log(DUNG__CALL,  "KeeperBound::Handle_Bind  size: %lu", call.tuple->size());
-    call.Dump(DUNG__CALL_DUMP);
+    if (is_log_enabled(DUNG__CALL)) {
+        _log(DUNG__CALL,  "KeeperBound::Handle_Bind  size: %lu", call.tuple->size());
+        call.Dump(DUNG__CALL_DUMP);
+    }
     /*
      * 19:45:21 [Bound] KeeperBound::Bind()
      * 19:45:21 [DungCall] KeeperBound::Handle_Bind  size: 0
@@ -172,8 +182,10 @@ PyResult KeeperBound::Handle_Bind(PyCallArgs &call)
 PyResult KeeperBound::Handle_EditDungeon(PyCallArgs &call)
 {
     //ed.EditDungeon(dungeonID, roomID=roomID)
-    _log(DUNG__CALL,  "KeeperBound::Handle_EditDungeon  size: %lu", call.tuple->size());
-    call.Dump(DUNG__CALL_DUMP);
+    if (is_log_enabled(DUNG__CALL)) {
+        _log(DUNG__CALL,  "KeeperBound::Handle_EditDungeon  size: %lu", call.tuple->size());
+        call.Dump(DUNG__CALL_DUMP);
+    }
     /*
      * 18:22:35 [DungCall] KeeperBound::Handle_EditDungeon  size: 1
      * 18:22:35 [DungCallDump]   Call Arguments:
@@ -216,8 +228,10 @@ PyResult KeeperBound::Handle_EditDungeon(PyCallArgs &call)
 PyResult KeeperBound::Handle_PlayDungeon(PyCallArgs &call)
 {
     //ed.PlayDungeon(dungeonID, roomID=roomID, godmode=godmode)
-    _log(DUNG__CALL,  "KeeperBound::Handle_PlayDungeon  size: %lu", call.tuple->size());
-    call.Dump(DUNG__CALL_DUMP);
+    if (is_log_enabled(DUNG__CALL)) {
+        _log(DUNG__CALL,  "KeeperBound::Handle_PlayDungeon  size: %lu", call.tuple->size());
+        call.Dump(DUNG__CALL_DUMP);
+    }
     /*
      * 18:26:35 [DungCall] KeeperBound::Handle_PlayDungeon  size: 1
      * 18:26:35 [DungCallDump]   Call Arguments:
@@ -236,8 +250,10 @@ PyResult KeeperBound::Handle_PlayDungeon(PyCallArgs &call)
 
 PyResult KeeperBound::Handle_Reset(PyCallArgs &call)
 {
-    _log(DUNG__CALL,  "KeeperBound::Handle_Reset  size: %lu", call.tuple->size());
-    call.Dump(DUNG__CALL_DUMP);
+    if (is_log_enabled(DUNG__CALL)) {
+        _log(DUNG__CALL,  "KeeperBound::Handle_Reset  size: %lu", call.tuple->size());
+        call.Dump(DUNG__CALL_DUMP);
+    }
     /*
      * 18:27:02 [DungCall] KeeperBound::Handle_Reset  size: 0
      * 18:27:02 [DungCallDump]   Call Arguments:
@@ -251,8 +267,10 @@ PyResult KeeperBound::Handle_Reset(PyCallArgs &call)
 
 PyResult KeeperBound::Handle_GotoRoom(PyCallArgs &call)
 {
-    _log(DUNG__CALL,  "KeeperBound::Handle_GotoRoom  size: %lu", call.tuple->size());
-    call.Dump(DUNG__CALL_DUMP);
+    if (is_log_enabled(DUNG__CALL)) {
+        _log(DUNG__CALL,  "KeeperBound::Handle_GotoRoom  size: %lu", call.tuple->size());
+        call.Dump(DUNG__CALL_DUMP);
+    }
     /*
      * 18:22:48 [DungCall] KeeperBound::Handle_GotoRoom  size: 1
      * 18:22:48 [DungCallDump]   Call Arguments:
@@ -270,8 +288,10 @@ PyResult KeeperBound::Handle_ClientBSDRevisionChange(PyCallArgs &call)
     //  remoteDungeonKeepr.ClientBSDRevisionChange(action, schemaName, tableName, rowKeys, columnValues, reverting)
     // no fkn clue what this is supposed to do here...
 
-    _log(DUNG__CALL,  "KeeperBound::Handle_ClientBSDRevisionChange  size: %lu", call.tuple->size());
-    call.Dump(DUNG__CALL_DUMP);
+    if (is_log_enabled(DUNG__CALL)) {
+        _log(DUNG__CALL,  "KeeperBound::Handle_ClientBSDRevisionChange  size: %lu", call.tuple->size());
+        call.Dump(DUNG__CALL_DUMP);
+    }
     /*
      */
     return nullptr;
@@ -281,8 +301,10 @@ PyResult KeeperBound::Handle_ClientBSDRevisionChange(PyCallArgs &call)
 /**  Hard-coded to random location....just to play with right now.
  *                will need to edit later to implement in missions/etc  */
 PyResult KeeperService::Handle_ActivateAccelerationGate(PyCallArgs &call) {
-    _log(DUNG__CALL,  "KeeperService::Handle_ActivateAccelerationGate  size: %lu", call.tuple->size());
-    call.Dump(DUNG__CALL_DUMP);
+    if (is_log_enabled(DUNG__CALL)) {
+        _log(DUNG__CALL,  "KeeperService::Handle_ActivateAccelerationGate  size: %lu", call.tuple->size());
+        call.Dump(DUNG__CALL_DUMP);
+    }
 
     SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {

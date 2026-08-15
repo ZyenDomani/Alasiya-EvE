@@ -67,7 +67,8 @@ PyResult AuthService::Handle_AmUnderage(PyCallArgs &call)
 {
     //  return sm.RemoteSvc('authentication').AmUnderage()
     sLog.Warning("AuthService", "Handle_AmUnderage() size=%lu", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
+    if (is_log_enabled(SERVICE__CALL_DUMP))
+        call.Dump(SERVICE__CALL_DUMP);
 
     // return boolean
     return PyStatic.NewFalse();
@@ -77,7 +78,8 @@ PyResult AuthService::Handle_AccruedTime(PyCallArgs &call)
 {
     // return sm.RemoteSvc('authentication').AccruedTime()
     sLog.Warning("AuthService", "Handle_AccruedTime() size=%lu", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
+    if (is_log_enabled(SERVICE__CALL_DUMP))
+        call.Dump(SERVICE__CALL_DUMP);
 
     return nullptr;
 }
@@ -86,7 +88,8 @@ PyResult AuthService::Handle_SetLanguageID(PyCallArgs &call)
 {
     //sm.RemoteSvc('authentication').SetLanguageID(setlanguageID)
     sLog.Warning("AuthService", "Handle_SetLanguageID() size=%lu", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
+    if (is_log_enabled(SERVICE__CALL_DUMP))
+        call.Dump(SERVICE__CALL_DUMP);
 
     return nullptr;
 }

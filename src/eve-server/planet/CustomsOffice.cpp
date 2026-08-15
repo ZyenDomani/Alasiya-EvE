@@ -182,7 +182,7 @@ void CustomsSE::UpdateSettings(Call_UpdateSettings& args, Call_TaxRateValuesDict
 {
     m_cData.allowAlliance    = args.allowAlliance;
     m_cData.allowStandings   = args.allowStandings;
-    m_cData.selectedHour     = args.reinforceValue;    // timeframe structure will come out of reinforcement
+    m_cData.selectedHour     = args.reinforceValue;   // timeframe structure will come out of reinforcement
     m_cData.standingValue    = args.standingValue;    // minimum standing allowed for access (EVEPOS::Standing::xx)
 
     using namespace EVEPOS;

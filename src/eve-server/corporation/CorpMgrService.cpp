@@ -104,6 +104,7 @@ PyResult CorpMgrService::Handle_AuditMember(PyCallArgs &call) {
     // logItemEventRows, crpRoleHistroyRows = sm.RemoteSvc('corpmgr').AuditMember(memberID, fromDate, toDate, rowsPerPage)
 
     _log(CORP__CALL, "CorpMgrService::Handle_AuditMember()");
+    if (is_log_enabled(CORP__CALL_DUMP))
     call.Dump(CORP__CALL_DUMP);
 
     Call_AuditMember args;
@@ -126,6 +127,7 @@ PyResult CorpMgrService::Handle_GetAssetInventory(PyCallArgs &call) {
     // rows = sm.RemoteSvc('corpmgr').GetAssetInventory(eve.session.corpid, which)
     // this is called from corp asset screen.  wants a return of locationIDs of stations where corp hangers have items
     _log(CORP__CALL, "CorpMgrService::Handle_GetAssetInventory()");
+    if (is_log_enabled(CORP__CALL_DUMP))
     call.Dump(CORP__CALL_DUMP);
 
     Call_GetAssetInventory args;
@@ -169,6 +171,7 @@ PyResult CorpMgrService::Handle_GetAssetInventory(PyCallArgs &call) {
 PyResult CorpMgrService::Handle_GetAssetInventoryForLocation(PyCallArgs &call) {
     //  items = sm.RemoteSvc('corpmgr').GetAssetInventoryForLocation(eve.session.corpid, stationID, which)
     _log(CORP__CALL, "CorpMgrService::Handle_GetAssetInventoryForLocation()");
+    if (is_log_enabled(CORP__CALL_DUMP))
     call.Dump(CORP__CALL_DUMP);
 
     Call_GetAssetInventoryForLocation args;
@@ -215,7 +218,8 @@ PyResult CorpMgrService::Handle_GetCorporationStations(PyCallArgs &call) {
             stationListing.append([localization.GetByLabel('UI/PVPTrade/StationInSolarsystem', station=station.itemID, solarsystem=station.locationID), station.itemID, station.typeID])
 */
 
-    _log(CORP__CALL, "CorpMgrService::Handle_GetCorporationStations()");
+  _log(CORP__CALL, "CorpMgrService::Handle_GetCorporationStations()");
+  if (is_log_enabled(CORP__CALL_DUMP))
     call.Dump(CORP__CALL_DUMP);
 
     if (IsPlayerCorp(call.client->GetCorporationID()))
@@ -230,6 +234,7 @@ PyResult CorpMgrService::Handle_SearchAssets(PyCallArgs &call) {
     //   rows = sm.RemoteSvc('corpmgr').SearchAssets(which, itemCategoryID, itemGroupID, itemTypeID, qty)
     // 'which' is a filter type or None
     _log(CORP__CALL, "CorpMgrService::Handle_SearchAssets()");
+    if (is_log_enabled(CORP__CALL_DUMP))
     call.Dump(CORP__CALL_DUMP);
 
     return nullptr;

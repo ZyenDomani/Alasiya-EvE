@@ -125,8 +125,10 @@ AggressionMgrService::~AggressionMgrService()
 
 PyBoundObject *AggressionMgrService::CreateBoundObject(Client* pClient, const PyRep *bind_args)
 {
-    _log(CLIENT__MESSAGE, "AggressionMgrService bind request for:");
-    bind_args->Dump(CLIENT__MESSAGE, "    ");
+    if (is_log_enabled(CLIENT__MESSAGE)) {
+        _log(CLIENT__MESSAGE, "AggressionMgrService bind request for:");
+        bind_args->Dump(CLIENT__MESSAGE, "    ");
+    }
     /*
      * 18:26:21 [ClientMessage] AggressionMgrService bind request for:
      * 18:26:21 [ClientMessage]     Integer field: 30002547     <<-- systemID

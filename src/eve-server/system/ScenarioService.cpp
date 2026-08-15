@@ -81,6 +81,7 @@ PyResult ScenarioService::Handle_WaitForObjectCreationByID( PyCallArgs& call )
     //   scenario.(objectIDs)
 
     _log(DUNG__CALL, "ScenarioService::WaitForObjectCreationByID()" );
+    if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
     return nullptr;
@@ -92,6 +93,7 @@ PyResult ScenarioService::Handle_GetBallAndSlimItemFromObjectID( PyCallArgs& cal
 
 
     _log(DUNG__CALL, "ScenarioService::GetBallAndSlimItemFromObjectID()" );
+    if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
     return nullptr;
@@ -102,6 +104,7 @@ PyResult ScenarioService::Handle_GetEditingRoomPosition( PyCallArgs& call )
     //     roomPos = scenarioSvc.GetEditingRoomPosition()
 
     _log(DUNG__CALL, "ScenarioService::GetEditingRoomPosition()" );
+    if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
     return nullptr;
@@ -112,6 +115,7 @@ PyResult ScenarioService::Handle_ResetD( PyCallArgs& call )
     //        sm.GetService('scenario').ResetD()
 
     _log(DUNG__CALL, "ScenarioService::ResetD()" );
+    if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
     return nullptr;
@@ -122,6 +126,7 @@ PyResult ScenarioService::Handle_GetEditingRoomID( PyCallArgs& call )
     //    roomID = scenarioSvc.GetEditingRoomID()
 
     _log(DUNG__CALL, "ScenarioService::GetEditingRoomID()" );
+    if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
     return nullptr;
@@ -133,6 +138,7 @@ PyResult ScenarioService::Handle_SetSelectedQuantity( PyCallArgs& call )
 
 
     _log(DUNG__CALL, "ScenarioService::SetSelectedQuantity()" );
+    if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
     return nullptr;
@@ -143,6 +149,7 @@ PyResult ScenarioService::Handle_DeleteObjects( PyCallArgs& call )
     //    self.scenario.DeleteObjects(self.objectGroups[groupName])
 
     _log(DUNG__CALL, "ScenarioService::DeleteObjects()" );
+    if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
     return nullptr;
@@ -153,6 +160,7 @@ PyResult ScenarioService::Handle_SetActiveHardGroup( PyCallArgs& call )
 
 
     _log(DUNG__CALL, "ScenarioService::SetActiveHardGroup()" );
+    if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
     return nullptr;
@@ -163,6 +171,7 @@ PyResult ScenarioService::Handle_RemoveAllHardGroups( PyCallArgs& call )
     //   scenario.RemoveAllHardGroups()
 
     _log(DUNG__CALL, "ScenarioService::RemoveAllHardGroups()" );
+    if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
     return nullptr;
@@ -173,6 +182,7 @@ PyResult ScenarioService::Handle_AddHardGroup( PyCallArgs& call )
     // scenario.AddHardGroup(groupName, orientation)
 
     _log(DUNG__CALL, "ScenarioService::AddHardGroup()" );
+    if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
     return nullptr;
@@ -184,6 +194,7 @@ PyResult ScenarioService::Handle_RenameHardGroup( PyCallArgs& call )
 
 
     _log(DUNG__CALL, "ScenarioService::RenameHardGroup()" );
+    if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
     return nullptr;
@@ -195,6 +206,7 @@ PyResult ScenarioService::Handle_AreAllSelected( PyCallArgs& call )
 
 
     _log(DUNG__CALL, "ScenarioService::AreAllSelected()" );
+    if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
     return nullptr;
@@ -205,6 +217,7 @@ PyResult ScenarioService::Handle_SaveAllChanges( PyCallArgs& call )
 
 
     _log(DUNG__CALL, "ScenarioService::SaveAllChanges()" );
+    if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
     return nullptr;
@@ -215,6 +228,7 @@ PyResult ScenarioService::Handle_PlayDungeon( PyCallArgs& call )
     //        sm.GetService('scenario').PlayDungeon(dungeonID, roomID, godmode=godMode)
 
     _log(DUNG__CALL, "ScenarioService::PlayDungeon()" );
+    if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
     return nullptr;
@@ -225,6 +239,7 @@ PyResult ScenarioService::Handle_EditRoom( PyCallArgs& call )
     //        sm.GetService('scenario').EditRoom(dungeonID, settings.user.ui.Get('selectedRoomID', None))
 
     _log(DUNG__CALL, "ScenarioService::EditRoom()" );
+    if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
     return nullptr;
@@ -235,6 +250,7 @@ PyResult ScenarioService::Handle_GotoRoom( PyCallArgs& call )
     //            sm.GetService('scenario').GotoRoom(roomID)
 
     _log(DUNG__CALL, "ScenarioService::GotoRoom()" );
+    if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
     return nullptr;
@@ -256,6 +272,7 @@ PyResult ScenarioService::Handle_GetDunObjects( PyCallArgs& call )
      *                 slimItem.typeID])
      */
     _log(DUNG__CALL, "ScenarioService::GetDunObjects()" );
+    if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
     return nullptr;
@@ -265,6 +282,7 @@ PyResult ScenarioService::Handle_GetSelObjects( PyCallArgs& call )
 {
 //GetSelObjects() (returns list of slim items)
     _log(DUNG__CALL, "ScenarioService::GetSelObjects()" );
+    if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
     return nullptr;
@@ -277,6 +295,7 @@ PyResult ScenarioService::Handle_IsSelectedByObjID( PyCallArgs& call )
 
 
     _log(DUNG__CALL, "ScenarioService::IsSelectedByObjID()" );
+    if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
     return nullptr;
@@ -287,6 +306,7 @@ PyResult ScenarioService::Handle_DuplicateSelection( PyCallArgs& call )
     //        sm.StartService('scenario').DuplicateSelection(amount, X, Y, Z)
 
     _log(DUNG__CALL, "ScenarioService::DuplicateSelection()" );
+    if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
     return nullptr;
@@ -296,6 +316,7 @@ PyResult ScenarioService::Handle_SetSelectionByID( PyCallArgs& call )
 {
 //SetSelectionByID(ids)
     _log(DUNG__CALL, "ScenarioService::SetSelectionByID()" );
+    if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
     return nullptr;
@@ -306,6 +327,7 @@ PyResult ScenarioService::Handle_SetSelectedRadius( PyCallArgs& call )
     //sm.GetService('scenario').SetSelectedRadius(minRadius, maxRadius)
 
     _log(DUNG__CALL, "ScenarioService::SetSelectedRadius()" );
+    if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
     return nullptr;
@@ -316,6 +338,7 @@ PyResult ScenarioService::Handle_SetRotate( PyCallArgs& call )
     //        sm.GetService('scenario').SetRotate(y, p, r)
 
     _log(DUNG__CALL, "ScenarioService::SetRotate()" );
+    if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
     return nullptr;
@@ -326,6 +349,7 @@ PyResult ScenarioService::Handle_RotateSelected( PyCallArgs& call )
     //        sm.GetService('scenario').RotateSelected(yaw, pitch, roll)
 
     _log(DUNG__CALL, "ScenarioService::RotateSelected()" );
+    if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
     return nullptr;
@@ -336,6 +360,7 @@ PyResult ScenarioService::Handle_JitterSelection( PyCallArgs& call )
     //        sm.GetService('scenario').JitterSelection(X, Y, Z)
 
     _log(DUNG__CALL, "ScenarioService::JitterSelection()" );
+    if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
     return nullptr;
@@ -346,6 +371,7 @@ PyResult ScenarioService::Handle_JitterRotationSelection( PyCallArgs& call )
     //     sm.StartService('scenario').JitterRotationSelection(yaw, pitch, roll)
 
     _log(DUNG__CALL, "ScenarioService::JitterRotationSelection()" );
+    if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
     return nullptr;
@@ -356,6 +382,7 @@ PyResult ScenarioService::Handle_ArrangeSelection( PyCallArgs& call )
     //        sm.GetService('scenario').ArrangeSelection(X, Y, Z)
 
     _log(DUNG__CALL, "ScenarioService::ArrangeSelection()" );
+    if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
     return nullptr;
@@ -367,6 +394,7 @@ PyResult ScenarioService::Handle_DeleteSelected( PyCallArgs& call )
     //OnDeleteSelected
 
     _log(DUNG__CALL, "ScenarioService::DeleteSelected()" );
+    if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
     return nullptr;
@@ -377,6 +405,7 @@ PyResult ScenarioService::Handle_RefreshSelection( PyCallArgs& call )
     //        sm.GetService('scenario').RefreshSelection()
 
     _log(DUNG__CALL, "ScenarioService::RefreshSelection()" );
+    if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
     return nullptr;

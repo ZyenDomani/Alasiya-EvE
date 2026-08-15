@@ -109,7 +109,6 @@ PyResult PyService::Handle_MachoBindObject( PyCallArgs& call )
 
         //do the call:
         PyResult result = obj->Call(boundcall.method_name, sub_args);
-
         rsp->SetItem(1, result.ssResult);
     }
 

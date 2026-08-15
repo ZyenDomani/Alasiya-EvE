@@ -76,8 +76,10 @@ PyResult AgentBound::Handle_GetInfoServiceDetails(PyCallArgs& call ) {
 
 PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
     // this is first call when initiating agent convo
-    _log(AGENT__DUMP,  "AgentBound::Handle_DoAction() - size= %lu", call.tuple->size() );
-    call.Dump(AGENT__DUMP);
+    if (is_log_enabled(AGENT__DUMP)) {
+        _log(AGENT__DUMP,  "AgentBound::Handle_DoAction() - size= %lu", call.tuple->size() );
+        call.Dump(AGENT__DUMP);
+    }
 
     // sends PyNone or actionID
     Call_SingleArg args;
@@ -641,8 +643,10 @@ PyResult AgentBound::Handle_GetMissionBriefingInfo(PyCallArgs &call) {
 PyResult AgentBound::Handle_GetMissionKeywords(PyCallArgs &call) {
     // these are the variables embedded in the messageIDs
     //self.missionArgs[contentID] = self.GetAgentMoniker(agentID).GetMissionKeywords(contentID)
-    _log(AGENT__DUMP,  "AgentBound::Handle_GetMissionKeywords() - size= %lu", call.tuple->size() );
-    call.Dump(AGENT__DUMP);
+    if (is_log_enabled(AGENT__DUMP)) {
+        _log(AGENT__DUMP,  "AgentBound::Handle_GetMissionKeywords() - size= %lu", call.tuple->size() );
+        call.Dump(AGENT__DUMP);
+    }
 
     /*   none of this really matters as we're not using 'contentID' like live does
     Call_SingleArg args;
@@ -692,8 +696,10 @@ PyResult AgentBound::Handle_GetMissionObjectiveInfo(PyCallArgs &call) {
      * if viewing mission, send PyDict loaded with mission info, to be displayed on right-hand side of double-pane view
      */
 
-    _log(AGENT__DUMP,  "AgentBound::Handle_GetMissionObjectiveInfo() - size= %lu", call.tuple->size() );
-    call.Dump(AGENT__DUMP);
+    if (is_log_enabled(AGENT__DUMP)) {
+        _log(AGENT__DUMP,  "AgentBound::Handle_GetMissionObjectiveInfo() - size= %lu", call.tuple->size() );
+        call.Dump(AGENT__DUMP);
+    }
 
     // if charID, contentID are not sent, this is just to view briefing
     if (call.tuple->empty() and !m_showObjectives)
@@ -711,8 +717,10 @@ PyResult AgentBound::Handle_GetMyJournalDetails(PyCallArgs &call) {
     //parallelCalls.append((sm.GetService('agents').GetAgentMoniker(agentID).GetMyJournalDetails, ()))
     //missionState, importantMission, missionType, missionName, agentID, expirationTime, bookmarks, remoteOfferable, remoteCompletable = each
     // this is to update ONLY info with this agent....
-    _log(AGENT__DUMP,  "AgentBound::Handle_GetMyJournalDetails() - size= %lu", call.tuple->size() );
-    call.Dump(AGENT__DUMP);
+    if (is_log_enabled(AGENT__DUMP)) {
+        _log(AGENT__DUMP,  "AgentBound::Handle_GetMyJournalDetails() - size= %lu", call.tuple->size() );
+        call.Dump(AGENT__DUMP);
+    }
 
     PyTuple *tuple = new PyTuple(2);
     //missions:
@@ -1076,8 +1084,10 @@ PyTuple* AgentBound::GetMissionObjectives(Client* pClient, MissionOffer& offer)
 
 PyResult AgentBound::Handle_GetDungeonShipRestrictions(PyCallArgs &call) {
     //restrictions = self.GetAgentMoniker(agentID).GetDungeonShipRestrictions(dungeonID)
-    _log(AGENT__DUMP,  "AgentBound::Handle_GetDungeonShipRestrictions() - size= %lu", call.tuple->size() );
-    call.Dump(AGENT__DUMP);
+    if (is_log_enabled(AGENT__DUMP)) {
+        _log(AGENT__DUMP,  "AgentBound::Handle_GetDungeonShipRestrictions() - size= %lu", call.tuple->size() );
+        call.Dump(AGENT__DUMP);
+    }
 
     return nullptr;
 }
@@ -1085,40 +1095,50 @@ PyResult AgentBound::Handle_GetDungeonShipRestrictions(PyCallArgs &call) {
 PyResult AgentBound::Handle_RemoveOfferFromJournal(PyCallArgs &call) {
     //called on rclick in journal to "remove offer"
     //self.GetAgentMoniker(agentID).RemoveOfferFromJournal()
-    _log(AGENT__DUMP,  "AgentBound::Handle_RemoveOfferFromJournal() - size= %lu", call.tuple->size() );
-    call.Dump(AGENT__DUMP);
+    if (is_log_enabled(AGENT__DUMP)) {
+        _log(AGENT__DUMP,  "AgentBound::Handle_RemoveOfferFromJournal() - size= %lu", call.tuple->size() );
+        call.Dump(AGENT__DUMP);
+    }
 
     return nullptr;
 }
 
 PyResult AgentBound::Handle_GetOfferJournalInfo(PyCallArgs &call) {
     //html = self.GetAgentMoniker(agentID).GetOfferJournalInfo()
-    _log(AGENT__DUMP,  "AgentBound::Handle_GetOfferJournalInfo() - size= %lu", call.tuple->size() );
-    call.Dump(AGENT__DUMP);
+    if (is_log_enabled(AGENT__DUMP)) {
+        _log(AGENT__DUMP,  "AgentBound::Handle_GetOfferJournalInfo() - size= %lu", call.tuple->size() );
+        call.Dump(AGENT__DUMP);
+    }
 
     return nullptr;
 }
 
 PyResult AgentBound::Handle_GetEntryPoint(PyCallArgs &call) {
     //entryPoint = sm.StartService('agents').GetAgentMoniker(bookmark.agentID).GetEntryPoint()
-    _log(AGENT__DUMP,  "AgentBound::Handle_GetEntryPoint() - size= %lu", call.tuple->size() );
-    call.Dump(AGENT__DUMP);
+    if (is_log_enabled(AGENT__DUMP)) {
+        _log(AGENT__DUMP,  "AgentBound::Handle_GetEntryPoint() - size= %lu", call.tuple->size() );
+        call.Dump(AGENT__DUMP);
+    }
 
     return nullptr;
 }
 
 PyResult AgentBound::Handle_GotoLocation(PyCallArgs &call) {
     //sm.StartService('agents').GetAgentMoniker(bookmark.agentID).GotoLocation(bookmark.locationType, bookmark.locationNumber, referringAgentID)
-    _log(AGENT__DUMP,  "AgentBound::Handle_GotoLocation() - size= %lu", call.tuple->size() );
-    call.Dump(AGENT__DUMP);
+    if (is_log_enabled(AGENT__DUMP)) {
+        _log(AGENT__DUMP,  "AgentBound::Handle_GotoLocation() - size= %lu", call.tuple->size() );
+        call.Dump(AGENT__DUMP);
+    }
 
     return nullptr;
 }
 
 PyResult AgentBound::Handle_WarpToLocation(PyCallArgs &call) {
     //sm.StartService('agents').GetAgentMoniker(bookmark.agentID).WarpToLocation(bookmark.locationType, bookmark.locationNumber, warpRange, fleet, referringAgentID)
-    _log(AGENT__DUMP,  "AgentBound::Handle_WarpToLocation() - size= %lu", call.tuple->size() );
-    call.Dump(AGENT__DUMP);
+    if (is_log_enabled(AGENT__DUMP)) {
+        _log(AGENT__DUMP,  "AgentBound::Handle_WarpToLocation() - size= %lu", call.tuple->size() );
+        call.Dump(AGENT__DUMP);
+    }
 
     return nullptr;
 }

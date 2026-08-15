@@ -371,7 +371,7 @@ void NPC::Killed(Damage &fatal_blow) {
         }
     }
 
-    Vector3d wreckPosition(m_self->position());
+    Vector3d wreckPosition = m_self->position();
     if (wreckPosition.isNaN()) {
         sLog.Error("NPC::Killed()", "Wreck Position is NaN");
         return;

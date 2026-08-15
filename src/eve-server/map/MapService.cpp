@@ -150,6 +150,7 @@ PyResult MapService::Handle_GetAllianceJumpBridges(PyCallArgs &call)
      *      for toLocID, fromLocID in bridgesByLocation:
      */
     sLog.Warning( "MapService::Handle_GetAllianceJumpBridges()", "size= %lu", call.tuple->size() );
+    if (is_log_enabled(SERVICE__CALL_DUMP))
     call.Dump(SERVICE__CALL_DUMP);
 
     DBQueryResult res;
@@ -179,6 +180,7 @@ PyResult MapService::Handle_GetAllianceBeacons(PyCallArgs &call)
             allianceMenu.append((solarsystem.name, (solarSystemID, structureID, structureName)))
             */
             sLog.Warning( "MapService::Handle_GetAllianceBeacons()", "size= %lu", call.tuple->size() );
+        if (is_log_enabled(SERVICE__CALL_DUMP))
         call.Dump(SERVICE__CALL_DUMP);
 
     // copy format from GetLinkableJumpArrays()
@@ -264,7 +266,8 @@ PyResult MapService::Handle_GetDeadspaceComplexMap(PyCallArgs &call)
         get this data from managerDB.GetAnomalyList(DBQueryResult& res)
         res =  sysSignatures (sigID,sigItemID,dungeonType,sigName,systemID,sigTypeID,sigGroupID,scanGroupID,scanAttributeID,x,y,z)
 */
-    sLog.Warning( "MapService::Handle_GetDeadspaceComplexMap()", "size= %lu", call.tuple->size() );
+sLog.Warning( "MapService::Handle_GetDeadspaceComplexMap()", "size= %lu", call.tuple->size() );
+if (is_log_enabled(SERVICE__CALL_DUMP))
     call.Dump(SERVICE__CALL_DUMP);
 
     return PyStatic.mtDict();
@@ -374,7 +377,8 @@ PyResult MapService::Handle_GetIncursionGlobalReport(PyCallArgs &call) {
               [PyIntegerVar 129493861959830226]
               [PyInt -950263469]
               */
-    sLog.Warning( "MapService::Handle_GetIncursionGlobalReport()", "size= %lu", call.tuple->size() );
+  sLog.Warning( "MapService::Handle_GetIncursionGlobalReport()", "size= %lu", call.tuple->size() );
+  if (is_log_enabled(SERVICE__CALL_DUMP))
     call.Dump(SERVICE__CALL_DUMP);
 
     return PyStatic.NewNone();
@@ -385,7 +389,8 @@ PyResult MapService::Handle_GetIncursionGlobalReport(PyCallArgs &call) {
 PyResult MapService::Handle_GetVictoryPoints(PyCallArgs &call)
 {/**           factionID, viewmode, solarsystemid, threshold, current in oldhistory.iteritems():
                  */
-    sLog.Warning( "MapService::Handle_GetVictoryPoints()", "size= %lu", call.tuple->size() );
+                 sLog.Warning( "MapService::Handle_GetVictoryPoints()", "size= %lu", call.tuple->size() );
+                 if (is_log_enabled(SERVICE__CALL_DUMP))
     call.Dump(SERVICE__CALL_DUMP);
 
     return PyStatic.NewNone();
@@ -396,6 +401,7 @@ PyResult MapService::Handle_GetStuckSystems(PyCallArgs &call)
 {
     // cant find a call to this in client (possible old call)
     sLog.Warning( "MapService::Handle_GetStuckSystems()", "size= %lu", call.tuple->size() );
+    if (is_log_enabled(SERVICE__CALL_DUMP))
     call.Dump(SERVICE__CALL_DUMP);
 
     return PyStatic.mtTuple();

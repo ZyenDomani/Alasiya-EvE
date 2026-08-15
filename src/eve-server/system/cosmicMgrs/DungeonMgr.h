@@ -40,7 +40,6 @@ enum ESpawnPattern { Pattern_AreaWeighted, Pattern_DonutShell, Pattern_DebrisFie
 // Struct to pass back calculated offsets
 struct GpsCoord { float x; float y; float z; };
 
-
 // this class is a singleton object to have a common place for all dungeon template data
 class DungeonDataMgr
 : public Singleton< DungeonDataMgr >

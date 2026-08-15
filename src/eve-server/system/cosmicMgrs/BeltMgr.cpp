@@ -637,7 +637,7 @@ const char* BeltMgr::BeltTypeName(uint8 typeID) {
 
 /*          this gives random single point on sphere with radius of 'r'
  *
-        double theta = MakeRandomFloat(0.0, (2*M_PI) );
+        double theta = MakeRandomFloat(0.0, (2*M_PI) );  EvE::Trig::Pi2
         double phi = MakeRandomFloat(0.0, (2*M_PI) );
         x += r * sin(theta) * cos(phi);
         y += r * sin(theta) * sin(phi);
@@ -707,7 +707,7 @@ const char* BeltMgr::BeltTypeName(uint8 typeID) {
 /*
     for (uint32 i = 0; i < pcs; ++i) {
         roidradius = MakeRandomFloat(1.0, 7.0 ) *1000 *security +secRad;
-        theta = MakeRandomFloat(0.0, M_PI );
+        theta = MakeRandomFloat(0.0, M_PI );EvE::Trig::Pi
         phi = MakeRandomFloat(0.0, M_PI );
         mposition.x = radius * sin(theta) * cos(phi);
         mposition.z = radius * sin(theta) * sin(phi);

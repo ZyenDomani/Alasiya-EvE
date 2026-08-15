@@ -688,8 +688,8 @@ void InventoryItem::Move(uint32 new_location/*locTemp*/, EVEItemFlags new_flag/*
         return; //nothing to do...
 
     InventoryItemRef iRef(nullptr);
-    uint32 old_location(m_data.locationID);
-    EVEItemFlags old_flag(m_data.flag);
+    uint32 old_location = m_data.locationID;
+    EVEItemFlags old_flag = m_data.flag;
 
     if ((new_location != m_data.locationID) // diff container
     or ((new_location == m_data.locationID) // or same container

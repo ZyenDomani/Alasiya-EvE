@@ -85,10 +85,11 @@ PyResult BookmarkService::Handle_GetBookmarks(PyCallArgs &call) {
 }
 
 PyResult BookmarkService::Handle_CreateFolder(PyCallArgs &call) {
+    if (is_log_enabled(BOOKMARK__CALL_DUMP))
     call.Dump(BOOKMARK__CALL_DUMP);
     std::string name;
     sDatabase.DoEscapeString(name, PyRep::StringContent(call.tuple->GetItem(0)));
-    
+
     // Sanitization Guard Clause: Enforce matching 60-character boundary
     if (name.length() > 60)
         name = name.substr(0, 60);
@@ -105,6 +106,7 @@ PyResult BookmarkService::Handle_CreateFolder(PyCallArgs &call) {
 }
 
 PyResult BookmarkService::Handle_UpdateFolder(PyCallArgs &call) {
+    if (is_log_enabled(BOOKMARK__CALL_DUMP))
     call.Dump(BOOKMARK__CALL_DUMP);
     Call_UpdateFolder args;
     if (!args.Decode(&call.tuple)) {
@@ -128,6 +130,7 @@ PyResult BookmarkService::Handle_UpdateFolder(PyCallArgs &call) {
 
 PyResult BookmarkService::Handle_DeleteFolder(PyCallArgs &call) {
     // bookmarks = self.bookmarkMgr.DeleteFolder(folderID)
+    if (is_log_enabled(BOOKMARK__CALL_DUMP))
     call.Dump(BOOKMARK__CALL_DUMP);
 
     uint32 folderID(PyRep::IntegerValueU32(call.tuple->GetItem(0)));
@@ -152,6 +155,7 @@ PyResult BookmarkService::Handle_DeleteFolder(PyCallArgs &call) {
 PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {
   /*  bookmarkID, itemID, typeID, x, y, z, locationID = sm.RemoteSvc('bookmark').BookmarkLocation(itemID, ownerID, memo, comment, folderID)  */
 
+  if (is_log_enabled(BOOKMARK__CALL_DUMP))
     call.Dump(BOOKMARK__CALL_DUMP);
     Call_BookmarkLocation args;
     if (!args.Decode(&call.tuple)) {
@@ -215,6 +219,7 @@ PyResult BookmarkService::Handle_BookmarkScanResult(PyCallArgs &call)
 {
     //  bookmarkID, itemID, typeID, x, y, z, locationID = self.bookmarkMgr.BookmarkScanResult(locationID, memo, comment, resultID, ownerID, folderID=0)
 
+    if (is_log_enabled(BOOKMARK__CALL_DUMP))
     call.Dump(BOOKMARK__CALL_DUMP);
     Call_BookmarkScanResult args;
     if (!args.Decode(&call.tuple)) {
@@ -259,6 +264,7 @@ PyResult BookmarkService::Handle_BookmarkScanResult(PyCallArgs &call)
 }
 
 PyResult BookmarkService::Handle_DeleteBookmarks(PyCallArgs &call) {
+    if (is_log_enabled(BOOKMARK__CALL_DUMP))
     call.Dump(BOOKMARK__CALL_DUMP);
     Call_DeleteBookmarks args;
     if (!args.Decode(&call.tuple)) {
@@ -284,6 +290,7 @@ PyResult BookmarkService::Handle_DeleteBookmarks(PyCallArgs &call) {
 
 PyResult BookmarkService::Handle_MoveBookmarksToFolder(PyCallArgs &call) {
     // rows = bookmarkMgr.MoveBookmarksToFolder(folderID, bookmarkIDs)
+    if (is_log_enabled(BOOKMARK__CALL_DUMP))
     call.Dump(BOOKMARK__CALL_DUMP);
     Call_MoveBookmarksToFolder args;
     if (!args.Decode(&call.tuple)) {
@@ -316,6 +323,7 @@ PyResult BookmarkService::Handle_AddBookmarkFromVoucher(PyCallArgs &call) {
      *         02:04:15 [BM CallDump]       [ 2]       None
      */
 
+    if (is_log_enabled(BOOKMARK__CALL_DUMP))
     call.Dump(BOOKMARK__CALL_DUMP);
     Call_AddBookmarkFromVoucher args;
     if (!args.Decode(&call.tuple)) {
@@ -381,6 +389,7 @@ PyResult BookmarkService::Handle_CopyBookmarks(PyCallArgs &call) {
 
     // this is called when dropping bms on corp header in bm window
 
+    if (is_log_enabled(BOOKMARK__CALL_DUMP))
     call.Dump(BOOKMARK__CALL_DUMP);
     Call_CopyBookmarks args;
     if (!args.Decode(&call.tuple)) {

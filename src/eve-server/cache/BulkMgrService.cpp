@@ -395,8 +395,10 @@ PyResult BulkMgrService::Handle_GetAllBulkIDs(PyCallArgs &call)
 
 PyResult BulkMgrService::Handle_GetChunk(PyCallArgs &call)
 {
+    if (is_log_enabled(BULKDATA__DUMP)) {
     sLog.White( "BulkMgrService::Handle_GetChunk()", "size= %lu", call.tuple->size() );
     call.Dump(BULKDATA__DUMP);
+    }
     /*
      *    toBeChanged = self.bulkMgr.GetChunk(changeID, chunkNumber)
      *    changeID is from GetVersion()
@@ -417,8 +419,10 @@ PyResult BulkMgrService::Handle_GetChunk(PyCallArgs &call)
 
 PyResult BulkMgrService::Handle_GetUnsubmittedChunk(PyCallArgs &call)
 {
+    if (is_log_enabled(BULKDATA__DUMP)) {
     sLog.White( "BulkMgrService::Handle_GetUnsubmittedChunk()", "size= %lu", call.tuple->size() );
     call.Dump(BULKDATA__DUMP);
+    }
     /*
                 toBeChanged = self.bulkMgr.GetUnsubmittedChunk(chunkNumber)
     need more info to properly implement this
@@ -435,8 +439,10 @@ PyResult BulkMgrService::Handle_GetUnsubmittedChunk(PyCallArgs &call)
 
 PyResult BulkMgrService::Handle_GetUnsubmittedChanges(PyCallArgs &call)
 {
+    if (is_log_enabled(BULKDATA__DUMP)) {
     sLog.White( "BulkMgrService::Handle_GetUnsubmittedChanges()", "size= %lu", call.tuple->size() );
     call.Dump(BULKDATA__DUMP);
+    }
     /*
         unsubmitted = self.bulkMgr.GetUnsubmittedChanges()
         PyDict of 'toBeChanged','toBeDeleted','changedTablesKeys','chunkCount'

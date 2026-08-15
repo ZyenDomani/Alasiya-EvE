@@ -56,6 +56,7 @@ PyResult LPService::Handle_TakeOffer( PyCallArgs& call )
         */
   sLog.White( "LPService::Handle_TakeOffer()", "size= %lu", call.tuple->size() );
 
+  if (is_log_enabled(SERVICE__CALL_DUMP))
   call.Dump(SERVICE__CALL_DUMP);
    return PyStatic.mtList();
 }
@@ -66,6 +67,7 @@ PyResult LPService::Handle_ExchangeConcordLP( PyCallArgs& call )
             */
   sLog.White( "LPService::Handle_ExchangeConcordLP()", "size= %lu", call.tuple->size() );
 
+  if (is_log_enabled(SERVICE__CALL_DUMP))
   call.Dump(SERVICE__CALL_DUMP);
   return PyStatic.mtList();
 }

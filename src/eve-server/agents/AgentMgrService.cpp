@@ -115,8 +115,10 @@ PyResult AgentMgrService::Handle_GetSolarSystemOfAgent(PyCallArgs &call)
 PyResult AgentMgrService::Handle_GetMyJournalDetails(PyCallArgs &call) {
 // note:  this will show mission data in journal AND "offered" msg in agent data bloc on agent tab in station
 
-    _log(AGENT__INFO, "AgentMgrService::Handle_GetMyJournalDetails() - size= %lu", call.tuple->size() );
-    call.Dump(AGENT__DUMP);
+    if (is_log_enabled(AGENT__DUMP)) {
+        _log(AGENT__INFO, "AgentMgrService::Handle_GetMyJournalDetails() - size= %lu", call.tuple->size() );
+        call.Dump(AGENT__DUMP);
+    }
 
     /** @todo  journal details
      * found in eve/client/script/ui/shared/neocom/journal.py
@@ -288,8 +290,10 @@ PyResult AgentMgrService::Handle_GetMyEpicJournalDetails( PyCallArgs& call )
 
 PyResult AgentMgrService::Handle_GetCareerAgents(PyCallArgs &call)
 {
-  _log(AGENT__INFO, "AgentMgrBound::Handle_GetCareerAgents() - size= %lu", call.tuple->size() );
-    call.Dump(AGENT__DUMP);
+    if (is_log_enabled(AGENT__DUMP)) {
+        _log(AGENT__INFO, "AgentMgrBound::Handle_GetCareerAgents() - size= %lu", call.tuple->size() );
+        call.Dump(AGENT__DUMP);
+    }
 
     return PyStatic.NewZero();
 }
@@ -314,8 +318,10 @@ PyResult EpicArcService::Handle_AgentHasEpicMissionsForCharacter(PyCallArgs &cal
   /**
      epicArcStatusSvc = sm.RemoteSvc('epicArcStatus').AgentHasEpicMissionsForCharacter(agent.agentID):
      */
-    _log(AGENT__INFO, "EpicArcService::Handle_AgentHasEpicMissionsForCharacter() - size= %lu", call.tuple->size() );
-    call.Dump(AGENT__DUMP);
+    if (is_log_enabled(AGENT__DUMP)) {
+        _log(AGENT__INFO, "EpicArcService::Handle_AgentHasEpicMissionsForCharacter() - size= %lu", call.tuple->size() );
+        call.Dump(AGENT__DUMP);
+    }
 
     // return boolean
     return PyStatic.NewFalse();

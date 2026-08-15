@@ -98,7 +98,8 @@ PyResult AccountService::Handle_GetDefaultContactCost(PyCallArgs &call)
         */
 
     sLog.Log( "AccountService::Handle_GetDefaultContactCost()", "size=%lu", call.tuple->size());
-    call.Dump(ACCOUNT__CALL_DUMP);
+    if (is_log_enabled(ACCOUNT__CALL_DUMP))
+        call.Dump(ACCOUNT__CALL_DUMP);
 
     //return m_db.GetDefaultContactCost(call.client->GetCorporationID());
 
@@ -116,7 +117,8 @@ PyResult AccountService::Handle_SetContactCost(PyCallArgs &call)
         */
 
     sLog.Log( "AccountService::Handle_SetContactCost()", "size=%lu", call.tuple->size());
-    call.Dump(ACCOUNT__CALL_DUMP);
+    if (is_log_enabled(ACCOUNT__CALL_DUMP))
+        call.Dump(ACCOUNT__CALL_DUMP);
     // m_db.SetContactCost(call.client->GetCorporationID());
 
     // returns nothing
@@ -165,7 +167,7 @@ PyResult AccountService::Handle_GetJournal(PyCallArgs &call)
         return nullptr;
     }
 
-    uint32 ownerID(call.client->GetCharacterID());
+    uint32 ownerID = call.client->GetCharacterID();
     if (args.corpAccount)
         ownerID = call.client->GetCorporationID();
 

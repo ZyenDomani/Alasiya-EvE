@@ -85,8 +85,10 @@ RepairService::~RepairService() {
 }
 
 PyBoundObject* RepairService::CreateBoundObject(Client* pClient, const PyRep* bind_args) {
-    _log(CLIENT__MESSAGE, "RepairService bind request for:");
-    bind_args->Dump(CLIENT__MESSAGE, "    ");
+    if (is_log_enabled(CLIENT__MESSAGE)) {
+        _log(CLIENT__MESSAGE, "RepairService bind request for:");
+        bind_args->Dump(CLIENT__MESSAGE, "    ");
+    }
 
     return new RepairSvcBound(m_manager, bind_args->AsInt()->value());
 }
@@ -96,8 +98,10 @@ PyResult RepairSvcBound::Handle_DamageModules(PyCallArgs &call) {
      *    self.repairSvc.DamageModules(itemIDAndAmountOfDamageList)
      */
 
-    _log(PHYSICS__INFO, "RepairSvcBound::Handle_DamageModules() size= %lu", call.tuple->size() );
-    call.Dump(PHYSICS__INFO);
+    if (is_log_enabled(PHYSICS__INFO)) {
+        _log(PHYSICS__INFO, "RepairSvcBound::Handle_DamageModules() size= %lu", call.tuple->size() );
+        call.Dump(PHYSICS__INFO);
+    }
 
     Call_SingleIntList args;
     if (!args.Decode(&call.tuple)) {

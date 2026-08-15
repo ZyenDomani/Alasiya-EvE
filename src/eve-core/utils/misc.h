@@ -74,6 +74,8 @@ uint32  MakeRandomUInt(uint32 lo = 0, uint32 hi = 99);  // default to percentage
 float   MakeRandomFloat(float lo = 0.0f, float hi = 1.0f);  // default to percentage
 double  MakeRandomDouble(double lo = 0.0, double hi = 1.0);  // default to percentage
 
+float   GetRandomGaussian(float mean, float stddev);
+
 inline bool IsEven(int64 number)                        { return ((number %2) == 0); }
 inline bool IsNaN(double x)                             { return x!= x; }
 

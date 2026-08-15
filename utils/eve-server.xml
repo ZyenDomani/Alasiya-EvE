@@ -1,6 +1,6 @@
 
 <!-- Alasiya EvEmu Server Config
-Version: 12.12 -->
+Version: 12.14 -->
 
 <!--
 unless otherwise noted, ALL fractional values use fuzzy logic.
@@ -123,12 +123,20 @@ boolean can use either 0/1 OR true/false.
         <StationServiceFee>0.01</StationServiceFee><!-- default:1%   - this is charge for station services.  load/unload/build/repack/etc   -->
         <CSPA>2950</CSPA><!-- default: 2950 -->
         <WanderTimer>5</WanderTimer><!-- minutes to run bubble wander code   default:5  -->
-        <!-- for PI/Colony -->
-        <ColonyTimer>0</ColonyTimer><!-- in minutes.  colony timer set value.  default:0  max: 255-->
-        <ECUDiminish>1.0</ECUDiminish><!-- float % **not used**  diminishing returns hack for ECU processing  default:1.0 -->
-        <DrillCycleMod>0.5</DrillCycleMod><!-- float %  multiplied to ecu cycletime   default:1 -->
-        <PlantCycleMod>1.0</PlantCycleMod><!-- float %  multiplied to plant cycletime   default:1 -->
         <DestinyTrollTime>20</DestinyTrollTime><!-- seconds  - time moving object remains in troll mode -->
+        <!-- belts -->
+        <BeltRespawn>6</BeltRespawn><!-- hours  (6h default - 0 to disable) -->
+        <BeltGrowTime>3</BeltGrowTime><!-- hours  (6h default - 0 to disable) -->
+        <BeltGrowPct>0.05</BeltGrowPct><!-- float  - increase by this percent (1% default) dont use 0 here-->
+        <RadiusMultiplier>1.0</RadiusMultiplier><!-- float  modifiy roid and belt radius.  dont use 0 here -->
+        <!-- for PI/Colony -->
+        <PIRegenRate>0.05</PIRegenRate>
+        <ColonyTimer>0</ColonyTimer><!-- in minutes.  colony timer set value.  default:30  max: 255-->
+        <DistributionScalar>120</DistributionScalar><!-- int  as stated -->
+        <MinWaveMultiplier>0.3</MinWaveMultiplier><!-- float %  min rand amplitude of index[0]  default:0.35 -->
+        <MaxWaveMultiplier>0.7</MaxWaveMultiplier><!-- float % max rand amplitude of index[0]  default:0.55 -->
+        <WavePopulationDensity>0.7</WavePopulationDensity><!-- float % chance a wave index is populated  default:0.7 -->
+        <YieldMultiplier>5.0</YieldMultiplier><!-- float % extracted resource modifier  default:5.0 -->
     </rates>
 
     <market>
@@ -189,8 +197,6 @@ boolean can use either 0/1 OR true/false.
         <RatFaction>0</RatFaction><!-- force spawn to this faction if != 0 -->
         <LootDropChance>0.85</LootDropChance><!-- % chance for NPC to drop loot.  75% default -->
         <UseDamageMultiplier>true</UseDamageMultiplier><!-- bool  - use the damage multiplier in npc data default: hell yeah -->
-        <TrackingMod></TrackingMod><!-- percent -->
-        <DistanceMod></DistanceMod><!-- percent -->
         <UseRegen>true</UseRegen><!-- bool  - (en/dis)able shield regernation -->
         <UseRepair>true</UseRepair><!-- bool  - use repair modules, if equipped -->
         <UseOrbit>false</UseOrbit><!-- bool -- secondary    this is actually for testing -->
@@ -272,10 +278,6 @@ boolean can use either 0/1 OR true/false.
         <AnomalyEnabled>true</AnomalyEnabled><!-- bool -->
         <DungeonEnabled>false</DungeonEnabled><!-- bool -->
         <BeltEnabled>true</BeltEnabled><!-- bool -->
-        <BeltRespawn>6</BeltRespawn><!-- hours  (6h default - 0 to disable) -->
-        <BeltGrowTime>3</BeltGrowTime><!-- hours  (6h default - 0 to disable) -->
-        <BeltGrowPct>0.05</BeltGrowPct><!-- float  - increase by this percent (1% default) dont use 0 here-->
-        <roidRadiusMultiplier>1.0</roidRadiusMultiplier><!-- float  modifiy roid size and the belt radius  dont use 0 here -->
         <WormHoleEnabled>true</WormHoleEnabled><!-- bool -->
         <CiviliansEnabled>true</CiviliansEnabled><!-- bool -->
         <CivilianTic>60</CivilianTic><!-- seconds - spawn check tic counter, this is max  where range[1, max]  default:60 -->

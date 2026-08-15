@@ -107,6 +107,7 @@ PyResult CalendarMgrService::Handle_CreatePersonalEvent( PyCallArgs& call )
     // newEventID = self.calendarMgr.CreatePersonalEvent(dateTime, duration, title, description, important, invitees)
 
     sLog.Cyan( "CalendarMgrService::Handle_CreatePersonalEvent()", "size= %lu", call.tuple->size() );
+    if (is_log_enabled(SERVICE__CALL_DUMP))
     call.Dump(SERVICE__CALL_DUMP);
 
     Call_CreateEventWithInvites args;
@@ -148,6 +149,7 @@ PyResult CalendarMgrService::Handle_EditPersonalEvent( PyCallArgs& call )
     //self.calendarMgr.EditPersonalEvent(eventID, oldDateTime, dateTime, duration, title, description, important)
 
     sLog.Cyan( "CalendarMgrService::Handle_EditPersonalEvent()", "size= %lu", call.tuple->size() );
+    if (is_log_enabled(SERVICE__CALL_DUMP))
     call.Dump(SERVICE__CALL_DUMP);
 
     Call_EditEvent args;
@@ -164,6 +166,7 @@ PyResult CalendarMgrService::Handle_EditCorporationEvent( PyCallArgs& call )
     // self.calendarMgr.EditCorporationEvent(eventID, oldDateTime, dateTime, duration, title, description, important)
 
     sLog.Cyan( "CalendarMgrService::Handle_EditCorporationEvent()", "size= %lu", call.tuple->size() );
+    if (is_log_enabled(SERVICE__CALL_DUMP))
     call.Dump(SERVICE__CALL_DUMP);
 
     Call_EditEvent args;
@@ -180,6 +183,7 @@ PyResult CalendarMgrService::Handle_EditAllianceEvent( PyCallArgs& call )
     //self.calendarMgr.EditAllianceEvent(eventID, oldDateTime, dateTime, duration, title, description, important)
 
     sLog.Cyan( "CalendarMgrService::Handle_EditAllianceEvent()", "size= %lu", call.tuple->size() );
+    if (is_log_enabled(SERVICE__CALL_DUMP))
     call.Dump(SERVICE__CALL_DUMP);
 
     Call_EditEvent args;
@@ -196,6 +200,7 @@ PyResult CalendarMgrService::Handle_UpdateEventParticipants( PyCallArgs& call )
     // self.calendarMgr.UpdateEventParticipants(eventID, charsToAdd, charsToRemove)
 
     sLog.Cyan( "CalendarMgrService::Handle_UpdateEventParticipants()", "size= %lu", call.tuple->size() );
+    if (is_log_enabled(SERVICE__CALL_DUMP))
     call.Dump(SERVICE__CALL_DUMP);
 
     Call_UpdateEventParticipants args;

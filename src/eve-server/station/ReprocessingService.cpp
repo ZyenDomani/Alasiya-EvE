@@ -106,6 +106,7 @@ ReprocessingServiceBound::~ReprocessingServiceBound() {
 
 PyResult ReprocessingServiceBound::Handle_GetOptionsForItemTypes(PyCallArgs &call) {
     _log(MANUF__INFO, "%s: Calling GetOptionsForItemTypes().", call.client->GetName());
+    if (is_log_enabled(MANUF__DUMP))
     call.Dump(MANUF__DUMP);
 
     Call_GetOptionsForItemTypes args;
@@ -176,6 +177,7 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
     }
 
     _log(MANUF__INFO, "%s: Calling Reprocess().", call.client->GetName());
+    if (is_log_enabled(MANUF__DUMP))
     call.Dump(MANUF__DUMP);
 
     Call_Reprocess args;
@@ -202,8 +204,8 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
 
         sRamMthd.HangarRolesCheck(call.client, args.flag);
     }
-    
-    uint32 full = 0; 
+
+    uint32 full = 0;
     uint32 qtyLeft = 0;
     uint32 quantity = 0;
     float efficiency(0.0f);
@@ -326,7 +328,7 @@ PyRep *ReprocessingServiceBound::GetQuote(uint32 itemID, Client* pClient) {
 
     float tax(CalcTax(quote.playerStanding));
     float efficiency(CalcReprocessingEfficiency(pClient, iRef));
-    
+
     uint32 ratio(1);
     for (auto &cur : recoverables) {
         ratio = static_cast<uint32>(floor(cur.amountPerBatch * quote.quantityToProcess / iRef->type().portionSize()));

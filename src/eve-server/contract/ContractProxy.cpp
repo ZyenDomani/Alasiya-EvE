@@ -426,8 +426,10 @@ PyResult ContractProxy::Handle_CreateContract(PyCallArgs &call) {
 */
 
 PyResult ContractProxy::Handle_DeleteContract(PyCallArgs &call) {
+    if (is_log_enabled(SERVICE__CALL_DUMP)) {
     sLog.White( "ContractProxy::Handle_DeleteContract()", "size=%lu", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
+    }
 
     PyInt* contractID;
 
@@ -668,8 +670,10 @@ PyResult ContractProxy::Handle_CompleteContract(PyCallArgs &call) {
     int contractID;
     int completionStatus;
 
+    if (is_log_enabled(SERVICE__CALL_DUMP)) {
     sLog.White( "ContractProxy::Handle_CompleteContract()", "size=%lu", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
+    }
 
     DBQueryResult res;
     //if (!sDatabase.RunQuery(res, "SELECT contractType, status, price, reward, collateral, volume, startStationID, endStationID, issuerID, forCorp, crateID FROM ctrContracts WHERE contractId = %u", contractID))
@@ -774,8 +778,10 @@ PyResult ContractProxy::Handle_CompleteContract(PyCallArgs &call) {
 
 
 PyResult ContractProxy::Handle_GetMyExpiredContractList(PyCallArgs &call) {
+    if (is_log_enabled(SERVICE__CALL_DUMP)) {
   sLog.White( "ContractProxy::Handle_GetMyExpiredContractList()", "size=%lu", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
+    }
 /*
       [PySubStream 530 bytes]
         [PyObjectData Name: util.KeyVal]
@@ -885,8 +891,10 @@ PyResult ContractProxy::Handle_GetMyExpiredContractList(PyCallArgs &call) {
 }
 
 PyResult ContractProxy::Handle_NumOutstandingContracts(PyCallArgs &call) {
+    if (is_log_enabled(SERVICE__CALL_DUMP)) {
     sLog.White( "ContractProxy::Handle_NumOutstandingContracts()", "size=%lu", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
+    }
     /*
       [PySubStream 87 bytes]
         [PyObjectData Name: util.KeyVal]
@@ -913,8 +921,10 @@ PyResult ContractProxy::Handle_GetItemsInStation(PyCallArgs &call) {
 }
 
 PyResult ContractProxy::Handle_CollectMyPageInfo(PyCallArgs &call) {
+    if (is_log_enabled(SERVICE__CALL_DUMP)) {
     sLog.White( "ContractProxy::Handle_CollectMyPageInfo()", "size=%lu", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
+    }
     std::string mainQuery = "SELECT "
                             "IFNULL(SUM(CASE WHEN (cC.issuerID = {CHAR_ID} AND cC.status = 0) THEN 1 ELSE 0 END), 0) AS numOutstandingContracts, "
                             "IFNULL(SUM(CASE WHEN (cC.issuerID = {CHAR_ID} AND cC.status = 0 AND cC.forCorp = false) THEN 1 ELSE 0 END), 0) AS numOutstandingContractsNonCorp, "
@@ -977,8 +987,10 @@ PyResult ContractProxy::Handle_CollectMyPageInfo(PyCallArgs &call) {
 }
 
 PyResult ContractProxy::Handle_GetContractListForOwner(PyCallArgs &call) {
+    if (is_log_enabled(SERVICE__CALL_DUMP)) {
     sLog.White( "ContractProxy::Handle_GetContractListForOwner()", "size=%lu", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
+    }
 
     //return ContractUtils::GetContractListForOwner(ownerID, contractStatus, contractType, issuedToBy);
     /*
@@ -1298,34 +1310,46 @@ PyResult ContractProxy::Handle_GetLoginInfo(PyCallArgs &call)
 
 
 PyResult ContractProxy::Handle_PlaceBid(PyCallArgs &call) {
+    if (is_log_enabled(SERVICE__CALL_DUMP)) {
     sLog.Warning( "ContractProxy::Handle_PlaceBid()", "size=%lu", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
+    }
     return nullptr;
 }
 
 PyResult ContractProxy::Handle_FinishAuction(PyCallArgs &call) {
+    if (is_log_enabled(SERVICE__CALL_DUMP)) {
     sLog.Warning( "ContractProxy::Handle_FinishAuction()", "size=%lu", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
+    }
     return nullptr;
 }
 PyResult ContractProxy::Handle_SplitStack(PyCallArgs &call) {
+    if (is_log_enabled(SERVICE__CALL_DUMP)) {
     sLog.Warning( "ContractProxy::Handle_SplitStack()", "size=%lu", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
+    }
     return nullptr;
 }
 PyResult ContractProxy::Handle_GetItemsInContainer(PyCallArgs &call) {
+    if (is_log_enabled(SERVICE__CALL_DUMP)) {
     sLog.Warning( "ContractProxy::Handle_GetItemsInContainer()", "size=%lu", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
+    }
     return nullptr;
 }
 PyResult ContractProxy::Handle_DeleteNotification(PyCallArgs &call) {
+    if (is_log_enabled(SERVICE__CALL_DUMP)) {
     sLog.Warning( "ContractProxy::Handle_DeleteNotification()", "size=%lu", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
+    }
     return nullptr;
 }
 PyResult ContractProxy::Handle_GetCourierContractFromItemID(PyCallArgs &call) {
+    if (is_log_enabled(SERVICE__CALL_DUMP)) {
     sLog.Warning( "ContractProxy::Handle_GetCourierContractFromItemID()", "size=%lu", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
+    }
     return nullptr;
 }
 
