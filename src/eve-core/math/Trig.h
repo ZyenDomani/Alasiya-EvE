@@ -32,42 +32,6 @@ namespace EvE {
 
         inline double Deg2Rad(double deg) { return (deg * RadiansInDegrees); }
         inline double Rad2Deg(double rad) { return (rad * DegreesInRadians); }
-
-
-        // High-speed, branchless Bhāskara I Sine approximation
-        inline double FastSin(float x) {
-            // 1. Map angle smoothly to the core [-PI, PI] domain without while loops
-            // This floating-point modulus keeps processing times flat even at -O0
-            x = x - (std::floor((x + Pi) * (1.0f / Pi2)) * Pi2);
-
-            // 2. Extract sign bit safely to make the rest of the math completely absolute
-            float sign = (x < 0.0f) ? -1.0f : 1.0f;
-            float absX = (x < 0.0f) ? -x : x;
-
-            // 3. Bhāskara I formula: 16x(PI - x) / (5PI^2 - 4x(PI - x))
-            double piMinusX = Pi - absX;
-            double numerator = 16.0f * absX * piMinusX;
-            double denominator = FivePiSq - (4.0f * absX * piMinusX);
-
-            return sign * (numerator / denominator);
-        }
-
-        // High-speed Bhāskara I Cosine approximation
-        inline double FastCos(float x) {
-            // cos(x) is mathematically identical to sin(x + PI/2)
-            return FastSin(x + halfPi);
-        }
-
-        // High-performance, highly vectorizable exponential approximation
-        inline double fast_exp(double x) {
-            // Basic polynomial approximation for e^x where x is negative
-            // Accurate enough for positioning look-aheads and physics blending
-            x = 1.0 + x / 256.0;
-            x *= x; x *= x; x *= x; x *= x;
-            x *= x; x *= x; x *= x; x *= x;
-            return x;
-        }
-    }
 }
 
 

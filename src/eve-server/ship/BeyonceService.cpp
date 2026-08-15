@@ -679,9 +679,9 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
                 s = EvE::max(0.5f, EvE::min(s, 10.5f));
                 double t = std::asin((warpToPoint.x / std::fabs(warpToPoint.x)) * (warpToPoint.z / std::sqrt(std::pow(warpToPoint.x, 2) + std::pow(warpToPoint.z, 2)))) + j;
                 uint32 d = radius * (s + 1) + 1000000;
-                warpToPoint.x += (d * EvE::Trig::FastSin(t));
-                warpToPoint.y += (0.5f * radius * EvE::Trig::FastSin(j));
-                warpToPoint.z -= (d * EvE::Trig::FastCos(t));
+                warpToPoint.x += (d * sin(t));
+                warpToPoint.y += (0.5f * radius * sin(j));
+                warpToPoint.z -= (d * cos(t));
             }
         } else if (pSE->IsStationSE()) {
             // fudge the distance a bit for these... its' a lil close by default
@@ -729,9 +729,9 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             warpToPoint.z -= stopPoint.z;
         } else if (radius > 90000) {
             // this doesnt work for moons
-            warpToPoint.x += ((radius + 500000) * EvE::Trig::FastCos(radius));
+            warpToPoint.x += ((radius + 500000) * cos(radius));
             warpToPoint.y += ((radius * 1.3f) - 7500);
-            warpToPoint.z -= ((radius + 500000) * EvE::Trig::FastSin(radius));
+            warpToPoint.z -= ((radius + 500000) * sin(radius));
         }
         /*
         if (radius < 90000) {

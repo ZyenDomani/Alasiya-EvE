@@ -848,8 +848,8 @@ void DungeonMgr::AddDecoToVector(uint8 dunType, uint32 templateID, std::vector<u
             double gridMultiplier = (i + 1) * chosenGridSize;
 
             // Apply trigonometry positioning vectors
-            double rawX = (radius + gridMultiplier * EvE::Trig::FastCos(theta)) * (IsEven(MakeRandomUInt()) ? -1 : 1);
-            double rawZ = (radius + gridMultiplier * EvE::Trig::FastSin(theta)) * -1;
+            double rawX = (radius + gridMultiplier * cos(theta)) * (IsEven(MakeRandomUInt()) ? -1 : 1);
+            double rawZ = (radius + gridMultiplier * sin(theta)) * -1;
             double rawY = localIt->second.y + MakeRandomInt(-1000, radius);
 
             // SNAP TO THE SECTOR GRID: Ensure the coordinate positions match

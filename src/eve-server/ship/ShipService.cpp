@@ -971,9 +971,9 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                 s = EvE::max(0.5f, EvE::min(s, 10.5f));
                 double t = std::asin((warpInPoint.x / std::fabs(warpInPoint.x)) * (warpInPoint.z / std::sqrt(std::pow(warpInPoint.x, 2) + std::pow(warpInPoint.z, 2)))) + j;
                 uint32 d = radius * (s + 1) + 1000000;
-                warpInPoint.x += (d * EvE::Trig::FastSin(t));
-                warpInPoint.y += (0.5f * radius * EvE::Trig::FastSin(j));
-                warpInPoint.z -= (d * EvE::Trig::FastCos(t));
+                warpInPoint.x += (d * sin(t));
+                warpInPoint.y += (0.5f * radius * sin(j));
+                warpInPoint.z -= (d * cos(t));
 
                 // set new position in middle of grid
                 int64 bubbleDia = (BUBBLE_RADIUS_METERS * 2);
