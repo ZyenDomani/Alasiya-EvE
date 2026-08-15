@@ -18,20 +18,18 @@
 // +x is right, +y is up elevation, +z is "into", or up in 2d
 
 namespace EvE {
-
     namespace Trig {
-
-        // Global constants optimized for single-precision math hardware
+        // Global constants optimized for my hardware
         const double E                   =  2.71828182845904523536028747135;
         const double halfPi              =  1.57079632679489661923132169164;
         const double Pi                  =  3.14159265358979323846264338328;
         const double Pi2                 =  6.28318530717958647692528676656;
-        const double FivePiSq            = 49.3480220054467930941724549994; // 5 * PI^2
-        const double RadiansInDegrees    =  0.0174532925199432957692369076849;   //  pi/180
-        const double DegreesInRadians    = 57.2957795130823208767981548141;   //  180/pi
+        const double RadiansInDegrees    =  0.0174532925199432957692369076849;  //  pi/180
+        const double DegreesInRadians    = 57.2957795130823208767981548141;     //  180/pi
 
         inline double Deg2Rad(double deg) { return (deg * RadiansInDegrees); }
         inline double Rad2Deg(double rad) { return (rad * DegreesInRadians); }
+    }
 }
 
 

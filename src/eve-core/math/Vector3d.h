@@ -9,8 +9,6 @@
 #include "Trig.h"
 #include "../utils/misc.h"
 
-
-
 struct Vector3d
 {
 public:
