@@ -85,8 +85,10 @@ PlanetORB::~PlanetORB() {
 }
 
 PyBoundObject* PlanetORB::CreateBoundObject(Client* pClient, const PyRep *bind_args) {
-    _log(PLANET__INFO, "PlanetORB bind request for:");  // sends systemID
-    bind_args->Dump(PLANET__INFO, "    ");
+    if (is_log_enabled(PLANET__INFO)) {
+        _log(PLANET__INFO, "PlanetORB bind request for:");  // sends systemID
+        bind_args->Dump(PLANET__INFO, "    ");
+    }
     if (!bind_args->IsInt()) {
         codelog(SERVICE__ERROR, "%s Service: invalid bind argument type %s", GetName(), bind_args->TypeString());
         return nullptr;
@@ -167,6 +169,7 @@ PyResult PlanetORBBound::Handle_UpdateSettings(PyCallArgs& call)
      * 20:29:55 [PlanetCallDump]       [ 5]    Integer: 1
      */
     _log(INV__MESSAGE, "Calling PlanetORBBound::UpdateSettings()");
+    if (is_log_enabled(PLANET__DUMP))
     call.Dump(PLANET__DUMP);
 
     Call_UpdateSettings args;
@@ -189,7 +192,6 @@ PyResult PlanetORBBound::Handle_UpdateSettings(PyCallArgs& call)
         return nullptr;
     }
 
-    pCOSE->UpdateSettings(args.reinforceValue, args.standingValue, args.allowAlliance, args.allowStandings, dict);
-
+    pCOSE->UpdateSettings(args, dict);
     return nullptr;
 }

@@ -23,6 +23,10 @@ class Planet
 {
 public:
     Planet();
+    Planet(Planet&&) =delete;
+    Planet(const Planet&) =delete;
+    Planet& operator=(Planet&&) =delete;
+    Planet& operator=(const Planet&) =delete;
     ~Planet()                                           { /* do nothing here */ }
 
 protected:
@@ -41,6 +45,10 @@ class PlanetSE
 {
 public:
     PlanetSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
+    PlanetSE(PlanetSE&&) =delete;
+    PlanetSE(const PlanetSE&) =delete;
+    PlanetSE& operator=(PlanetSE&&) =delete;
+    PlanetSE& operator=(const PlanetSE&) =delete;
     virtual ~PlanetSE();
 
     /* Process Calls - Overridden as needed in derived classes */
@@ -75,22 +83,28 @@ public:
     std::string&                GetResourceBuffer(uint16 typeID)
                                                         { return m_typeBuffers[typeID].current; }
 
+    float                       GetScarcity()           { return m_scarcity; }
+    float                       GetAbundance()          { return m_abundance; }
+
 protected:
     CustomsSE*                  pCO;  // our Customs Office SE  - we dont own this
     PlanetResourceData          m_data;
-
-    // Procedural array builder generating up to 25 layered SH hotspots per material type
-    std::string GenerateResourceBuffer(float baseScarcityMultiplier, float abundanceMod);
-    // as stated
-    void ReplenishResources();
 
     struct PlanetResourceProfile {
         uint32 types[5];        // array holding the typeIDs for this planet
         float abundanceMod;
     };
 
+    // Procedural array builder for 18-node SH data
+    std::string GenerateResourceBuffer(float baseDistQuantity);
+    // as stated
+    void ReplenishResources();
+
 private:
     std::unordered_map<uint16, PlanetResourceBuffer> m_typeBuffers;
+
+    float m_abundance;          //[0.85, 1.5]
+    float m_scarcity;           //[0.1, 2.0]
 
     /* map of charID, Colony* for this planet.
      *   this is a hack, as the client will not reuse planet bound objects, instead calling for a new object on every call.

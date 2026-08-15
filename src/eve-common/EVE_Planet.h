@@ -90,7 +90,7 @@ namespace PI {
         int8 state=0;
         int8 priority=0;
         uint16 commodityTypeID=0;
-        uint16 commodityQuantity=0;         // current route qty, updated for diminishing returns on each loop
+        int32 commodityQuantity=0;         // current route qty, updated for diminishing returns on each loop
         uint32 srcPinID=0;
         uint32 destPinID=0;
         std::list<uint32> path;
@@ -101,12 +101,13 @@ namespace PI {
         uint32 ecuPinID=0;
         double latitude=0.0;
         double longitude=0.0;
+        float currentDepletion; // Tracks the accumulated local resource reduction
     };
 
     struct Schematic {
-        uint16 outputQty=0;
         uint16 outputType=0;
-        uint16 cycleTime=0;                 // in seconds
+        int32 outputQty=0;
+        uint32 cycleTime=0;                 // in seconds
 
         // typeID, qty
         std::map<uint16, uint16> inputs;
@@ -124,6 +125,15 @@ namespace PI {
         std::unordered_map<uint16, PI::Heads> heads;   // ECU Only
     };
 
+    // Lightweight structure to bridge your live memory objects to the mathematical evaluator
+    struct ActiveEcuHead {
+        uint32 pinID;
+        double latitude;
+        double longitude;
+        double headRadius;
+        float  depletionAmount;
+    };
+    
     struct Plant {
         // specifically for processing plants. this is not saved in db as a group, but is in pinData
         // these two are checked in client for the pin.CanActivate() method.  it will return true if either are true.
@@ -157,7 +167,7 @@ namespace PI {
         uint16 schematicID=0;               // Process
         // ECU data   0 when no installed program
         // ignored for other pins
-        uint32 qtyPerCycle=0;               // Process, ECU
+        int32 qtyPerCycle=0;                // Process, ECU
         // while !=0, calls update on all colony pins.   used with cycleTime for nextTickTime
         // xfer time for storage.
         // must be 0 or not sent for Spaceports and CC
@@ -175,8 +185,8 @@ namespace PI {
         // kept here as pin build time
         int64 installTime=0;                // Process, ECU
 
-        double latitude=0.0;                // planetary location common for all pins
-        double longitude=0.0;               // planetary location common for all pins
+        double latitude=0.0;                // planetary location common for all pins; in radians
+        double longitude=0.0;               // planetary location common for all pins; in radians
 
         std::map<uint16, uint32> contents;  // Storage    <typeID, qty>
     };
@@ -228,7 +238,7 @@ struct PlanetResourceBuffer {
     std::string spawned;
 
     PlanetResourceBuffer() : current(""), spawned("") {}
-    
+
     PlanetResourceBuffer(std::string cur, std::string orig)
         : current(cur), spawned(orig) {}
 };
@@ -237,9 +247,11 @@ struct PlanetResourceBuffer {
 class PI_CCData {
 public:
     PI_CCData() : level(0), colonyID(0)                 { /* Init(); */ }
+    PI_CCData(PI_CCData&&) =delete;
+    PI_CCData(const PI_CCData&) =delete;
+    PI_CCData& operator=(PI_CCData&&) =delete;
+    PI_CCData& operator=(const PI_CCData&) =delete;
     ~PI_CCData()                                        { /* do nothing here */ }
-    // do we need to delete copy/move semantics?
-    //    probably not...this is passed as pointer to everything, so there is no copy or move
 
     void Clear() {
         pins.clear();

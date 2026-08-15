@@ -153,8 +153,10 @@ PlanetMgrService::~PlanetMgrService() {
 
 PyBoundObject* PlanetMgrService::CreateBoundObject(Client* pClient, const PyRep *bind_args) {
     /* sends planetID */
-    _log(PLANET__INFO, "PlanetMgrService bind request for:");
-    bind_args->Dump(PLANET__INFO, "    ");
+    if (is_log_enabled(PLANET__INFO)) {
+        _log(PLANET__INFO, "PlanetMgrService bind request for:");
+        bind_args->Dump(PLANET__INFO, "    ");
+    }
     if (!bind_args->IsInt()) {
         _log(SERVICE__ERROR, "%s Service: invalid bind argument type %s", GetName(), bind_args->TypeString());
         return nullptr;
@@ -207,6 +209,7 @@ PyResult PlanetMgrBound::Handle_UserUpdateNetwork(PyCallArgs &call) {
         return nullptr;
     }
     _log(PLANET__DEBUG, "PlanetMgrBound::Handle_UserUpdateNetwork() size=%lu", call.tuple->size() );
+    if (is_log_enabled(PLANET__DUMP))
     call.Dump(PLANET__DUMP);
 
     UUNCommandList uuncl;
@@ -274,6 +277,7 @@ PyResult PlanetMgrBound::Handle_GetResourceData(PyCallArgs &call) {
 //01:52:23 [PlanetDebug] PlanetMgrBound::Handle_UserAbandonPlanet() size=0
 PyResult PlanetMgrBound::Handle_UserAbandonPlanet(PyCallArgs &call) {
     _log(PLANET__DEBUG, "PlanetMgrBound::Handle_UserAbandonPlanet() size=%lu", call.tuple->size() );
+    if (is_log_enabled(PLANET__DUMP))
     call.Dump(PLANET__DUMP);
 
     m_planet->AbandonColony(m_colony);
@@ -287,6 +291,7 @@ PyResult PlanetMgrBound::Handle_UserLaunchCommodities(PyCallArgs &call) {
             for typeID, qty in commoditiesToLaunch.iteritems():
             */
     _log(PLANET__DEBUG, "PlanetMgrBound::Handle_UserLaunchCommodities() size=%lu", call.tuple->size() );
+    if (is_log_enabled(PLANET__DUMP))
     call.Dump(PLANET__DUMP);
     /* 20:00:35 L PlanetMgrBound: Handle_UserLaunchCommodities() size=2
      * 20:00:35 [PlanetCallDump]   Call Arguments:
@@ -322,6 +327,7 @@ eve-server: /usr/local/src/eve/Alasiya-EvE/src/eve-common/python/PyRep.h:141: Py
 
 PyResult PlanetMgrBound::Handle_UserTransferCommodities(PyCallArgs &call) {
     _log(PLANET__DEBUG, "PlanetMgrBound::Handle_UserTransferCommodities() size=%lu", call.tuple->size() );
+    if (is_log_enabled(PLANET__DUMP))
     call.Dump(PLANET__DUMP);
 /*
         simTime, sourceRunTime = self.remoteHandler.UserTransferCommodities(path, commodities)
@@ -359,6 +365,7 @@ PyResult PlanetMgrBound::Handle_UserTransferCommodities(PyCallArgs &call) {
 
 PyResult PlanetMgrService::Handle_GetPlanet(PyCallArgs &call) {
     _log(PLANET__DEBUG, "PlanetMgrService::Handle_GetPlanet() size=%lu", call.tuple->size() );
+    if (is_log_enabled(PLANET__DUMP))
     call.Dump(PLANET__DUMP);
 
     return nullptr;
@@ -367,6 +374,7 @@ PyResult PlanetMgrService::Handle_GetPlanet(PyCallArgs &call) {
 PyResult PlanetMgrService::Handle_DeleteLaunch(PyCallArgs &call) {
     //sm.RemoteSvc('planetMgr').DeleteLaunch
     _log(PLANET__DEBUG, "PlanetMgrService::Handle_DeleteLaunch() size=%lu", call.tuple->size() );
+    if (is_log_enabled(PLANET__DUMP))
     call.Dump(PLANET__DUMP);
 
     return nullptr;
@@ -380,6 +388,7 @@ PyResult PlanetMgrBound::Handle_GetCommandPinsForPlanet(PyCallArgs &call) {
      * 16:42:42 [PlanetCallDump]         [ 0] Integer field: 40159411
      */
     _log(PLANET__DEBUG, "PlanetMgrBound::Handle_GetCommandPinsForPlanet() size=%lu", call.tuple->size() );
+    if (is_log_enabled(PLANET__DUMP))
     call.Dump(PLANET__DUMP);
 
     // returns empty dict if none
@@ -392,6 +401,7 @@ PyResult PlanetMgrBound::Handle_GetFullNetworkForOwner(PyCallArgs &call) {
      * self.foreignColoniesByPlanet[planetID][characterID] = colonyData
      */
     _log(PLANET__DEBUG, "PlanetMgrBound::Handle_GetFullNetworkForOwner() size=%lu", call.tuple->size() );
+    if (is_log_enabled(PLANET__DUMP))
     call.Dump(PLANET__DUMP);
 
     // returns empty dict if none
@@ -400,6 +410,7 @@ PyResult PlanetMgrBound::Handle_GetFullNetworkForOwner(PyCallArgs &call) {
 
 PyResult PlanetMgrBound::Handle_GMAddCommodity(PyCallArgs &call) {
     _log(PLANET__DEBUG, "PlanetMgrBound::Handle_GMAddCommodity() size=%lu", call.tuple->size() );
+    if (is_log_enabled(PLANET__DUMP))
     call.Dump(PLANET__DUMP);
 
     return nullptr;
@@ -416,6 +427,7 @@ PyResult PlanetMgrBound::Handle_GMConvertCommandCenter(PyCallArgs &call) {
      */
 
     _log(PLANET__DEBUG, "PlanetMgrBound::Handle_GMConvertCommandCenter() size=%lu", call.tuple->size() );
+    if (is_log_enabled(PLANET__DUMP))
     call.Dump(PLANET__DUMP);
 
     return nullptr;
@@ -423,6 +435,7 @@ PyResult PlanetMgrBound::Handle_GMConvertCommandCenter(PyCallArgs &call) {
 
 PyResult PlanetMgrBound::Handle_GMForceInstallProgram(PyCallArgs &call) {
     _log(PLANET__DEBUG, "PlanetMgrBound::Handle_GMForceInstallProgram() size=%lu", call.tuple->size() );
+    if (is_log_enabled(PLANET__DUMP))
     call.Dump(PLANET__DUMP);
     /*
      *        if typeID not in resourceInfo or qtyPerCycle < 0 or cycleTime < 10 * SEC or lifetimeHours < 1 or headRadius <= 0.0:
@@ -440,6 +453,20 @@ PyResult PlanetMgrBound::Handle_GMForceInstallProgram(PyCallArgs &call) {
      * 16:40:57 [PlanetCallDump]         [ 3] Integer field: 24
      * 16:40:57 [PlanetCallDump]         [ 4] Integer field: 100
      * 16:40:57 [PlanetCallDump]         [ 5] Real field: 1.000000
+     *
+     * 18:49:11 [PlanetDebug] PlanetMgrBound::Handle_GMForceInstallProgram() size=6
+     * 18:49:11 [PlanetCallDump]   Call Arguments:
+     * 18:49:11 [PlanetCallDump]      Tuple: 6 elements
+     * 18:49:11 [PlanetCallDump]       [ 0]    Integer: 140028267
+     * 18:49:11 [PlanetCallDump]       [ 1]    Integer: 2272
+     * 18:49:11 [PlanetCallDump]       [ 2]    Integer: 600000000
+     * 18:49:11 [PlanetCallDump]       [ 3]    Integer: 24
+     * 18:49:11 [PlanetCallDump]       [ 4]    Integer: 100
+     * 18:49:11 [PlanetCallDump]       [ 5]       Real: 1.000000
+     * 18:49:11 [PlanetCallDump]  Named Arguments:
+     * 18:49:11 [PlanetCallDump]   machoVersion
+     * 18:49:11 [PlanetCallDump]        Integer: 1
+     *
      */
     return nullptr;
 }
@@ -491,6 +518,7 @@ PyResult PlanetMgrBound::Handle_GMGetSynchedServerState(PyCallArgs &call) {
      *        self.LogNotice('VerifySimulation -- finished')
      */
     _log(PLANET__DEBUG, "PlanetMgrBound::Handle_GMGetSynchedServerState() size=%lu", call.tuple->size() );
+    if (is_log_enabled(PLANET__DUMP))
     call.Dump(PLANET__DUMP);
 
     return nullptr;
@@ -525,6 +553,7 @@ PyResult PlanetMgrBound::Handle_GMRunDepletionSim(PyCallArgs &call) {
      * 18:37:58 [PlanetCallDump]         [ 1]   Args:   [ 1] Value:   [ 0]   Args:   [ 4] Value: Real field: 1.104679
      */
     _log(PLANET__DEBUG, "PlanetMgrBound::Handle_GMRunDepletionSim() size=%lu", call.tuple->size() );
+    if (is_log_enabled(PLANET__DUMP))
     call.Dump(PLANET__DUMP);
 
     return nullptr;

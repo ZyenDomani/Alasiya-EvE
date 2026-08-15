@@ -76,16 +76,16 @@ bool PlanetDB::LoadPlanetResourceData(uint32 planetID, PlanetResourceData& data)
     data.dist_3 = row.GetFloat(8);
     data.dist_4 = row.GetFloat(9);
     data.dist_5 = row.GetFloat(10);
-    data.buffer_1 = row.GetText(11);
-    data.buffer_2 = row.GetText(12);
-    data.buffer_3 = row.GetText(13);
-    data.buffer_4 = row.GetText(14);
-    data.buffer_5 = row.GetText(15);
-    data.origBuf_1 = row.GetText(16);
-    data.origBuf_2 = row.GetText(17);
-    data.origBuf_3 = row.GetText(18);
-    data.origBuf_4 = row.GetText(19);
-    data.origBuf_5 = row.GetText(20);
+    data.buffer_1 = sPlanetDataMgr.HexToBinary(row.GetText(11));
+    data.buffer_2 = sPlanetDataMgr.HexToBinary(row.GetText(12));
+    data.buffer_3 = sPlanetDataMgr.HexToBinary(row.GetText(13));
+    data.buffer_4 = sPlanetDataMgr.HexToBinary(row.GetText(14));
+    data.buffer_5 = sPlanetDataMgr.HexToBinary(row.GetText(15));
+    data.origBuf_1 = sPlanetDataMgr.HexToBinary(row.GetText(16));
+    data.origBuf_2 = sPlanetDataMgr.HexToBinary(row.GetText(17));
+    data.origBuf_3 = sPlanetDataMgr.HexToBinary(row.GetText(18));
+    data.origBuf_4 = sPlanetDataMgr.HexToBinary(row.GetText(19));
+    data.origBuf_5 = sPlanetDataMgr.HexToBinary(row.GetText(20));
 
     return true;
 }
@@ -122,9 +122,11 @@ void PlanetDB::SavePlanetResourceData(uint32 planetID, PlanetResourceData& data)
             " origBuffer5=VALUES(origBuffer5);",
             planetID, data.replenishTime, data.type_1, data.type_2, data.type_3, data.type_4, data.type_5,
             data.dist_1, data.dist_2, data.dist_3, data.dist_4, data.dist_5,
-            data.buffer_1.c_str(), data.buffer_2.c_str(), data.buffer_3.c_str(), data.buffer_4.c_str(),
-            data.buffer_5.c_str(), data.origBuf_1.c_str(), data.origBuf_2.c_str(), data.origBuf_3.c_str(),
-            data.origBuf_4.c_str(), data.origBuf_5.c_str()))
+            sPlanetDataMgr.BinaryToHex(data.buffer_1).c_str(), sPlanetDataMgr.BinaryToHex(data.buffer_2).c_str(),
+            sPlanetDataMgr.BinaryToHex(data.buffer_3).c_str(), sPlanetDataMgr.BinaryToHex(data.buffer_4).c_str(),
+            sPlanetDataMgr.BinaryToHex(data.buffer_5).c_str(), sPlanetDataMgr.BinaryToHex(data.origBuf_1).c_str(),
+            sPlanetDataMgr.BinaryToHex(data.origBuf_2).c_str(), sPlanetDataMgr.BinaryToHex(data.origBuf_3).c_str(),
+            sPlanetDataMgr.BinaryToHex(data.origBuf_4).c_str(), sPlanetDataMgr.BinaryToHex(data.origBuf_5).c_str()))
         _log(DATABASE__ERROR, "SavePlanetResourceData - Unable to update planetID %u : %s", planetID, err.GetError());
 }
 
@@ -354,13 +356,13 @@ void PlanetDB::LoadPins(uint32 colonyID, std::unordered_map<uint32, PI::PinData>
             pin.cycleTime               = row.GetInt64(13);
             pin.installTime             = row.GetInt64(14);
             pin.lastRunTime             = row.GetInt64(15);
-            pin.qtyPerCycle             = row.GetUInt(16);
+            pin.qtyPerCycle             = row.GetInt(16);
             pin.launchTime              = row.GetInt64(17);
 
         if (pin.isStorage or pin.isProcess)
             LoadContents(row.GetUInt(0), pin.contents);
 
-        pins[row.GetUInt(0)] = pin;
+        pins.emplace(row.GetUInt(0), pin);
     }
 }
 
@@ -386,7 +388,7 @@ void PlanetDB::LoadLinks(uint32 colonyID, std::unordered_map<uint32, PI::Link >&
             link.typeID = 2280; // only link type in game
             link.endpoint1 = row.GetUInt(3);
             link.endpoint2 = row.GetUInt(4);
-        links[row.GetUInt(0)] = link;
+        links.emplace(row.GetUInt(0), link);
     }
 }
 
@@ -430,7 +432,7 @@ void PlanetDB::LoadRoutes(uint32 colonyID, std::unordered_map<uint16, PI::Route 
             route.path.insert(route.path.end(), (atoi(tempPath.c_str())));
         }
 
-        routes[row.GetUInt16(0)] = route;
+        routes.emplace(row.GetUInt16(0), route);
     }
 }
 
@@ -451,7 +453,7 @@ void PlanetDB::LoadContents(uint32 pinID, std::map<uint16, uint32>& contents)
 
     DBResultRow row;
     while (res.GetRow(row)) {
-        contents[row.GetUInt16(0)] = row.GetUInt(1);
+        contents.emplace(row.GetUInt16(0), row.GetUInt(1));
     }
 }
 
@@ -490,7 +492,7 @@ void PlanetDB::LoadHeads(uint32 ecuID, std::unordered_map< uint16, PI::Heads >& 
             head.ecuPinID = ecuID;
             head.latitude = row.GetDouble(2);
             head.longitude = row.GetDouble(3);
-        heads[row.GetUInt16(0)] = head;
+        heads.emplace(row.GetUInt16(0), head);
     }
 }
 
@@ -605,7 +607,7 @@ void PlanetDB::UpdateECUPin(uint32 ecuID, PI_CCData* pData) {
         "UPDATE piPins SET"
         "  programType = %u,"
         "  headRadius = %f,"
-        "  qtyPerCycle = %u,"
+        "  qtyPerCycle = %i,"
         "  schematicID = %u,"
         "  expiryTime = %lli,"
         "  cycleTime = %lli,"
