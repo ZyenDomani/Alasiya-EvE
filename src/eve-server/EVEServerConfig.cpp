@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    12.10
+    Version:    12.14
 */
 
 
@@ -117,9 +117,16 @@ EVEServerConfig::EVEServerConfig()
     rates.CSPA = 2950;
     rates.WanderTimer = 1;
     rates.ColonyTimer = 30;
-    rates.ECUDiminish = 0.95f;
-    rates.DrillCycleMod = 1.0f;
-    rates.PlantCycleMod = 1.0f;
+    rates.MaxWaveMultiplier = 0.25f;
+    rates.MinWaveMultiplier = 0.35f;
+    rates.PIRegenRate = 0.05f;
+    rates.WavePopulationDensity = 0.7f;
+    rates.BeltRespawn = 8 /*h*/;
+    rates.BeltGrowTime = 6 /*h*/;
+    rates.BeltGrowPct = 0.01f;
+    rates.RadiusMultiplier = 1.0f;
+    rates.YieldMultiplier = 4.0f;
+    rates.DistributionScalar = 125;
 
     //market
     market.FindBuyOrder = 10;
@@ -147,6 +154,9 @@ EVEServerConfig::EVEServerConfig()
     // account
     account.autoAccountRole = Acct::Role::STD;
     account.loginMessage = "";
+
+    // swarm
+    //swarm.
 
     // character
     character.startBalance = 6666000000.0;
@@ -200,10 +210,6 @@ EVEServerConfig::EVEServerConfig()
     cosmic.AnomalyEnabled = false;
     cosmic.DungeonEnabled = false;
     cosmic.BeltEnabled = false;
-    cosmic.BeltRespawn = 8 /*h*/;
-    cosmic.BeltGrowTime = 6 /*h*/;
-    cosmic.BeltGrowPct = 0.01f;
-    cosmic.roidRadiusMultiplier = 1.0;
     cosmic.WormHoleEnabled = false;
     cosmic.CiviliansEnabled = false;
     cosmic.BumpEnabled = false;
@@ -327,6 +333,7 @@ bool EVEServerConfig::ProcessEveServer(const TiXmlElement* ele) {
     AddMemberParser("market",      &EVEServerConfig::ProcessMarket);
     AddMemberParser("ram",         &EVEServerConfig::ProcessBPTimes);
     AddMemberParser("account",     &EVEServerConfig::ProcessAccount);
+    //AddMemberParser("swarm",       &EVEServerConfig::ProcessSwarm);
     AddMemberParser("character",   &EVEServerConfig::ProcessCharacter);
     AddMemberParser("npc",         &EVEServerConfig::ProcessNPC);
     AddMemberParser("drone",       &EVEServerConfig::ProcessDrone);
@@ -354,6 +361,7 @@ bool EVEServerConfig::ProcessEveServer(const TiXmlElement* ele) {
     RemoveParser("market");
     RemoveParser("ram");
     RemoveParser("account");
+    //RemoveParser("swarm");
     RemoveParser("character");
     RemoveParser("npc");
     RemoveParser("drone");
@@ -496,10 +504,17 @@ bool EVEServerConfig::ProcessRates(const TiXmlElement* ele) {
     AddValueParser("ConcordCritChance",    rates.ConcordCritChance);
     AddValueParser("StationServiceFee",    rates.StationServiceFee);
     AddValueParser("WanderTimer",          rates.WanderTimer);
+    AddValueParser("BeltRespawn",          rates.BeltRespawn);
+    AddValueParser("BeltGrowTime",         rates.BeltGrowTime);
+    AddValueParser("BeltGrowPct",          rates.BeltGrowPct);
+    AddValueParser("RadiusMultiplier",     rates.RadiusMultiplier);
     AddValueParser("ColonyTimer",          rates.ColonyTimer);
-    AddValueParser("ECUDiminish",          rates.ECUDiminish);
-    AddValueParser("DrillCycleMod",        rates.DrillCycleMod);
-    AddValueParser("PlantCycleMod",        rates.PlantCycleMod);
+    AddValueParser("MaxWaveMultiplier",    rates.MaxWaveMultiplier);
+    AddValueParser("MinWaveMultiplier",    rates.MinWaveMultiplier);
+    AddValueParser("WavePopulationDensity",rates.WavePopulationDensity);
+    AddValueParser("YieldMultiplier",      rates.YieldMultiplier);
+    AddValueParser("PIRegenRate",          rates.PIRegenRate);
+    AddValueParser("DistributionScalar",   rates.DistributionScalar);
 
     const bool result = ParseElementChildren(ele);
 
@@ -534,10 +549,17 @@ bool EVEServerConfig::ProcessRates(const TiXmlElement* ele) {
     RemoveParser("ConcordCritChance");
     RemoveParser("StationServiceFee");
     RemoveParser("WanderTimer");
+    RemoveParser("BeltRespawn");
+    RemoveParser("BeltGrowTime");
+    RemoveParser("BeltGrowPct");
+    RemoveParser("RadiusMultiplier");
     RemoveParser("ColonyTimer");
-    RemoveParser("ECUDiminish");
-    RemoveParser("DrillCycleMod");
-    RemoveParser("PlantCycleMod");
+    RemoveParser("MaxWaveMultiplier");
+    RemoveParser("MinWaveMultiplier");
+    RemoveParser("WavePopulationDensity");
+    RemoveParser("YieldMultiplier");
+    RemoveParser("PIRegenRate");
+    RemoveParser("DistributionScalar");
 
     return result;
 }
@@ -607,6 +629,17 @@ bool EVEServerConfig::ProcessAccount(const TiXmlElement* ele) {
 
     return result;
 }
+
+/*
+bool EVEServerConfig::ProcessSwarm(const TiXmlElement* ele) {
+    AddValueParser("",  swarm.);
+
+    const bool result = ParseElementChildren(ele);
+
+    RemoveParser("");
+
+    return result;
+} */
 
 bool EVEServerConfig::ProcessCharacter(const TiXmlElement* ele) {
     AddValueParser("startBalance",             character.startBalance);
@@ -767,10 +800,6 @@ bool EVEServerConfig::ProcessCosmic(const TiXmlElement* ele) {
     AddValueParser("AnomalyEnabled",       cosmic.AnomalyEnabled);
     AddValueParser("DungeonEnabled",       cosmic.DungeonEnabled);
     AddValueParser("BeltEnabled",          cosmic.BeltEnabled);
-    AddValueParser("BeltRespawn",          cosmic.BeltRespawn);
-    AddValueParser("BeltGrowTime",         cosmic.BeltGrowTime);
-    AddValueParser("BeltGrowPct",          cosmic.BeltGrowPct);
-    AddValueParser("roidRadiusMultiplier", cosmic.roidRadiusMultiplier);
     AddValueParser("WormHoleEnabled",      cosmic.WormHoleEnabled);
     AddValueParser("CiviliansEnabled",     cosmic.CiviliansEnabled);
     AddValueParser("CivilianTic",          cosmic.CivilianTic);
@@ -784,10 +813,6 @@ bool EVEServerConfig::ProcessCosmic(const TiXmlElement* ele) {
     RemoveParser("AnomalyEnabled");
     RemoveParser("DungeonEnabled");
     RemoveParser("BeltEnabled");
-    RemoveParser("BeltRespawn");
-    RemoveParser("BeltGrowTime");
-    RemoveParser("BeltGrowPct");
-    RemoveParser("roidRadiusMultiplier");
     RemoveParser("WormHoleEnabled");
     RemoveParser("CiviliansEnabled");
     RemoveParser("CivilianTic");

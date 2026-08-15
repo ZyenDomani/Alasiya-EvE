@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    12.10
+    Version:    12.14
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -141,11 +141,19 @@ public:
         // Misc fees
         float StationServiceFee;
         uint16 CSPA;
+        // for belts
+        uint8 BeltRespawn;
+        uint8 BeltGrowTime;
+        float RadiusMultiplier;
+        float BeltGrowPct;
         // for PI/Colony
         uint8 ColonyTimer;
-        float ECUDiminish;
-        float DrillCycleMod;
-        float PlantCycleMod;
+        uint16 DistributionScalar;
+        float PIRegenRate;
+        float MinWaveMultiplier;
+        float MaxWaveMultiplier;
+        float WavePopulationDensity;
+        float YieldMultiplier;
     } rates;
 
     // from <market>
@@ -182,6 +190,13 @@ public:
         /// A message shown to every client on login (if enabled in <world::LoginMsg>).
         std::string loginMessage;
     } account;
+
+    // From <swarm>
+    /*
+    struct {
+
+    } swarm;
+    */
 
     // From <character>
     struct {
@@ -305,13 +320,9 @@ public:
         bool WormHoleEnabled;
         bool CiviliansEnabled;
         bool BumpEnabled;
-        uint8 BeltRespawn;
-        uint8 BeltGrowTime;
         uint8 CivilianTic;
         uint8 minCivConvoys;
         uint8 maxCivConvoys;
-        float roidRadiusMultiplier;
-        float BeltGrowPct;
     } cosmic;
 
     // From exploring
@@ -408,6 +419,7 @@ protected:
     bool ProcessRates(const TiXmlElement* ele);
     bool ProcessMarket(const TiXmlElement* ele);
     bool ProcessAccount(const TiXmlElement* ele);
+    //bool ProcessSwarm(const TiXmlElement* ele);
     bool ProcessCharacter(const TiXmlElement* ele);
     bool ProcessNPC(const TiXmlElement* ele);
     bool ProcessDrone(const TiXmlElement* ele);
