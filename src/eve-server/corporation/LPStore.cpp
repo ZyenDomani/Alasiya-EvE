@@ -52,6 +52,7 @@ PyResult LPStore::Handle_AcceptOffer( PyCallArgs& call ) {
             */
   sLog.White( "LPStore::Handle_GetLPsForCharacter()", "size= %lu", call.tuple->size() );
 
+  if (is_log_enabled(SERVICE__CALL_DUMP))
   call.Dump(SERVICE__CALL_DUMP);
   return PyStatic.mtList();
 }

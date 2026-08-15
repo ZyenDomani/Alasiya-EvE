@@ -109,6 +109,7 @@ PyResult CorpBookmarkMgr::Handle_GetBookmarks(PyCallArgs& call)
 
 
 PyResult CorpBookmarkMgr::Handle_UpdateBookmark(PyCallArgs& call) {
+    if (is_log_enabled(BOOKMARK__CALL_DUMP))
     call.Dump(BOOKMARK__CALL_DUMP);
     Call_UpdateBookmark args;
     if (!args.Decode(&call.tuple)) {
@@ -122,6 +123,7 @@ PyResult CorpBookmarkMgr::Handle_UpdateBookmark(PyCallArgs& call) {
 }
 
 PyResult CorpBookmarkMgr::Handle_UpdatePlayerBookmark(PyCallArgs& call) {
+    if (is_log_enabled(BOOKMARK__CALL_DUMP))
     call.Dump(BOOKMARK__CALL_DUMP);
     Call_UpdateBookmark args;
     if (!args.Decode(&call.tuple)) {
@@ -138,6 +140,7 @@ PyResult CorpBookmarkMgr::Handle_MoveBookmarksToFolder(PyCallArgs& call)
 {
     sLog.Cyan("CorpBookmarkMgr", "MoveBookmarksToFolder()");
     // rows = bookmarkMgr.MoveBookmarksToFolder(folderID, bookmarkIDs)
+    if (is_log_enabled(BOOKMARK__CALL_DUMP))
     call.Dump(BOOKMARK__CALL_DUMP);
     Call_MoveBookmarksToFolder args;
     if (!args.Decode(&call.tuple)) {
@@ -163,6 +166,7 @@ PyResult CorpBookmarkMgr::Handle_MoveBookmarksToFolder(PyCallArgs& call)
 PyResult CorpBookmarkMgr::Handle_UpdateFolder(PyCallArgs& call)
 {
     //if bookmarkMgr.UpdateFolder(folderID, folderName):
+    if (is_log_enabled(BOOKMARK__CALL_DUMP))
     call.Dump(BOOKMARK__CALL_DUMP);
     Call_UpdateFolder args;
     if (!args.Decode(&call.tuple)) {
@@ -176,7 +180,7 @@ PyResult CorpBookmarkMgr::Handle_UpdateFolder(PyCallArgs& call)
     // Sanitization Guard Clause: Enforce matching 60-character boundary
     if (name.length() > 60)
         name = name.substr(0, 60);
-    
+
     if (!m_db.UpdateFolder(args.folderID, name))
         return PyStatic.NewFalse();
 
@@ -186,6 +190,7 @@ PyResult CorpBookmarkMgr::Handle_UpdateFolder(PyCallArgs& call)
 PyResult CorpBookmarkMgr::Handle_CreateFolder(PyCallArgs& call)
 {
     //folder = bookmarkMgr.CreateFolder(folderName)
+    if (is_log_enabled(BOOKMARK__CALL_DUMP))
     call.Dump(BOOKMARK__CALL_DUMP);
 
     std::string name;
@@ -208,6 +213,7 @@ PyResult CorpBookmarkMgr::Handle_CreateFolder(PyCallArgs& call)
 
 PyResult CorpBookmarkMgr::Handle_CopyBookmarks(PyCallArgs& call)
 {
+    if (is_log_enabled(BOOKMARK__CALL_DUMP))
     call.Dump(BOOKMARK__CALL_DUMP);
     return PyStatic.NewNone();
 }
@@ -215,6 +221,7 @@ PyResult CorpBookmarkMgr::Handle_CopyBookmarks(PyCallArgs& call)
 PyResult CorpBookmarkMgr::Handle_DeleteFolder(PyCallArgs& call)
 {
     //deleteFolder, bookmarks = self.corpBookmarkMgr.DeleteFolder(folderID, bookmarkIDs)
+    if (is_log_enabled(BOOKMARK__CALL_DUMP))
     call.Dump(BOOKMARK__CALL_DUMP);
     uint32 folderID(PyRep::IntegerValueU32(call.tuple->GetItem(0)));
 
@@ -238,6 +245,7 @@ PyResult CorpBookmarkMgr::Handle_DeleteFolder(PyCallArgs& call)
 PyResult CorpBookmarkMgr::Handle_MoveFoldersToDB(PyCallArgs& call)
 {
     //rows, folders = self.corpBookmarkMgr.MoveFoldersToDB(info)
+    if (is_log_enabled(BOOKMARK__CALL_DUMP))
     call.Dump(BOOKMARK__CALL_DUMP);
     return PyStatic.NewNone();
 }
@@ -245,6 +253,7 @@ PyResult CorpBookmarkMgr::Handle_MoveFoldersToDB(PyCallArgs& call)
 PyResult CorpBookmarkMgr::Handle_DeleteBookmarks(PyCallArgs& call)
 {
     //deletedBookmarks = self.corpBookmarkMgr.DeleteBookmarks(bookmarkIDs)
+    if (is_log_enabled(BOOKMARK__CALL_DUMP))
     call.Dump(BOOKMARK__CALL_DUMP);
     Call_DeleteBookmarks args;
 

@@ -64,7 +64,7 @@ float TurretFormulas::GetToHit(ShipItemRef shipRef, TurretModule* pMod, SystemEn
         double e = 0.0;
         if (d > 0)
             e = (d / falloff) * (d / falloff);
-        hitChance = std::pow(0.5, c + e);
+        hitChance = pow(0.5, c + e);
     }
 
     double rNum = MakeRandomDouble();
@@ -122,7 +122,7 @@ float TurretFormulas::GetNPCToHit(NPC* pNPC, SystemEntity* pTarget) {
         double e = 0.0;
         if (d > 0)
             e = (d / falloff) * (d / falloff);
-        hitChance = std::pow(0.5, c + e);
+        hitChance = pow(0.5, c + e);
     }
 
     double rNum = MakeRandomDouble();
@@ -158,7 +158,7 @@ float TurretFormulas::GetDroneToHit(DroneSE* pDrone, SystemEntity* pTarget) {
     double c = (a * b) * (a * b);
     double d = EvE::max(distance - dRef->GetAttribute(AttrEntityAttackRange).get_double(), 0.0f);
     double e = (d / falloff) * (d / falloff);
-    double ChanceToHit = (std::pow(0.5, c + e));
+    double ChanceToHit = (pow(0.5, c + e));
     double rNum = MakeRandomDouble();
     if (rNum <= sConfig.rates.DroneCritChance)
         return 3.0f;
@@ -186,7 +186,7 @@ float TurretFormulas::GetSentryToHit(Sentry* pSentry, SystemEntity* pTarget) {
     double c = (a * b) * (a * b);
     double d = EvE::max(distance - pSentry->GetSelf()->GetAttribute(AttrEntityAttackRange).get_double(), 0.0);
     double e = (d / falloff) * (d / falloff);
-    double ChanceToHit = std::pow(0.5, c + e);
+    double ChanceToHit = pow(0.5, c + e);
     double rNum = MakeRandomDouble();
     if (rNum <= sConfig.rates.SentryCritChance)
         return 3.0f;

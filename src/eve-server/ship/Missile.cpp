@@ -272,7 +272,7 @@ void Missile::HitTarget() {
     // Fix: Correct CCP exponent math using hardcoded ln(5) denominator multiplied by DRS
     double v1 = Sr/Er;
     double exponent = (std::log(DRF) / std::log(5.0)) * DRS;
-    double v2 = std::pow(((Ev / V) * v1), exponent);
+    double v2 = pow(((Ev / V) * v1), exponent);
 
     // apply damage modifier from char skills, if applicable
     d *= m_damageMod;

@@ -152,7 +152,7 @@ void AsteroidSE::Grow() {
     // this will increase asteroid size (radius, quantity and mass)
     double radius = m_self->GetAttribute(AttrRadius).get_double();
     // grow 10%?  based on system activity (or lack thereof)?  maybe something about secstatus too?
-    radius *= sConfig.cosmic.BeltGrowPct;
+    radius *= sConfig.rates.BeltGrowPct;
     double quantity = log(radius / 89.675) * (1.0 / 4e-05);
 
     // per client, roid quantity will never be above 130000m3

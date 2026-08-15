@@ -107,6 +107,7 @@ PyResult InventoryBound::Handle_DestroyFitting(PyCallArgs &call) {
 }
 
 PyResult InventoryBound::Handle_StackAll(PyCallArgs &call) {
+    if (is_log_enabled(INV__DUMP))
     call.Dump(INV__DUMP);
 
     EVEItemFlags stackFlag = m_flag;
@@ -154,9 +155,6 @@ PyResult InventoryBound::Handle_ImportExportWithPlanet(PyCallArgs &call) {
      * 18:45:34 [ColonyPktTrace]        [ 0] Value:       Real: 100.000000
      * 23:21:49 [PlanetPktTrace]  taxRate=0.0500000007451
      */
-    //{'FullPath': u'UI/Messages', 'messageID': 256577, 'label': u'CannotImportNotEnoughWarehouseSpaceBody'}(u'You cannot import commodities to that spaceport, as it does not have sufficient storage space to handle the incoming goods.', None, None)
-    //{'FullPath': u'UI/Messages', 'messageID': 256626, 'label': u'CannotExportNotEnoughSpaceBody'}(u'You cannot export commodities to the customs office, as it does not have sufficient storage space to handle the incoming goods.', None, None)
-
     //  this is (should be) customs office
     if (m_self->groupID() != EVEDB::invGroups::Orbital_Infrastructure) {
         _log(ITEM__ERROR, "%s: Called CustomsOffice xFer using non-co item %s(%u).", call.client->GetName(), m_self->name(), m_self->itemID());
@@ -168,7 +166,8 @@ PyResult InventoryBound::Handle_ImportExportWithPlanet(PyCallArgs &call) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
-    args.Dump(COLONY__PKT_TRACE);
+    if (is_log_enabled(COLONY__PKT_TRACE))
+        args.Dump(COLONY__PKT_TRACE);
 
     PyDict* dictIn = args.importData->AsDict();
     std::map<uint32, uint16> importItems, exportItems;
@@ -188,13 +187,6 @@ PyResult InventoryBound::Handle_ImportExportWithPlanet(PyCallArgs &call) {
         return nullptr;
     }
     pColony->PlanetXfer(args.spaceportPinID, importItems, exportItems, args.taxRate);
-
-    PyList* list = new PyList();
-    list->AddItemInt(args.spaceportPinID);
-    PyTuple* tuple = new PyTuple(1);
-    tuple->items[0] = list;
-    //may also need OnItemChange with this
-    call.client->SendNotification("OnRefreshPins", "clientID", &tuple, false);
     return nullptr;
 }
 
@@ -237,6 +229,7 @@ PyResult InventoryBound::Handle_RemoveChargeToCargo(PyCallArgs &call) {
 PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
     if (is_log_enabled(INV__MESSAGE))
         _log(INV__MESSAGE, "IB::MultiMerge() called by %s(%u)", m_self->name(), m_itemID);
+    if (is_log_enabled(INV__DUMP))
     call.Dump(INV__DUMP);
     //Decode Args
     Call_MultiMerge args;
@@ -784,8 +777,10 @@ PyResult InventoryBound::Handle_List(PyCallArgs &call) {
     if (pInventory == nullptr)
         return PyStatic.NewNone();
 
+    if (is_log_enabled(INV__DUMP)) {
     _log(INV__DUMP, "IB::List() dump.");
     call.Dump(INV__DUMP);
+    }
 
     uint32 ownerID = m_ownerID;
     /* this item was originally bound to this flag, but can send specific flag on occasion
@@ -865,6 +860,7 @@ PyResult InventoryBound::Handle_CreateBookmarkVouchers(PyCallArgs &call) {
     /*
      *    bookmarksDeleted, newVouchers = self.CreateBookmarkVouchers(bookmarkIDs, flag, isMove)
      */
+    if (is_log_enabled(BOOKMARK__CALL_DUMP))
     call.Dump(BOOKMARK__CALL_DUMP);
 
     if (m_self->ownerID() != call.client->GetCharID())
@@ -949,12 +945,14 @@ PyResult InventoryBound::Handle_TakeOutTrash(PyCallArgs &call) {
     //TakeOutTrash([ invItem.itemID for invItem in invItems ])
     sLog.Error("IB::TakeOutTrash", "Character '%s', self: '%s'(%u)", call.client->GetName(), m_self->name(), m_itemID);
     _log(INV__MESSAGE, "%s Calling InventoryBound::TakeOutTrash() for %s(%u)", call.client->GetName(), m_self->name(), m_itemID);
+    if (is_log_enabled(INV__DUMP))
     call.Dump(INV__DUMP);
     return nullptr;
 }
 
 PyResult InventoryBound::Handle_SetPassword(PyCallArgs &call) {
     _log(INV__MESSAGE, "%s Calling InventoryBound::SetPassword() for %s(%u)", call.client->GetName(), m_self->name(), m_itemID);
+    if (is_log_enabled(INV__DUMP))
     call.Dump(INV__DUMP);
     return nullptr;
 }
@@ -963,12 +961,14 @@ PyResult InventoryBound::Handle_ListDroneBay(PyCallArgs &call) {
     // i dont think this one is used....
     sLog.Error("IB::ListDroneBay", "Character '%s', self: '%s'(%u)", call.client->GetName(), m_self->name(), m_itemID);
     _log(INV__MESSAGE, "%s Calling InventoryBound::ListDroneBay() for %s(%u)", call.client->GetName(), m_self->name(), m_itemID);
+    if (is_log_enabled(INV__DUMP))
     call.Dump(INV__DUMP);
     return nullptr;
 }
 
 PyResult InventoryBound::Handle_RunRefiningProcess(PyCallArgs &call) {
     _log(POS__MESSAGE, "%s Calling InventoryBound::RunRefiningProcess() for %s(%u)", call.client->GetName(), m_self->name(), m_itemID);
+    if (is_log_enabled(POS__DUMP))
     call.Dump(POS__DUMP);
     return nullptr;
 }

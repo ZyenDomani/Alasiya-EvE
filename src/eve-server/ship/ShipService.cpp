@@ -375,8 +375,10 @@ PyResult ShipBound::Handle_Undock(PyCallArgs &call) {
 
 PyResult ShipBound::Handle_Drop(PyCallArgs &call)
 {
+    if (is_log_enabled(SHIP__INFO)) {
     _log(SHIP__INFO, "ShipBound::Handle_Drop()");
     call.Dump(SHIP__INFO);
+    }
 
     if (sDataMgr.IsStation(call.client->GetLocationID())) {
         _log(SERVICE__ERROR, "%s: Trying to drop items when not in space!", call.client->GetName());
@@ -412,7 +414,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
     for (uint32 i = 0; i < PyToDropList->size(); ++i) {
         dropped = false;
         PyList* list = new PyList();
-        Vector3d location(pShip->position());
+        Vector3d location = pShip->position();
         location.MakeRandomPointOnSphereLayer(500,1500);
         qty = PyToDropList->items[i]->AsTuple()->items[1]->AsInt()->value();
         itemID = PyToDropList->items[i]->AsTuple()->items[0]->AsInt()->value();
@@ -899,7 +901,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
 
     SystemManager* pSysMgr(pClient->SystemMgr());
     //Get location of our ship
-    Vector3d location(pClient->GetShipSE()->GetPosition());
+    Vector3d location = pClient->GetShipSE()->GetPosition();
 
     InventoryItemRef cRef(nullptr), iRef(nullptr);
     CargoContainerRef jcRef(nullptr), ccRef(nullptr);
@@ -967,13 +969,13 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                 srandom(pPlanet->GetID());  //this is the only place random() is used....other random functions use rand() as it's non-repeatable.
                 int rand = random();
                 double j = (((rand / RAND_MAX) - 1.0f) / 3.0f);
-                double s = 20 * std::pow(0.025f * (10 * std::log10(radius / 1000000) - 39), 20) + 0.5f;
+                double s = 20 * pow(0.025f * (10 * std::log10(radius / 1000000) - 39), 20) + 0.5f;
                 s = EvE::max(0.5f, EvE::min(s, 10.5f));
-                double t = std::asin((warpInPoint.x / std::fabs(warpInPoint.x)) * (warpInPoint.z / std::sqrt(std::pow(warpInPoint.x, 2) + std::pow(warpInPoint.z, 2)))) + j;
+                double t = std::asin((warpInPoint.x / std::fabs(warpInPoint.x)) * (warpInPoint.z / std::sqrt(pow(warpInPoint.x, 2) + pow(warpInPoint.z, 2)))) + j;
                 uint32 d = radius * (s + 1) + 1000000;
-                warpInPoint.x += (d * EvE::Trig::FastSin(t));
-                warpInPoint.y += (0.5f * radius * EvE::Trig::FastSin(j));
-                warpInPoint.z -= (d * EvE::Trig::FastCos(t));
+                warpInPoint.x += (d * sin(t));
+                warpInPoint.y += (0.5f * radius * sin(j));
+                warpInPoint.z -= (d * cos(t));
 
                 // set new position in middle of grid
                 int64 bubbleDia = (BUBBLE_RADIUS_METERS * 2);
@@ -1143,6 +1145,7 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
      *                  [PyInt 0]
      */
 
+    if (is_log_enabled(COLLECT__CALL_DUMP))
     call.Dump(COLLECT__CALL_DUMP);
     if (call.tuple->empty())
         return nullptr;
@@ -1277,8 +1280,10 @@ PyResult ShipBound::Handle_LaunchFromContainer(PyCallArgs &call) {
      *  LaunchFromContainer(structureID, ids)
      */
 
+    if (is_log_enabled(SERVICE__CALL_DUMP)) {
     _log(SERVICE__CALL_DUMP, "ShipBound::Handle_LaunchFromContainer()");
     call.Dump(SERVICE__CALL_DUMP);
+    }
 
     return nullptr;
 }
@@ -1288,8 +1293,10 @@ PyResult ShipBound::Handle_LaunchFromContainer(PyCallArgs &call) {
 PyResult ShipBound::Handle_ScoopToSMA(PyCallArgs &call) {
     // no packet data
 
+    if (is_log_enabled(SERVICE__CALL_DUMP)) {
     _log(SERVICE__CALL_DUMP, "ShipBound::Handle_ScoopToSMA()");
     call.Dump(SERVICE__CALL_DUMP);
+    }
 
     return nullptr;
 }
@@ -1299,8 +1306,10 @@ PyResult ShipBound::Handle_BoardStoredShip(PyCallArgs &call) {
     // no packet data
 
     //sm.StartService('sessionMgr').PerformSessionChange('board', ship.BoardStoredShip, structureID, shipID)
+    if (is_log_enabled(SERVICE__CALL_DUMP)) {
     _log(SERVICE__CALL_DUMP, "ShipBound::Handle_BoardStoredShip()");
     call.Dump(SERVICE__CALL_DUMP);
+    }
 
     return nullptr;
 }
@@ -1309,8 +1318,10 @@ PyResult ShipBound::Handle_StoreVessel(PyCallArgs &call) {
     // no packet data
 
     //sm.StartService('sessionMgr').PerformSessionChange('storeVessel', ship.StoreVessel, destID)
+    if (is_log_enabled(SERVICE__CALL_DUMP)) {
     _log(SERVICE__CALL_DUMP, "ShipBound::Handle_StoreVessel()");
     call.Dump(SERVICE__CALL_DUMP);
+    }
 
     return nullptr;
 }

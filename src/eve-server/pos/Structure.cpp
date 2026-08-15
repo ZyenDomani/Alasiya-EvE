@@ -646,8 +646,8 @@ void StructureSE::SetAnchor(Client* pClient, Vector3d &pos)
         float rad(EvE::Trig::Deg2Rad(90));
 
         pos = m_moonSE->GetPosition();
-        pos.x += ((radius + dist) * EvE::Trig::FastSin(rad));
-        pos.z += ((radius + dist) * EvE::Trig::FastCos(rad));
+        pos.x += ((radius + dist) * sin(rad));
+        pos.z += ((radius + dist) * cos(rad));
 
         // set new position in middle of grid
         int64 bubbleDia(BUBBLE_RADIUS_METERS * 2);

@@ -2405,7 +2405,7 @@ float ShipSE::CalculateRechargeRate(float Capacity, float Current, float Recharg
 void ShipSE::Process() {
     if (m_killed)
         return;
-    
+
     /*  Enable base call to Process Movement  */
     SystemEntity::Process();
 
@@ -2805,7 +2805,7 @@ bool ShipSE::LaunchDrone(InventoryItemRef dRef) {
     pDrone->Init();
 
     // this will launch drone (orbitDistance - 100m) from ship.  ai will adjust if needed
-    Vector3d position(GetPosition());
+    Vector3d position = GetPosition();
     position.MakeRandomPointOnSphere(pDrone->GetAI()->GetOrbitDistance() - 50.0);
     dRef->SetPosition(position);
     dRef->SaveItem();

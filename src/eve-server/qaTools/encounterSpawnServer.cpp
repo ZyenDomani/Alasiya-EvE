@@ -63,6 +63,7 @@ PyResult encounterSpawnServer::Handle_GetMyEncounters( PyCallArgs& call )
             'hint': encounter['encounterName']}
             */
     _log(QATOOLS__CALL,  "encounterSpawnServer::Handle_GetMyEncounters size: %lu", call.tuple->size());
+    if (is_log_enabled(QATOOLS__DUMP))
     call.Dump(QATOOLS__DUMP);
 
     return nullptr;
@@ -72,6 +73,7 @@ PyResult encounterSpawnServer::Handle_RequestActivateEncounters( PyCallArgs& cal
 {
     //    logResults = self.encounterSpawnServer.RequestActivateEncounters(encounterList, logResults=True)
     _log(QATOOLS__CALL,  "encounterSpawnServer::Handle_RequestActivateEncounters size: %lu", call.tuple->size());
+    if (is_log_enabled(QATOOLS__DUMP))
     call.Dump(QATOOLS__DUMP);
 
     return nullptr;
@@ -81,6 +83,7 @@ PyResult encounterSpawnServer::Handle_RequestDeactivateEncounters( PyCallArgs& c
 {
     //  logResults = self.encounterSpawnServer.RequestDeactivateEncounters(encounterList, logResults=True)
     _log(QATOOLS__CALL,  "encounterSpawnServer::Handle_RequestDeactivateEncounters size: %lu", call.tuple->size());
+    if (is_log_enabled(QATOOLS__DUMP))
     call.Dump(QATOOLS__DUMP);
 
     return nullptr;

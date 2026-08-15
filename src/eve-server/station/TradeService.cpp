@@ -114,8 +114,10 @@ PyBoundObject* TradeService::CreateBoundObject(Client* pClient, const PyRep *bin
         return nullptr;
     }
 
-    _log(COLLECT__OTHER_DUMP, "Trade bind request for:");
-    args.Dump(COLLECT__OTHER_DUMP, "    ");
+    if (is_log_enabled(COLLECT__OTHER_DUMP)) {
+        _log(COLLECT__OTHER_DUMP, "Trade bind request for:");
+        args.Dump(COLLECT__OTHER_DUMP, "    ");
+    }
 
     /** @todo update to multiple trade sessions per client.  current code only allows one at a time. */
 
@@ -296,8 +298,10 @@ PyResult TradeBound::Handle_ToggleAccept(PyCallArgs &call) {
 }
 
 PyResult TradeBound::Handle_GetItemID(PyCallArgs &call) {
+    if (is_log_enabled(PLAYER__CALL_DUMP)) {
     _log(PLAYER__CALL_DUMP, "TradeBound::Handle_GetItemID()");
     call.Dump(PLAYER__CALL_DUMP);
+    }
     // still not sure what this does...only returns PyNone in packet logs.
     // returns none
     return PyStatic.NewNone();
@@ -494,8 +498,10 @@ PyResult TradeBound::Handle_GetItem(PyCallArgs &call) {
 }
 
 PyResult TradeBound::Handle_IsCEOTrade(PyCallArgs &call) {
+    if (is_log_enabled(PLAYER__CALL_DUMP)) {
     _log(PLAYER__CALL_DUMP, "TradeBound::Handle_IsCEOTrade()");
     call.Dump(PLAYER__CALL_DUMP);
+    }
 
     //TODO will have to work on this later.  need corps working correctly first.
     return PyStatic.NewFalse();

@@ -897,7 +897,7 @@ PyResult Command_getpositiondata(Client* pClient, CommandDB* db, PyServiceMgr* s
     double angle = std::acos( dotProd / normProd);
 
     double azimuth = std::atan2(vec.z, vec.x);
-    double elevation = std::atan2(vec.y, std::sqrt(std::pow(vec.x,2) + std::pow(vec.z,2)));
+    double elevation = std::atan2(vec.y, std::sqrt(pow(vec.x,2) + pow(vec.z,2)));
 
     std::ostringstream str;
     str << "Angle for current position is " << angle << "<br>";

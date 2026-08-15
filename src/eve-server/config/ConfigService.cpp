@@ -76,9 +76,11 @@ PyResult ConfigService::Handle_GetMultiOwnersEx(PyCallArgs &call) {
 23:14:21 [SvcCall]       Tuple: 1 elements
 23:14:21 [SvcCall]         [ 0] List: 1 elements
 23:14:21 [SvcCall]         [ 0]   [ 0] Integer field: 140000053
-  */
+*/
+  if (is_log_enabled(CACHE__DUMP)) {
     _log(CACHE__DUMP, "ConfigService::Handle_GetMultiOwnersEx" );
     call.Dump(CACHE__DUMP);
+  }
 
     Call_SingleIntList arg;
     if (!arg.Decode(&call.tuple)) {
@@ -101,8 +103,10 @@ PyResult ConfigService::Handle_GetMultiAllianceShortNamesEx(PyCallArgs &call) {
 
 
 PyResult ConfigService::Handle_GetMultiLocationsEx(PyCallArgs &call) {      // now working correctly  -allan  25April
+    if (is_log_enabled(CACHE__DUMP)) {
     _log(CACHE__DUMP,  "ConfigService::Handle_GetMultiLocationsEx" );
     call.Dump(CACHE__DUMP);
+    }
     Call_SingleIntList arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
@@ -113,8 +117,10 @@ PyResult ConfigService::Handle_GetMultiLocationsEx(PyCallArgs &call) {      // n
 }
 
 PyResult ConfigService::Handle_GetMultiStationEx(PyCallArgs &call) {
+    if (is_log_enabled(CACHE__DUMP)) {
     _log(CACHE__DUMP,  "ConfigService::Handle_GetMultiStationEx" );
     call.Dump(CACHE__DUMP);
+    }
     Call_SingleIntList arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
@@ -185,8 +191,10 @@ PyResult ConfigService::Handle_GetMapObjects(PyCallArgs &call) {
 }
 
 PyResult ConfigService::Handle_GetMultiInvTypesEx(PyCallArgs &call) {
+    if (is_log_enabled(CACHE__DUMP)) {
     _log(CACHE__DUMP,  "ConfigService::Handle_GetMultiInvTypesEx" );
     call.Dump(CACHE__DUMP);
+    }
 
     //parse the PyRep to get the list of IDs to query.
     Call_SingleIntList arg;
@@ -270,9 +278,11 @@ PyResult ConfigService::Handle_SetMapLandmarks(PyCallArgs &call) {
              landmark.GetRadius())
 
         sm.RemoteSvc('config').SetMapLandmarks(landmarkData)
-             */
+        */
+  if (is_log_enabled(CACHE__DUMP)) {
     _log(CACHE__DUMP,  "MapService::Handle_SetMapLandmarks()");
     call.Dump(CACHE__DUMP);
+  }
 
     return nullptr;
 }

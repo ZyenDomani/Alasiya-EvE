@@ -46,10 +46,12 @@ SkillMgrService::~SkillMgrService() {
 }
 
 PyBoundObject *SkillMgrService::CreateBoundObject(Client* pClient, const PyRep *bind_args) {
-    _log(CLIENT__MESSAGE, "SkillMgrService bind request for:");
-    bind_args->Dump(CLIENT__MESSAGE, "    ");
+    if (is_log_enabled(CLIENT__MESSAGE)) {
+        _log(CLIENT__MESSAGE, "SkillMgrService bind request for:");
+        bind_args->Dump(CLIENT__MESSAGE, "    ");
+    }
 
-    return(new SkillMgrBound(m_manager, m_db));
+    return (new SkillMgrBound(m_manager, m_db));
 }
 
 SkillMgrBound::SkillMgrBound(PyServiceMgr *mgr, CharacterDB &db)

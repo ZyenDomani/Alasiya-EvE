@@ -1578,7 +1578,7 @@ void ActiveModule::LaunchProbe()
         return;
     }
 
-    Vector3d pos(m_shipRef->position());
+    Vector3d pos = m_shipRef->position();
     pos.MakeRandomPointOnSphere(MakeRandomFloat(500 + m_shipRef->radius(), 1500 + m_shipRef->radius()));
 
     //ItemData(uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, uint32 _quantity);

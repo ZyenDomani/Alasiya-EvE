@@ -65,8 +65,10 @@ PyResult CharFittingMgr::Handle_GetFittings(PyCallArgs &call) {
     00:43:11 [PlayerCallDump]   machoVersion
     00:43:11 [PlayerCallDump]        Integer: 1
     */
-    _log(PLAYER__CALL, "CharFittingMgr::Handle_GetFittings()");
+    if (is_log_enabled(PLAYER__CALL_DUMP)) {
+        _log(PLAYER__CALL_DUMP, "CharFittingMgr::Handle_GetFittings()");
     call.Dump(PLAYER__CALL_DUMP);
+    }
 
     return nullptr;
 }
@@ -75,8 +77,10 @@ PyResult CharFittingMgr::Handle_SaveFitting(PyCallArgs &call)
 {
     //    fitting.ownerID = ownerID
     //    fitting.fittingID = self.GetFittingMgr(ownerID).SaveFitting(ownerID, fitting)
-    _log(PLAYER__CALL, "CharFittingMgr::Handle_SaveFitting()");
+    if (is_log_enabled(PLAYER__CALL_DUMP)) {
+        _log(PLAYER__CALL_DUMP, "CharFittingMgr::Handle_SaveFitting()");
     call.Dump(PLAYER__CALL_DUMP);
+    }
 
     return nullptr;
 }
@@ -88,9 +92,11 @@ PyResult CharFittingMgr::Handle_SaveManyFittings(PyCallArgs &call)
         for row in newFittingIDs:
             self.fittings[ownerID][row.realFittingID] = fittingsToSave[row.tempFittingID]
             self.fittings[ownerID][row.realFittingID].fittingID = row.realFittingID
-        */
-    _log(PLAYER__CALL, "CharFittingMgr::Handle_SaveManyFittings()");
+            */
+    if (is_log_enabled(PLAYER__CALL_DUMP)) {
+        _log(PLAYER__CALL_DUMP, "CharFittingMgr::Handle_SaveManyFittings()");
     call.Dump(PLAYER__CALL_DUMP);
+    }
 
     return nullptr;
 }
@@ -98,8 +104,10 @@ PyResult CharFittingMgr::Handle_SaveManyFittings(PyCallArgs &call)
 PyResult CharFittingMgr::Handle_DeleteFitting(PyCallArgs &call)
 {
     // self.GetFittingMgr(ownerID).DeleteFitting(ownerID, fittingID)
-    _log(PLAYER__CALL, "CharFittingMgr::Handle_DeleteFitting()");
+    if (is_log_enabled(PLAYER__CALL_DUMP)) {
+        _log(PLAYER__CALL_DUMP, "CharFittingMgr::Handle_DeleteFitting()");
     call.Dump(PLAYER__CALL_DUMP);
+    }
 
     return nullptr;
 }
@@ -107,8 +115,10 @@ PyResult CharFittingMgr::Handle_DeleteFitting(PyCallArgs &call)
 PyResult CharFittingMgr::Handle_UpdateNameAndDescription(PyCallArgs &call)
 {
     // self.GetFittingMgr(ownerID).UpdateNameAndDescription(fittingID, ownerID, name, description)
-    _log(PLAYER__CALL, "CharFittingMgr::Handle_UpdateNameAndDescription()");
+    if (is_log_enabled(PLAYER__CALL_DUMP)) {
+        _log(PLAYER__CALL_DUMP, "CharFittingMgr::Handle_UpdateNameAndDescription()");
     call.Dump(PLAYER__CALL_DUMP);
+    }
 
     return nullptr;
 }

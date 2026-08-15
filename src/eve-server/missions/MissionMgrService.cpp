@@ -73,6 +73,7 @@ MissionMgrService::~MissionMgrService() {
 
 /*
 PyBoundObject *MissionMgrService::CreateBoundObject(Client* pClient, PyTuple *bind_args) {
+    if (is_log_enabled(CLIENT__MESSAGE)) {
     _log(CLIENT__MESSAGE, "MissionMgrService bind request for:");
     bind_args->Dump(CLIENT__MESSAGE, "    ");
 
@@ -83,6 +84,7 @@ PyResult MissionMgrService::Handle_GetMyCourierMissions( PyCallArgs& call )
 {
     //SELECT * FROM courierMissions
     sLog.White("MissionMgrService", "Handle_GetMyCourierMissions() size=%lu", call.tuple->size() );
+    if (is_log_enabled(SERVICE__CALL_DUMP))
     call.Dump(SERVICE__CALL_DUMP);
 
     return nullptr;

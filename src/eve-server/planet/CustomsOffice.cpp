@@ -79,7 +79,7 @@ void CustomsSE::Init() {
 void CustomsSE::InitData()
 {
     // init all data.
-    m_cData.state = 252; //EVEPOS::EntityState::Anchored;  // allow corp settings menu
+    m_cData.state = EVEPOS::EntityState::Anchored;  // allow corp settings menu
     m_cData.timestamp = 0;
     m_cData.status = EVEPOS::StructureState::Online;
     m_cData.allowAlliance = false;
@@ -114,14 +114,14 @@ void CustomsSE::InitData()
      * roll is rotation on z axis  [-180/180]
      *  +roll is counterclockwise from y 0
      */
-    Vector3d pos(m_self->position());
-    Vector3d targ(m_planetSE->GetPosition());
+    Vector3d pos = m_self->position();
+    Vector3d targ = m_planetSE->GetPosition();
     float z = targ.z - pos.z;   // rise on z axis
     float x = targ.x - pos.x;    // run on x axis
     float y = targ.y - pos.y;   // rise on y axis
     float yaw = atan2(x, z);  // rad from position to target on xz plane
     float hyp = sqrt(pow(z, 2) + pow(x, 2));   // run on y plane
-    float pitch = atan2(y, hyp);  // rad from position to target on hy plane
+    float pitch = atan2(y, hyp);  // rad from position to target on y plane
 
     // verify quadrant and set rotation accordingly
     /*  quadrant signs and corrections
@@ -184,12 +184,12 @@ PyRep* CustomsSE::GetSettingsInfo()
     return tuple;
 }
 
-void CustomsSE::UpdateSettings(int8 selectedHour, int8 standingValue, bool ally, bool standings, Call_TaxRateValuesDict& taxRateValues)
+void CustomsSE::UpdateSettings(Call_UpdateSettings& args, Call_TaxRateValuesDict& taxRateValues)
 {
-    m_cData.allowAlliance    = ally;
-    m_cData.allowStandings   = standings;
-    m_cData.selectedHour     = selectedHour;    // timeframe structure will come out of reinforcement
-    m_cData.standingValue    = standingValue;    // minimum standing allowed for access (EVEPOS::Standing::xx)
+    m_cData.allowAlliance    = args.allowAlliance;
+    m_cData.allowStandings   = args.allowStandings;
+    m_cData.selectedHour     = args.reinforceValue;   // timeframe structure will come out of reinforcement
+    m_cData.standingValue    = args.standingValue;    // minimum standing allowed for access (EVEPOS::Standing::xx)
 
     using namespace EVEPOS;
     m_cData.taxRateValues[TaxValues::Corp]              = taxRateValues.corporation;

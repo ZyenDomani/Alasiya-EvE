@@ -116,6 +116,7 @@ PyResult Standing::Handle_GetMyKillRights(PyCallArgs &call) {
 PyResult Standing::Handle_GetStandingTransactions(PyCallArgs &call) {
     // data = sm.RemoteSvc('standing2').GetStandingTransactions(fromID, toID, direction, eventID, eventType, eventDateTime)
     _log(STANDING__MESSAGE,  "Standing::Handle_GetStandingTransactions()");
+    if (is_log_enabled(STANDING__DUMP))
     call.Dump(STANDING__DUMP);
 
     Call_GetStandingTransactions args;
@@ -136,7 +137,8 @@ PyResult Standing::Handle_GetStandingCompositions(PyCallArgs &call) {
                     if each.ownerID == fromID:
                         prior = each.standing
                         */
-    _log(STANDING__MESSAGE,  "Standing::Handle_GetStandingCompositions()");
+_log(STANDING__MESSAGE,  "Standing::Handle_GetStandingCompositions()");
+if (is_log_enabled(STANDING__DUMP))
     call.Dump(STANDING__DUMP);
 
     Call_GetStandingComposition args;

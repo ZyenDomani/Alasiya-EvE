@@ -50,6 +50,7 @@ PaperDollService::~PaperDollService() {
 
 //17:35:32 L PaperDollService::Handle_GetPaperDollData(): size=1
 PyResult PaperDollService::Handle_GetPaperDollData(PyCallArgs &call) {
+    if (is_log_enabled(PLAYER__CALL_DUMP))
     call.Dump(PLAYER__CALL_DUMP);
     // this is called when viewing full body of a character.
 
@@ -57,11 +58,13 @@ PyResult PaperDollService::Handle_GetPaperDollData(PyCallArgs &call) {
 }
 
 PyResult PaperDollService::Handle_ConvertAndSavePaperDoll(PyCallArgs &call) {
+    if (is_log_enabled(PLAYER__CALL_DUMP))
     call.Dump(PLAYER__CALL_DUMP);
     return nullptr;
 }
 
 PyResult PaperDollService::Handle_UpdateExistingCharacterFull(PyCallArgs &call) {
+    if (is_log_enabled(PLAYER__CALL_DUMP))
     call.Dump(PLAYER__CALL_DUMP);
     /*
         sm.RemoteSvc('paperDollServer').UpdateExistingCharacterFull(charID, dollInfo, portraitInfo, dollExists)
@@ -71,6 +74,7 @@ PyResult PaperDollService::Handle_UpdateExistingCharacterFull(PyCallArgs &call) 
 
 PyResult PaperDollService::Handle_UpdateExistingCharacterLimited(PyCallArgs &call) {
     // this is called when player updates their character pic
+    if (is_log_enabled(PLAYER__CALL_DUMP))
     call.Dump(PLAYER__CALL_DUMP);
     /*
         sm.RemoteSvc('paperDollServer').UpdateExistingCharacterLimited(charID, dollData, portraitInfo, dollExists)
@@ -109,6 +113,7 @@ PyResult PaperDollService::Handle_GetMyPaperDollData(PyCallArgs &call)
 {
     Client* pClient = call.client;
     sLog.Warning("GetMyPaperDollData", "Called by %s", pClient->GetName());
+    if (is_log_enabled(PLAYER__CALL_DUMP))
     call.Dump(PLAYER__CALL_DUMP);
 
     PyDict* args = new PyDict;

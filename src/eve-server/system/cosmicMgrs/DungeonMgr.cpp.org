@@ -772,14 +772,14 @@ void DungeonMgr::CreateDeco(uint32 templateID, CosmicSignature& sig) {
 
 void DungeonMgr::AddDecoToVector(uint8 dunType, uint32 templateID, std::vector<uint16>& groupVec)
 {
-    if (groupVec.empty())
-        return;
-
     // templateID = (sig.dungeonType *10000) + (sec *1000) + (type *100) + (level *10) + factionID;
     //uint8 factionID = templateID % 10;
     uint8 level = templateID / 10 % 10;
     //uint8 type = templateID / 100 % 10;
     //uint8 sec = templateID / 1000 % 10;
+
+    if (groupVec.empty())
+        return;
 
     // Decode our standard 5-variable Hex layout parameters
     //uint8_t level = (templateID >> 8) & 0xFF; // Op Level (1-9)
@@ -788,136 +788,74 @@ void DungeonMgr::AddDecoToVector(uint8 dunType, uint32 templateID, std::vector<u
     if (origLevel < 1)
         origLevel = 1;
 
-    // =====================================================================
-    // DETERMINE THE PATTERN TYPE
-    // =====================================================================
-    ESpawnPattern selectedPattern = Pattern_AreaWeighted; // Default
-
-    using namespace Dungeon::Type;
-    if (dunType == Anomaly || dunType == Rated) {
-        selectedPattern = Pattern_DonutShell; // Keep combat center clear
-    } else if (dunType == Magnetometric || dunType == Radar) {
-        selectedPattern = Pattern_DebrisField; // Concentrated ruins clouds
-    }
-
-    // Static anchors for Debris Field generation (picks a new spot per dungeon initialization)
-    // Note: In production, you might want to reset these at the start of CreateDeco instead.
-    static double cloudCenterX = (MakeRandomUInt(20000, 40000)) * (MakeRandomUInt() % 2 == 0 ? 1 : -1);
-    static double cloudCenterY = (MakeRandomUInt(20000, 40000)) * (MakeRandomUInt() % 2 == 0 ? 1 : -1);
-    // Static vectors to hold multiple distinct debris centers for the whole dungeon
-    static std::vector<GpsCoord> clusterAnchors;
-    const uint8 maxClusters = 3; // Number of distinct debris fields far away
-
-    // Initialize the distant fields once per dungeon build
-    if (clusterAnchors.empty() && selectedPattern == Pattern_DebrisField) {
-        for (uint8 c = 0; c < maxClusters; ++c) {
-            // Smoothly split angles so clusters don't spawn on top of each other
-            double clusterTheta = (EvE::Trig::Pi2 / maxClusters) * c + ((MakeRandomUInt(0, 100) / 100.0) * 0.5);
-
-            // Push them way out into the background (e.g., 50km to 75km)
-            double clusterRadius = MakeRandomUInt(50000, 75000);
-
-            GpsCoord anchor;
-            anchor.x = clusterRadius * cos(clusterTheta);
-            anchor.z = clusterRadius * sin(clusterTheta);
-            anchor.y = MakeRandomInt(-5000, 5000); // Varied vertical plane per field
-            clusterAnchors.push_back(anchor);
-        }
-    }
+    double theta = 0;
+    double degreeSeparation = (250.0 / static_cast<double>(origLevel));
 
     for (auto &cur : groupVec) {
         uint16 count = sDunDataMgr.groups.count(cur);
-        if (count < 1) continue;
+        if (count < 1)
+            continue;
 
+        // Isolate the root ABB category code to pick our hardcoded boxSize tier
         uint8_t abbRootCategory = cur / 100;
-        double chosenGridSize = BOX_SIZES[2]; // 240m default
+        double chosenGridSize = BOX_SIZES[2]; // Default fallback baseline: 240m grid
 
-        // Your Grid Layout Optimization Matrix
+        // =====================================================================
+        // GRID LAYOUT OPTIMIZATION MATRIX
+        // =====================================================================
         switch (abbRootCategory) {
-            case 1: chosenGridSize = BOX_SIZES[4]; break; // 3,840m
-            case 3: chosenGridSize = BOX_SIZES[2]; break; // 240m
-            case 4: chosenGridSize = BOX_SIZES[3]; break; // 960m
-            case 6:
-                if (cur == 670 || cur == 160) {
-                    chosenGridSize = BOX_SIZES[5]; // 15,360m
+            case 1:  // Ambient Space Debris / Wormholes
+                chosenGridSize = BOX_SIZES[4]; // 3,840m wide background scatter
+                break;
+            case 3:  // Ores / Clouds / Asteroids
+                chosenGridSize = BOX_SIZES[2]; // 240m natural resource clumps
+                break;
+            case 4:  // Localized Landscape Objects (LCOs)
+                chosenGridSize = BOX_SIZES[3]; // 960m cluster spacing
+                break;
+            case 6:  // Core Base Stations, Shipyards, Structures
+                if (cur == 670 || cur == 160) { // Mega Structures
+                    chosenGridSize = BOX_SIZES[5]; // 15,360m epic separation footprint
                 } else {
-                    chosenGridSize = BOX_SIZES[3]; // 960m
+                    chosenGridSize = BOX_SIZES[3]; // 960m standard station footprint
                 }
                 break;
-            default: chosenGridSize = BOX_SIZES[2]; break;
+            default:
+                chosenGridSize = BOX_SIZES[2]; // 240m safety default
+                break;
         }
 
         auto groupRange = sDunDataMgr.groups.equal_range(cur);
 
         for (uint8 i = 0; i < origLevel; ++i) {
             Dungeon::GroupData grp = Dungeon::GroupData();
+
+            // Safe independent iterator traversal pass
             auto localIt = groupRange.first;
             std::advance(localIt, MakeRandomUInt(0, count - 1));
 
-            grp.typeID = localIt->second.typeID;
-            grp.typeName = localIt->second.typeName;
+            grp.typeID    = localIt->second.typeID;
+            grp.typeName  = localIt->second.typeName;
             grp.typeGrpID = localIt->second.typeGrpID;
             grp.typeCatID = localIt->second.typeCatID;
             uint16 radius = localIt->second.radius;
 
-            // Smoothly distribute angles across 360 degrees instead of a hard limit
-            double theta = (EvE::Trig::Pi2 / static_cast<double>(origLevel)) * i;
-
-            // Add a slight structural variance per item iteration
-            double angleJitter = (static_cast<double>(MakeRandomUInt(0, 100)) / 100.0) * 0.2;
-            theta += angleJitter;
-            double rawX = 0.0;
-            double rawZ = 0.0; // Use Z for the horizontal plane math
-            double rawY = 0.0;
-            double headingAngle = 0.0; // Track orientation angle
-            double maxDistance = (i + 1) * chosenGridSize;
+            theta = EvE::Trig::Deg2Rad(degreeSeparation * i);
 
             // =====================================================================
-            // PROCEDURAL GEOMETRY DISTRIBUTION GENERATION (X and Z plane)
+            // GENERATE PREDICTABLE HIERARCHICAL GEOMETRY
             // =====================================================================
-            switch (selectedPattern) {
-                case Pattern_AreaWeighted: {
-                    double randomFactor = static_cast<double>(MakeRandomUInt(0, 1000)) / 1000.0;
-                    double dynamicRadius = radius + (maxDistance * std::sqrt(randomFactor));
-                    rawX = dynamicRadius * cos(theta);
-                    rawZ = dynamicRadius * sin(theta);
-                    break;
-                }
-                case Pattern_DonutShell: {
-                    double minRing = maxDistance * 0.35;
-                    double randomFactor = static_cast<double>(MakeRandomUInt(0, 1000)) / 1000.0;
-                    double dynamicRadius = radius + minRing + ((maxDistance - minRing) * randomFactor);
-                    rawX = dynamicRadius * cos(theta);
-                    rawZ = dynamicRadius * sin(theta);
-                    break;
-                }
-                case Pattern_DebrisField: {
-                    // Assign items evenly across our far-away clusters
-                    uint8 assignedCluster = i % clusterAnchors.size();
-                    GpsCoord targetAnchor = clusterAnchors[assignedCluster];
+            // Instead of multiplying by a static 10000m value, we use the chosen
+            // hierarchical grid size scaled by our calculation loops.
+            double gridMultiplier = (i + 1) * chosenGridSize;
 
-                    // Generate a local spread around that specific cluster middle
-                    double localSpreadTheta = (EvE::Trig::Pi2 / static_cast<double>(origLevel)) * i;
-                    double localRadius = radius + (MakeRandomUInt(0, 1000) / 1000.0) * (maxDistance * 0.3);
+            // Apply trigonometry positioning vectors
+            double rawX = (radius + gridMultiplier * EvE::Trig::FastCos(theta)) * (IsEven(MakeRandomUInt()) ? -1 : 1);
+            double rawZ = (radius + gridMultiplier * EvE::Trig::FastSin(theta)) * -1;
+            double rawY = localIt->second.y + MakeRandomInt(-1000, radius);
 
-                    rawX = targetAnchor.x + (localRadius * cos(localSpreadTheta));
-                    rawZ = targetAnchor.z + (localRadius * sin(localSpreadTheta));
-                    rawY = targetAnchor.y + MakeRandomInt(-2000, 2000);
-
-                    // MATHEMATICAL ORIENTATION: Find the angle facing back to its cluster center
-                    // EVE client typically expects radians or quaternions for rotations.
-                    // atan2(dx, dz) gives the horizontal rotation angle pointing to the middle.
-                    headingAngle = std::atan2(targetAnchor.x - rawX, targetAnchor.z - rawZ);
-                    break;
-                }
-            }
-
-            // Subtle vertical padding using Y for altitude (+y is up)
-            //rawY = localIt->second.y + MakeRandomInt(-1200, 1200);
-
-            // =====================================================================
-            // SNAP TO SECTOR GRID (X and Z are horizontal, Y is vertical)
-            // =====================================================================
+            // SNAP TO THE SECTOR GRID: Ensure the coordinate positions match
+            // the exact boundary steps of the chosen cell size to prevent clipping!
             grp.x = std::round(rawX / chosenGridSize) * chosenGridSize;
             grp.z = std::round(rawZ / chosenGridSize) * chosenGridSize;
             grp.y = std::round(rawY / chosenGridSize) * chosenGridSize;

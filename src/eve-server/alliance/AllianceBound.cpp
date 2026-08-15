@@ -82,8 +82,10 @@ PyResult AllianceBound::Handle_GetAlliance(PyCallArgs &call)
 {
     // Works
     //   self.members = self.GetMoniker().GetAlliance()
-    _log(ALLY__CALL, "AllianceBound::Handle_GetAlliance() size=%lu", call.tuple->size());
-    call.Dump(ALLY__CALL_DUMP);
+    if (is_log_enabled(ALLY__CALL_DUMP)) {
+        _log(ALLY__CALL, "AllianceBound::Handle_GetAlliance() size=%lu", call.tuple->size());
+        call.Dump(ALLY__CALL_DUMP);
+    }
 
     /*
      * 13:28:01 [AllyCall] AllianceBound::Handle_GetAlliance() size=0
@@ -102,8 +104,10 @@ PyResult AllianceBound::Handle_GetMembers(PyCallArgs &call)
 {
     // Works
     //   self.members = self.GetMoniker().GetMembers()
+    if (is_log_enabled(ALLY__CALL_DUMP)) {
     _log(ALLY__CALL, "AllianceBound::Handle_GetMembers() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
+    }
 
     return m_db.GetMembers(m_allyID);
 }
@@ -111,8 +115,10 @@ PyResult AllianceBound::Handle_GetMembers(PyCallArgs &call)
 PyResult AllianceBound::Handle_DeclareExecutorSupport(PyCallArgs &call)
 {
     //   self.GetMoniker().DeclareExecutorSupport(corpID)
+    if (is_log_enabled(ALLY__CALL_DUMP)) {
     _log(ALLY__CALL, "AllianceBound::Handle_DeclareExecutorSupport() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
+    }
 
     SingleIntegerArg args;
     if (!args.Decode(&call.tuple))
@@ -129,8 +135,10 @@ PyResult AllianceBound::Handle_DeclareExecutorSupport(PyCallArgs &call)
 PyResult AllianceBound::Handle_DeleteMember(PyCallArgs &call)
 {
     //  self.GetMoniker().DeleteMember(corpID)
+    if (is_log_enabled(ALLY__CALL_DUMP)) {
     _log(ALLY__CALL, "AllianceBound::Handle_DeleteMember() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
+    }
 
     SingleIntegerArg args;
     if (!args.Decode(&call.tuple))
@@ -148,8 +156,10 @@ PyResult AllianceBound::Handle_GetApplications(PyCallArgs &call)
 {
     //   self.applications = self.GetMoniker().GetApplications()
     // Get all applications to our alliance
+    if (is_log_enabled(ALLY__CALL_DUMP)) {
     _log(ALLY__CALL, "AllianceBound::Handle_GetApplications() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
+    }
 
     return m_db.GetApplications(m_allyID);
 }
@@ -157,8 +167,10 @@ PyResult AllianceBound::Handle_GetApplications(PyCallArgs &call)
 PyResult AllianceBound::Handle_UpdateApplication(PyCallArgs &call)
 {
     //    return self.GetMoniker().UpdateApplication(corpID, applicationText, state)
+    if (is_log_enabled(ALLY__CALL_DUMP)) {
     _log(ALLY__CALL, "AllianceBound::Handle_UpdateApplication() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
+    }
 
     Call_UpdateAllianceApplication args;
     if (!args.Decode(&call.tuple))
@@ -373,16 +385,20 @@ void AllianceBound::FillOAMemberChange(OnAllianceMemberChange &oamc, const Allia
 PyResult AllianceBound::Handle_AddToVoiceChat(PyCallArgs &call)
 {
     //    success = moniker.GetAlliance().AddToVoiceChat(vivoxChannelName)
+    if (is_log_enabled(ALLY__CALL_DUMP)) {
     _log(ALLY__CALL, "AllianceBound::Handle_AddToVoiceChat() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
+    }
     return nullptr;
 }
 
 PyResult AllianceBound::Handle_PayBill(PyCallArgs &call)
 {
     //   return self.GetMoniker().PayBill(billID, fromAccountKey)
+    if (is_log_enabled(ALLY__CALL_DUMP)) {
     _log(ALLY__CALL, "AllianceBound::Handle_PayBill() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
+    }
 
     return nullptr;
 }
@@ -390,8 +406,10 @@ PyResult AllianceBound::Handle_PayBill(PyCallArgs &call)
 PyResult AllianceBound::Handle_GetBillBalance(PyCallArgs &call)
 {
     //   return self.GetMoniker().GetBillBalance(billID)
+    if (is_log_enabled(ALLY__CALL_DUMP)) {
     _log(ALLY__CALL, "AllianceBound::Handle_GetBillBalance() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
+    }
 
     return nullptr;
 }
@@ -399,8 +417,10 @@ PyResult AllianceBound::Handle_GetBillBalance(PyCallArgs &call)
 PyResult AllianceBound::Handle_GetBills(PyCallArgs &call)
 {
     //   return self.GetMoniker().GetBills()
+    if (is_log_enabled(ALLY__CALL_DUMP)) {
     _log(ALLY__CALL, "AllianceBound::Handle_GetBills() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
+    }
 
     return nullptr;
 }
@@ -408,8 +428,10 @@ PyResult AllianceBound::Handle_GetBills(PyCallArgs &call)
 PyResult AllianceBound::Handle_GetBillsReceivable(PyCallArgs &call)
 {
     //   return self.GetMoniker().GetBillsReceivable()
+    if (is_log_enabled(ALLY__CALL_DUMP)) {
     _log(ALLY__CALL, "AllianceBound::Handle_GetBillsReceivable() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
+    }
 
     return nullptr;
 }
@@ -418,8 +440,10 @@ PyResult AllianceBound::Handle_AddBulletin(PyCallArgs &call)
 {
     //   sm.GetService('alliance').GetMoniker().AddBulletin(title, body)
     //  sm.GetService('alliance').GetMoniker().AddBulletin(title, body, bulletinID=bulletinID, editDateTime=editDateTime)  <-- this is to update bulletin
+    if (is_log_enabled(ALLY__CALL_DUMP)) {
     _log(ALLY__CALL, "AllianceBound::Handle_AddBulletin() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
+    }
 
     Call_AddBulletin args;
     if (!args.Decode(&call.tuple))
@@ -436,8 +460,10 @@ PyResult AllianceBound::Handle_AddBulletin(PyCallArgs &call)
 PyResult AllianceBound::Handle_DeleteBulletin(PyCallArgs &call)
 {
     //   sm.GetService('alliance').GetMoniker().DeleteBulletin(id)
+    if (is_log_enabled(ALLY__CALL_DUMP)) {
     _log(ALLY__CALL, "AllianceBound::Handle_DeleteBulletin() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
+    }
 
     SingleIntegerArg args;
     if (!args.Decode(&call.tuple))
@@ -453,16 +479,21 @@ PyResult AllianceBound::Handle_DeleteBulletin(PyCallArgs &call)
 PyResult AllianceBound::Handle_GetBulletins(PyCallArgs &call)
 {
     //   self.bulletins = self.GetMoniker().GetBulletins()
+    if (is_log_enabled(ALLY__CALL_DUMP)) {
     _log(ALLY__CALL, "AllianceBound::Handle_GetBulletins() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
+    }
+
     return m_db.GetBulletins(m_allyID);
 }
 
 PyResult AllianceBound::Handle_GetAllianceContacts(PyCallArgs &call)
 {
     //    return self.GetMoniker().GetAllianceContacts()
+    if (is_log_enabled(ALLY__CALL_DUMP)) {
     _log(ALLY__CALL, "AllianceBound::Handle_GetAllianceContacts() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
+    }
 
     return m_db.GetContacts(m_allyID);
 }
@@ -470,8 +501,10 @@ PyResult AllianceBound::Handle_GetAllianceContacts(PyCallArgs &call)
 PyResult AllianceBound::Handle_AddAllianceContact(PyCallArgs &call)
 {
     //   self.GetMoniker().AddAllianceContact(contactID, relationshipID)
+    if (is_log_enabled(ALLY__CALL_DUMP)) {
     _log(ALLY__CALL, "AllianceBound::Handle_AddAllianceContact() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
+    }
 
     Call_CorporateContactData args;
     if (!args.Decode(&call.tuple))
@@ -488,8 +521,10 @@ PyResult AllianceBound::Handle_AddAllianceContact(PyCallArgs &call)
 PyResult AllianceBound::Handle_EditAllianceContact(PyCallArgs &call)
 {
     //   self.GetMoniker().EditAllianceContact(contactID, relationshipID)
+    if (is_log_enabled(ALLY__CALL_DUMP)) {
     _log(ALLY__CALL, "AllianceBound::Handle_EditAllianceContact() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
+    }
 
     Call_CorporateContactData args;
     if (!args.Decode(&call.tuple))
@@ -506,8 +541,10 @@ PyResult AllianceBound::Handle_EditAllianceContact(PyCallArgs &call)
 PyResult AllianceBound::Handle_RemoveAllianceContacts(PyCallArgs &call)
 {
     //   self.GetMoniker().RemoveAllianceContacts(contactIDs)
+    if (is_log_enabled(ALLY__CALL_DUMP)) {
     _log(ALLY__CALL, "AllianceBound::Handle_RemoveAllianceContacts() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
+    }
 
     Call_RemoveCorporateContacts args;
     if (!args.Decode(&call.tuple))
@@ -527,8 +564,10 @@ PyResult AllianceBound::Handle_RemoveAllianceContacts(PyCallArgs &call)
 PyResult AllianceBound::Handle_EditContactsRelationshipID(PyCallArgs &call)
 {
     //    self.GetMoniker().EditContactsRelationshipID(contactIDs, relationshipID)
+    if (is_log_enabled(ALLY__CALL_DUMP)) {
     _log(ALLY__CALL, "AllianceBound::Handle_EditContactsRelationshipID() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
+    }
 
     Call_EditCorporateContacts args;
     if (!args.Decode(&call.tuple))
@@ -548,56 +587,76 @@ PyResult AllianceBound::Handle_EditContactsRelationshipID(PyCallArgs &call)
 PyResult AllianceBound::Handle_GetLabels(PyCallArgs &call)
 {
     //   return self.GetMoniker().GetLabels()
+    if (is_log_enabled(ALLY__CALL_DUMP)) {
     _log(ALLY__CALL, "AllianceBound::Handle_GetLabels() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
+    }
+
     return nullptr;
 }
 
 PyResult AllianceBound::Handle_CreateLabel(PyCallArgs &call)
 {
     //   return self.GetMoniker().CreateLabel(name, color)
+    if (is_log_enabled(ALLY__CALL_DUMP)) {
     _log(ALLY__CALL, "AllianceBound::Handle_CreateLabel() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
+    }
+
     return nullptr;
 }
 
 PyResult AllianceBound::Handle_DeleteLabel(PyCallArgs &call)
 {
     //   self.GetMoniker().DeleteLabel(labelID)
+    if (is_log_enabled(ALLY__CALL_DUMP)) {
     _log(ALLY__CALL, "AllianceBound::Handle_DeleteLabel() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
+    }
+
     return nullptr;
 }
 
 PyResult AllianceBound::Handle_EditLabel(PyCallArgs &call)
 {
     //   self.GetMoniker().EditLabel(labelID, name, color)
+    if (is_log_enabled(ALLY__CALL_DUMP)) {
     _log(ALLY__CALL, "AllianceBound::Handle_EditLabel() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
+    }
+
     return nullptr;
 }
 
 PyResult AllianceBound::Handle_AssignLabels(PyCallArgs &call)
 {
     //   self.GetMoniker().AssignLabels(contactIDs, labelMask)
+    if (is_log_enabled(ALLY__CALL_DUMP)) {
     _log(ALLY__CALL, "AllianceBound::Handle_AssignLabels() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
+    }
+
     return nullptr;
 }
 
 PyResult AllianceBound::Handle_RemoveLabels(PyCallArgs &call)
 {
     //   self.GetMoniker().RemoveLabels(contactIDs, labelMask)
+    if (is_log_enabled(ALLY__CALL_DUMP)) {
     _log(ALLY__CALL, "AllianceBound::Handle_RemoveLabels() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
+    }
+
     return nullptr;
 }
 
 PyResult AllianceBound::Handle_UpdateAlliance(PyCallArgs &call)
 {
     //    return self.GetMoniker().UpdateAlliance(description, url)
+    if (is_log_enabled(ALLY__CALL_DUMP)) {
     _log(ALLY__CALL, "AllianceBound::Handle_UpdateAlliance() size=%lu", call.tuple->size());
     call.Dump(ALLY__CALL_DUMP);
+    }
 
     Call_UpdateAlliance args;
     if (!args.Decode(&call.tuple))

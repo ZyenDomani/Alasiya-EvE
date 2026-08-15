@@ -100,6 +100,7 @@ PyResult FactoryService::Handle_GetMaterialsForTypeWithActivity(PyCallArgs &call
 PyResult FactoryService::Handle_GetBlueprintInformationAtLocation(PyCallArgs &call) {
     //    blueprints = sm.RemoteSvc('factory').GetBlueprintInformationAtLocation(hangarID, 1)
     _log(MANUF__MESSAGE, "FactoryService::GetBlueprintInformationAtLocation() size= %lu", call.tuple->size());
+    if (is_log_enabled(MANUF__DUMP))
     call.Dump(MANUF__DUMP);
     return nullptr;
 }
@@ -107,6 +108,7 @@ PyResult FactoryService::Handle_GetBlueprintInformationAtLocation(PyCallArgs &ca
 PyResult FactoryService::Handle_GetBlueprintInformationAtLocationWithFlag(PyCallArgs &call) {
     //blueprints = sm.RemoteSvc('factory').GetBlueprintInformationAtLocationWithFlag(locationID, self.flagInput, 1)
     _log(MANUF__MESSAGE, "FactoryService::Handle_GetBlueprintInformationAtLocationWithFlag() size= %lu", call.tuple->size());
+    if (is_log_enabled(MANUF__DUMP))
     call.Dump(MANUF__DUMP);
     return nullptr;
 }

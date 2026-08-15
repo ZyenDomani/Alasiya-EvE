@@ -486,7 +486,7 @@ void ConcordAI::SetSignaling(SystemEntity* pTarget) {
 void ConcordAI::CheckDistance(SystemEntity* pSE)
 {
     //rewrote distance checks for correct logic this time
-    Vector3d usToThem(m_npc->GetPosition(), pSE->GetPosition());
+    Vector3d usToThem = m_npc->GetPosition() - pSE->GetPosition();
     //double dist = m_npc->GetPosition().distance(pSE->GetPosition());     // this throws occasional errors (segfault)
     double dist = usToThem.Length();
     if (dist > m_entityAttackRange) {

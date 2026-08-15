@@ -353,6 +353,7 @@ PyResult CorpStationMgrIMBound::Handle_GetPotentialHomeStations(PyCallArgs &call
 PyResult CorpStationMgrIMBound::Handle_GetQuoteForGettingCorpJunkBack(PyCallArgs &call)
 {   //cost = corpStationMgr.GetQuoteForGettingCorpJunkBack()
     _log(CORP__CALL, "CorpStationMgrIMBound::Handle_GetQuoteForGettingCorpJunkBack()");
+    if (is_log_enabled(CORP__CALL_DUMP))
     call.Dump(CORP__CALL_DUMP);
 
     // office rental fee (with multiplier?  config option for multiplier?)
@@ -363,6 +364,7 @@ PyResult CorpStationMgrIMBound::Handle_GetQuoteForGettingCorpJunkBack(PyCallArgs
 PyResult CorpStationMgrIMBound::Handle_DoesPlayersCorpHaveJunkAtStation(PyCallArgs &call)
 {   //if corpStationMgr.DoesPlayersCorpHaveJunkAtStation():
     _log(CORP__CALL, "CorpStationMgrIMBound::Handle_DoesPlayersCorpHaveJunkAtStation()");
+    if (is_log_enabled(CORP__CALL_DUMP))
     call.Dump(CORP__CALL_DUMP);
 
     // query station for (officeID:flagimpounded)
@@ -421,6 +423,7 @@ PyResult CorpStationMgrIMBound::Handle_DoStandingCheckForStationService(PyCallAr
      */
 
     _log(CORP__CALL, "CorpStationMgrIMBound::Handle_DoStandingCheckForStationService()");
+    if (is_log_enabled(CORP__CALL_DUMP))
     call.Dump(CORP__CALL_DUMP);
 
     // returns None
@@ -430,6 +433,7 @@ PyResult CorpStationMgrIMBound::Handle_DoStandingCheckForStationService(PyCallAr
 PyResult CorpStationMgrIMBound::Handle_CancelRentOfOffice(PyCallArgs &call)
 {   //  corpStationMgr.CancelRentOfOffice()
     _log(CORP__CALL, "CorpStationMgrIMBound::Handle_CancelRentOfOffice()");
+    if (is_log_enabled(CORP__CALL_DUMP))
     call.Dump(CORP__CALL_DUMP);
 
     /* this will need to search for items in office hangar.
@@ -445,6 +449,7 @@ PyResult CorpStationMgrIMBound::Handle_CancelRentOfOffice(PyCallArgs &call)
 PyResult CorpStationMgrIMBound::Handle_PayForReturnOfCorpJunk(PyCallArgs &call)
 {   //    corpStationMgr.PayForReturnOfCorpJunk(cost)
     _log(CORP__CALL, "CorpStationMgrIMBound::Handle_PayForReturnOfCorpJunk()");
+    if (is_log_enabled(CORP__CALL_DUMP))
     call.Dump(CORP__CALL_DUMP);
 
     return nullptr;
@@ -461,6 +466,7 @@ PyResult CorpStationMgr::Handle_GetImprovementStaticData(PyCallArgs &call)
      *        outpostAsmLines = set([ each.assemblyLineTypeID for each in sm.ProxySvc('ramProxy').AssemblyLinesGet(eve.session.stationid) ])
      */
     _log(CORP__CALL, "CorpStationMgr::Handle_GetImprovementStaticData()");
+    if (is_log_enabled(CORP__CALL_DUMP))
     call.Dump(CORP__CALL_DUMP);
 
     return nullptr;
@@ -634,6 +640,7 @@ PyResult CorpStationMgr::Handle_GetStationServiceStates(PyCallArgs &call)
      *    [PyNone]
      */
     _log(CORP__CALL, "CorpStationMgr::Handle_GetStationServiceStates()");
+    if (is_log_enabled(CORP__CALL_DUMP))
     call.Dump(CORP__CALL_DUMP);
 
     return nullptr;

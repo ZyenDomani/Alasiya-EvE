@@ -463,6 +463,7 @@ PyResult BeyonceBound::Handle_CmdOrbit(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
+    if (is_log_enabled(SERVICE__CALL_DUMP))
     call.Dump(SERVICE__CALL_DUMP);
     Call_Orbit args;
     if (!args.Decode(&call.tuple)) {
@@ -489,8 +490,10 @@ PyResult BeyonceBound::Handle_CmdOrbit(PyCallArgs &call) {
 PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
     _log(AUTOPILOT__MESSAGE, "%s called WarpToStuff. AP: %s", call.client->GetName(), (call.client->IsAutoPilot() ? "true" : "false"));
 
+    if (is_log_enabled(SERVICE__CALL_DUMP)) {
   _log(SERVICE__CALL_DUMP, "BeyonceBound::Handle_CmdWarpToStuff() - size %lu", call.tuple->size() );
    call.Dump(SERVICE__CALL_DUMP);
+    }
 
    Client* pClient = call.client;
    if (pClient->GetShipSE()->SysBubble() == nullptr) {
@@ -675,13 +678,13 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
                 srandom(toID);  //this is the only place random() is used....other random functions use rand() as it's non-repeatable.
                 int rand = random();
                 double j = (((rand / RAND_MAX) - 1.0f) / 3.0f);
-                double s = 20 * std::pow(0.025f * (10 * std::log10(radius / 1000000) - 39), 20) + 0.5f;
+                double s = 20 * pow(0.025f * (10 * std::log10(radius / 1000000) - 39), 20) + 0.5f;
                 s = EvE::max(0.5f, EvE::min(s, 10.5f));
-                double t = std::asin((warpToPoint.x / std::fabs(warpToPoint.x)) * (warpToPoint.z / std::sqrt(std::pow(warpToPoint.x, 2) + std::pow(warpToPoint.z, 2)))) + j;
+                double t = std::asin((warpToPoint.x / std::fabs(warpToPoint.x)) * (warpToPoint.z / std::sqrt(pow(warpToPoint.x, 2) + pow(warpToPoint.z, 2)))) + j;
                 uint32 d = radius * (s + 1) + 1000000;
-                warpToPoint.x += (d * EvE::Trig::FastSin(t));
-                warpToPoint.y += (0.5f * radius * EvE::Trig::FastSin(j));
-                warpToPoint.z -= (d * EvE::Trig::FastCos(t));
+                warpToPoint.x += (d * sin(t));
+                warpToPoint.y += (0.5f * radius * sin(j));
+                warpToPoint.z -= (d * cos(t));
             }
         } else if (pSE->IsStationSE()) {
             // fudge the distance a bit for these... its' a lil close by default
@@ -729,9 +732,9 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             warpToPoint.z -= stopPoint.z;
         } else if (radius > 90000) {
             // this doesnt work for moons
-            warpToPoint.x += ((radius + 500000) * EvE::Trig::FastCos(radius));
+            warpToPoint.x += ((radius + 500000) * cos(radius));
             warpToPoint.y += ((radius * 1.3f) - 7500);
-            warpToPoint.z -= ((radius + 500000) * EvE::Trig::FastSin(radius));
+            warpToPoint.z -= ((radius + 500000) * sin(radius));
         }
         /*
         if (radius < 90000) {
@@ -852,8 +855,10 @@ PyResult BeyonceBound::Handle_CmdAbandonLoot(PyCallArgs &call) {
     /*  remotePark.CmdAbandonLoot(wrecks)  <- this is pylist from 'abandonAllWrecks'
      *  remotePark.CmdAbandonLoot([wreckID]) <- single itemID in list
      */
+    if (is_log_enabled(SERVICE__CALL_DUMP)) {
     sLog.White( "BeyonceBound::Handle_CmdAbandonLoot()", "size= %lu", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
+    }
 
     Call_SingleIntList arg;
     if (!arg.Decode(&call.tuple)) {
@@ -985,49 +990,64 @@ PyResult BeyonceBound::Handle_UpdateStateRequest(PyCallArgs &call) {
  */
 PyResult BeyonceBound::Handle_CmdJumpThroughFleet(PyCallArgs &call) {
     // sm.StartService('sessionMgr').PerformSessionChange('jump', bp.CmdJumpThroughFleet, otherCharID, otherShipID, beaconID, solarsystemID)
+
+    if (is_log_enabled(SHIP__WARNING)) {
     _log(SHIP__WARNING, "BeyonceBound::Handle_CmdJumpThroughFleet");
     call.Dump(SHIP__WARNING);
+    }
     return PyStatic.NewNone();
 }
 
 PyResult BeyonceBound::Handle_CmdJumpThroughAlliance(PyCallArgs &call) {
     //sm.StartService('sessionMgr').PerformSessionChange('jump', bp.CmdJumpThroughAlliance, otherShipID, beaconID, solarsystemID)
+    if (is_log_enabled(SHIP__WARNING)) {
     _log(SHIP__WARNING, "BeyonceBound::Handle_CmdJumpThroughAlliance");
     call.Dump(SHIP__WARNING);
+    }
     return PyStatic.NewNone();
 }
 
 PyResult BeyonceBound::Handle_CmdJumpThroughCorporationStructure(PyCallArgs &call) {
     //sm.StartService('sessionMgr').PerformSessionChange('jump', bp.CmdJumpThroughCorporationStructure, itemID, remoteStructureID, remoteSystemID)
+    if (is_log_enabled(SHIP__WARNING)) {
     _log(SHIP__WARNING, "BeyonceBound::Handle_CmdJumpThroughCorporationStructure");
     call.Dump(SHIP__WARNING);
+    }
     return PyStatic.NewNone();
 }
 
 PyResult BeyonceBound::Handle_CmdBeaconJumpFleet(PyCallArgs &call) {
     // sm.StartService('sessionMgr').PerformSessionChange('jump', bp.CmdBeaconJumpFleet, charid, beaconID, solarsystemID)
+    if (is_log_enabled(SHIP__WARNING)) {
     _log(SHIP__WARNING, "BeyonceBound::Handle_CmdBeaconJumpFleet");
     call.Dump(SHIP__WARNING);
+    }
     return PyStatic.NewNone();
 }
 
 PyResult BeyonceBound::Handle_CmdBeaconJumpAlliance(PyCallArgs &call) {
     // sm.StartService('sessionMgr').PerformSessionChange('jump', bp.CmdBeaconJumpAlliance, beaconID, solarSystemID)
+    if (is_log_enabled(SHIP__WARNING)) {
     _log(SHIP__WARNING, "BeyonceBound::Handle_CmdBeaconJumpAlliance");
     call.Dump(SHIP__WARNING);
+    }
     return PyStatic.NewNone();
 }
 
 PyResult BeyonceBound::Handle_CmdFleetRegroup(PyCallArgs &call) {
     // not sure what this is supposed to do yet
+    if (is_log_enabled(SHIP__WARNING)) {
     _log(SHIP__WARNING, "BeyonceBound::Handle_CmdFleetRegroup");
     call.Dump(SHIP__WARNING);
+    }
     return nullptr;
 }
 
 PyResult BeyonceBound::Handle_CmdFleetTagTarget(PyCallArgs &call) {
     // bp.CmdFleetTagTarget(itemID, tag)
+    if (is_log_enabled(SHIP__WARNING)) {
     _log(SHIP__WARNING, "BeyonceBound::Handle_CmdFleetTagTarget");
     call.Dump(SHIP__WARNING);
+    }
     return PyStatic.NewNone();
 }

@@ -35,6 +35,7 @@ PyResult CorpFittingMgr::Handle_GetFittings(PyCallArgs &call)
 {
     //self.fittings[ownerID] = self.GetFittingMgr(ownerID).GetFittings(ownerID)
     _log(CORP__CALL, "CorpFittingMgr::Handle_GetFittings()");
+    if (is_log_enabled(CORP__CALL_DUMP))
     call.Dump(CORP__CALL_DUMP);
 
     return nullptr;
@@ -45,6 +46,7 @@ PyResult CorpFittingMgr::Handle_SaveFitting(PyCallArgs &call)
     //    fitting.ownerID = ownerID
     //    fitting.fittingID = self.GetFittingMgr(ownerID).SaveFitting(ownerID, fitting)
     _log(CORP__CALL, "CorpFittingMgr::Handle_SaveFitting()");
+    if (is_log_enabled(CORP__CALL_DUMP))
     call.Dump(CORP__CALL_DUMP);
 
     return nullptr;
@@ -59,6 +61,7 @@ PyResult CorpFittingMgr::Handle_SaveManyFittings(PyCallArgs &call)
             self.fittings[ownerID][row.realFittingID].fittingID = row.realFittingID
         */
     _log(CORP__CALL, "CorpFittingMgr::Handle_SaveManyFittings()");
+    if (is_log_enabled(CORP__CALL_DUMP))
     call.Dump(CORP__CALL_DUMP);
 
     return nullptr;
@@ -68,6 +71,7 @@ PyResult CorpFittingMgr::Handle_DeleteFitting(PyCallArgs &call)
 {
     // self.GetFittingMgr(ownerID).DeleteFitting(ownerID, fittingID)
     _log(CORP__CALL, "CorpFittingMgr::Handle_DeleteFitting()");
+    if (is_log_enabled(CORP__CALL_DUMP))
     call.Dump(CORP__CALL_DUMP);
 
     return nullptr;
@@ -77,6 +81,7 @@ PyResult CorpFittingMgr::Handle_UpdateNameAndDescription(PyCallArgs &call)
 {
     // self.GetFittingMgr(ownerID).UpdateNameAndDescription(fittingID, ownerID, name, description)
     _log(CORP__CALL, "CorpFittingMgr::Handle_UpdateNameAndDescription()");
+    if (is_log_enabled(CORP__CALL_DUMP))
     call.Dump(CORP__CALL_DUMP);
 
     return nullptr;

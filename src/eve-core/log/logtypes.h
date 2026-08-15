@@ -20,7 +20,7 @@
  ------------------------------------------------------------------------------------
  Author:        Zhur
  Additions:  Allan
- Log Version: 11.8
+ Log Version: 11.9
  */
 /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -208,6 +208,13 @@ LOG_TYPE( CONCORD, MESSAGE, DISABLED, "ConcordMsg" )
 LOG_TYPE( CONCORD, INFO, DISABLED, "ConcordInfo" )
 LOG_TYPE( CONCORD, TRACE, DISABLED, "ConcordTrace" )
 LOG_TYPE( CONCORD, AI_TRACE, DISABLED, "ConcordAITrace" )
+
+LOG_CATEGORY( CONTRACT )
+LOG_TYPE( CONTRACT, ERROR,   ENABLED, "Contract Error" )
+LOG_TYPE( CONTRACT, WARNING, DISABLED, "Contract Warning" )
+LOG_TYPE( CONTRACT, MESSAGE, DISABLED, "Contract Msg" )
+LOG_TYPE( CONTRACT, INFO, DISABLED, "Contract Info" )
+LOG_TYPE( CONTRACT, DUMP, DISABLED, "Contract Dump" )
 
 LOG_CATEGORY( CORP )
 LOG_TYPE( CORP, ERROR,   ENABLED, "CorpError" )

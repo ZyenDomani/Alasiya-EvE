@@ -47,7 +47,7 @@ void BeltMgr::Init(uint32 regionID)
 
     m_regionID = regionID;
     m_systemID = m_system->GetID();
-    m_respawnTimer.Start(sConfig.cosmic.BeltRespawn * EvE::Timer::Hour);  // hours->ms
+    m_respawnTimer.Start(sConfig.rates.BeltRespawn * EvE::Timer::Hour);  // hours->ms
 
     m_initialized = true;
     _log(COSMIC_MGR__MESSAGE, "BeltMgr Initialized for %s(%u)", m_system->GetName(), m_systemID);
@@ -286,7 +286,7 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>&
 
     // --- PART 2: DETERMINE CLUSTER PIECE COUNTS & RADIAL RINGS ---
     int8 pcs = 5;
-    double baseRadius = 8000.0 * sConfig.cosmic.roidRadiusMultiplier;
+    double baseRadius = 8000.0 * sConfig.rates.RadiusMultiplier;
 
     if (anomaly) {
         pcs += roidDist.size();
@@ -478,7 +478,7 @@ void BeltMgr::SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const V
     if (ice) {
         quantity = radius * 2;
     } else {
-        radius *= sConfig.cosmic.roidRadiusMultiplier;
+        radius *= sConfig.rates.RadiusMultiplier;
         quantity = log(radius / 89.675) * (1.0 / 4e-05);
     }
 
@@ -638,7 +638,7 @@ const char* BeltMgr::BeltTypeName(uint8 typeID) {
 
 /*          this gives random single point on sphere with radius of 'r'
  *
-        double theta = MakeRandomFloat(0.0, (2*M_PI) );
+        double theta = MakeRandomFloat(0.0, (2*M_PI) );  EvE::Trig::Pi2
         double phi = MakeRandomFloat(0.0, (2*M_PI) );
         x += r * sin(theta) * cos(phi);
         y += r * sin(theta) * sin(phi);
@@ -708,7 +708,7 @@ const char* BeltMgr::BeltTypeName(uint8 typeID) {
 /*
     for (uint32 i = 0; i < pcs; ++i) {
         roidradius = MakeRandomFloat(1.0, 7.0 ) *1000 *security +secRad;
-        theta = MakeRandomFloat(0.0, M_PI );
+        theta = MakeRandomFloat(0.0, M_PI );EvE::Trig::Pi
         phi = MakeRandomFloat(0.0, M_PI );
         mposition.x = radius * sin(theta) * cos(phi);
         mposition.z = radius * sin(theta) * sin(phi);

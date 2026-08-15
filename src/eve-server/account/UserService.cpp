@@ -46,6 +46,7 @@ MovementService::~MovementService() {
 PyResult MovementService::Handle_ResolveNodeID( PyCallArgs& call )
 {
     sLog.Yellow( "MovementService", "Handle_ResolveNodeID" );
+    if (is_log_enabled(CHARACTER__DEBUG))
     call.Dump(CHARACTER__DEBUG);
 
     return new PyInt(888444);
@@ -181,6 +182,7 @@ PyResult UserService::Handle_ReverseRedeem( PyCallArgs& call )
 {
     //sm.RemoteSvc('userSvc').ReverseRedeem(item.itemID)
     sLog.Yellow( "UserService", "Handle_ReverseRedeem" );
+    if (is_log_enabled(CHARACTER__DEBUG))
     call.Dump(CHARACTER__DEBUG);
 
     return nullptr;
@@ -202,6 +204,7 @@ PyResult UserService::Handle_ReportISKSpammer( PyCallArgs& call )
 {
     // sm.RemoteSvc('userSvc').ReportISKSpammer(charID, channelID, spamEntries)
     sLog.Yellow( "UserService", "Handle_ReportISKSpammer" );
+    if (is_log_enabled(CHARACTER__DEBUG))
     call.Dump(CHARACTER__DEBUG);
 
     return nullptr;
@@ -210,6 +213,7 @@ PyResult UserService::Handle_ReportISKSpammer( PyCallArgs& call )
 PyResult UserService::Handle_ReportBot( PyCallArgs& call )
 {
     sLog.Yellow( "UserService", "Handle_ReportBot" );
+    if (is_log_enabled(CHARACTER__DEBUG))
     call.Dump(CHARACTER__DEBUG);
 
     return nullptr;
@@ -219,6 +223,7 @@ PyResult UserService::Handle_ApplyPilotLicence( PyCallArgs& call )
 {
     //sm.RemoteSvc('userSvc').ApplyPilotLicence(itemID, justQuery=True)
     sLog.Yellow( "UserService", "Handle_ApplyPilotLicence" );
+    if (is_log_enabled(CHARACTER__DEBUG)) 
     call.Dump(CHARACTER__DEBUG);
 
     return nullptr;

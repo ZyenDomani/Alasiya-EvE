@@ -105,8 +105,10 @@ JumpCloneService::~JumpCloneService() {
 
 PyBoundObject* JumpCloneService::CreateBoundObject( Client* pClient, const PyRep* bind_args )
 {
-    _log( CLIENT__MESSAGE, "JumpCloneService bind request for:" );
-    bind_args->Dump( CLIENT__MESSAGE, "    " );
+    if (is_log_enabled(CLIENT__MESSAGE)) {
+        _log(CLIENT__MESSAGE, "JumpCloneService bind request for:" );
+        bind_args->Dump(CLIENT__MESSAGE, "    " );
+    }
 
     return new JumpCloneBound(m_manager, &m_db, pClient->GetLocationID());
 }

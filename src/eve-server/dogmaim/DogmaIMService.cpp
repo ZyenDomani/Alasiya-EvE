@@ -336,8 +336,10 @@ PyResult DogmaIMBound::Handle_LoadAmmoToModules(PyCallArgs& call) {
      * 02:13:11 [SvcCall]     Argument 'qty':
      * 02:13:11 [SvcCall]         (None)
      */
+    if (is_log_enabled(MODULE__TRACE)) {
     _log(MODULE__TRACE, "DogmaIMBound::Handle_LoadAmmoToModules()");
     call.Dump(MODULE__TRACE);
+    }
     Call_Dogma_LoadAmmoToModules args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
@@ -373,8 +375,10 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
    *                                    ship,   module,  charge type, charge item, charge location, stack qty (usually none - havent found otherwise)
    *   *******    UPDATED VAR NAMES TO MATCH CLIENT CODE  -allan 26Jul14  *************
    */
+  if (is_log_enabled(MODULE__TRACE)) {
   _log(MODULE__TRACE, "DogmaIMBound::Handle_LoadAmmoToBank()");
     call.Dump(MODULE__TRACE);
+  }
     Call_Dogma_LoadAmmoToBank args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
@@ -817,8 +821,10 @@ PyResult DogmaIMBound::Handle_UnlinkAllModules(PyCallArgs& call) {
 
 PyResult DogmaIMBound::Handle_UnlinkModule(PyCallArgs& call) {
     // slaveID = self.remoteDogmaLM.UnlinkModule(shipID, moduleID)
+    if (is_log_enabled(SHIP__MESSAGE)) {
     sLog.Warning("DogmaIMBound::Handle_UnlinkModule()", "size=%lu", call.tuple->size());
     call.Dump(SHIP__MESSAGE);
+    }
 
     Call_TwoIntegerArgs args;
     if (!args.Decode(&call.tuple)) {
@@ -847,8 +853,10 @@ PyResult DogmaIMBound::Handle_UnlinkModule(PyCallArgs& call) {
 
 PyResult DogmaIMBound::Handle_MergeModuleGroups(PyCallArgs& call) {
     //info = self.remoteDogmaLM.MergeModuleGroups(shipID, masterID, slaveID)
+    if (is_log_enabled(SHIP__MESSAGE)) {
     sLog.Warning("DogmaIMBound::Handle_MergeModuleGroups()", "size=%lu", call.tuple->size());
     call.Dump(SHIP__MESSAGE);
+    }
 
     Call_Dogma_LinkWeapons args;
     if (!args.Decode(&call.tuple)) {
@@ -882,8 +890,10 @@ PyResult DogmaIMBound::Handle_MergeModuleGroups(PyCallArgs& call) {
 
 PyResult DogmaIMBound::Handle_PeelAndLink(PyCallArgs& call) {
     //info = self.remoteDogmaLM.PeelAndLink(shipID, masterID, slaveID)
+    if (is_log_enabled(SHIP__MESSAGE)) {
     sLog.Warning("DogmaIMBound::Handle_PeelAndLink()", "size=%lu", call.tuple->size());
     call.Dump(SHIP__MESSAGE);
+    }
 
     Call_Dogma_LinkWeapons args;
     if (!args.Decode(&call.tuple)) {
@@ -934,6 +944,7 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
     *
     */
     if (call.tuple->size() == 2) {
+        if (is_log_enabled(POS__DUMP))
         call.Dump(POS__DUMP);
         // anchor cargo and pos items
         // online pos items
@@ -1018,6 +1029,7 @@ PyResult DogmaIMBound::Handle_Deactivate(PyCallArgs& call)
 
     if (call.tuple->items.at(1)->IsInt()) {
         // if effect is integer, call is for pos or container
+        if (is_log_enabled(POS__DUMP))
         call.Dump(POS__DUMP);
         Call_TwoIntegerArgs args;
         if (!args.Decode(&call.tuple)) {

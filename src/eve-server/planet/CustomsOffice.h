@@ -18,6 +18,7 @@
 #include "system/SystemEntity.h"
 
 class PlanetSE;
+class Call_UpdateSettings;
 class Call_TaxRateValuesDict;
 
 class CustomsSE
@@ -67,7 +68,7 @@ public:
     PyRep*                      GetSettingsInfo();
     void     GetSettingsInfo(EVEPOS::CustomsData &data) { data = m_cData; }
 
-    void    UpdateSettings(int8 selectedHour, int8 standingValue, bool ally, bool standings, Call_TaxRateValuesDict& taxRateValues);
+    void    UpdateSettings(Call_UpdateSettings& args, Call_TaxRateValuesDict& taxRateValues);
 
     void    VerifyAddItem(InventoryItemRef iRef);   // this must throw on failure
 

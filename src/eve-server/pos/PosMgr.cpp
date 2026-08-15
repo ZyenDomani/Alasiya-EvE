@@ -129,8 +129,10 @@ PosMgr::~PosMgr() {
 }
 
 PyBoundObject* PosMgr::CreateBoundObject( Client* pClient, const PyRep* bind_args ) {
-    _log( POS__DUMP, "PosMgr bind request for:" );
-    bind_args->Dump( POS__DUMP, "    " );
+    if (is_log_enabled(POS__DUMP)) {
+        _log(POS__DUMP, "PosMgr bind request for: ");
+        bind_args->Dump(POS__DUMP, "    ");
+    }
 
     if (!bind_args->IsInt()){
         sLog.Error( "PosMgr::CreateBoundObject", "%s: bind_args is not int: '%s'. ", pClient->GetName(), bind_args->TypeString() );
@@ -185,6 +187,7 @@ PyResult PosMgr::Handle_GetControlTowers(PyCallArgs &call) {
      */
 
     _log(POS__TRACE,  "PosMgr::Handle_GetControlTowers()");
+    if (is_log_enabled(POS__DUMP))
     call.Dump(POS__DUMP);
 
     return m_db.GetCorpControlTowers(call.client->GetCorporationID());
@@ -246,6 +249,7 @@ PyResult PosMgrBound::Handle_InstallJumpBridgeLink(PyCallArgs &call) {
      *
      */
     _log(POS__TRACE,  "PosMgrBound::Handle_InstallJumpBridgeLink()");
+    if (is_log_enabled(POS__DUMP))
     call.Dump(POS__DUMP);
 
     InstallJumpBridgeLink args;
@@ -269,6 +273,7 @@ PyResult PosMgrBound::Handle_UninstallJumpBridgeLink(PyCallArgs &call) {
      *
      */
     _log(POS__TRACE,  "PosMgrBound::Handle_UninstallJumpBridgeLink()");
+    if (is_log_enabled(POS__DUMP))
     call.Dump(POS__DUMP);
 
     SingleIntegerArg arg;
@@ -285,6 +290,7 @@ PyResult PosMgrBound::Handle_UninstallJumpBridgeLink(PyCallArgs &call) {
 
 PyResult PosMgrBound::Handle_GetSiloCapacityByItemID(PyCallArgs &call) {
     _log(POS__TRACE,  "PosMgrBound::Handle_GetSiloCapacityByItemID()");
+    if (is_log_enabled(POS__DUMP))
     call.Dump(POS__DUMP);
 
     uint16 typeID = 0;
@@ -300,6 +306,7 @@ PyResult PosMgrBound::Handle_GetTowerNotificationSettings(PyCallArgs &call) {
      *        self.calendarCheckbox.SetChecked(notifySettings.showInCalendar, 0)
      */
     _log(POS__TRACE,  "PosMgrBound::Handle_GetTowerNotificationSettings()");
+    if (is_log_enabled(POS__DUMP))
     call.Dump(POS__DUMP);
 
     PyList* header = new PyList(2);
@@ -457,6 +464,7 @@ PyResult PosMgrBound::Handle_SetStarbasePermissions(PyCallArgs &call) {
      */
 
     _log(POS__TRACE,  "PosMgrBound::Handle_SetStarbasePermissions()");
+    if (is_log_enabled(POS__DUMP))
     call.Dump(POS__DUMP);
 
     SystemManager* pSystem = call.client->SystemMgr();
@@ -642,6 +650,7 @@ PyResult PosMgrBound::Handle_SetTowerPassword( PyCallArgs &call ) {
 
 PyResult PosMgrBound::Handle_UnanchorStructure(PyCallArgs &call) {
     _log(POS__TRACE,  "PosMgrBound::Handle_UnanchorStructure()");
+    if (is_log_enabled(POS__DUMP))
     call.Dump(POS__DUMP);
 
     StructureSE* pTSE(nullptr);
@@ -653,6 +662,7 @@ PyResult PosMgrBound::Handle_UnanchorStructure(PyCallArgs &call) {
 
 PyResult PosMgrBound::Handle_AnchorStructure(PyCallArgs &call) {
     _log(POS__TRACE, "POS Mgr::Anchor()");
+    if (is_log_enabled(POS__DUMP))
     call.Dump(POS__DUMP);
     SystemManager* pSystem = call.client->SystemMgr();
     if (pSystem == nullptr) {
@@ -722,6 +732,7 @@ PyResult PosMgrBound::Handle_AssumeStructureControl(PyCallArgs &call) {
 
     */
     _log(POS__TRACE,  "PosMgrBound::Handle_AssumeStructureControl()");
+    if (is_log_enabled(POS__DUMP))
     call.Dump(POS__DUMP);
 
     return PyStatic.NewNone();
@@ -733,6 +744,7 @@ PyResult PosMgrBound::Handle_RelinquishStructureControl(PyCallArgs &call) {
         posMgr.RelinquishStructureControl(item.itemID)
     */
     _log(POS__TRACE,  "PosMgrBound::Handle_RelinquishStructureControl()");
+    if (is_log_enabled(POS__DUMP))
     call.Dump(POS__DUMP);
 
     return PyStatic.NewNone();
@@ -746,6 +758,7 @@ PyResult PosMgrBound::Handle_AnchorOrbital(PyCallArgs &call) {
      */
 
     _log(POS__TRACE,  "PosMgrBound::Handle_()");
+    if (is_log_enabled(POS__DUMP))
     call.Dump(POS__DUMP);
 
     return PyStatic.NewNone();
@@ -758,6 +771,7 @@ PyResult PosMgrBound::Handle_UnanchorOrbital(PyCallArgs &call) {
      *      posMgr.UnanchorOrbital(itemID)
      */
     _log(POS__TRACE,  "PosMgrBound::Handle_UnanchorOrbital()");
+    if (is_log_enabled(POS__DUMP))
     call.Dump(POS__DUMP);
 
     return PyStatic.NewNone();
@@ -765,6 +779,7 @@ PyResult PosMgrBound::Handle_UnanchorOrbital(PyCallArgs &call) {
 
 PyResult PosMgrBound::Handle_OnlineOrbital(PyCallArgs &call) {
     _log(POS__TRACE,  "PosMgrBound::Handle_OnlineOrbital()");
+    if (is_log_enabled(POS__DUMP))
     call.Dump(POS__DUMP);
 
     return PyStatic.NewNone();
@@ -781,6 +796,7 @@ PyResult PosMgrBound::Handle_ChangeStructureProvisionType(PyCallArgs &call) {
      * 03:11:32 [POS:Dump]       [ 2]    Integer: 16634         <-- typeID
      */
     _log(POS__TRACE,  "PosMgrBound::Handle_ChangeStructureProvisionType()");
+    if (is_log_enabled(POS__DUMP))
     call.Dump(POS__DUMP);
 
     ChangeStructureProvisionType args;
@@ -796,6 +812,7 @@ PyResult PosMgrBound::Handle_ChangeStructureProvisionType(PyCallArgs &call) {
 
 PyResult PosMgrBound::Handle_LinkResourceForTower(PyCallArgs &call) {
     _log(POS__TRACE,  "PosMgrBound::Handle_LinkResourceForTower()");
+    if (is_log_enabled(POS__DUMP))
     call.Dump(POS__DUMP);
 
     return PyStatic.NewNone();
@@ -810,6 +827,7 @@ PyResult PosMgrBound::Handle_RunMoonProcessCycleforTower(PyCallArgs &call) {
      * 03:14:25 [POS:Dump]       [ 0]    Integer: 140000061     <-- towerID
      */
     _log(POS__TRACE,  "PosMgrBound::Handle_RunMoonProcessCycleforTower()");
+    if (is_log_enabled(POS__DUMP))
     call.Dump(POS__DUMP);
 
     return PyStatic.NewNone();
@@ -822,6 +840,7 @@ PyResult PosMgrBound::Handle_GMUpgradeOrbital(PyCallArgs &call) {
      *      posMgr.GMUpgradeOrbital(itemID)
      */
     _log(POS__TRACE,  "PosMgrBound::Handle_GMUpgradeOrbital()");
+    if (is_log_enabled(POS__DUMP))
     call.Dump(POS__DUMP);
 
     return PyStatic.NewNone();
@@ -834,6 +853,7 @@ PyResult PosMgrBound::Handle_CompleteOrbitalStateChange(PyCallArgs &call) {
      *      posMgr.CompleteOrbitalStateChange(itemID)
      */
     _log(POS__TRACE,  "PosMgrBound::Handle_CompleteOrbitalStateChange()");
+    if (is_log_enabled(POS__DUMP))
     call.Dump(POS__DUMP);
 
     return PyStatic.NewNone();

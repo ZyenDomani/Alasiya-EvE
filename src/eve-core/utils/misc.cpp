@@ -165,6 +165,12 @@ double MakeRandomDouble(double lo, double hi) {
     return dist(gen);
 }
 
+float GetRandomGaussian(float mean, float stddev) {
+    static std::mt19937 generator(std::random_device{}());
+    std::normal_distribution<float> distribution(mean, stddev);
+    return distribution(generator);
+}
+
 /// create PID file
 uint32 CreatePIDFile(const std::string& filename)
 {
@@ -304,16 +310,16 @@ double EvE::trunicate2(double dig)
 /*
 bool EvE::AlmostEquals(float mine, float hers, uint8 precision)
 {
-    int32 first = fabs(mine) * std::pow(10, precision);
-    int32 second = fabs(hers) * std::pow(10, precision);
+    int32 first = fabs(mine) * pow(10, precision);
+    int32 second = fabs(hers) * pow(10, precision);
     return (first == second);
 }
 */
 
 bool EvE::AlmostEquals(double mine, double hers, uint8 precision/*10*/)
 {
-    int64 first = fabs(mine) * std::pow(10, precision);
-    int64 second = fabs(hers) * std::pow(10, precision);
+    int64 first = fabs(mine) * pow(10, precision);
+    int64 second = fabs(hers) * pow(10, precision);
     return (first == second);
 }
 

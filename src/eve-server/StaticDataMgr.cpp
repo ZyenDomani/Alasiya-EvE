@@ -264,9 +264,15 @@ void StaticDataMgr::Populate() {
         sysData.constellationID         = row.GetUInt(1);
         sysData.regionID                = row.GetUInt(2);
         sysData.name                    = row.GetText(3);
-        sysData.position                = Vector3d(row.GetDouble(4), row.GetDouble(5), row.GetDouble(6));
-        sysData.minPosition             = Vector3d(row.GetDouble(7), row.GetDouble(8), row.GetDouble(9));
-        sysData.maxPosition             = Vector3d(row.GetDouble(10), row.GetDouble(11), row.GetDouble(12));
+        sysData.position.x              = row.GetDouble(4);
+        sysData.position.y              = row.GetDouble(5);
+        sysData.position.z              = row.GetDouble(6);
+        sysData.minPosition.x           = row.GetDouble(7);
+        sysData.minPosition.y           = row.GetDouble(8);
+        sysData.minPosition.z           = row.GetDouble(9);
+        sysData.maxPosition.x           = row.GetDouble(10);
+        sysData.maxPosition.y           = row.GetDouble(11);
+        sysData.maxPosition.z           = row.GetDouble(12);
         sysData.luminosity              = row.GetFloat(13);
         sysData.border                  = row.GetBool(14);
         sysData.fringe                  = row.GetBool(15);
@@ -338,7 +344,9 @@ void StaticDataMgr::Populate() {
         data.systemID           = row.GetUInt(3);
         data.typeID             = row.GetUInt(4);
         data.radius             = row.GetFloat(5);
-        data.position           = Vector3d(row.GetDouble(6),row.GetDouble(7),row.GetDouble(8));
+        data.position.x         = row.GetDouble(6);
+        data.position.y         = row.GetDouble(7);
+        data.position.z         = row.GetDouble(8);
         //m_staticData[row.GetInt(0)] = data;
         m_staticData.emplace(row.GetUInt(0), std::move(data));
     }

@@ -101,9 +101,9 @@ public:
         {
             double theta = MakeRandomFloat( 0.0, EvE::Trig::Pi2);
             double phi = MakeRandomFloat( 0.0, EvE::Trig::Pi2);
-            x += radius * std::sin(theta) * std::cos(phi);
-            z += radius * std::sin(theta) * std::sin(phi);
-            y += radius * std::cos(theta);
+            x += radius * sin(theta) * cos(phi);
+            z += radius * sin(theta) * sin(phi);
+            y += radius * cos(theta);
         }
 
         // Take existing (x,y,z) point and use that as the center of two spheres of 'radiusInner', the
@@ -115,9 +115,9 @@ public:
             double theta = MakeRandomFloat( 0.0, EvE::Trig::Pi2);
             double phi = MakeRandomFloat( 0.0, EvE::Trig::Pi2);
             double intermediateRadius = MakeRandomFloat( radiusInner, radiusOuter );
-            x += intermediateRadius * std::sin(theta) * std::cos(phi);
-            z += intermediateRadius * std::sin(theta) * std::sin(phi);
-            y += intermediateRadius * std::cos(theta);
+            x += intermediateRadius * sin(theta) * cos(phi);
+            z += intermediateRadius * sin(theta) * sin(phi);
+            y += intermediateRadius * cos(theta);
         }
 
         bool isZero() const {

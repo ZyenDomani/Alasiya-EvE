@@ -133,6 +133,7 @@ PyResult InsuranceBound::Handle_GetContracts( PyCallArgs& call ) {
 }
 
 PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
+    if (is_log_enabled(SERVICE__CALL_DUMP))
     call.Dump(SERVICE__CALL_DUMP);
     Call_InsureShip args;
     if (!args.Decode(&call.tuple)) {

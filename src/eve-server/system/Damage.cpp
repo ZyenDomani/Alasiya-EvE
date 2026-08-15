@@ -140,7 +140,7 @@ bool SystemEntity::ApplyDamage(Damage &damage) {
 
         if (sConfig.debug.UseProfiling)
             sProfiler.AddTime(Profile::damage, GetTimeUSeconds() - profileStartTime);
-        
+
         return false;
     }
 
@@ -661,7 +661,7 @@ void ShipSE::Killed(Damage &damage) {
         m_destiny->SendJettisonPacket();
 
         uint16 groupID = m_self->groupID();
-        Vector3d podPosition(wreckPosition);
+        Vector3d podPosition = wreckPosition;
         podPosition.MakeRandomPointOnSphere(GetShipItemRef()->radius() + pPilot->GetPod()->radius() + MakeRandomFloat(100, 200));
         // this resets client ship data
         pPilot->ResetAfterPopped(podPosition);

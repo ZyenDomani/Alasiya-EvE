@@ -89,8 +89,12 @@ void StationDataMgr::Populate()
         } else {
             sData.serviceMask = 0;
         }
-        sData.position                  = Vector3d(row.GetDouble(1),row.GetDouble(2),row.GetDouble(3));
-        sData.dockOrientation           = Vector3d(row.GetDouble(4),row.GetDouble(5),row.GetDouble(6));
+        sData.position.x                = row.GetDouble(1);
+        sData.position.y                = row.GetDouble(2);
+        sData.position.z                = row.GetDouble(3);
+        sData.dockOrientation.x         = row.GetDouble(4);
+        sData.dockOrientation.y         = row.GetDouble(5);
+        sData.dockOrientation.z         = row.GetDouble(6);
         sData.dockingCostPerVolume      = row.GetFloat(7);
         sData.maxShipVolumeDockable     = row.GetUInt(8);
         sData.officeSlots               = row.GetUInt(9);
@@ -113,10 +117,12 @@ void StationDataMgr::Populate()
         sData.systemID                  = row.GetUInt(26);
         sData.constellationID           = row.GetUInt(27);
         sData.regionID                  = row.GetUInt(28);
-        sData.dockEntry                 = Vector3d(row.GetDouble(29),row.GetDouble(30),row.GetDouble(31));
-        sData.dockPosition              = Vector3d(row.GetDouble(29) + row.GetDouble(1),
-                                                 row.GetDouble(30) + row.GetDouble(2),
-                                                 row.GetDouble(31) + row.GetDouble(3));
+        sData.dockEntry.x               = row.GetDouble(29);
+        sData.dockEntry.y               = row.GetDouble(30);
+        sData.dockEntry.z               = row.GetDouble(31);
+        sData.dockPosition.x            = row.GetDouble(29) + row.GetDouble(1);
+        sData.dockPosition.y            = row.GetDouble(30) + row.GetDouble(2);
+        sData.dockPosition.z            = row.GetDouble(31) + row.GetDouble(3);
         m_stationData.emplace(row.GetInt(0), sData);
     }
 

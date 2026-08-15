@@ -724,7 +724,7 @@ float TargetManager::TimeToLock(ShipItemRef sRef, SystemEntity* tSE) const {
 
         //https://wiki.eveonline.com/en/wiki/Targeting_speed
         //locktime = 40000/(scanres * asinh(sigrad)^2)
-        float time(40000 / (scanRes * std::pow(asinh(sigRad), 2)));   // higher scan res means faster lock time.
+        float time(40000 / (scanRes * pow(asinh(sigRad), 2)));   // higher scan res means faster lock time.
 
         /*  distance-based modifier to targeting speed?         sure, why the hell not?   -allan 27.6.15
          *  +0.1s for each 10k distance
