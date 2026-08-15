@@ -88,8 +88,8 @@ PyResult PyService::Handle_MachoBindObject( PyCallArgs& call )
 
     //now we register
     PyTuple* rsp = new PyTuple(2);
-    PyDict* oid = new PyDict();
-    rsp->SetItem(0, m_manager->BindObject(call.client, obj, nullptr, oid));
+    //PyDict* oid = new PyDict();
+    rsp->SetItem(0, m_manager->BindObject(call.client, obj/*, nullptr, oid*/));
 
     if (args.call->IsNone()) {
         //no call was specified...
@@ -99,7 +99,7 @@ PyResult PyService::Handle_MachoBindObject( PyCallArgs& call )
         if (!boundcall.Decode(&args.call)) {
             codelog(SERVICE__ERROR, "%s Service: Failed to decode boundcall arguments", GetName());
             PyDecRef(rsp);
-            PyDecRef(oid);
+            //PyDecRef(oid);
             return nullptr;
         }
 
@@ -113,7 +113,8 @@ PyResult PyService::Handle_MachoBindObject( PyCallArgs& call )
         rsp->SetItem(1, result.ssResult);
     }
 
-    return PyResult(rsp, oid);
+    //return PyResult(rsp, oid);
+    return PyResult(rsp);
 }
 
 const char *const PyService::s_checkTimeStrings[_checkCount] = {

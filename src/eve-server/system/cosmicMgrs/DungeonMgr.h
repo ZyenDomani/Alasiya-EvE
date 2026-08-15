@@ -35,6 +35,12 @@
 // Hardcoded array inside your Static Manager matching the client's layout specifications
 const double BOX_SIZES[] = { 15.0, 60.0, 240.0, 960.0, 3840.0, 15360.0, 61440.0, 245760.0 };
 
+enum ESpawnPattern { Pattern_AreaWeighted, Pattern_DonutShell, Pattern_DebrisField };
+
+// Struct to pass back calculated offsets
+struct GpsCoord { float x; float y; float z; };
+
+
 // this class is a singleton object to have a common place for all dungeon template data
 class DungeonDataMgr
 : public Singleton< DungeonDataMgr >

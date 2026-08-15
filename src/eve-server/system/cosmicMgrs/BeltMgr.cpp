@@ -47,7 +47,7 @@ void BeltMgr::Init(uint32 regionID)
 
     m_regionID = regionID;
     m_systemID = m_system->GetID();
-    m_respawnTimer.Start(sConfig.cosmic.BeltRespawn * EvE::Timer::Hour);  // hours->ms
+    m_respawnTimer.Start(sConfig.rates.BeltRespawn * EvE::Timer::Hour);  // hours->ms
 
     m_initialized = true;
     _log(COSMIC_MGR__MESSAGE, "BeltMgr Initialized for %s(%u)", m_system->GetName(), m_systemID);
@@ -70,7 +70,7 @@ void BeltMgr::ClearBelt(uint16 bubbleID)
 void BeltMgr::ClearAll(bool clear/*false*/) {
     if (!clear)
         Save();
-    AsteroidSE* pASE(nullptr);
+    AsteroidSE* pASE = nullptr;
     for (auto &cur : m_asteroids) {
         pASE = cur.second;
         // not sure why this would be null, but have seen weird shit before so...
@@ -141,7 +141,6 @@ void BeltMgr::Process() {
 
 bool BeltMgr::Load(uint16 bubbleID) {
     std::vector<AsteroidData> entities;
-    entities.clear();
     uint32 beltID = sBubbleMgr.GetBeltID(bubbleID);
     if (beltID == 0)
         return false;
@@ -193,7 +192,7 @@ void BeltMgr::Save() {
         return;
     }
 
-    double start(GetTimeUSeconds());
+    double start = GetTimeUSeconds();
     std::vector<AsteroidData> roids;
     roids.clear();
     uint16 save(0), skip(0);
@@ -258,7 +257,7 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>&
     if (IsSpawned(bubbleID))
         return;
 
-    uint32 beltID(sBubbleMgr.GetBeltID(bubbleID));
+    uint32 beltID = sBubbleMgr.GetBeltID(bubbleID);
     if ((!IsCelestialID(beltID)) and (!anomaly))
         return;
 
@@ -286,7 +285,7 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>&
 
     // --- PART 2: DETERMINE CLUSTER PIECE COUNTS & RADIAL RINGS ---
     int8 pcs = 5;
-    double baseRadius = 8000.0 * sConfig.cosmic.roidRadiusMultiplier;
+    double baseRadius = 8000.0 * sConfig.rates.RadiusMultiplier;
 
     if (anomaly) {
         pcs += roidDist.size();
@@ -449,7 +448,7 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>&
 
 uint32 BeltMgr::GetAsteroidType(double p, const std::unordered_multimap<float, uint16>& roids) {
     std::unordered_multimap<float, uint16>::const_iterator cur = roids.begin();
-    float chance(0.0f);
+    float chance = 0.0f;
     for(; cur != roids.end(); ++cur ) {
         chance += cur->first;
         _log(COSMIC_MGR__DEBUG, "BeltMgr::GetAsteroidType - checking %u with chance %.3f(%.3f)", cur->second, chance, p);
@@ -474,11 +473,11 @@ void BeltMgr::SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const V
         return;
     }
 
-    double quantity(0.0);
+    double quantity = 0.0;
     if (ice) {
         quantity = radius * 2;
     } else {
-        radius *= sConfig.cosmic.roidRadiusMultiplier;
+        radius *= sConfig.rates.RadiusMultiplier;
         quantity = log(radius / 89.675) * (1.0 / 4e-05);
     }
 

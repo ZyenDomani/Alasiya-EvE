@@ -61,8 +61,8 @@ PyResult PyBoundObject::Call(const std::string &method, PyCallArgs &args) {
 
 std::string PyBoundObject::GetBindStr() const {
     //generate a nice bind string:
-    char bind_str[128];
+    char bind_str[40];
     snprintf(bind_str, sizeof(bind_str), "N=%u:%u", nodeID(), bindID());
 
-    return(std::string(bind_str));
+    return std::string(bind_str);
 }
