@@ -551,6 +551,8 @@ public:
     void SetItem(size_t index, PyRep* object);
 
     void SetItemInt(size_t index, int32 val)		{ SetItem(index, new PyInt(val)); }
+    void SetItemLong(size_t index, int64 val)           { SetItem(index, new PyLong(val)); }
+    void SetItemFloat(size_t index, double val)         { SetItem(index, new PyFloat(val)); }
     void SetItemString(size_t index, const char* str)   { SetItem(index, new PyString(str)); }
 
     int32 hash() const;
@@ -608,9 +610,9 @@ public:
     void SetItemString(size_t index, const char* str)   { SetItem(index, new PyString(str)); }
 
     void AddItem(PyRep* pRep)				{ items.push_back(pRep); }
-    void AddItemInt(int32 intval)			{ AddItem(new PyInt(intval)); }
-    void AddItemLong(int64 intval)			{ AddItem(new PyLong(intval)); }
-    void AddItemReal(double realval)			{ AddItem(new PyFloat(realval)); }
+    void AddItemInt(int32 val)			        { AddItem(new PyInt(val)); }
+    void AddItemLong(int64 val)			        { AddItem(new PyLong(val)); }
+    void AddItemFloat(double val)			{ AddItem(new PyFloat(val)); }
     void AddItemString(const char* str)	                { AddItem(new PyString(str)); }
 
     // This needs to be public:

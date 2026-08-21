@@ -235,8 +235,8 @@ PyResult PlanetMgrBound::Handle_GetProgramResultInfo(PyCallArgs &call) {
      * 09:08:39 [PlanetCallDump]         [ 2] List: 3 elements                      << heads
      * 09:08:39 [PlanetCallDump]         [ 2]   [ 0] Tuple: 3 elements
      * 09:08:39 [PlanetCallDump]         [ 2]   [ 0]   [ 0] Integer field: 0        << headID
-     * 09:08:39 [PlanetCallDump]         [ 2]   [ 0]   [ 1] Real field: 0.323109        << phi
-     * 09:08:39 [PlanetCallDump]         [ 2]   [ 0]   [ 2] Real field: 2.773487        << theta
+     * 09:08:39 [PlanetCallDump]         [ 2]   [ 0]   [ 1] Real field: 0.323109        << latitude  (phi)
+     * 09:08:39 [PlanetCallDump]         [ 2]   [ 0]   [ 2] Real field: 2.773487        << longitude (theta)
      * 09:08:39 [PlanetCallDump]         [ 2]   [ 1] Tuple: 3 elements
      * 09:08:39 [PlanetCallDump]         [ 2]   [ 1]   [ 0] Integer field: 1
      * 09:08:39 [PlanetCallDump]         [ 2]   [ 1]   [ 1] Real field: 0.344639
@@ -245,6 +245,7 @@ PyResult PlanetMgrBound::Handle_GetProgramResultInfo(PyCallArgs &call) {
      * 09:08:39 [PlanetCallDump]         [ 2]   [ 2]   [ 0] Integer field: 2
      * 09:08:39 [PlanetCallDump]         [ 2]   [ 2]   [ 1] Real field: 0.378424
      * 09:08:39 [PlanetCallDump]         [ 2]   [ 2]   [ 2] Real field: 2.820603
+     *  these next three are headRadius from separate calls to show variation (min/max)
      * 09:11:30 [PlanetCallDump]         [ 3] Real field: 0.010000                  << smallest size.  0d1hr
      * 09:12:30 [PlanetCallDump]         [ 3] Real field: 0.018581                  << medium size.    3d
      * 09:13:36 [PlanetCallDump]         [ 3] Real field: 0.050000                  << largest size.  14d

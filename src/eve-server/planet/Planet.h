@@ -90,11 +90,6 @@ protected:
     CustomsSE*                  pCO;  // our Customs Office SE  - we dont own this
     PlanetResourceData          m_data;
 
-    struct PlanetResourceProfile {
-        uint32 types[5];        // array holding the typeIDs for this planet
-        float abundanceMod;
-    };
-
     // Procedural array builder for 18-node SH data
     std::string GenerateResourceBuffer(float baseDistQuantity);
     // as stated

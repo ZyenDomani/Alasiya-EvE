@@ -122,7 +122,8 @@ m_procTime(0)	// process check.  init to zero and stores last proc time, which i
 Colony::~Colony()
 {
     SafeDelete(ccData);
-    SafeDelete(pPinList);
+    // this isnt right....gotta look into it more
+    //PySafeDecRef(pPinList);
 }
 
 // run initial update then client processes after colony data is sent
@@ -209,7 +210,8 @@ void Colony::Process() {
 void Colony::SendUpdate() {
     if (!pPinList->empty()) {
         PyTuple* tuple = new PyTuple(1);
-        tuple->items[0] = pPinList;
+        PyIncRef(pPinList);
+        tuple->SetItem(0, pPinList);
         //may also need OnItemChange with this
         m_client->SendNotification("OnRefreshPins", "clientID", &tuple, false);
         pPinList->clear();
@@ -298,7 +300,7 @@ void Colony::AbandonColony()
     m_colonyTimer.Disable();
 }
 
-void Colony::CreateCommandPin(uint32 itemID, uint32 typeID, double latitude, double longitude) {
+void Colony::CreateCommandPin(uint32 itemID, uint16 typeID, double latitude, double longitude) {
     m_colonyID = itemID;
     ccData->colonyID = itemID;
     ccData->level = PI::Pin::Level0;
@@ -307,7 +309,7 @@ void Colony::CreateCommandPin(uint32 itemID, uint32 typeID, double latitude, dou
     m_db.AddPlanetForChar(m_pSE->SystemMgr()->GetID(), m_pSE->GetID(), m_client->GetCharacterID(), m_colonyID, m_pSE->GetTypeID());
 }
 
-void Colony::CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latitude, double longitude) {
+void Colony::CreatePin(uint32 groupID, uint32 pinID, uint16 typeID, double latitude, double longitude) {
     using namespace EVEDB::invGroups;
     PI::PinData pin = PI::PinData();
     InventoryItemRef iRef(nullptr);
@@ -363,7 +365,7 @@ void Colony::CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latit
         } break;
         case Extractor_Control_Units: { // 1063
             pin.isECU = true;
-            pin.qtyPerCycle = iRef->GetAttribute(AttrPinExtractionQuantity).get_uint32();
+            pin.qtyPerCycle = iRef->GetAttribute(AttrPinExtractionQuantity).get_int();
             ccData->ecus[iRef->itemID()] = PI::ECU();
         } break;
         case Spaceports:{   // 1030
@@ -438,7 +440,7 @@ void Colony::CreateLink(uint32 src, uint32 dest, uint16 level) {
             iRef->itemID(), sPIDataMgr.GetPinName(src), sPIDataMgr.GetPinName(dest), level);
 }
 
-void Colony::CreateRoute(uint16 routeID, uint32 typeID, uint32 qty, PyList* path) {
+void Colony::CreateRoute(int16 routeID, uint16 typeID, int32 qty, PyList* path) {
     // routeID is sent as tempID like pins.
     std::list<uint32> list1;
     for (uint16 i = 0; i < path->size(); ++i) {
@@ -488,16 +490,19 @@ void Colony::CreateRoute(uint16 routeID, uint32 typeID, uint32 qty, PyList* path
     }
 
     routeID = m_db.SaveRoute(m_colonyID, route);
-    ccData->routes[routeID] = route;
+    ccData->routes.emplace(routeID, route);
 
     m_srcRoutes.emplace(route.srcPinID, route);
     m_destRoutes.emplace(route.destPinID, route);
 
     if (is_log_enabled(COLONY__INFO))
-        _log(COLONY__INFO, "Colony::CreateRoute() - Created route id %u for %u of typeID %u, making %u hops.", routeID, qty, typeID, (uint32)path->size() - 1);
+        _log(COLONY__INFO, "Colony::CreateRoute() - Created route id %u for %i of typeID %u, making %u hops.", routeID, qty, typeID, (uint32)path->size() - 1);
 
-    // we're just creating the route here....do we really wanna move contents?  no, live doesnt do this.
-    /*
+    // if source isnt storage, it probably dont have this material
+    if (!srcItr->second.isStorage)
+        return;
+
+    // do we really wanna move contents? live doesnt...but we do.
     std::map<uint16, uint32>::iterator itemItr = srcItr->second.contents.find(route.commodityTypeID);
     if (itemItr == srcItr->second.contents.end()) {
         // this material wasnt found in source container....cant move what we aint got..
@@ -506,7 +511,7 @@ void Colony::CreateRoute(uint16 routeID, uint32 typeID, uint32 qty, PyList* path
         return;
     }
 
-    uint16 amount = route.commodityQuantity;
+    int32 amount = route.commodityQuantity;
     // remove contents from storage pin
     if (itemItr->second > amount) {
         itemItr->second -= amount;
@@ -518,12 +523,11 @@ void Colony::CreateRoute(uint16 routeID, uint32 typeID, uint32 qty, PyList* path
     // add contents to dest pin if we have any
     itemItr = destItr->second.contents.find(route.commodityTypeID);
     if (itemItr != destItr->second.contents.end()) {
-        // should we verify pin capy?
+        // should we verify pin capy?  probably so...eventually
         itemItr->second += amount;
     } else {
-        destItr->second.contents[route.commodityTypeID] = amount;
+        destItr->second.contents.emplace_hint(itemItr, route.commodityTypeID, amount);
     }
-    */
 }
 
 void Colony::UpgradeCommandCenter(uint32 pinID, int8 level) {
@@ -680,6 +684,19 @@ void Colony::AddExtractorHead(uint32 ecuID, uint16 headID, double latitude, doub
         return;
     }
 
+    // When a player locks in their extraction layout, use the scanning range
+    // to apply a permanent, hidden coordinate drift to their pins on the server
+    // Level 5 = Perfect accuracy (0% offset)
+    // Level 0 = Up to a 5% coordinate wobble error
+    float errorMargin = (5 - m_client->GetChar()->GetSkillLevel(EvESkill::Planetology)) * 0.01f;
+    /*
+    if (errorMargin > 0.0f) {
+        // Inject a slight, permanent position error to the pin coordinates
+        // to simulate their character's "bad survey reading"
+        latitude += MakeRandomFloat(-maxWobbleRadius, maxWobbleRadius) * EvE::Trig::RadiansInDegrees;
+        longitude += MakeRandomFloat(-maxWobbleRadius, maxWobbleRadius) * EvE::Trig::RadiansInDegrees;
+    } */
+
     m_newHead = true;
     tempECUs.push_back(ecuID);
     PI::Heads head = PI::Heads();
@@ -702,6 +719,15 @@ void Colony::MoveExtractorHead(uint32 ecuID, uint16 headID, double latitude, dou
         _log(COLONY__ERROR, "Colony::MoveExtractorHead() - headID %u not found in pin.heads map", headID);
         return;
     }
+
+    float errorMargin = (5 - m_client->GetChar()->GetSkillLevel(EvESkill::Planetology)) * 0.01f;
+    /*
+    if (errorMargin > 0.0f) {
+        // Inject a slight, permanent position error to the pin coordinates
+        // to simulate their character's "bad survey reading"
+        latitude += MakeRandomFloat(-maxWobbleRadius, maxWobbleRadius) * EvE::Trig::RadiansInDegrees;
+        longitude += MakeRandomFloat(-maxWobbleRadius, maxWobbleRadius) * EvE::Trig::RadiansInDegrees;
+    } */
 
     m_newHead = true;
     tempECUs.push_back(ecuID);
@@ -738,7 +764,7 @@ void Colony::SetSchematic(uint32 pinID, uint8 schematicID/*0*/) {
         // install new schematic.  set lastRunTime to 0.  set installTime to now.   update
         sPIDataMgr.GetSchematicData(schematicID, plantItr->second.data);
         plantItr->second.pLevel                  = sPIDataMgr.GetProductLevel(plantItr->second.data.outputType);
-        pinItr->second.cycleTime                 = plantItr->second.data.cycleTime * sConfig.rates.PlantCycleMod * EvE::Time::Second;
+        pinItr->second.cycleTime                 = plantItr->second.data.cycleTime * EvE::Time::Second;
         pinItr->second.qtyPerCycle               = plantItr->second.data.outputQty;
         pinItr->second.schematicID               = schematicID;
         pinItr->second.lastRunTime               = GetFileTimeNow();
@@ -759,7 +785,7 @@ void Colony::SetSchematic(uint32 pinID, uint8 schematicID/*0*/) {
 
         pinItr->second.state = PI::Pin::State::Idle;
 
-        // set process timer to 30m
+        // set process timer
         if (!m_colonyTimer.Enabled())
             m_colonyTimer.Start(sConfig.rates.ColonyTimer * EvE::Timer::Minute);
 
@@ -797,6 +823,10 @@ void Colony::InstallProgram(uint32 ecuID, uint16 typeID, double headRadius) {
     }
 
     std::unordered_map<uint32, PI::ECU>::iterator ecuItr = ccData->ecus.find(ecuID);
+    if (ecuItr == ccData->ecus.end()) {
+        _log(COLONY__ERROR, "Colony::InstallProgram() - ecuPinID %u not found in ccData.ecus map", ecuID);
+        return;
+    }
 
     pinItr->second.launchTime = 0;
     ecuItr->second.cycleCount = 0;
@@ -810,7 +840,6 @@ void Colony::InstallProgram(uint32 ecuID, uint16 typeID, double headRadius) {
         pinItr->second.installTime = 0;
         pinItr->second.lastRunTime = 0;
         ecuItr->second.headRadius = 0.0;
-        //ecuItr->second.heads.clear();
         // reset extraction quantity in ecu attrib.  this doesnt check for invalid item
         sItemFactory.GetItemRef(ecuID)->ResetAttribute(AttrPinExtractionQuantity);
         return;
@@ -820,17 +849,25 @@ void Colony::InstallProgram(uint32 ecuID, uint16 typeID, double headRadius) {
         pinItr->second.installTime = GetFileTimeNow();
         pinItr->second.lastRunTime = GetFileTimeNow();
         ecuItr->second.headRadius = headRadius;
-        PyList* heads = new PyList();
-        for (auto &cur : ecuItr->second.heads)
-            heads->AddItem(new PyInt(cur.second.typeID));
 
-        // set up extractor program data
-        sPIDataMgr.GetProgramResultInfo(this, ecuID, typeID, headRadius, heads);
+        // create head list to pass as args
+        PyList* heads = new PyList();
+        for (auto& head : ecuItr->second.heads) {
+            PyTuple* data = new PyTuple(3);
+                data->SetItemInt(0, head.first);
+                data->SetItemFloat(1, head.second.latitude);
+                data->SetItemFloat(2, head.second.longitude);
+            heads->AddItem(data);
+        }
+
+        // recalculate output with data sent, in case it changed.
+        PyRep* res = sPIDataMgr.GetProgramResultInfo(this, ecuID, typeID, headRadius, heads);
+        res->DecRef();
         pinItr->second.launchTime = ecuItr->second.expiryTime;
     }
 }
 
-void Colony::SetProgramResults(uint32 ecuID, uint16 typeID, uint16 numCycles, double headRadius, float cycleTime, uint32 qtyPerCycle)
+void Colony::SetProgramResults(uint32 ecuID, uint16 typeID, uint16 numCycles, double headRadius, float cycleTime, int32 qtyPerCycle)
 {
     std::unordered_map<uint32, PI::PinData>::iterator itr = ccData->pins.find(ecuID);
     if (itr == ccData->pins.end()) {
@@ -846,16 +883,16 @@ void Colony::SetProgramResults(uint32 ecuID, uint16 typeID, uint16 numCycles, do
     ecuItr->second.expiryTime = cycleTime * EvE::Time::Hour * numCycles + GetFileTimeNow();
     ecuItr->second.headRadius = headRadius;
     ecuItr->second.headTypeID = sPIDataMgr.GetHeadType(sItemFactory.GetItemRef(ecuID)->typeID(), typeID);
-    ecuItr->second.programType = typeID;
+    ecuItr->second.programType = typeID;        // this is the output (P0) typeID
 
     m_db.UpdateECUPin(ecuID, ccData);
 
     // save extraction quantity in ecu attrib    this doesnt check for invalid item
     sItemFactory.GetItemRef(ecuID)->SetAttribute(AttrPinExtractionQuantity, qtyPerCycle, false);
 
-    // set process timer to 30m
+    // set process timer based on cycle time (in hours)
     if (!m_colonyTimer.Enabled())
-        m_colonyTimer.Start(sConfig.rates.ColonyTimer * EvE::Timer::Minute);
+        m_colonyTimer.Start(/*sConfig.rates.ColonyTimer*/ cycleTime * EvE::Timer::Hour);
 }
 /* {'FullPath': u'UI/Messages', 'messageID': 256790, 'label': u'PlanetBlackListedBody'}(u'{planet} is not available for the general public.', None, {u'{planet}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'planet'}})
  * {'FullPath': u'UI/Messages', 'messageID': 256791, 'label': u'CannotInstallWithoutScanResultsBody'}(u'Your mining foreman reports that an intern seems to have misplaced the necessary mineral survey results. You will need to order a fresh deposit scan before this {typeName} can begin operating.', None, {u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}})
@@ -909,7 +946,7 @@ PyDict* Colony::TransferCommodities(uint32 srcID, uint32 destID, std::map< uint1
             destItemItr->second += cur.second;
         } else {
             // create new stack
-            destItr->second.contents[cur.first] = cur.second;
+            destItr->second.contents.emplace_hint(destItemItr, cur.first, cur.second);
         }
     }
 
@@ -918,9 +955,8 @@ PyDict* Colony::TransferCommodities(uint32 srcID, uint32 destID, std::map< uint1
 
     //self.StimulateIdlePin(destPin)
 
-
     // try OnItemChange here with ixLocation to update items   maybe later move item to limbo until xfer time is up
-    //sm.ScatterEvent('OnRefreshPins', [path[0], path[-1]])
+    //sm.ScatterEvent('OnRefreshPins', [path[0], path[-1]])  [path to, from]
 
     PyDict* args = new PyDict();
     args->SetItemString("simTime", new PyLong(m_procTime));
@@ -937,11 +973,17 @@ PyDict* Colony::TransferCommodities(uint32 srcID, uint32 destID, std::map< uint1
 /*
 Export fee = Base cost × tax rate (×1.5 if launched via CC)
 Import fee = Base cost × tax rate × 0.5
-To open the planet over view from anywhere Press F11 and in the side panel you can use the bottom window to select planet view by right clicking the menu box in the left corner.
-By switching solar systems or regions in the above boxes you can scan planets in regions as far as your abilities allow.
-In the solar system box you can use show info under each solar system and look at orbital bodies to get a list of planet type rather than look at them one at a time. You can also view planet directly from the list.
-You can deploy Command Centers while docked, but you must be in the same system as the planet, and the command center must be in your ship's hold.
-https://www.eve-icsc.com/jumptools/jumpplanner.php use this link you calculate LY range to see what systems will be in range based on your Remote Sensing skill level. It will help with planning.
+To open the planetover view from anywhere, Press F11 and in the side panel.  You can use the bottom window to
+select planet view by right clicking the menu box in the left corner.
+By switching solar systems or regions in the above boxes, you can scan planets in regions as far as your
+abilities allow.
+In the solar system box, you can use show info under each solar system and look at orbital bodies to get a list
+of planet type rather than look at them one at a time. You can also view planet directly from the list.
+You can deploy Command Centers while docked, but you must be in the same system as the planet, and the command
+center must be in your ship's hold.
+https://www.eve-icsc.com/jumptools/jumpplanner.php
+Using this link, you calculate LY range to see what systems will be in range based on your Remote Sensing
+skill level. It will help with planning.
 */
 
 /*  import/export taxes
@@ -968,21 +1010,23 @@ PyRep* Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items
     // first - create jetcan, add to system, and put in orbit around planet
     // NOTE:  PI launches have 5d timers
     /** @todo check capacities before adding items */
-    SystemManager* pSysMgr(m_pSE->SystemMgr());
-    Vector3d location(pSysMgr->GetSE(m_pSE->GetID())->GetPosition());
+    SystemManager* pSysMgr = m_pSE->SystemMgr();
+    Vector3d location = pSysMgr->GetSE(m_pSE->GetID())->GetPosition();
 	/* NOTE:  launches spawn ~10000Km from customs office
 	 * create entry in journal (pi launches)
 	 * create bm?
 	 *  cannot be scanned by probes (no anom sig), but does show on d-scan
 	 * 5d timer
 	 */
-    location.MakeRandomPointOnSphere(m_pSE->GetRadius() + 2000000);   //2000km orbit for launch can
+    uint32 dist = (MakeRandomInt(8, 20) * 1000000); // 8 - 20 * 1000Km
+    location.MakeRandomPointOnSphere(m_pSE->GetRadius() + dist);   //orbit for launch can
     ItemData canData(EVEDB::invTypes::PlanetaryLaunchContainer,
                     m_client->GetCharacterID(),  // owner is Character
                     pSysMgr->GetID(),
                     flagAutoFit,
-                    "PI Commodities Container",  // do we want to advertise like this?
-                    location);
+                     "Totally Normal Space Container",  // do we want to advertise like this?
+                    location,
+                    "PI Commodities Container");
 
     CargoContainerRef contRef = sItemFactory.SpawnCargoContainer(canData);
     if (contRef.get() == nullptr) {
@@ -1077,27 +1121,39 @@ PyRep* Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items
                     Account::KeyType::Cash);
     }
 
+    if (count) {
+        // tell client to refresh colony pin for this container
+        PyList* list = new PyList();
+            list->AddItemInt(pinID);
+        PyTuple* tuple = new PyTuple(1);
+            tuple->items[0] = list;
+        //may also need OnItemChange with this
+        m_client->SendNotification("OnRefreshPins", "clientID", &tuple, false);
+    }
+
     return new PyLong(pinItr->second.launchTime);
 }
 
-void Colony::PlanetXfer(uint32 pinID, std::map< uint32, uint16 > importItems, std::map< uint32, uint16 > exportItems, double taxRate)
+void Colony::PlanetXfer(uint32 spaceportPinID, std::map< uint32, uint16 >& importItems, std::map< uint32, uint16 >& exportItems, double taxRate)
 {
     //High-sec Customs Offices(CO) have a 10% NPC tax rate
     // import is from CO to planet.  export is from planet to CO
     // this method will make the transfer of items from real to virtual and back as necessary
 
-    std::unordered_map<uint32, PI::PinData>::iterator pinItr = ccData->pins.find(pinID);
+    std::unordered_map<uint32, PI::PinData>::iterator pinItr = ccData->pins.find(spaceportPinID);
     if (pinItr == ccData->pins.end()) {
-        _log(COLONY__ERROR, "Colony::PlanetXfer() - pinID %u not found in ccData.pins map", pinID);
+        _log(COLONY__ERROR, "Colony::PlanetXfer() - pinID %u not found in ccData.pins map", spaceportPinID);
         if (m_client->CanThrow())
             throw CustomError("Your SpacePort on %s was not found.", m_pSE->GetName());
-
         return;
     }
 
+    //{'FullPath': u'UI/Messages', 'messageID': 256577, 'label': u'CannotImportNotEnoughWarehouseSpaceBody'}(u'You cannot import commodities to that spaceport, as it does not have sufficient storage space to handle the incoming goods.', None, None)
+    //{'FullPath': u'UI/Messages', 'messageID': 256626, 'label': u'CannotExportNotEnoughSpaceBody'}(u'You cannot export commodities to the customs office, as it does not have sufficient storage space to handle the incoming goods.', None, None)
+
     uint8 toColony = 0, fromColony = 0;
     double cost = 0.0;
-    InventoryItemRef iRef(nullptr);
+    InventoryItemRef iRef;
     std::map<uint16, uint32>::iterator itr;
     // import
     for (auto &cur : importItems) {
@@ -1115,7 +1171,7 @@ void Colony::PlanetXfer(uint32 pinID, std::map< uint32, uint16 > importItems, st
         if (itr != pinItr->second.contents.end()) {
             itr->second += cur.second;
         } else {
-            pinItr->second.contents[iRef->typeID()] = cur.second;
+            pinItr->second.contents.emplace_hint(itr, iRef->typeID(), cur.second);
         }
 
         switch (sPIDataMgr.GetProductLevel(iRef->typeID())) {
@@ -1127,17 +1183,15 @@ void Colony::PlanetXfer(uint32 pinID, std::map< uint32, uint16 > importItems, st
         }
 
         //iRef->ToVirtual(pinID);
-        iRef->Move(pinID, flagAutoFit, true);
-
+        iRef->Move(spaceportPinID, flagAutoFit, true);
         ++toColony;
     }
 
-    // figure out how to update client with pin's new contents...looks like data is only updated when entire colony is sent
-
-    if (toColony)
+    if (toColony) {
         if (is_log_enabled(COLONY__TRACE))
             _log(COLONY__TRACE, "Colony::PlanetXfer() - Imported %u items from customs office %u to spaceport %u", \
-                            toColony, m_pSE->GetID(), pinID);
+                            toColony, m_pSE->GetID(), spaceportPinID);
+    }
 
     if (cost) {
         //take the money, send wallet blink event record the transaction in their journal.
@@ -1181,7 +1235,10 @@ void Colony::PlanetXfer(uint32 pinID, std::map< uint32, uint16 > importItems, st
             case 4:     cost += (50000.00f * cur.second);    break; //1200000
         }
         // xfer virtual item to real
-        ItemData iData(cur.first, m_client->GetCharacterID(), locTemp, flagAutoFit, cur.second);
+        // make note of origin (....like im doing QA and need MTRs)
+        std::string origin = "Made on ";
+        origin += m_pSE->GetName();
+        ItemData iData(cur.first, m_client->GetCharacterID(), spaceportPinID, flagAutoFit, cur.second, origin.c_str());
         InventoryItemRef iRef = sItemFactory.SpawnItem(iData);
         iRef->Move(m_pSE->GetCustomsOffice()->GetID(), flagHangar, true);
         ++fromColony;
@@ -1193,7 +1250,7 @@ void Colony::PlanetXfer(uint32 pinID, std::map< uint32, uint16 > importItems, st
 
         if (is_log_enabled(COLONY__TRACE))
             _log(COLONY__TRACE, "Colony::PlanetXfer() - Exported %u items from spaceport %u to customs office %u", \
-                        fromColony, pinID, m_pSE->GetID());
+                    fromColony, spaceportPinID, m_pSE->GetCustomsOffice()->GetID());
     }
 
     if (cost) {
@@ -1214,7 +1271,7 @@ void Colony::PlanetXfer(uint32 pinID, std::map< uint32, uint16 > importItems, st
     if (toColony or fromColony) {
         // send pin change notification...may also need OnItemChange with this
         PyList* list = new PyList();
-            list->AddItemInt(pinID);
+            list->AddItemInt(spaceportPinID);
         PyTuple* tuple = new PyTuple(1);
             tuple->items[0] = list;
         m_client->SendNotification("OnRefreshPins", "clientID", &tuple, false);
@@ -1230,7 +1287,7 @@ void Colony::PrioritizeRoute(uint16 routeID, int8 priority) {
     }
 }
 
-PyTuple* Colony::GetPins() {
+PyTuple* Colony::GetPins(bool live/*false*/) {
     uint8 index = 0;
     PyTuple* pins(new PyTuple(ccData->pins.size()));
 
@@ -1238,7 +1295,11 @@ PyTuple* Colony::GetPins() {
         PyDict* dict = new PyDict();
         //  required for all pins
         dict->SetItem("id", new PyInt(cur.first));
-        dict->SetItem("state", new PyInt(cur.second.state)); // cc state.active calls pin.refresh @ 1Hz;
+        if (live) {
+            dict->SetItem("state", new PyInt(cur.second.state)); // cc state.active calls pin.refresh @ 1Hz;  this screws with poco (refresh)
+        } else {
+            dict->SetItem("state", new PyInt(PI::Pin::State::Idle)); // cc state.active calls pin.refresh @ 1Hz;  this screws with poco (refresh)
+        }
         dict->SetItem("level", new PyInt(cur.second.level));
         dict->SetItem("typeID", new PyInt(cur.second.typeID));
         dict->SetItem("ownerID", new PyInt(cur.second.ownerID));
@@ -1247,7 +1308,7 @@ PyTuple* Colony::GetPins() {
         dict->SetItem("lastRunTime", (cur.second.lastRunTime ? new PyLong(cur.second.lastRunTime) : PyStatic.NewNone()));
 
         // begin pin-specific data
-        PyDict* contents(new PyDict());
+        PyDict* contents = new PyDict();
         if (cur.second.isStorage) {
             for (auto &cur2 : cur.second.contents)
                 contents->SetItem(new PyInt(cur2.first), new PyInt(cur2.second));
@@ -1353,7 +1414,7 @@ PyRep* Colony::GetColony() {
     Update();   // update colony before sending data.
 
     PyDict* args = new PyDict();
-        args->SetItem("pins", GetPins());
+        args->SetItem("pins", GetPins(true));
         args->SetItem("level", new PyInt(ccData->level));
         args->SetItem("links", GetLinks());
         args->SetItem("routes", GetRoutes());
@@ -1420,12 +1481,13 @@ void Colony::Update() {
 }
 
 void Colony::ProcessECUs() {
-    if (ccData->ecus.empty())
+    if (ccData->ecus.empty() or m_srcRoutes.empty())
         return;
 
     uint16 cycles = 0;
-    uint32 amount = 0;
-    double delta = 0.0, divisor = 0.0;
+    int32 amount = 0;
+    double delta = 0.0;         // hours since last run
+    double divisor = 0.0;       // cycleTime in hours
     // routed item [typeID, qty}
     std::map<uint16, uint32>::iterator itemItr;
     // this is our source {pinID, data}
@@ -1444,6 +1506,8 @@ void Colony::ProcessECUs() {
          * but it could get messy later....
          */
 
+        // make sure we reset amount for this run
+        amount = 0;
         // this should never be invalid
         ecuPinItr = ccData->pins.find(ecu.first);
         // first - get elapsed times and generate runs to simulate.  this avoids looping
@@ -1456,7 +1520,7 @@ void Colony::ProcessECUs() {
                 continue;
             }
             // ecu program is complete.  determine cycles remaining from last runtime and continue
-            delta = std::round(((double)ecu.second.expiryTime - ecuPinItr->second.lastRunTime) / EvE::Time::Minute);
+            delta = std::round(((double)ecu.second.expiryTime - ecuPinItr->second.lastRunTime) / EvE::Time::Hour);
             ecuPinItr->second.lastRunTime = ecu.second.expiryTime;  // no need to reset expiryTime
             ecuPinItr->second.state = PI::Pin::State::Idle;
             ecu.second.expiryTime = 0;
@@ -1468,9 +1532,9 @@ void Colony::ProcessECUs() {
             }
         } else {
             ecuPinItr->second.state = PI::Pin::State::Active;
-            delta = ((double)m_procTime - ecuPinItr->second.lastRunTime) / EvE::Time::Minute;
+            delta = ((double)m_procTime - ecuPinItr->second.lastRunTime) / EvE::Time::Hour;
         }
-        divisor = (double)ecuPinItr->second.cycleTime / EvE::Time::Minute;
+        divisor = (double)ecuPinItr->second.cycleTime / EvE::Time::Hour;
         cycles = static_cast<uint16>(floor(delta / divisor));
 
         if (cycles < 1) {
@@ -1487,19 +1551,42 @@ void Colony::ProcessECUs() {
                     cycles, ecu.second.cycleCount, ecu.second.cycleCount > 1 ? "s":"", delta, divisor);
 
         // get planet heat map for this resource
-        std::string& resouceBuffer = m_pSE->GetResourceBuffer(ecu.second.programType);
-        float duration = (divisor / 60.0f) * cycles;
-        if (is_log_enabled(COLONY__DEBUG))
-            _log(COLONY__DEBUG, "Colony::ProcessECUs() - extraction duration is %0.2f", duration);
-
-        // run thru all the heads for this ecu to calculate depletion data
-        for (auto &head : ecu.second.heads) {
-            // Process extraction and mutate the target buffer state simultaneously
-            amount += sPIDataMgr.ExtractAndDepletePlanetResource(resouceBuffer, head.second, duration, ecu.second.headRadius);
+        std::string& resourceBuffer = m_pSE->GetResourceBuffer(ecu.second.programType);
+        float duration = divisor * cycles;
+        if (is_log_enabled(COLONY__DEBUG)) {
+            _log(COLONY__DEBUG, "Colony::ProcessECUs() - extraction duration is %0.2fh", duration);
+            //_log(COLONY__DEBUG, "Colony::ProcessECUs() - resourceBuffer: %s", resourceBuffer.c_str());
         }
+
+        // Re-pack your volatile pin structures so our Gaussian falloff can read the step-by-step decay
+        std::vector<PI::ActiveEcuHead> progressiveMasks;
+        for (const auto& activeEcu : ccData->ecus) {
+            if (activeEcu.second.programType != ecu.second.programType)
+                continue;
+            for (const auto& activeHead : activeEcu.second.heads) {
+                PI::ActiveEcuHead mask;
+                mask.pinID = activeHead.second.ecuPinID;
+                mask.latitude = activeHead.second.latitude;
+                mask.longitude = activeHead.second.longitude;
+                mask.headRadius = activeEcu.second.headRadius;
+                mask.depletionAmount = activeHead.second.currentDepletion;
+                progressiveMasks.push_back(mask);
+            }
+        }
+
+        int32 amount = sPlanetDataMgr.CalculateEcuYield(m_pSE, cycles, resourceBuffer, ecu.second.heads, progressiveMasks);
+
+        _log(COLONY__ERROR, "Colony::ProcessECUs() - amount after extraction is %i", amount);
 
         // second - see if this ecu has a route and move contents per route.  this will simulate xfer of raw matls from heads to storage
         auto routeItr = m_srcRoutes.equal_range(ecu.first);     // this ecu is route origin
+        // how many routes from this origin?  this is a count of ecu->dest when dest can be multiple places
+        int32 dist = EvE::max(std::distance(routeItr.first, routeItr.second), 1);
+        // make sure amount is valid
+        if (dist > amount)
+            continue;
+        // adjust amount to evenly supply all routes
+        amount /= dist;
         for (auto it = routeItr.first; it != routeItr.second; ++it) {
             // third - update destination contents per route movement as noted above (ECU does not store matls - nothing to deduct from)
             destPinItr = ccData->pins.find(it->second.destPinID);
@@ -1511,15 +1598,9 @@ void Colony::ProcessECUs() {
                 // create new stack
                 destPinItr->second.contents.emplace_hint(itemItr, it->second.commodityTypeID, amount);
             }
-            // remove the qty routed here from total amount
-            amount -= it->second.commodityQuantity;
+
             // trigger contents update
             destPinItr->second.update = true;
-
-            if (is_log_enabled(COLONY__DEBUG))
-                _log(COLONY__DEBUG, "Colony::ProcessECUs() - Dest: %s(%u) updated with %u %s(%u).", \
-                        sPIDataMgr.GetPinName(it->second.destPinID), it->second.destPinID, amount, \
-                        sPIDataMgr.GetProductName(it->second.commodityTypeID), it->second.commodityTypeID);
 
             if (destPinItr->second.isProcess) {
                 // routing is straight to plant.  trigger input
@@ -1529,17 +1610,19 @@ void Colony::ProcessECUs() {
                 // this triggers plant input loop for req mat'l
                 plantItr->second.hasReceivedInputs = true;
             }
-            if (amount < 1)
-                it = routeItr.second;
+
+            if (is_log_enabled(COLONY__DEBUG))
+                _log(COLONY__DEBUG, "Colony::ProcessECUs(%i) - Dest: %s(%u) updated with %0.0f %s(%u).", \
+                        dist, sPIDataMgr.GetPinName(it->second.destPinID), it->second.destPinID, amount, \
+                        sPIDataMgr.GetProductName(it->second.commodityTypeID), it->second.commodityTypeID);
         }
 
         if (is_log_enabled(COLONY__DEBUG))
             _log(COLONY__DEBUG, "Colony::ProcessECUs() - Processing complete.");
 
-        // fourth - update pin runtime and set flag to trigger contents updates.
-        ecuPinItr->second.lastRunTime += (ecuPinItr->second.cycleTime * cycles);
-
-        // trigger to update pin contents
+        // fourth - update pin runtime...
+        ecuPinItr->second.lastRunTime = m_procTime;
+        //  and set flag to trigger pin contents update
         m_toUpdate = true;
     }
 }
@@ -1575,7 +1658,9 @@ void Colony::ProcessPlants() {
 
     uint8 curCycle = m_pLevel;
     uint16 tempCycles = 0;
-    int32 cycles = 0, cycles2 = 0, amount = 0, divisor = 0, delta = 0;
+    int32 cycles = 0, cycles2 = 0, amount = 0;
+    int32 delta = 0;    // minutes since last run
+    int32 divisor = 0;  //cycleTime in minutes
     // either plant or storage {itemID, data}
     std::unordered_map<uint32, PI::PinData>::iterator srcPinItr;
     // either plant or storage {itemID, data}
@@ -1616,7 +1701,7 @@ void Colony::ProcessPlants() {
 
             // second, check processing times for active plants
             delta = static_cast<int32>((m_procTime - plantPinItr->second.lastRunTime)  / EvE::Time::Minute);
-            divisor = static_cast<int32>(plantPinItr->second.cycleTime / EvE::Time::Minute);
+            divisor = static_cast<int32>(std::ceil(plantPinItr->second.cycleTime / EvE::Time::Minute));
             if (divisor < 1) {
                 if (is_log_enabled(COLONY__WARNING))
                     _log(COLONY__WARNING, "Colony::ProcessPlants() - divisor invalid (%i).  set plant to idle and continue.", divisor);
@@ -1826,6 +1911,10 @@ void Colony::ProcessPlants() {
                     // contents are stored in each pin.  PI::PinData.contents(std::unordered_map<uint16, uint32> typeID, qty)
                     // we have plant cycles for this loop, so multiply output by cycles to get a total to simulate the "active" plant
                     amount = it->second.commodityQuantity * cycles;
+                    if (amount < 1) {
+                        _log(COLONY__ERROR, "Colony::ProcessPlants() - amount after routing is %i", amount);
+                        break;
+                    }
 
                     // pin item has capy attr. the above isnt needed.  use attributes!!
                     itemItr = destPinItr->second.contents.find(it->second.commodityTypeID);

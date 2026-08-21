@@ -38,6 +38,10 @@ class PlanetMgr;
 class Colony {
 public:
     Colony(PyServiceMgr* mgr, Client* pClient, SystemEntity* pSE);
+    Colony(Colony&&) =delete;
+    Colony(const Colony&) =delete;
+    Colony& operator=(Colony&&) =delete;
+    Colony& operator=(const Colony&) =delete;
     ~Colony();
 
     void Init();
@@ -60,30 +64,30 @@ public:
     void UpgradeLink(uint32 src, uint32 dest, uint8 level);
     void UpgradeCommandCenter(uint32 pinID, int8 level);
 
-    void CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latitude, double longitude);
+    void CreatePin(uint32 groupID, uint32 pinID, uint16 typeID, double latitude, double longitude);
     void CreateLink(uint32 src, uint32 dest, uint16 level);
-    void CreateRoute(uint16 routeID, uint32 typeID, uint32 qty, PyList* path);
-    void CreateCommandPin(uint32 itemID, uint32 typeID, double latitude, double longitude);
+    void CreateRoute(int16 routeID, uint16 typeID, int32 qty, PyList* path);
+    void CreateCommandPin(uint32 itemID, uint16 typeID, double latitude, double longitude);
 
     void AddExtractorHead(uint32 ecuID, uint16 headID, double latitude, double longitude);
     void MoveExtractorHead(uint32 ecuID, uint16 headID, double latitude, double longitude);
     void KillExtractorHead(uint32 ecuID, uint16 headID);
 
     // this is only for ECUs
-    void InstallProgram( uint32 ecuID, uint16 typeID, double headRadius );
+    void InstallProgram(uint32 ecuID, uint16 typeID, double headRadius);
     // this is only for plants
     void SetSchematic(uint32 pinID, uint8 schematicID=0);
-    void SetProgramResults( uint32 ecuID, uint16 typeID, uint16 numCycles, double headRadius, float cycleTime, uint32 qtyPerCycle );
+    void SetProgramResults(uint32 ecuID, uint16 typeID, uint16 numCycles, double headRadius, float cycleTime, int32 qtyPerCycle);
 
     PyRep* LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items);
-    void PlanetXfer(uint32 pinID, std::map< uint32, uint16 > importItems, std::map< uint32, uint16 > exportItems, double taxRate);
+    void PlanetXfer(uint32 spaceportPinID, std::map< uint32, uint16 >& importItems, std::map< uint32, uint16 >& exportItems, double taxRate);
 
     void PrioritizeRoute(uint16 routeID, int8 priority);
 
     uint32 GetOwner();
 
     PyRep* GetColony();
-    PyTuple* GetPins();
+    PyTuple* GetPins(bool live=false);  // 'live' means to get actual pin state (false puts all pins at 'idle')
     PyTuple* GetLinks();
     PyTuple* GetRoutes();
     PyDict* TransferCommodities(uint32 srcID, uint32 destID, std::map< uint16, uint32 > items);
@@ -93,6 +97,9 @@ public:
     int8 GetLevel()                                     { return ccData->level; }
     int64 GetSimTime()                                  { return m_procTime; }
 
+    PlanetSE* GetPlanet()                               { return m_pSE; }
+
+    std::unordered_map<uint32, PI::ECU> GetECUMap()     { return ccData->ecus; }
 private:
     PyServiceMgr* m_svcMgr;
     PlanetSE* m_pSE;

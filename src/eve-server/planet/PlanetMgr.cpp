@@ -1,7 +1,7 @@
 
  /**
   * @name PlanetMgr.cpp
-  *   Specific Class for managing planet resources
+  *   Specific Class for managing planet pins
   *         this is based on preliminary work by Comet0
   * @Author:         Allan
   * @date:   30 April 2016
@@ -124,21 +124,6 @@ bool PlanetMgr::CreatePin(UUNCommand& nc)
     uint32 groupID = sItemFactory.GetType(typeID)->groupID();
     switch (groupID) {
         case Command_Centers: {
-            //take the money, send wallet blink event record the transaction in their journal.
-            std::string reason = "DESC:  Command Center construction on ";
-            reason += m_planet->GetName();
-            uint32 ownerID = corpCONCORD;
-            if (m_planet->SystemMgr()->GetSecurityRating() < 0.5)
-                ownerID = corpInterbus;
-            AccountService::TransferFunds(
-                        m_client->GetCharacterID(),
-                        ownerID,  // concord in empire, interbus otherwise
-                        90000,
-                        reason.c_str(),
-                        Journal::EntryType::PlanetaryConstruction,
-                        m_planet->GetID(),
-                        Account::KeyType::Cash);
-
             UUNCCommandCenter uunccc;
             if (!uunccc.Decode(nc.command_data)) {
                 _log(SERVICE__ERROR, "Failed to decode args for UUNCCommandCenter");
@@ -146,6 +131,23 @@ bool PlanetMgr::CreatePin(UUNCommand& nc)
                 m_client->SendErrorMsg("Internal Server Error while processing command to Create New Facility.");
                 return true;
             }
+
+            //take the money, send wallet blink event record the transaction in their journal.
+            std::string reason = "DESC:  Command Center construction on ";
+            reason += m_planet->GetName();
+            uint32 ownerID = corpCONCORD;
+            if (m_planet->SystemMgr()->GetSecurityRating() < 0.5)
+                ownerID = corpInterbus;
+
+            AccountService::TransferFunds(
+                        m_client->GetCharacterID(),
+                        ownerID,  // concord in empire, interbus otherwise
+                        90000,          // CC creation is 90k
+                        reason.c_str(),
+                        Journal::EntryType::PlanetaryConstruction,
+                        m_planet->GetID(),
+                        Account::KeyType::Cash);
+
             m_colony->CreateCommandPin(uunccc.pinID, uunccc.typeID, uunccc.latitude, uunccc.longitude);
             // create customs office if not exist
             if (!m_planet->HasCOSE())
@@ -156,8 +158,7 @@ bool PlanetMgr::CreatePin(UUNCommand& nc)
         case Capsuleer_Bases:{
             // Not Supported yet
             _log(PLANET__ERROR, "PlanetMgr::UserUpdateNetwork::CreatePin() Planet Bases (type/group %u/%u) not supported.", typeID, groupID);
-            m_client->SendErrorMsg("Internal Server Error. <br>The %s are not supported yet.", \
-                    sItemFactory.GetType(typeID)->name().c_str());
+            m_client->SendErrorMsg("The %s are not supported yet.", sItemFactory.GetType(typeID)->name().c_str());
             return true;
         } break;
     }
@@ -208,11 +209,11 @@ bool PlanetMgr::CreatePin(UUNCommand& nc)
             pinString = "LaunchPad";
         } break;
         case Planetary_Links: {
-            cost = 1000;
+            cost = 10000;
             pinString = "Link";
         } break;
         case Extractors: {
-            cost = 100;
+            cost = 1000;
             pinString = "Extractor Head";
         } break;
     }
@@ -241,6 +242,7 @@ bool PlanetMgr::CreatePin(UUNCommand& nc)
     uint32 ownerID = corpCONCORD;
     if (m_planet->SystemMgr()->GetSecurityRating() < 0.5)
         ownerID = corpInterbus;
+
     AccountService::TransferFunds(
                 m_client->GetCharacterID(),
                 ownerID,  // concord in empire, interbus otherwise

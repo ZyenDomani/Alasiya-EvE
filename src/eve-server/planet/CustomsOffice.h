@@ -18,7 +18,6 @@
 #include "system/SystemEntity.h"
 
 class PlanetSE;
-class Call_UpdateSettings;
 class Call_TaxRateValuesDict;
 class Call_UpdateSettings;
 

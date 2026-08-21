@@ -33,6 +33,7 @@
 #include "inventory/InventoryItem.h"
 #include "planet/PlanetDataMgr.h"
 #include "planet/Colony.h"
+#include "Planet.h"
 
 PlanetDataMgr::PlanetDataMgr()
 {
@@ -70,43 +71,163 @@ void PlanetDataMgr::GetPlanetData(uint32 planetID, std::vector<uint16> &typeIDs)
         typeIDs.push_back(it->second);
 }
 
-// Highly optimized, zero-copy 1800-byte hex encoder for C++11
-std::string PlanetDataMgr::EncodeMultiNodeHexBuffer(const std::vector<float>& fullFloatArray) {
-    // 225 floats * 4 bytes per float * 2 hex characters per byte = exactly 1800 characters
-    const size_t TARGET_CHAR_COUNT = 1800;
-    const size_t TARGET_FLOAT_COUNT = 225;
+// Call this right before saving m_data.buffer_1 to your database text column
+std::string PlanetDataMgr::BinaryToHex(const std::string& binaryInput) {
+    std::ostringstream oss;
+    oss << std::hex << std::setfill('0');
+    for (unsigned char byte : binaryInput) {
+        oss << std::setw(2) << static_cast<int>(byte);
+    }
+    return oss.str(); // Returns a safe, 2592-character alphanumeric text string
+}
 
-    // Allocate the exact destination string memory upfront (This acts like reserve for strings!)
-    std::string hexResult;
-    hexResult.resize(TARGET_CHAR_COUNT, '0'); // Pre-fill with hex zeros
+// Call this right after loading the text string from the database, before assigning to m_data.buffer_1
+std::string PlanetDataMgr::HexToBinary(const std::string& hexInput) {
+    std::string binaryOutput;
+    binaryOutput.reserve(hexInput.length() / 2);
+    for (size_t i = 0; i < hexInput.length(); i += 2) {
+        std::string byteString = hexInput.substr(i, 2);
+        char byte = static_cast<char>(std::strtol(byteString.c_str(), nullptr, 16));
+        binaryOutput.push_back(byte);
+    }
+    return binaryOutput; // Returns the exact 1296-byte raw data chunk
+}
 
-    // Static hex lookup table to bypass slow printf/stream formatting loops entirely
-    static const char hexChars[] = "0123456789ABCDEF";
+// Evaluates the raw SH density at a specific head location
+float PlanetDataMgr::EvaluateSingleNodeSH(const std::string& binaryBuffer, float latitude, float longitude) {
+    if (binaryBuffer.size() != 1296)
+        return 0.0f;
 
-    // Stop at 225 or the actual size of the incoming array, whichever is smaller
-    size_t activeCount = std::min(fullFloatArray.size(), TARGET_FLOAT_COUNT);
+    // 1. Direct type-punned pointer access to avoid memory overhead
+    const float* C = reinterpret_cast<const float*>(binaryBuffer.data());
 
-    size_t charIndex = 0;
-    for (size_t i = 0; i < activeCount; ++i) {
-        float val = fullFloatArray[i];
+    // 2. Map EVE latitude/longitude straight into Spherical Coordinates (Theta, Phi)
+    float theta = longitude;               // Azimuthal angle [0 to 2*PI]
+    float phi   = EvE::Trig::halfPi - latitude; // Polar angle [0 to PI] (0 at North Pole)
 
-        // Direct, safe aliasing of the float's IEEE-754 raw binary memory footprint
-        uint32_t binaryPattern;
-        std::memcpy(&binaryPattern, &val, sizeof(uint32_t)); // Cleaner/safer than reinterpret_cast on C++11
+    float totalDensity = C[0]; // Start directly with the global baseline floor (l=0, m=0)
+    size_t idx = 0;
 
-        // Encode little-endian sequence directly into the string buffer characters
-        for (int byte = 0; byte < 4; ++byte) {
-            uint8_t currentByte = (binaryPattern >> (byte * 8)) & 0xFF;
-            hexResult[charIndex++] = hexChars[(currentByte >> 4) & 0x0F]; // High nibble
-            hexResult[charIndex++] = hexChars[currentByte & 0x0F];        // Low nibble
+    // 3. Evaluate the 18 bands (Degrees l=1 up to l=17) sequentially
+    for (int l = 1; l < 18; ++l) {
+        // Precompute standard Legendre polynomial values for this band
+        float cosPhi = cos(phi);
+        float sinPhi = sin(phi);
+
+        for (int m = -l; m <= l; ++m) {
+            float waveShape = 1.0f;
+            int absM = abs(m);
+
+            // Compute basic sectorial and zonal harmonics shapes natively
+            // (Standard Associated Legendre shortcut suitable for real-time emulator updates)
+            float legendreP = pow(sinPhi, absM) * pow(cosPhi, l - absM);
+
+            if (m < 0) {
+                // Negative orders represent the longitudinal sine component
+                waveShape = legendreP * sin(absM * theta);
+            } else if (m > 0) {
+                // Positive orders represent the longitudinal cosine component
+                waveShape = legendreP * cos(absM * theta);
+            } else {
+                // Order m = 0 represents the zonal latitude stripe
+                waveShape = legendreP;
+            }
+
+            // Accumulate the scaled wave amplitude weight into the coordinate density
+            totalDensity += C[++idx] * waveShape;
         }
     }
 
-    // If fullFloatArray was shorter than 225, the remaining positions in hexResult
-    // are already perfectly padded with '0' because we pre-allocated with '0' characters!
-    return hexResult;
+    // Explicit clamp to prevent any extreme negative mathematical dips
+    return (totalDensity < 0.0f) ? 0.0f : totalDensity;
 }
 
+// Evaluates the true, localized resource density at a specific head position,
+// factoring in all nearby player depletion sinkholes dynamically.
+float PlanetDataMgr::EvaluatePointDensityWithDepletion(
+    const std::string& binaryBuffer,
+    double latitude,
+    double longitude,
+    const std::vector<PI::ActiveEcuHead>& activePlanetPins
+) {
+    // 1. Calculate the raw, un-depleted natural maximum density from your master SH array
+    // This runs your 18-band Associated Legendre Real-Valued Spherical Harmonics combination
+    float naturalMaxDensity = EvaluateSingleNodeSH(binaryBuffer, latitude, longitude);
+
+    float totalLocalDepletion = 0.0f;
+
+    // 2. Sweep across all active extraction pins on the planet to see if their
+    // extraction radii overlap our target evaluation coordinate
+    for (const auto& pin : activePlanetPins) {
+        if (pin.depletionAmount <= 0.0f)
+            continue;
+
+        // Calculate angular distance on a 3D unit sphere using the Haversine formula
+        double dLat = latitude - pin.latitude;
+        double dLon = longitude - pin.longitude;
+
+        double a = std::sin(dLat / 2.0) * std::sin(dLat / 2.0) +
+        std::cos(pin.latitude) * std::cos(latitude) *
+        std::sin(dLon / 2.0) * std::sin(dLon / 2.0);
+
+        double angularDistance = 2.0 * std::atan2(std::sqrt(a), std::sqrt(1.0 - a));
+
+        // If the coordinate falls within the physical extraction radius of this pin,
+        // calculate a smooth, sloped mathematical sinkhole (Gaussian curve)
+        if (angularDistance <= pin.headRadius) {
+            // Factor determines how close to the dead center of the pin the coordinate is
+            double normalizedDistance = angularDistance / pin.headRadius;
+
+            // Smooth bell-curve drop: max depletion at center, tapering out to 0 at the edge
+            float falloff = std::exp(-3.0f * static_cast<float>(normalizedDistance * normalizedDistance));
+
+            totalLocalDepletion += pin.depletionAmount * falloff;
+        }
+    }
+
+    // 3. Subtract the localized depletion from the natural base
+    float finalDensity = naturalMaxDensity - totalLocalDepletion;
+
+    // Explicit clamp to prevent any extreme negative mathematical dips from hitting the shader or cargo
+    return (finalDensity < 0.0f) ? 0.0f : finalDensity;
+}
+
+int32 PlanetDataMgr::CalculateEcuYield(PlanetSE* pSE, uint16 cycles, std::string& resourceBuffer,
+                                       std::unordered_map<uint16, PI::Heads>& heads,
+                                       std::vector<PI::ActiveEcuHead>& progressiveMasks) {
+
+    double amount = 0.0;
+    float scarcity = pSE->GetScarcity();
+    float abundance = pSE->GetAbundance();
+
+    // Loop through your 15-minute segments progressively to simulate depletion curves
+    for (uint16 cycle = 0; cycle < cycles; ++cycle) {
+        // Run through the active heads for this ECU pin and execute the math
+        for (auto &head : heads) {
+            // 1. Evaluate the dynamic coordinate density at this step
+            float currentLocalDensity = sPlanetDataMgr.EvaluatePointDensityWithDepletion(
+                resourceBuffer,
+                head.second.latitude,
+                head.second.longitude,
+                progressiveMasks
+            );
+
+            // 2. Calculate the yield for this 15-minute interval segment (0.25h)
+            float cycleYield = currentLocalDensity * 0.25f * scarcity * abundance;
+            if (cycleYield < 0.0f)
+                cycleYield = 0.0f;
+
+            amount += cycleYield;
+
+            // 3. Drive up the ephemeral local depletion member natively in RAM
+            // This ensures the hotspot smoothly degrades hour-by-hour over the time skip!
+            float stepDecay = cycleYield * 0.0015f;
+            head.second.currentDepletion += stepDecay;
+        }
+    }
+
+    return static_cast<int32>(EvE::max(floor(amount)));
+}
 
 const char* PlanetDataMgr::GetCommandName(int8 commandID)
 {
@@ -133,11 +254,12 @@ const char* PlanetDataMgr::GetCommandName(int8 commandID)
 
 const char* PlanetDataMgr::GetProximity(uint8 level) {
     switch (level) {
-        case 0:         return "Distant";
-        case 1:         return "Region";
-        case 2:         return "Constellation";
-        case 3:         return "System";
-        case 4:         return "Planet";
+        case 0:         return "Planet";
+        case 1:         return "Planet";
+        case 2:         return "System";
+        case 3:         return "Constellation";
+        case 4:         return "Region";
+        case 5:         return "Distant";
         default:        return "Invalid";
     }
 }
@@ -173,11 +295,12 @@ void PlanetDataMgr::GetProximityLimits(uint8 level, uint8& minBand, uint8& maxBa
 
 float PlanetDataMgr::GetScanningRange(uint8 level) {
     switch (level) {
-        case 0:         return 9.0f;
-        case 1:         return 7.0f;
-        case 2:         return 5.0f;
-        case 3:         return 3.0f;
-        case 4:         return 1.0f;
+        case 0:         return 0.0f;
+        case 1:         return 1.0f;
+        case 2:         return 3.0f;
+        case 3:         return 5.0f;
+        case 4:         return 7.0f;
+        case 5:         return 9.0f;
         default:        return 0.0f;
     }
 }
@@ -220,7 +343,6 @@ int PIDataMgr::Initialize()
     return 1;
 }
 
-// do we need anything from piPinMap?  - maps SchematicID to manuf facility's typeID
 void PIDataMgr::Populate()
 {
     double start = GetTimeMSeconds();
@@ -305,218 +427,80 @@ void PIDataMgr::GetSchematicData(uint8 schematicID, PI::Schematic& data)
  * noiseFactor = 0.8
  * baseValue = 1998.0
  */
+PyRep* PIDataMgr::GetProgramResultInfo(Colony* pColony, uint32 pinID, uint16 typeID, double headRadius, PyList* heads) {
+    if (pColony == nullptr || heads == nullptr || heads->size() == 0) {
+        _log(COLONY__ERROR, "PIDataMgr::GetProgramResultInfo() - missing data. Returning failRes.");
+        PyTuple* failRes = new PyTuple(3);
+        failRes->SetItem(0, new PyInt(0));
+        failRes->SetItem(1, new PyLong(9000000000LL));
+        failRes->SetItem(2, new PyInt(0));
+        return failRes;
+    }
 
-PyRep* PIDataMgr::GetProgramResultInfo(Colony* pColony, uint32 pinID, uint16 typeID, double headRadius, PyList* heads)
-{
-    //  ECU pinID, resource typeID, list of {headID, lat, long}, radius of head (small number...rad maybe?)
-    // def InstallProgram(self, pinID, typeID, headRadius):
-    // qtyToDistribute, cycleTime, numCycles = self.remoteHandler.GetProgramResultInfo(pinID, typeID, pin.heads, headRadius)
-
-    /** @todo get head interference and calculate decayFactor, noiseFactor and overlapFactor for heads.  */
-
-    /*
-     *    SEC = 10000000L
-     *    MIN = SEC * 60L
-     *    HOUR = MIN * 60L
-     * RADIUS_DRILLAREAMAX = 0.05
-     * RADIUS_DRILLAREAMIN = 0.01
-     * RADIUS_DRILLAREADIFF = RADIUS_DRILLAREAMAX - RADIUS_DRILLAREAMIN
-     *
-     * def GetProgramLengthFromHeadRadius(headRadius):
-     *    return ((headRadius - RADIUS_DRILLAREAMIN) / RADIUS_DRILLAREADIFF) * 335 + 1   << length in hours between 1 and 336  (336h = 14d)
-     * def GetCycleTimeFromProgramLength(programLength):
-     *    return 0.25 * 2 ^ max(0, math.floor(math.log(programLength / 25.0, 2)) + 1)
-     *
-     *        programLength = planetCommon.GetProgramLengthFromHeadRadius(headRadius)
-     *        cycleTime = planetCommon.GetCycleTimeFromProgramLength(programLength)
-     *        numCycles = int(programLength / cycleTime)
-     *        cycleTime = int(cycleTime * HOUR)
-     */
-    InventoryItemRef iRef = sItemFactory.GetItemRef(pinID);
-    //float cycleTime = iRef->GetAttribute(AttrPinCycleTime).get_float()/*300*/;
+    // 1. Calculate length, cycle time, and number of cycles using authentic client-mapped math
     double one = (headRadius - 0.01) / 0.04;
-    float length = one * 335.0f + 1.0f;  //length in hours between 1 and 336  (336h = 14d)
-    double two = std::log(length / 25.0);  //3.584962501
-    uint8 three = static_cast<uint8>(EvE::max(std::floor(two) + 1));    //4
-    float cycleTime = 0.25f * (2 xor three);  // this is (float) in hours (0.25, 0.5, etc)
+    float length = one * 335.0f + 1.0f; // Total runtime length in hours (1 to 336)
+    double two = std::log(length / 25.0);
+    uint8 three = static_cast<uint8>(EvE::max(std::floor(two) + 1.0));
+    // Simulates the client python calculation: 0.25 * 2^max(0, floor(log(L/25, 2)) + 1)
+    float cycleTime = 0.25f * static_cast<float>(1 << three);
 
     if (cycleTime < 0.01f) {
-        _log(COLONY__ERROR, "PlanetMgr::GetProgramResultInfo() - ecuPinID %u cycleTime < 0.01f.  setting to 1.0", pinID);
+        _log(COLONY__ERROR, "PIDataMgr::GetProgramResultInfo() - cycleTime invalid. Forcing to 0.25h");
         cycleTime = 0.25f;
     }
-    // modify time
-    cycleTime *= sConfig.rates.DrillCycleMod;
-    _log(PLANET__TRACE, "PlanetMgr::GetProgramResultInfo(test) - mod:%0.2f  cycleTime:%.2fh", sConfig.rates.DrillCycleMod, cycleTime);
 
-    uint16 numCycles = static_cast<uint16>(std::floor(length / cycleTime));   //73
-    int64 iCycleTime = (cycleTime * EvE::Time::Hour); // should be around 9000000000
+    uint16 numCycles = static_cast<uint16>(std::floor(length / cycleTime));
+    int64 iCycleTime = static_cast<int64>(std::ceil(cycleTime * EvE::Time::Hour));
 
-    uint32 qtyPerCycle = GetProgramOutput(iRef, iCycleTime);
-    qtyPerCycle *= heads->size();
+    // 3. Assemble your type-isolated dynamic depletion profile from active pins on the planet
+    std::vector<PI::ActiveEcuHead> progressiveMasks;
+    std::unordered_map<uint32, PI::ECU> ecuMap = pColony->GetECUMap();
+    for (const auto& activeEcu : ecuMap) {
+        if (activeEcu.second.programType != typeID)
+            continue;
+        for (const auto& activeHead : activeEcu.second.heads) {
+            PI::ActiveEcuHead mask;
+            mask.pinID = activeHead.second.ecuPinID;
+            mask.latitude = activeHead.second.latitude;
+            mask.longitude = activeHead.second.longitude;
+            mask.headRadius = activeEcu.second.headRadius;
+            mask.depletionAmount = activeHead.second.currentDepletion;
+            progressiveMasks.push_back(mask);
+        }
+    }
 
+    std::unordered_map<uint16, PI::Heads> tempHeads;
+    for (int i = 0; i < heads->size(); ++i) {
+        PyTuple* coord = reinterpret_cast<PyTuple*>(heads->GetItem(i));
+        uint32 headID = PyRep::IntegerValueU32(coord->GetItem(0));
+        PI::Heads tmpHead;
+            tmpHead.latitude = PyRep::FloatValue(coord->GetItem(1));
+            tmpHead.longitude = PyRep::FloatValue(coord->GetItem(2));
+            tmpHead.currentDepletion = 0.0f;
+        tempHeads.emplace(headID, tmpHead);
+    }
+
+    uint16 subCycles = static_cast<uint16>(round(cycleTime / 0.25f));
+    std::string& resourceBuffer = pColony->GetPlanet()->GetResourceBuffer(typeID);
+    int32 qtyPerCycle = sPlanetDataMgr.CalculateEcuYield(pColony->GetPlanet(), subCycles, resourceBuffer, tempHeads, progressiveMasks);
+
+    _log(PLANET__TRACE, "PIDataMgr::GetProgramResultInfo() UNIFIED - cycleTime:%.2fh, numCycles:%u, qtyPerCycle:%i",
+         cycleTime, numCycles, qtyPerCycle);
+
+    // Save state changes directly to the colony layout in RAM before confirming the network frame
     pColony->SetProgramResults(pinID, typeID, numCycles, headRadius, cycleTime, qtyPerCycle);
 
-    _log(PLANET__TRACE, "PlanetMgr::GetProgramResultInfo() - cycleTime:%.2fh, iCycleTime:%llius, length:%.2fh, numCycles:%u, qtyPerCycle:%u, headRadius:%.4f", \
-                cycleTime, iCycleTime, length, numCycles, qtyPerCycle, headRadius);
-
+    // 5. Pack responses into clean Python tuples for standard client synchronization
     PyTuple* res = new PyTuple(3);
-        res->SetItem(0, new PyInt(qtyPerCycle));    //qtyToDistribute  (2843)
-        res->SetItem(1, new PyLong(iCycleTime));    //cycleTime - in usec  (9000000000)
-        res->SetItem(2, new PyInt(numCycles));      //numCycles   (12)
+        res->SetItem(0, new PyInt(qtyPerCycle));   // Item 0: qtyToDistribute
+        res->SetItem(1, new PyLong(iCycleTime));   // Item 1: cycleTime in microseconds
+        res->SetItem(2, new PyInt(numCycles));     // Item 2: total program cycles
 
     if (is_log_enabled(PLANET__RES_DUMP))
         res->Dump(PLANET__RES_DUMP, "    ");
+
     return res;
-}
-
-// ecu program methods from client
-uint32 PIDataMgr::GetProgramOutput(InventoryItemRef iRef, int64 cycleTime, int64 startTime/*0*/, int64 currentTime/*0*/)
-{
-    if (startTime == 0)
-        startTime = GetFileTimeNow() - (2 * EvE::Time::Second);
-    if (currentTime == 0)
-        currentTime = GetFileTimeNow();
-
-    float cycleNum = static_cast<float>(EvE::max((currentTime - startTime + EvE::Time::Second) / (cycleTime - 1), 1));
-    float barWidth = cycleTime / EvE::Time::Second / 900.0f; //0.13888
-    float t = (cycleNum + 0.5f) * barWidth; // 0.20833
-    float qtyPerCycle = iRef->GetDefaultAttribute(AttrPinExtractionQuantity).get_float();
-    float decayValue = qtyPerCycle / (1.0f + t * 0.012f/*iRef->GetAttribute(AttrECUDecayFactor).get_float()*/);     // 1000
-    float phaseShift = std::pow(qtyPerCycle, 0.7f);   // 125.89254
-    float sinA = EvE::Trig::FastCos(phaseShift + t * 0.08333333f);      // 0.96985
-    float sinB = EvE::Trig::FastCos(phaseShift / 2 + t * 0.2f);  // 0.98784
-    float sinC = EvE::Trig::FastCos(t * 0.5f);                   // 0.99457
-    float sinStuff = (sinA + sinB + sinC) / 3.0f;  // 0.98408
-    sinStuff = EvE::max(sinStuff);
-    float barHeight = decayValue * (1.0f + (0.8f/*iRef->GetAttribute(AttrECUNoiseFactor).get_float()*/ * sinStuff));     //0.8
-
-    return static_cast<uint32>(std::floor(barHeight * barWidth));     // 0.13888 * 1000          16
-}
-
-uint32 PIDataMgr::GetProgramOutputPrediction(InventoryItemRef iRef, int64 cycleTime, uint32 numCycles/*0*/)
-{
-    if (numCycles > 120)    // hardcoded in client
-        numCycles = 120;
-
-    uint32 val = 0;
-    int64 startTime = GetFileTimeNow();
-
-    for (int i(1); i <= numCycles; ++i) {
-        int64 curTime = startTime + (i * cycleTime);
-        val += GetProgramOutput(iRef, cycleTime, startTime, curTime);
-    }
-    return val;
-}
-
-float PIDataMgr::GetMaxOutput(InventoryItemRef iRef, uint32 qtyPerCycle/*0*/, int64 cycleTime/*0*/)
-{
-    if (qtyPerCycle == 0)
-        qtyPerCycle = iRef->GetAttribute(AttrPinExtractionQuantity).get_uint32();
-    if (cycleTime == 0)
-        cycleTime = iRef->GetAttribute(AttrPinCycleTime).get_long() * EvE::Time::Second; // base time is 300s
-    //float scalar = iRef->GetAttribute(AttrECUNoiseFactor).get_float() + 1;
-    return (1.8f * qtyPerCycle) * cycleTime / EvE::Time::Second / 900.0f;
-}
-
-// Evaluates a single 9-float Order-2 Real SH block at a target vector location (by Gemini)
-float PIDataMgr::EvaluateSingleNodeSH(const float* c, float x, float y, float z) {
-    // Basis functions matching the generator
-    float Y_0_0  = 0.2820948f;
-    float Y_1_m1 = 0.4886025f * y;
-    float Y_1_0  = 0.4886025f * z;
-    float Y_1_1  = 0.4886025f * x;
-    float Y_2_m2 = 1.0925484f * x * y;
-    float Y_2_m1 = 1.0925484f * y * z;
-    float Y_2_0  = 0.3153916f * (3.0f * z * z - 1.0f);
-    float Y_2_1  = 1.0925484f * x * z;
-    float Y_2_2  = 0.5462742f * (x * x - y * y);
-
-    float density = (c[0]*Y_0_0) + (c[1]*Y_1_m1) + (c[2]*Y_1_0) + (c[3]*Y_1_1) +
-                    (c[4]*Y_2_m2) + (c[5]*Y_2_m1) + (c[6]*Y_2_0) + (c[7]*Y_2_1) + (c[8]*Y_2_2);
-
-    // This stops negative interference from breaking your extraction totals.
-    if (density < 0.0f)
-        return 0.0f;
-
-    return density;
-}
-
-// Fast float-to-hex stream encoder (by Gemini)
-std::string PIDataMgr::EncodeFloatsToHexBuffer(std::vector<float>& data) {
-    std::string hexResult = "";
-    if (data.empty())
-        return hexResult;
-
-    size_t length = data.size() * 8;
-    hexResult.resize(length);
-
-    // cast to raw byte stream
-    const uint8* byteStream = reinterpret_cast<const uint8*>(data.data());
-    size_t totalBytes = data.size() * sizeof(float);
-
-    size_t writeIdx = 0;
-    for (size_t i = 0; i < totalBytes; ++i) {
-        uint8 curByte = byteStream[i];
-        // extract high and low nibbles from the byte
-        hexResult[writeIdx++] = hexList[(curByte >> 4)] & 0x0F;
-        hexResult[writeIdx++] = hexList[curByte & 0x0F];
-    }
-    return hexResult;
-}
-
-// Converts your database string back into raw float data for evaluation (by Gemini)
-std::vector<float> PIDataMgr::DecodeHexBufferToFloats(const std::string& hexBuffer) {
-    std::vector<float> floats(225, 0.0f);
-    if (hexBuffer.length() < 1800)
-        return floats;
-
-    for (size_t i = 0; i < 225; ++i) {
-        uint32_t pattern = 0;
-        for (int b = 0; b < 4; ++b) {
-            std::string byteString = hexBuffer.substr((i * 8) + (b * 2), 2);
-            uint8_t byteVal = (uint8_t)strtol(byteString.c_str(), nullptr, 16);
-            pattern |= ((uint32_t)byteVal << (b * 8));
-        }
-        std::memcpy(&floats[i], &pattern, 4);
-    }
-    return floats;
-}
-
-// Core Execution: Calculates raw output yield and reduces the local heatmap intensity (by Gemini)
-float PIDataMgr::ExtractAndDepletePlanetResource(std::string& io_dbBuffer, const PI::Heads& headPin,
-                                                 float duration/*1.0f*/, float headRadius/*1.0f*/) {
-    std::vector<float> floatArray = DecodeHexBufferToFloats(io_dbBuffer);
-    float totalExtractedYield = 0.0f;
-
-    float pinX = EvE::Trig::FastCos(headPin.latitude) * EvE::Trig::FastCos(headPin.longitude);
-    float pinY = EvE::Trig::FastCos(headPin.latitude) * EvE::Trig::FastSin(headPin.longitude);
-    float pinZ = EvE::Trig::FastSin(headPin.latitude);
-
-    // 1. Loop through all 25 structural nodes to compile total local density
-    for (int nodeIdx = 0; nodeIdx < 25; ++nodeIdx) {
-        float* nodeCoeffs = &floatArray[nodeIdx * 9];
-        // Skip uninitialized or dead structural cells
-        if (nodeCoeffs[0] <= 0.001f)
-            continue;
-        // Evaluate baseline yield contributed specifically by this node mesh
-        float localNodeDensity = EvaluateSingleNodeSH(nodeCoeffs, pinX, pinY, pinZ);
-        // Clean out negative valleys so they don't break the calculator
-        if (localNodeDensity <= 0.0f)
-            continue;
-
-        totalExtractedYield += localNodeDensity * headRadius;
-        // 2. Dynamic Depletion Rule: Reduce the local node amplitude (c0) based on extraction
-        // Nodes directly under or close to the pin deplete significantly faster
-        float depletionAmount = localNodeDensity * 0.02f * duration;
-        nodeCoeffs[0] -= depletionAmount; // Reduce base amplitude height
-        if (nodeCoeffs[0] < 0.0f)
-            nodeCoeffs[0] = 0.0f; // Prevent flipping to negative resources
-    }
-
-    // 3. Re-encode the newly depleted map back into hex code for your database update
-    io_dbBuffer = sPlanetDataMgr.EncodeMultiNodeHexBuffer(floatArray);
-
-    return totalExtractedYield;
 }
 
 uint16 PIDataMgr::GetHeadType(uint16 ecuTypeID, uint16 programType) {
@@ -801,6 +785,23 @@ const char* PIDataMgr::GetProductName(uint16 typeID)
     }
     _log(PLANET__ERROR, "PIDataMgr::GetProductName() - Commodity product not found for typeID: %u", typeID);
     return "NULL";
+}
+
+const ItemType* PIDataMgr::GetPinType(uint32 pinID) {
+    if (pinID < 65535) // max uint16
+        return sItemFactory.GetType(pinID);
+    InventoryItemRef iRef = sItemFactory.GetItemRef(pinID);
+    if (iRef.get() == nullptr)
+        return nullptr;
+    return &(iRef->type());
+}
+
+const ItemType* PIDataMgr::GetPinType(uint16 typeID) {
+    return sItemFactory.GetType(typeID);
+}
+
+InventoryItemRef PIDataMgr::GetPinRef(uint32 pinID) {
+    return sItemFactory.GetItemRef(pinID);
 }
 
 const char* PIDataMgr::GetPinTypeName(uint16 typeID) {

@@ -14,13 +14,19 @@
 #include "planet/PlanetDB.h"
 
 
+class PlanetSE;
+
 // this class is a singleton object to have a common place for all (cached) planet data
 class PlanetDataMgr
 : public Singleton< PlanetDataMgr >
 {
 public:
     PlanetDataMgr();
-    ~PlanetDataMgr() { /* nothing do to yet */ }
+    PlanetDataMgr(PlanetDataMgr&&) =delete;
+    PlanetDataMgr(const PlanetDataMgr&) =delete;
+    PlanetDataMgr& operator=(PlanetDataMgr&&) =delete;
+    PlanetDataMgr& operator=(const PlanetDataMgr&) =delete;
+    ~PlanetDataMgr()                                    { /* nothing do to yet */ }
 
     // Initializes the Table:
     int Initialize();
@@ -36,10 +42,23 @@ public:
     // multipliers from baseline scanner dist rules
     float GetAbundanceMod(uint16 typeID);
 
-    std::string EncodeMultiNodeHexBuffer(const std::vector<float>& fullFloatArray);
+    std::string HexToBinary(const std::string& hexInput);
+    // Converts your database string back into raw float data for evaluation
+    std::string BinaryToHex(const std::string& binaryInput);
+    // Evaluates a single SH block at a target vector location
+    float EvaluateSingleNodeSH(const std::string& binaryBuffer, float latitude, float longitude);
+    // Calculates raw output yield and reduces the local heatmap intensity
+    float EvaluatePointDensityWithDepletion(const std::string& binaryBuffer,
+                                            double latitude, double longitude,
+                                            const std::vector<PI::ActiveEcuHead>& activePlanetPins);
+
+    int32 CalculateEcuYield(PlanetSE* pSE, uint16 cycles, std::string& resourceBuffer,
+                            std::unordered_map<uint16, PI::Heads>& heads,
+                            std::vector<PI::ActiveEcuHead>& progressiveMasks);
 
 protected:
     void Populate();
+
 
 private:
     PlanetDB m_db;
@@ -52,6 +71,7 @@ private:
 
 
 class Colony;
+class ItemType;
 
 // this class is a singleton object to have a common place for all (cached) PI schematic and program data
 class PIDataMgr
@@ -59,38 +79,33 @@ class PIDataMgr
 {
 public:
     PIDataMgr();
+    PIDataMgr(PIDataMgr&&) =delete;
+    PIDataMgr(const PIDataMgr&) =delete;
+    PIDataMgr& operator=(PIDataMgr&&) =delete;
+    PIDataMgr& operator=(const PIDataMgr&) =delete;
     ~PIDataMgr()                                        { /* do nothing here */ }
 
     // Initializes the Table:
     int Initialize();
 
-    PyRep* GetProgramResultInfo( Colony* pColony, uint32 pinID, uint16 typeID, double headRadius, PyList* heads);
+    PyRep* GetProgramResultInfo(Colony* pColony, uint32 pinID, uint16 typeID, double headRadius, PyList* heads);
 
     void GetSchematicData(uint8 schematicID, PI::Schematic& data);
 
     uint8 GetProductLevel(uint16 typeID);
     uint16 GetHeadType(uint16 ecuTypeID, uint16 programType);
 
-    float GetMaxOutput( InventoryItemRef iRef, uint32 qtyPerCycle = 0, int64 cycleTime = 0 );
-    uint32 GetProgramOutput(InventoryItemRef iRef, int64 cycleTime, int64 startTime=0, int64 currentTime=0);
-    uint32 GetProgramOutputPrediction(InventoryItemRef iRef, int64 cycleTime, uint32 numCycles = 0);
-    // Core Execution: Calculates raw output yield and reduces the local heatmap intensity
-    float ExtractAndDepletePlanetResource( std::string& io_dbBuffer, const PI::Heads& headPin,
-                                           float duration=1.0f, float headRadius=1.0f);
-
+    // test your return; this can return null
+    const ItemType* GetPinType(uint32 pinID);
+    // test your return; this can return null
+    const ItemType* GetPinType(uint16 typeID);
+    InventoryItemRef GetPinRef(uint32 pinID);
     const char* GetPinName(uint32 pinID);
     const char* GetProductName(uint16 typeID);
     const char* GetPinTypeName(uint16 typeID);
 
-    std::string EncodeFloatsToHexBuffer(std::vector<float>& data);
-    // Converts your database string back into raw float data for evaluation
-    std::vector<float> DecodeHexBufferToFloats(const std::string& hexBuffer);
-
 protected:
     void Populate();
-
-    // Evaluates a single 9-float Order-2 Real SH block at a target vector location
-    float EvaluateSingleNodeSH(const float* c, float x, float y, float z);
 
 private:
     PlanetDB m_db;

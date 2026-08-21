@@ -49,6 +49,8 @@ Planet::Planet()
 PlanetSE::PlanetSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
 : StaticSystemEntity(self, services, system),
 pCO(nullptr),
+m_abundance(sPlanetDataMgr.GetAbundanceMod(self->typeID())),
+m_scarcity(system->GetSecValue()),
 m_data(PlanetResourceData())
 {
 }
@@ -78,7 +80,6 @@ PlanetSE::~PlanetSE()
         cur.second->Shutdown();
         SafeDelete(cur.second);
     }
-
 }
 
 //TODO:  update this to change data on *some yet-unknown* timeframe
@@ -97,24 +98,50 @@ bool PlanetSE::LoadExtras() {
         m_data.type_4 = typeIDs.at(3);
         m_data.type_5 = typeIDs.at(4);
 
-        float sysSec(m_system->GetSecValue()); // 0.1 - 2.0
-        float baseScarcityMultiplier = (1.1f - sysSec);
-        float baseMin = sysSec * 10.0f;
-        float abundanceMod = sPlanetDataMgr.GetAbundanceMod(m_self->typeID());
+        /* distribution matrix
+         *  1.0 = min:  0.0  max:  0.0
+         *  0.7 = min:  7.6  max: 66.7
+         *  0.3 = min: 22.6  max: 69.1
+         * -0.2 = min: 49.2  max:121.1
+         * -1.0 = min:110.0  max:150.9
+         */
+        float baseMin =  0.0f;
+        float baseMax =  0.0f;
+        float secDelta = m_system->GetSecValue() - 0.1f;
+        if (secDelta > 0.01f) {
+            baseMin = (20.0f * secDelta) + (17.5f * (secDelta * secDelta));
+            baseMax = 112.0f * pow(secDelta, 0.43f);
+        }
 
-        // Set overall quantity tracking floats
-        m_data.dist_1 = (MakeRandomFloat(baseMin, 75.0f) * sysSec + MakeRandomFloat(0.0f, 4.0f)) * abundanceMod;
-        m_data.dist_2 = (MakeRandomFloat(baseMin, 75.0f) * sysSec + MakeRandomFloat(0.0f, 4.0f)) * abundanceMod;
-        m_data.dist_3 = (MakeRandomFloat(baseMin, 75.0f) * sysSec + MakeRandomFloat(0.0f, 4.0f)) * abundanceMod;
-        m_data.dist_4 = (MakeRandomFloat(baseMin, 75.0f) * sysSec + MakeRandomFloat(0.0f, 4.0f)) * abundanceMod;
-        m_data.dist_5 = (MakeRandomFloat(baseMin, 75.0f) * sysSec + MakeRandomFloat(0.0f, 4.0f)) * abundanceMod;
+        if (baseMin < 0.0f)
+            baseMin = 0.0f;
+        if (baseMax > 150.0f)
+            baseMax = 150.0f;
 
-        // Populate every database buffer string with up to 25 layered hotspots
-        m_data.buffer_1 = GenerateResourceBuffer(baseScarcityMultiplier, abundanceMod);
-        m_data.buffer_2 = GenerateResourceBuffer(baseScarcityMultiplier, abundanceMod);
-        m_data.buffer_3 = GenerateResourceBuffer(baseScarcityMultiplier, abundanceMod);
-        m_data.buffer_4 = GenerateResourceBuffer(baseScarcityMultiplier, abundanceMod);
-        m_data.buffer_5 = GenerateResourceBuffer(baseScarcityMultiplier, abundanceMod);
+        // abundance = 0.85 - 1.5
+        // Set overall quantity [11.4, 154.275]
+        m_data.dist_1 = (MakeRandomFloat(baseMin, baseMax) * m_abundance);
+        m_data.dist_2 = (MakeRandomFloat(baseMin, baseMax) * m_abundance); // + MakeRandomFloat(1.0f, 5.0f)) * sysSec;
+        m_data.dist_3 = (MakeRandomFloat(baseMin, baseMax) * m_abundance); // + MakeRandomFloat(1.0f, 5.0f)) * sysSec;
+        m_data.dist_4 = (MakeRandomFloat(baseMin, baseMax) * m_abundance); // + MakeRandomFloat(1.0f, 5.0f)) * sysSec;
+        m_data.dist_5 = (MakeRandomFloat(baseMin, baseMax) * m_abundance); // + MakeRandomFloat(1.0f, 5.0f)) * sysSec;
+
+        // Populate planet buffer string with 18 bands
+        sLog.Warning("PlanetLoad", "%s - generating buffer for %s (%u)", \
+                m_self->name(), sDataMgr.GetTypeName(m_data.type_1), m_data.type_1);
+        m_data.buffer_1 = GenerateResourceBuffer(m_data.dist_1);
+        sLog.Warning("PlanetLoad", "%s - generating buffer for %s (%u)", \
+                m_self->name(), sDataMgr.GetTypeName(m_data.type_2), m_data.type_2);
+        m_data.buffer_2 = GenerateResourceBuffer(m_data.dist_2);
+        sLog.Warning("PlanetLoad", "%s - generating buffer for %s (%u)", \
+                m_self->name(), sDataMgr.GetTypeName(m_data.type_3), m_data.type_3);
+        m_data.buffer_3 = GenerateResourceBuffer(m_data.dist_3);
+        sLog.Warning("PlanetLoad", "%s - generating buffer for %s (%u)", \
+                m_self->name(), sDataMgr.GetTypeName(m_data.type_4), m_data.type_4);
+        m_data.buffer_4 = GenerateResourceBuffer(m_data.dist_4);
+        sLog.Warning("PlanetLoad", "%s - generating buffer for %s (%u)", \
+                m_self->name(), sDataMgr.GetTypeName(m_data.type_5), m_data.type_5);
+        m_data.buffer_5 = GenerateResourceBuffer(m_data.dist_5);
 
         m_data.origBuf_1 = m_data.buffer_1;
         m_data.origBuf_2 = m_data.buffer_2;
@@ -150,15 +177,6 @@ void PlanetSE::Process() {
 
 PyRep* PlanetSE::GetResourceData(Call_ResourceDataDict& dict) {
     // will update this to use PI skills (sent in dict) as system grows..not sure how yet.
-    /** @todo  this needs a minor rewrite....bands are dictated by client request.
-     * bufferData is random fill based on bands, but kept per planet
-     * will have to create a method to fill buffer with random values, rather than fill with single value
-     *  the full 30 band data buffer will be created on planet creation for each resource, and the "bands"
-     * are the "layers" of the resource, per se, with more layers giving higher degree of accuracy.
-     *  the client sends depth request, and that will determine the bands and buffer size to return.
-     * the requested bands will have to be taken from the full 30-band data buffer, as needed.
-     * this resource data *MAY* change over the course of the running server, but not decided how/when/why yet.
-     */
 
     /*
     dict.resourceTypeID;
@@ -173,24 +191,46 @@ PyRep* PlanetSE::GetResourceData(Call_ResourceDataDict& dict) {
     if (itr == m_typeBuffers.end())
         return nullptr;
 
+    if (dict.newBand > 18) {
+        sLog.Error("Planet::GetResourceData", "Band > 18: %i", dict.newBand);
+        return nullptr;
+    }
+
     int size = dict.newBand * dict.newBand * 4;         // 18 band SH (18*18*4 = 1296)
     std::string data = itr->second.current.substr(0, size);
     // adjust data for system security.  not sure how to make it 'less' yet
     if (is_log_enabled(PLANET__DEBUG)) {
-        _log(PLANET__DEBUG, "PlanetSE::GetResourceData() for %s (%u) using remoteSense: %u, planetology: %u, advPlanetology: %u - updateTime: %lu, proximity: %s, newBand: %u, oldBand: %u, bufferSize: %u", \
+        float dist = 0.0f;
+        if (dict.resourceTypeID == m_data.type_1) {
+            dist = m_data.dist_1;
+        } else if (dict.resourceTypeID == m_data.type_2) {
+            dist = m_data.dist_2;
+        } else if (dict.resourceTypeID == m_data.type_3) {
+            dist = m_data.dist_3;
+        } else if (dict.resourceTypeID == m_data.type_4) {
+            dist = m_data.dist_4;
+        } else {
+            dist = m_data.dist_5;
+        }
+
+        _log(PLANET__DEBUG, "PlanetSE::GetResourceData() for %s (%u) using remoteSense: %u, planetology: %u, advPlanetology: %u - updateTime: %lu, proximity: %s, newBand: %u, oldBand: %u, dist:%0.5f,  bufferSize: %i", \
                 sPIDataMgr.GetProductName(dict.resourceTypeID), dict.resourceTypeID, dict.remoteSensing, dict.planetology, dict.advancedPlanetology, \
-                dict.updateTime, sPlanetDataMgr.GetProximity(dict.proximity), dict.newBand, dict.oldBand, size);
-        _log(PLANET__DEBUG, "PlanetSE::GetResourceData() for %s:  %s", sPIDataMgr.GetProductName(dict.resourceTypeID), data.c_str());
+                dict.updateTime, sPlanetDataMgr.GetProximity(dict.proximity), dict.newBand, dict.oldBand, dist, size);
+
+        const float* floatArray = reinterpret_cast<const float*>(data.data());
+        std::cout << "\n=== SH Dump ===" << std::endl;
+        for (int i = 0; i < 18; ++i)
+            std::cout << "Index [" << i << "]: " << floatArray[i] << std::endl;
     }
+
     PyDict* args = new PyDict();
         args->SetItemString("data", new PyString(data));
         args->SetItemString("numBands", new PyInt(dict.newBand));
         args->SetItemString("proximity", new PyInt(dict.proximity));
-    //PyIncRef(args);
-    PyObject* rtn = new PyObject("util.KeyVal", args);
+    PyObject* res = new PyObject("util.KeyVal", args);
     if (is_log_enabled(PLANET__RES_DUMP))
-        rtn->Dump(PLANET__RES_DUMP, "   ");
-    return rtn;
+        res->Dump(PLANET__RES_DUMP, "   ");
+    return res;
 }
 
 PyRep* PlanetSE::GetPlanetResourceInfo() {
@@ -215,7 +255,7 @@ PyRep* PlanetSE::GetPlanetInfo(Colony* pColony) {
     if (pColony->HasColony()/* and sConfig.cosmic.PIEnabled*/) {
         //pColony->Update();
         args->SetItem("level", new PyInt(pColony->GetLevel()));
-        args->SetItem("pins", pColony->GetPins());
+        args->SetItem("pins", pColony->GetPins(false));
         args->SetItem("links", pColony->GetLinks());
         args->SetItem("routes", pColony->GetRoutes());
         args->SetItem("currentSimTime", new PyLong(pColony->GetSimTime()));
@@ -228,11 +268,8 @@ PyRep* PlanetSE::GetPlanetInfo(Colony* pColony) {
 }
 
 PyRep* PlanetSE::GetExtractorsForPlanet(int32 planetID) {
-    // NOTE this gets ALL extractors on this planet
-    // returns typeID, ownerID, latitude?, longitude?
-
+    //SELECT pinID, typeID, ownerID, latitude, longitude FROM piPins WHERE isECU = 1
     DBQueryResult res;
-    // {for ecu in planetID}  SELECT `headID`, `typeID`, `ownerID`, `latitude`, `longitude` FROM `piECUHeads`
     PlanetDB::GetExtractorsForPlanet(planetID, res);
 
     PyList* list = new PyList();
@@ -302,13 +339,13 @@ void PlanetSE::CreateCustomsOffice() {
     srandom(GetID());  //this is the only place random() is used....other random functions use rand() as it's non-repeatable.
     int rand = random();
     double j = (((rand / RAND_MAX) - 1.0f) / 3.0f);
-    double s = 20 * std::pow(0.025f * (10 * std::log10(radius / 1000000) - 39), 20) + 0.5f;
+    double s = 20 * pow(0.025f * (10 * log10(radius / 1000000) - 39), 20) + 0.5f;
     s = EvE::max(0.5f, EvE::min(s, 10.5f));
-    double t = std::asin((warpInPoint.x / std::fabs(warpInPoint.x)) * (warpInPoint.z / std::sqrt(std::pow(warpInPoint.x, 2) + std::pow(warpInPoint.z, 2)))) + j;
+    double t = asin((warpInPoint.x / fabs(warpInPoint.x)) * (warpInPoint.z / sqrt(pow(warpInPoint.x, 2) + pow(warpInPoint.z, 2)))) + j;
     uint32 d = radius * (s + 1) + 1000000;
-    warpInPoint.x += (d * EvE::Trig::FastSin(t));
-    warpInPoint.y += (0.5f * radius * EvE::Trig::FastSin(j));
-    warpInPoint.z -= (d * EvE::Trig::FastCos(t));
+    warpInPoint.x += (d * sin(t));
+    warpInPoint.y += (0.5f * radius * sin(j));
+    warpInPoint.z -= (d * cos(t));
 
     // set new position in middle of grid
     int64 bubbleDia = (BUBBLE_RADIUS_METERS * 2);
@@ -328,45 +365,92 @@ void PlanetSE::CreateCustomsOffice() {
     m_system->AddEntity(pCO);
 }
 
+// resource node array builder for 18 order SH  (by Gemini)
+/*  testing values to figure out SH data
+ * idx0 = base? (l=0)  1.0f = 0.28 & 5u/h base rate
+ * [idx0: 5.0f] & [idx1: 2.0f] = 0.98 & 18u/h base rate
+ * idx0: 1.0 & idx1:50.0 (l=1, m=0)  = nothing
+ *
+ */
+std::string PlanetSE::GenerateResourceBuffer(float baseDistQuantity) {
+    const size_t TOTAL_FLOATS_REQUIRED = 324;
+    std::vector<float> resourceFloatArray(TOTAL_FLOATS_REQUIRED, 0.0f);
 
-// Procedural array builder generating up to 25 layered SH hotspots per material type  (by Gemini)
-std::string PlanetSE::GenerateResourceBuffer(float baseScarcityMultiplier, float abundanceMod) {
-    // 225 continuous floats storing our 25 discrete nodes
-    std::vector<float> resourceFloatArray(225, 0.0f);
+    float minWaveScale  = sConfig.rates.MinWaveMultiplier;
+    float maxWaveScale  = sConfig.rates.MaxWaveMultiplier;
+    float waveDensity   = sConfig.rates.WavePopulationDensity;
 
-    // Determine how many active hot spots this planet has (e.g., 8 to 15 nodes for rich distribution)
-    int activeHotspots = MakeRandomInt(8, 15);
+    // 2. Assign the Master Baseline Floor (Index 0)
+    float globalFloor = baseDistQuantity * sConfig.rates.DistributionScalar;
+    resourceFloatArray[0] = globalFloor; //idx[0] = l0 - global
+    resourceFloatArray[1] = globalFloor *  0.16f; //idx[1] = l1.x
+    // skip these for 'zebra stripes'
+    resourceFloatArray[2] = globalFloor *  0.11f; //idx[2] = l1.y
+    resourceFloatArray[3] = globalFloor * -0.14f; //idx[3] = l1.z
 
-    for (int nodeIdx = 0; nodeIdx < activeHotspots; ++nodeIdx) {
-        // Find a distinct random coordinate direction vector over the spherical planet surface
-        float theta = MakeRandomFloat(0.0f, 2.0f * M_PI);
-        float phi = acos(MakeRandomFloat(-1.0f, 1.0f));
+    // 3. Continuous Loop to Populate ALL 323 Trailing Wave Indices Natively
+    // loop thru the band (degree)
+    for (int l = 2; l < 18; ++l) {
+        size_t startIdx = l * l;
+        size_t endIdx   = ((l + 1) * (l + 1)) - 1;
 
-        // Project onto Cartesian space matching EVE Online's Y-Up transformation matrix rules
-        float x = sin(phi) * cos(theta);
-        float y = cos(phi);
-        float z = sin(phi) * sin(theta);
+        // Frequency Decay Factor: Higher bands get progressively smaller weights
+        float frequencyDecay = 1.0f / static_cast<float>(l);
 
-        // Balance intensity using security status and localized type abundance
-        float intensity = MakeRandomFloat(10.0f, 95.0f) * baseScarcityMultiplier * abundanceMod;
+        bool alternate = true;
+        for (size_t i = startIdx; i <= endIdx; ++i) {
+            if (i >= TOTAL_FLOATS_REQUIRED)
+                break;
 
-        // Calculate the starting array pointer offset for this specific node block
-        size_t offset = nodeIdx * 9;
+            if (MakeRandomFloat() < waveDensity) {
+                // Base the wave amplitude directly as a configured percentage fraction of Index 0
+                float baseWaveWeight = MakeRandomFloat(minWaveScale, maxWaveScale) * globalFloor * frequencyDecay;
 
-        // Generate and assign the unique 9 basis functions for this hotspot position
-        resourceFloatArray[offset + 0] = intensity * 0.2820948f;               // l=0, m=0
-        resourceFloatArray[offset + 1] = intensity * 0.4886025f * y;           // l=1, m=-1
-        resourceFloatArray[offset + 2] = intensity * 0.4886025f * z;           // l=1, m=0
-        resourceFloatArray[offset + 3] = intensity * 0.4886025f * x;           // l=1, m=1
-        resourceFloatArray[offset + 4] = intensity * 1.0925484f * x * y;       // l=2, m=-2
-        resourceFloatArray[offset + 5] = intensity * 1.0925484f * y * z;       // l=2, m=-1
-        resourceFloatArray[offset + 6] = intensity * 0.3153916f * (3.0f * z * z - 1.0f); // l=2, m=0
-        resourceFloatArray[offset + 7] = intensity * 1.0925484f * x * z;       // l=2, m=1
-        resourceFloatArray[offset + 8] = intensity * 0.5462742f * (x * x - y * y);       // l=2, m=2
+                // Alternating signs to provide full phase variations (negatives/positives)
+                if (alternate) {
+                    baseWaveWeight *= -1.0f;
+                }
+
+                alternate = !alternate;
+
+                // Apply a minor, sub-index orientation noise so shapes remain completely organic
+                float orientationNoise = MakeRandomFloat(0.85f, 1.15f);
+                resourceFloatArray[i] = baseWaveWeight * orientationNoise;
+            } else {
+                // if density fails, apply slight 'background noise'
+                resourceFloatArray[i] = MakeRandomFloat(0.01f, 0.03f) * globalFloor * frequencyDecay;
+            }
+        }
     }
 
-    // Remaining node blocks default to 0.0f, acting as clean padding
-    return sPlanetDataMgr.EncodeMultiNodeHexBuffer(resourceFloatArray);
+    // 4. Post-Processing Safety Sweep (Prevents any localized clipping anomalies)
+    for (size_t i = 1; i < TOTAL_FLOATS_REQUIRED; ++i) {
+        float maxNegativeAllowed = -0.35f * resourceFloatArray[0];
+        if (resourceFloatArray[i] < maxNegativeAllowed) {
+            resourceFloatArray[i] = maxNegativeAllowed * MakeRandomFloat(0.8f, 0.9f);
+        }
+        float maxPositiveAllowed = 1.15f * resourceFloatArray[0];
+        if (resourceFloatArray[i] > maxPositiveAllowed) {
+            resourceFloatArray[i] = maxPositiveAllowed * MakeRandomFloat(0.8f, 0.9f);
+        }
+    }
+
+/*
+    // 3. CONSOLE DEBUG DUMP (Safe Float Unpacking for GCC 4.9.2)
+    std::cout << "\n=== [ALASIYA-EVE SH GENERATOR] ===" << std::endl;
+    std::cout << "Input Dist Quantity: " << baseDistQuantity << std::endl;
+    std::cout << "Index [0] (Base Floor): " << resourceFloatArray[0] << std::endl;
+    std::cout << "Index [1] (Macro Wave): " << resourceFloatArray[1] << std::endl;
+    std::cout << "Index [4] (Micro Wave): " << resourceFloatArray[4] << std::endl;
+    std::cout << "Index [8] (Micro Wave): " << resourceFloatArray[8] << std::endl;
+    std::cout << "Index [12] (Micro Wave): " << resourceFloatArray[12] << std::endl;
+    std::cout << "===================================\n" << std::endl;
+*/
+    // 5. Atomic Direct Cast Serialization to safe binary container
+    std::string binaryContainer(reinterpret_cast<const char*>(resourceFloatArray.data()),
+                                TOTAL_FLOATS_REQUIRED * sizeof(float));
+
+    return binaryContainer;
 }
 
 // Dynamic-Length Resource Replenishment Routine (by Gemini)
@@ -374,43 +458,38 @@ void PlanetSE::ReplenishResources() {
     if (m_typeBuffers.empty())
         return;
 
-    float regenRate = 0.05f;  //sConfig.cosmic.PIRegenRate;
+    float regenRate = sConfig.rates.PIRegenRate;
     // this will need to be in hours.
     float elapsedTime = GetElapsedHours(m_data.replenishTime);
     if (elapsedTime <= 0.1f)
         return;
-
+/*
     bool change = false;
     for (auto &buffer : m_typeBuffers) {
         change = false;
         PlanetResourceBuffer &resource = buffer.second;
-        std::vector<float> currentHeat = sPIDataMgr.DecodeHexBufferToFloats(resource.current);
-        std::vector<float> spawnedHeat = sPIDataMgr.DecodeHexBufferToFloats(resource.spawned);
+        std::vector<float> currentHeat = sPlanetDataMgr.DecodeHexBufferToFloats(resource.current);
+        std::vector<float> spawnedHeat = sPlanetDataMgr.DecodeHexBufferToFloats(resource.spawned);
 
-        int64 activeNodes = currentHeat.size() / 9;
+        if ((currentHeat.size() < 324) or (spawnedHeat.size() < 324))
+            continue;
 
-        for (uint16 nodeIdx = 0; nodeIdx < activeNodes; ++nodeIdx) {
-            if ((nodeIdx * 9) >= spawnedHeat.size())
-                break;
-
-            float* currentCoeffs = &currentHeat[nodeIdx * 9];
-            const float* spawnedCoeffs = &spawnedHeat[nodeIdx * 9];
-            float maxAmplitude = spawnedCoeffs[0];
-            if (maxAmplitude <=0.01f)
-                continue;
-            if (currentCoeffs[0] < maxAmplitude) {
+        for (size_t i = 0; i < 324; ++i) {
+            float& maxAmplitude = spawnedHeat[i];
+            float& curAmplitude = currentHeat[i];
+            if (curAmplitude < maxAmplitude) {
                 float growth = maxAmplitude * regenRate * elapsedTime;
-                currentCoeffs[0] += growth;
+                curAmplitude += growth;
 
-                if (currentCoeffs[0] > maxAmplitude)
-                    currentCoeffs[0] = maxAmplitude;
+                if (curAmplitude > maxAmplitude)
+                    curAmplitude = maxAmplitude;
                 change = true;
             }
         }
 
         if (change) {
-            resource.current = sPIDataMgr.EncodeFloatsToHexBuffer(currentHeat);
+            resource.current = sPlanetDataMgr.EncodeFloatsToHexBuffer(currentHeat);
         }
     }
-
+    */
 }
