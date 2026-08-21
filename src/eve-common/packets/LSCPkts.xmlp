@@ -3,7 +3,6 @@
 <elements>
 
   <include file="packets/General.h" />
-  <include file="packets/ObjectCaching.h" />
 
   <elementDef name="ChannelInfo">
     <objectInline>
@@ -227,14 +226,6 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="RspGetChannels">
-    <tupleInline>
-      <substreamInline>
-          <element name="cachedcall" type="objectCaching_CachedMethodCallResult" />
-      </substreamInline>
-    </tupleInline>
-  </elementDef>
-
   <elementDef name="CallJoinChannels">
     <tupleInline>
       <list name="channels" />
@@ -365,106 +356,6 @@
     <tupleInline>
       <raw name="channel" />
       <int name="unsubscribe" />
-    </tupleInline>
-  </elementDef>
-
-  <elementDef name="Call_Page">
-    <tupleInline>
-      <listInt name="recipients" />
-      <wstring name="subject" />
-      <wstring name="body" />
-    </tupleInline>
-  </elementDef>
-
-  <elementDef name="NotifyOnMessage">
-    <tupleInline>
-      <listInt name="recipients" />
-      <!-- 1: messageID: this might be a more complex type in the future.  -->
-      <int name="messageID" />
-      <int name="senderID" />
-      <string name="subject" />
-      <!-- not sure _exactly_ what timestamp this should be -->
-      <long name="sentTime" />
-    </tupleInline>
-  </elementDef>
-
-  <elementDef name="Call_DeleteMessages">
-    <tupleInline>
-      <!-- most likely this could be an LSCChannelMultiDesc too... -->
-      <int name="channelID" />
-      <listInt name="messages" />
-    </tupleInline>
-  </elementDef>
-
-  <elementDef name="Rsp_GetEVEMailDetails">
-    <tupleInline>
-      <!-- first the actual message -->
-      <objectInline>
-        <stringInline value="util.Row" />
-        <dictInline>
-          <dictInlineEntry key="header">
-              <listInline>
-              <stringInline value="messageID" />
-              <stringInline value="senderID" />
-              <stringInline value="subject" />
-              <stringInline value="body" />
-              <stringInline value="created" />
-              <stringInline value="mimeType" />
-              <stringInline value="channelID" />
-              <stringInline value="deleted" />
-            </listInline>
-          </dictInlineEntry>
-          <dictInlineEntry key="line">
-              <listInline>
-              <int name="messageID" />
-              <int name="senderID" />
-              <string name="subject" />
-              <string name="body" />
-              <long name="created" />
-              <!-- mimeType is a nested row... silly CCP -->
-              <objectInline name="mimeType">
-                <stringInline value="util.Row" />
-                <dictInline>
-                  <dictInlineEntry key="header">
-                    <listInline>
-                      <stringInline value="mimeTypeID" />
-                      <stringInline value="mimeType" />
-                      <stringInline value="binary" />
-                    </listInline>
-                  </dictInlineEntry>
-                  <dictInlineEntry key="line">
-                    <listInline>
-                      <int name="mimeTypeID" />
-                      <string name="mimeType" />
-                      <int name="binary" />
-                    </listInline>
-                  </dictInlineEntry>
-                </dictInline>
-              </objectInline>
-              <int name="channelID" />
-              <int name="deleted" />
-            </listInline>
-          </dictInlineEntry>
-        </dictInline>
-      </objectInline>
-      <!-- then any attachments. this is a util.Rowset -->
-      <!-- this might not work due to a type1 string issue in rowclass here,
-      if that is the case, then change this over to a <list> temporarily -->
-      <element name="attachments" type="util_Rowset" />
-    </tupleInline>
-  </elementDef>
-
-  <elementDef name="Call_LookupStringInt">
-    <tupleInline>
-      <wstring name="searchString" />
-      <int name="searchOption" />
-    </tupleInline>
-  </elementDef>
-
-  <elementDef name="Call_LookupIntString">
-    <tupleInline>
-      <int name="searchOption" />
-      <wstring name="searchString" />
     </tupleInline>
   </elementDef>
 
