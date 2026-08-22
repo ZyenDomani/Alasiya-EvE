@@ -353,22 +353,32 @@ void StaticDataMgr::Populate() {
     sLog.Cyan("    StaticDataMgr", "%lu Static Entity data sets loaded in %.3fms.", m_staticData.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
+    ManagerDB::GetLocationNames(*res);
+    m_locationName.reserve(res->GetRowCount());
+    while (res->GetRow(row)) {
+        //SELECT locationID, locationName FROM mapDenormalize
+        m_locationName.emplace(row.GetUInt(0), row.GetText(1));
+    }
+
     MapDB::GetStationCount(*res);
     while (res->GetRow(row)) {
         //SELECT map.solarSystemID, count(sta.stationID) FROM staStations sta
         m_stationCount.emplace(row.GetUInt(0), row.GetUInt(1));
     }
     StationDB::GetStationRegion(*res);
+    m_stationRegion.reserve(res->GetRowCount());
     while (res->GetRow(row)) {
         //SELECT stationID, regionID FROM staStations
         m_stationRegion.emplace(row.GetUInt(0), row.GetUInt(1));
     }
     StationDB::GetStationConstellation(*res);
+    m_stationConst.reserve(res->GetRowCount());
     while (res->GetRow(row)) {
         //SELECT stationID, constellationID FROM staStations
         m_stationConst.emplace(row.GetUInt(0), row.GetUInt(1));
     }
     StationDB::GetStationSystem(*res);
+    m_stationSystem.reserve(res->GetRowCount());
     while (res->GetRow(row)) {
         //SELECT stationID, solarSystemID FROM staStations
         m_stationSystem.emplace(row.GetUInt(0), row.GetUInt(1));
@@ -1661,6 +1671,27 @@ bool StaticDataMgr::GetSolarSystemData(uint32 locationID, SolarSystemData& data)
     data = itr->second;
     return true;
 }
+
+const char* StaticDataMgr::GetLocationName(uint32 locationID) {
+    /*  no longer needed
+    if (IsRegionID(locationID)) {
+        return m_locationName
+    } else if (IsConstellationID(locationID)) {
+        m_locationName
+    } else if (IsSolarSystemID(locationID)) {
+        return GetSystemName(locationID);
+    } else if (IsStationID(locationID)) {
+        return GetSystemName(locationID);
+    }
+    */
+    std::unordered_map<uint32, std::string>::const_iterator itr = m_locationName.find(locationID);
+    if (itr != m_locationName.end())
+        return itr->second.c_str();
+
+    _log(DATA__MESSAGE, "Failed to query name for location %u: Data not found.", locationID);
+    return "Invalid";
+}
+
 
 const char* StaticDataMgr::GetSystemName(uint32 locationID) {
     if (IsStation(locationID)) {

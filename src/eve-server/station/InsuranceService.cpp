@@ -232,7 +232,9 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
             body += "Reference ID: xxxxx <br>"; // put contractID here
             body += "jav";
 
-    m_manager->lsc_service->SendMail(corpSCC, call.client->GetCharacterID(), subject, body);
+
+            //TODO:  FIXME
+            //m_manager->lsc_service->SendMail(corpSCC, call.client->GetCharacterID(), subject, body);
 
     // TODO: create calendar event for insurance expiry
 

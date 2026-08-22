@@ -204,7 +204,6 @@
     </tupleInline>
   </elementDef>
 
-
   <elementDef name="CallGetMultiOwnersEx" encode="false">
     <tupleInline>
       <!-- 0 -->
@@ -289,34 +288,6 @@
       <!-- 1 -->
         <!-- maps _something_ to a timestamp -->
       <dictInt name="entries" />
-    </tupleInline>
-  </elementDef>
-
-  <elementDef name="CallGetInventoryFromId" encode="false">
-    <tupleInline>
-        <!-- 0 -->
-        <int name="entityID" />
-        <!-- 1 -->
-        <int name="passive" />
-    </tupleInline>
-  </elementDef>
-
-  <elementDef name="CallGetMessageDetails" encode="false">
-    <tupleInline>
-      <!-- 0 -->
-      <int name="channelID" />
-      <!-- 1 -->
-      <int name="messageID" />
-    </tupleInline>
-  </elementDef>
-
-  <elementDef name="CallMarkMessagesRead" encode="false">
-    <tupleInline>
-      <!-- 0 -->
-      <listInline>
-        <!-- 0 -->
-        <int name="messageID" />
-      </listInline>
     </tupleInline>
   </elementDef>
 
@@ -460,6 +431,21 @@
             </listInline>
         </tupleInline>
       </tupleInline>
+  </elementDef>
+
+  <!-- moved from mail packets -->
+  <elementDef name="Call_LookupStringInt" encode="false">
+    <tupleInline>
+      <wstring name="searchString" />
+      <int name="searchOption" />
+    </tupleInline>
+  </elementDef>
+
+  <elementDef name="Call_LookupIntString" encode="false">
+    <tupleInline>
+      <int name="searchOption" />
+      <wstring name="searchString" />
+    </tupleInline>
   </elementDef>
 
 </elements>

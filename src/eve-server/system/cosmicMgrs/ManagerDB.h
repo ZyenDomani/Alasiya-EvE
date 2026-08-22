@@ -41,6 +41,7 @@ public:
     static void GetStaticData(DBQueryResult& res); // static items in a solar system
     static void GetMoonResouces(DBQueryResult& res);
     static void GetFactionNames(DBQueryResult& res);
+    static void GetLocationNames(DBQueryResult& res);
     static void GetSalvageGroups(DBQueryResult& res);
     static void GetAttributeTypes(DBQueryResult& res);
     static void GetTypeAttributes(DBQueryResult& res);

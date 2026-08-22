@@ -2859,3 +2859,7 @@ void Client::SelfChatMessage(const char* fmt, ...)
     SafeFree(str);
 }
 
+//TODO  FIXME
+void Client::SelfEveMail(const char* subject, const char* fmt, ...) {
+
+}

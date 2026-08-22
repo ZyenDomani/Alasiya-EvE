@@ -91,6 +91,8 @@ public:
     bool                GetStaticInfo(uint32 itemID, StaticData& data);
     uint16              GetStaticType(uint32 itemID);
 
+    // for any region/const/system.  can also use stationID to pull system name, but not region or const
+    const char*         GetLocationName(uint32 locationID);
     // this specific cache method is designed to use either a stationID or a systemID to determine system data wanted.
     const char*         GetSystemName(uint32 locationID);       //  allan 3Aug16
     // this specific cache method is designed to use either a stationID or a systemID to determine system data wanted.
@@ -213,6 +215,7 @@ private:
     DBRowDescriptor*                                    m_bpMatlHeader;
     GetFactionInfoRsp*                                  m_pFactionInfo;
 
+    // this must remain std::map
     std::map<uint32, uint8>                             m_stationCount;     // systemID/count
 
     std::unordered_map<uint16, Inv::CatData>            m_catData;
@@ -227,6 +230,7 @@ private:
     std::unordered_map<uint32, uint32>                  m_ratRegions;       // regionID/ratFactionID
     std::unordered_map<uint32, uint32>                  m_agentCorp;        // agentID/corpID
     std::unordered_map<uint32, uint32>                  m_agentSystem;      // agentID/systemID
+    std::unordered_map<uint32, std::string>             m_locationName;     // locationID/name
     std::unordered_map<uint32, std::string>             m_factionName;      // factionID/name
     std::unordered_map<uint32, std::string>             m_corpName;         // corpID/name
     std::unordered_map<uint32, uint32>                  m_corpFaction;      // corpID/factionID

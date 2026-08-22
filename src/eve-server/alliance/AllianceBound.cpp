@@ -272,7 +272,8 @@ PyResult AllianceBound::Handle_UpdateApplication(PyCallArgs &call)
         subject += call.client->GetName();
         std::vector<int32> recipients;
         recipients.push_back(CorporationDB::GetCorporationCEO(args.corporationID));
-        m_manager->lsc_service->SendMail(CorporationDB::GetCorporationCEO(m_db.GetExecutorID(m_allyID)), recipients, subject, message);
+        //TODO:  FIXME
+        //m_manager->lsc_service->SendMail(CorporationDB::GetCorporationCEO(m_db.GetExecutorID(m_allyID)), recipients, subject, message);
 
         //Send OnAllianceChanged packet
         OnAllianceChanged ac;

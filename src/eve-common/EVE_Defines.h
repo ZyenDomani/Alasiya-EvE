@@ -60,6 +60,7 @@
  * 970m    squadIDs
  *  1b    temp DSEs (missiles only at this time)  ** 9000000000001190696 on live
  * 1b2    dungeon SEs
+ * 2b1    min chat channel
  * 2b1    max int32
  * 9e0    fake items
  */
@@ -164,6 +165,8 @@
 #define maxSquad                979000000
 #define minMissile              1000000000
 #define minDungeon              1200000000
+#define minChatChannel          2100000000
+#define staticGMChannel         2147483646      // 4m7 should be enough channels
 #define maxEveItem              2147483647      // max int32
 
 #define maxHangarCapy           9000000000000000
@@ -267,6 +270,9 @@ or ((itemID >= minCharacter) and (itemID <= maxCharacter)))
 
 #define IsDrone(itemID) \
 ((itemID >= minDroneItem) && (itemID < minBookmark))
+
+#define IsMailList(itemID) \
+((itemID >= minMailList) && (itemID < maxMailList))
 
 // this covers all static items
 #define IsStaticItem(itemID) \

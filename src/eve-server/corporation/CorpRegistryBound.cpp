@@ -1549,7 +1549,9 @@ PyResult CorpRegistryBound::Handle_InsertApplication(PyCallArgs &call)
     subject += call.client->GetName();
     std::vector<int32> recipients;
     recipients.push_back(m_db.GetCorporationCEO(args.corpID));
-    m_manager->lsc_service->SendMail(charID, recipients, subject, args.message);
+
+    //TODO:  FIXME
+    //m_manager->lsc_service->SendMail(charID, recipients, subject, args.message);
 
     // should this be sent from mail system?  maybe not...cannot determine type from mail.
     // for now, this notification will need to be created/sent from same method sending mail.

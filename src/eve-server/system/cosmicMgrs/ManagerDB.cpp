@@ -120,6 +120,13 @@ void ManagerDB::GetFactionNames(DBQueryResult& res) {
     _log(DATABASE__RESULTS, "LoadCorpNames returned %lu items", res.GetRowCount());
 }
 
+void ManagerDB::GetLocationNames(DBQueryResult& res) {
+    if (!sDatabase.RunQuery(res, "SELECT itemID, itemName FROM mapDenormalize WHERE itemID < %u", maxWHSolarSystem ))
+        codelog(DATABASE__ERROR, "Error in LoadCorpNames query: %s", res.error.c_str());
+
+    _log(DATABASE__RESULTS, "LoadCorpNames returned %lu items", res.GetRowCount());
+}
+
 void ManagerDB::LoadCorpNames(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res, "SELECT corporationID, corporationName FROM crpCorporation" ))

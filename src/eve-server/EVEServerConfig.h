@@ -361,6 +361,7 @@ public:
         bool EnableWingChat;
         bool EnableSquadChat;
         bool EnableVoiceChat;
+        bool ReturnAllChannels;
         bool EnforceRookieInHelp;
     } chat;
 

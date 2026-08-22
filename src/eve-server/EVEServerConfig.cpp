@@ -247,10 +247,11 @@ EVEServerConfig::EVEServerConfig()
     //  - ratting/exploring
 
     // chat
-    chat.EnableFleetChat = true;
     chat.EnableWingChat = false;
+    chat.EnableFleetChat = true;
     chat.EnableSquadChat = false;
     chat.EnableVoiceChat = false;
+    chat.ReturnAllChannels = false;
     chat.EnforceRookieInHelp = false;
 
     // crime
@@ -844,18 +845,20 @@ bool EVEServerConfig::ProcessExploring (const TiXmlElement* ele) {
 }
 
 bool EVEServerConfig::ProcessChat(const TiXmlElement* ele) {
-    AddValueParser("EnableFleetChat",      chat.EnableFleetChat);
     AddValueParser("EnableWingChat",       chat.EnableWingChat);
+    AddValueParser("EnableFleetChat",      chat.EnableFleetChat);
     AddValueParser("EnableSquadChat",      chat.EnableSquadChat);
     AddValueParser("EnableVoiceChat",      chat.EnableVoiceChat);
+    AddValueParser("ReturnAllChannels",    chat.ReturnAllChannels);
     AddValueParser("EnforceRookieInHelp",  chat.EnforceRookieInHelp);
 
     const bool result = ParseElementChildren(ele);
 
-    RemoveParser("EnableFleetChat");
     RemoveParser("EnableWingChat");
+    RemoveParser("EnableFleetChat");
     RemoveParser("EnableSquadChat");
     RemoveParser("EnableVoiceChat");
+    RemoveParser("ReturnAllChannels");
     RemoveParser("EnforceRookieInHelp");
 
     return result;
