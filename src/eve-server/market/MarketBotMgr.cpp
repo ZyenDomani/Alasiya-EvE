@@ -183,7 +183,7 @@ void MarketBotMgr::ForceRun(bool resetTimer) {
 }
 
 int MarketBotMgr::ExpireOldOrders() {
-    uint64_t now = GetFileTimeNow();
+    int64_t now = GetFileTimeNow();
 
     DBQueryResult res;
     DBResultRow row;

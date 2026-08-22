@@ -171,8 +171,8 @@ namespace Swarm {
         // Core Network Math variables
         float computationalPowerPool = 0.0f; // Accumulated Intrusion Points (IP)
         float playerFirewallThreshold = 100.0f; // Scaled by player attributes
-        uint64_t sessionEstablishedFrame;
-        uint64_t lastProcessedFrame;
+        int64_t sessionEstablishedFrame;
+        int64_t lastProcessedFrame;
         // Counter-Hack State variables
         bool isCounterHackActive = false;
         float counterHackProgress = 0.0f;   // Reaching 100.0f rescues the drone and drops loot

@@ -2823,7 +2823,7 @@ void Client::SelfChatMessage(const char* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    char* str(nullptr);
+    char* str = nullptr;
     vasprintf(&str, fmt, args);
     assert(str);
     va_end(args);
@@ -2840,10 +2840,11 @@ void Client::SelfChatMessage(const char* fmt, ...)
 
     //this is such a pile of crap, but im not sure whats better.
     //maybe a private message...
+/*
     std::set<LSCChannel*>::iterator itr = m_channels.begin();
     for (; itr != m_channels.end(); itr++)
         (*itr)->SendMessage(this, str, true);
-
+*/
     //m_channels[
 
     //just send it to the first channel we are in..

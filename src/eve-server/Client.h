@@ -107,6 +107,7 @@ public:
 
     int32 GetUserID() const                             { return pSession->GetCurrentInt( "userid" ); }
     int32 GetAccountType() const                        { return pSession->GetCurrentInt( "userType" ); }
+    int32 GetGender() const                             { return pSession->GetCurrentInt( "genderID" ); }
 
     // these below need Session initialized before use (which we dont do for char creation due to errors)
     int32 GetCharacterID() const                        { return pSession->GetCurrentInt( "charid" ); }
