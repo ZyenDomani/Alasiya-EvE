@@ -113,7 +113,7 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
             "  typeID AS ownerID,"
             "  typeName AS ownerName,"
             "  typeID,"
-            "  1 AS gender,"
+            "  true AS gender,"
             "  typeNameID AS ownerNameID"
             " FROM invTypes"
             " WHERE typeID IN (%s)", ids.c_str()))

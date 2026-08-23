@@ -184,7 +184,7 @@ void NotificationFactory::Dispatch(int32 senderID, int32 typeID, const std::stri
 
     /* this needs more work...
     // 3. Assemble target roster for network distribution
-    character_set activeOnlineRoster;
+    std::set<uint32> activeOnlineRoster;
     for (int32 receiverID : receiverIDs) {
         // Only add players currently authenticated on the node to minimize memory footprints
         if (sSessionMgr.IsClientOnline(receiverID)) {

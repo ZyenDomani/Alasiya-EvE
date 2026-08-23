@@ -629,7 +629,7 @@ void EntityMgr::Broadcast(const PyAddress &dest, EVENotificationStream &noti) co
         cur.second->SendNotification(dest, noti);
 }
 
-void EntityMgr::Multicast(const character_set &cset, const PyAddress &dest, EVENotificationStream &noti) const {
+void EntityMgr::Multicast(const std::set<uint32> &cset, const PyAddress &dest, EVENotificationStream &noti) const {
     std::map<uint32, Client*>::const_iterator itr = m_players.begin();
     for (auto &cur : cset) {
         itr = m_players.find(cur);
@@ -738,7 +738,7 @@ void EntityMgr::Multicast(const char* notifyType, const char* idType, PyTuple** 
     PyDecRef( payload );
 }
 
-void EntityMgr::Multicast(const character_set &cset, const char* notifyType, const char* idType, PyTuple** in_payload, bool seq) const
+void EntityMgr::Multicast(const std::set<uint32> &cset, const char* notifyType, const char* idType, PyTuple** in_payload, bool seq) const
 {
     // consume payload
     PyTuple* payload = *in_payload;
