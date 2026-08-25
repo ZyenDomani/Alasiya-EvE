@@ -342,6 +342,7 @@ bool Client::SelectCharacter(int32 charID/*0*/) {
     m_ship->SetShipCapacitorLevel(1.0);
 
     // send MOTD and server data to 'local' chat channel
+    // this doesnt work right with lsc update
     m_services.lsc_service->SendServerMOTD(this);
 
     return true;
@@ -2264,6 +2265,8 @@ void Client::SendNotification(const PyAddress &dest, EVENotificationStream &noti
         PyDict* dict = new PyDict();
         dict->SetItemString("sn", new PyInt(++m_nextNotifySequence));
         packet->named_payload = dict;
+    } else {
+        packet->named_payload = PyStatic.NewNone();
     }
 
     if (is_log_enabled(CLIENT__NOTIFY_DUMP)) {

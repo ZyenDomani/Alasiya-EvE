@@ -1798,6 +1798,22 @@ bool CorporationDB::UpdateDivisionNames(uint32 corpID, const Call_UpdateDivision
     return true;
 }
 
+int32 CorporationDB::GetCorpCEO(uint32 corpID) {
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res, "SELECT ceoID FROM crpCorporation WHERE corporationID = %u", corpID)) {
+        codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+        return ownerSystem;
+    }
+
+    DBResultRow row;
+    if (!res.GetRow(row)) {
+        _log(CORP__DB_WARNING, "Corporation %u - Corp CEO not found.", corpID);
+        return ownerSystem;
+    }
+
+    return row.GetInt(0);
+}
+
 std::string CorporationDB::GetCorpName(uint32 corpID)
 {
     DBQueryResult res;

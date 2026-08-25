@@ -146,6 +146,7 @@ bool ClassEncodeGenerator::ProcessElementPtr( const TiXmlElement* field ) {
 
     return true;
 }
+
 bool ClassEncodeGenerator::ProcessRaw( const TiXmlElement* field ) {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
@@ -164,9 +165,8 @@ bool ClassEncodeGenerator::ProcessRaw( const TiXmlElement* field ) {
     if (currentMask.find("%s") != std::string::npos) {
         snprintf(noneBuffer, sizeof(noneBuffer), currentMask.c_str(), "PyStatic.NewNone()");
         snprintf(validBuffer, sizeof(validBuffer), currentMask.c_str(), name);
-    }
+    } else {
     // CASE B: The parent is a flat temporary destination variable (e.g. dict3_2)
-    else {
         snprintf(noneBuffer, sizeof(noneBuffer), "%s = PyStatic.NewNone()", currentMask.c_str());
         snprintf(validBuffer, sizeof(validBuffer), "%s = %s", currentMask.c_str(), name);
     }

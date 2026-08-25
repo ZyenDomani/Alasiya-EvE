@@ -1581,7 +1581,7 @@ void Colony::ProcessECUs() {
         // second - see if this ecu has a route and move contents per route.  this will simulate xfer of raw matls from heads to storage
         auto routeItr = m_srcRoutes.equal_range(ecu.first);     // this ecu is route origin
         // how many routes from this origin?  this is a count of ecu->dest when dest can be multiple places
-        int32 dist = EvE::max(std::distance(routeItr.first, routeItr.second), 1);
+        int32 dist = EvE::max(std::distance(routeItr.first, routeItr.second) - 1, 1);
         // make sure amount is valid
         if (dist > amount)
             continue;
@@ -1613,7 +1613,7 @@ void Colony::ProcessECUs() {
 
             if (is_log_enabled(COLONY__DEBUG))
                 _log(COLONY__DEBUG, "Colony::ProcessECUs(%i) - Dest: %s(%u) updated with %0.0f %s(%u).", \
-                        dist, sPIDataMgr.GetPinName(it->second.destPinID), it->second.destPinID, amount, \
+                        dist, sPIDataMgr.GetPinName(destPinItr->first), it->second.destPinID, amount, \
                         sPIDataMgr.GetProductName(it->second.commodityTypeID), it->second.commodityTypeID);
         }
 

@@ -128,11 +128,11 @@ uint32 FleetService::CreateFleet(Client* pClient)
             sData.boost.leader, sData.boost.armored, sData.boost.info, sData.boost.siege, sData.boost.skirmish, sData.boost.mining);
 
     if (sConfig.chat.EnableFleetChat)
-        m_services->lsc_service->CreateSystemChannel(m_fleetID);
+        m_services->lsc_service->CreateDynamicChannel(m_fleetID, pChar->itemID());
     if (sConfig.chat.EnableWingChat)
-        m_services->lsc_service->CreateSystemChannel(m_wingID);
+        m_services->lsc_service->CreateDynamicChannel(m_wingID, pChar->itemID());
     if (sConfig.chat.EnableSquadChat)
-        m_services->lsc_service->CreateSystemChannel(m_squadID);
+        m_services->lsc_service->CreateDynamicChannel(m_squadID, pChar->itemID());
 
     // increment counters after channels are created (to avoid wrong channel creation)
     ++m_fleetID;
@@ -146,12 +146,12 @@ PyRep* FleetService::CreateWing(uint32 fleetID)
 {
     int8 count = m_fleetWings.count(fleetID);
     // do we need an error here?
-    if (count > 4)
+    if (++count > 5)
         return nullptr;
     WingData wData = WingData();
         wData.fleetID = fleetID;
         wData.name = "Wing ";
-        wData.name += std::to_string(count + 1);
+        wData.name += std::to_string(count);
         wData.booster = nullptr;
         wData.leader = nullptr;
     m_wingDataMap.emplace(m_wingID, wData);
@@ -164,7 +164,7 @@ PyRep* FleetService::CreateWing(uint32 fleetID)
     SendFleetUpdate(fleetID, "OnFleetWingAdded", tuple1);
 
     if (sConfig.chat.EnableWingChat)
-        m_services->lsc_service->CreateSystemChannel(m_wingID);
+        m_services->lsc_service->CreateDynamicChannel(m_wingID, m_fleetDataMap[fleetID].creator->GetCharacterID());
 
     std::list<int32> wing, squad;
     wing.emplace(wing.end(), m_wingID);
@@ -203,7 +203,7 @@ void FleetService::CreateSquad(uint32 fleetID, uint32 wingID)
     SendFleetUpdate(fleetID, "OnFleetSquadAdded", tuple);
 
     if (sConfig.chat.EnableSquadChat)
-        m_services->lsc_service->CreateSystemChannel(m_squadID);
+        m_services->lsc_service->CreateDynamicChannel(m_squadID, m_fleetDataMap[fleetID].creator->GetCharacterID());
 
     std::list<int32> wing, squad;
     wing.emplace(wing.end(), wingID);

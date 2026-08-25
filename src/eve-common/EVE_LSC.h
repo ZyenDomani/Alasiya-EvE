@@ -100,7 +100,7 @@ namespace LSC {
             normal          = 14,   //  trial accts arent time buffered (channelID > 2100000000)
             custom          = 15    //  invite only.  channelID < 0
         };
-    
+
 
         enum Mode :int8_t {
             Disallowed 	        = -2,
@@ -126,50 +126,46 @@ namespace LSC {
         };
     }
 
-    // rename to "TitleID", as it's chat window titles
-    namespace MessageID {
+    namespace TitleID {
         enum :int32_t {
             // these are locale messageIDs
             System      = -1,
+            Faction             = 63594,
             System2             = 67203, //System Channels
+            Character           = 67230,
+            Corporation         = 67231,
+            Unspecified         = 67237,
+            Mission             = 67238,
+            Research            = 67240,
+            Alliance            = 67241,
+            Market              = 67242,
+            Dungeon             = 67243,
+            Industry            = 67248,
+            Misc                = 67265,
             Corporate           = 263235,
             Help                = 263238,
             Trade               = 263240,
-            Content             = 263328,
-            Faction             = 63594,
-            Industry            = 67248,
+            EngHelp             = 263262,
             Rumor               = 263265,
-            RAM                 = 263275,
+            MaM                 = 263275, //Minerals and Manufacturing
             Other               = 263277,
             Smacktalk           = 263278,
-            /*
-            (263287, CEO)
-            (263292, Blueprints)
-            (263293, Real Estate)
-            (263306, Events)
-            (263330, Media)
-            (263332, Technology)
-            (263338, Ratting)
-            (263339, Scanning)
-            (263340, Wormholes)
-            (263365, Boosters)
-            (263366, Invention)
-            (263367, Manufacturing)
-            (263368, Mining)
-            (263369, Planetary Interaction)
-            (263370, Research)
-            (263628, Owner)
-
-            (67265, Miscellaneous)
-            (67230, Character)
-            (67231, Corporation)
-            (67237, Unspecified)
-            (67238, Mission)
-            (67240, Research)
-            (67241, Alliance)
-            (67242, Market)
-            (67243, Dungeon)
-            */
+            CEO                 = 263287,
+            Blueprints          = 263292,
+            RealEstate          = 263293,
+            Events              = 263306,
+            Content             = 263328,
+            Media               = 263330,
+            Technology          = 263332,
+            Ratting             = 263338,
+            Scanning            = 263339,
+            Wormholes           = 263340,
+            Boosters            = 263365,
+            Invention           = 263366,
+            Manufacturing       = 263367,
+            Mining              = 263368,
+            PI                  = 263369, //Planetary Interaction
+            Owner               = 263628
         };
     }
 };   // namespace LSC

@@ -4,7 +4,8 @@
     ------------------------------------------------------------------------------------
     This file is part of EVEmu: EVE Online Server Emulator
     Copyright 2006 - 2016 The EVEmu Team
-    For the latest information visit http://evemu.org
+    Copyright 2016 - 2026 Alasiya-EvE by Allan
+    For the latest implementation status visit http://eve.alasiya.net/?p=op_status
     ------------------------------------------------------------------------------------
     This program is free software; you can redistribute it and/or modify it under
     the terms of the GNU Lesser General Public License as published by the Free Software
@@ -21,6 +22,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:     Zhur, Aknor Jaden
+    Rewrite:    Allan
 */
 
 
@@ -29,8 +31,6 @@
 
 #include <vector>
 
-//#include "utils/Singleton.h"
-
 #include "chat/LSCDB.h"
 #include "chat/LSCChannel.h"
 #include "PyService.h"
@@ -38,45 +38,49 @@
 
 class CommandDispatcher;
 
-class LSCService
-: //public Singleton<ItemFactory>,
-  public PyService
+class LSCService : public PyService
 {
 public:
-    // Set the base (minimum) and maximum numbers for any user-created chat channel.
-    const int32 BASE_CHANNEL_ID = 2100000000;      //trial accts are spam-restricted to 1m input buffer when channelID < 2100000000
-    const uint32 MAX_CHANNEL_ID = 0xFFFFFFFF;
-
-    LSCService(PyServiceMgr *mgr, CommandDispatcher *cd);
+    LSCService(PyServiceMgr* mgr, CommandDispatcher* cd);
+    LSCService(LSCService&&) =delete;
+    LSCService(const LSCService&) =delete;
+    LSCService& operator=(LSCService&&) =delete;
+    LSCService& operator=(const LSCService&) =delete;
     ~LSCService();
 
-    void Init(CommandDispatcher *cd);
+    LSCDB* GetDB()                                      { return m_db; }
 
-    PyResult ExecuteCommand(Client *from, const char *msg);
-
+    // --- 1. SESSION LIFECYCLE MANAGEMENT ---
     void CharacterLogin(Client* pClient);
-    void SendServerMOTD(Client* pClient);
+    void DestroyChannel(int32 channelID);
+    void SystemUnload(int32 systemID, int32 constID, int32 regionID);
 
+    // --- 2. DYNAMIC SYSTEM CHANNEL ENGINE ---
     void CreateSystemChannel(int32 channelID);
-    void SystemUnload(uint32 systemID, uint32 constID, uint32 regionID);
+    LSCChannel* CreateDynamicChannel(int32 channelID, uint32 owner=0, std::string name="", std::string motd="", \
+                              std::string password="", bool memberless= false, bool temporary=false );
+    void CreateStaticChannel(int32 channelID, int32 ownerID=ownerSystem, LSC::Type type=LSC::Type::normal, \
+                            const char* motd=nullptr, const char* displayName=nullptr, int32 gMsgID=0, int32 cMsgID=0);
 
-    void SendMail(uint32 sender, uint32 recipient, const std::string &subject, const std::string &content) {
-        std::vector<int32> recs(1, recipient);
-        SendMail(sender, recs, subject, content);
-    }
-    void SendMail(uint32 sender, const std::vector<int32> &recipients, const std::string &subject, const std::string &content);
+    void BroadcastAlertMessage(const char* alertText);
+
+    PyResult ExecuteCommand(Client* from, const char* msg);
+
+    void SendServerMOTD(Client* pClient);
 
 protected:
     class Dispatcher;
-    Dispatcher *const m_dispatch;
-    CommandDispatcher *const m_commandDispatch;
+    Dispatcher* const m_dispatch;
+
+    CommandDispatcher* const m_commandDispatch;
 
     LSCDB* m_db;
 
-    std::map<int32, LSCChannel*> m_channels;  //we own these pointers
+    // Active room tracking
+    std::unordered_map<int32, LSCChannel*> m_channels;
+    std::unordered_map<std::string, int32> m_channelNameMap;
 
     PyCallable_DECL_CALL(GetChannels);
-    PyCallable_DECL_CALL(GetRookieHelpChannel);
     PyCallable_DECL_CALL(JoinChannels);
     PyCallable_DECL_CALL(LeaveChannels);
     PyCallable_DECL_CALL(LeaveChannel);
@@ -88,49 +92,39 @@ protected:
     PyCallable_DECL_CALL(SendMessage);
     PyCallable_DECL_CALL(Invite);
     PyCallable_DECL_CALL(AccessControl);
+    PyCallable_DECL_CALL(ForgetChannel);
+    PyCallable_DECL_CALL(RenameChannel);
+    PyCallable_DECL_CALL(SetChannelMOTD);
+    PyCallable_DECL_CALL(SetChannelLanguageRestriction);
 
-    PyCallable_DECL_CALL(GetMyMessages);
-    PyCallable_DECL_CALL(GetMessageDetails);
-    PyCallable_DECL_CALL(Page);
-    PyCallable_DECL_CALL(MarkMessagesRead);
-    PyCallable_DECL_CALL(DeleteMessages);
 
 private:
-    int32 m_channelID;
+    int32 m_nextChannelID;
+
     void CreateStaticChannels();
-    LSCChannel *GetChannelByID(int32 channelID);
-    // iterate thru entire list and string::comp for name
-    LSCChannel *GetChannelByName(std::string  channelName);
-    LSCChannel *CreateChannel(int32 channelID, uint32 ownerID, const char* name, std::string motd, const char* password, const char* compkey,
-                              uint8 type = LSC::Type::normal, uint32 cspa = 0, int32 groupMessageID = 0, int32 channelMessageID = 0,
-                              bool memberless = false, bool maillist = false, bool temporary = false, bool languageRestriction = false);
+    LSCChannel* GetChannelByID(int32 channelID);
+    LSCChannel* GetChannelByName(const std::string& channelName);
 
 };
 
-/*  to finish later...
-//Singleton
-#define sLscSvc \
-( LSCService::get() )
-*/
-
 #endif
 
-/*{'FullPath': u'UI/Messages', 'messageID': 259365, 'label': u'LSCCannotAccessControlBody'}(u'{msg}', None, {u'{msg}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'msg'}})
- * {'FullPath': u'UI/Messages', 'messageID': 259367, 'label': u'LSCCannotCreateBody'}(u'{msg}', None, {u'{msg}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'msg'}})
- * {'FullPath': u'UI/Messages', 'messageID': 259369, 'label': u'LSCCannotDestroyTitle'}(u'Cannot Destroy Channel', None, None)
- * {'FullPath': u'UI/Messages', 'messageID': 259370, 'label': u'LSCCannotDestroyBody'}(u'{msg}', None, {u'{msg}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'msg'}})
- * {'FullPath': u'UI/Messages', 'messageID': 259371, 'label': u'LSCCannotJoinTitle'}(u'Cannot Join Channel', None, None)
- * {'FullPath': u'UI/Messages', 'messageID': 259372, 'label': u'LSCCannotJoinBody'}(u'{msg}', None, {u'{msg}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'msg'}})
- * {'FullPath': u'UI/Messages', 'messageID': 259374, 'label': u'LSCCannotRenameBody'}(u'{msg}', None, {u'{msg}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'msg'}})
- * {'FullPath': u'UI/Messages', 'messageID': 259376, 'label': u'LSCCannotSendMessageBody'}(u'{msg}', None, {u'{msg}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'msg'}})
- * {'FullPath': u'UI/Messages', 'messageID': 259377, 'label': u'LSCCannotSetCSPATitle'}(u'Cannot Configure CSPA', None, None)
- * {'FullPath': u'UI/Messages', 'messageID': 259378, 'label': u'LSCCannotSetCSPABody'}(u'{msg}', None, {u'{msg}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'msg'}})
- * {'FullPath': u'UI/Messages', 'messageID': 259381, 'label': u'LSCCannotSetCreatorTitle'}(u'Cannot Set Creator', None, None)
- * {'FullPath': u'UI/Messages', 'messageID': 259382, 'label': u'LSCCannotSetCreatorBody'}(u'{msg}', None, {u'{msg}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'msg'}})
- * {'FullPath': u'UI/Messages', 'messageID': 259387, 'label': u'LSCCannotSetMOTDTitle'}(u'Cannot Set Channel MOTD', None, None)
- * {'FullPath': u'UI/Messages', 'messageID': 259388, 'label': u'LSCCannotSetMOTDBody'}(u'{msg}', None, {u'{msg}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'msg'}})
- * {'FullPath': u'UI/Messages', 'messageID': 259389, 'label': u'LSCCannotSetMemberlessTitle'}(u'Cannot Configure Channel', None, None)
- * {'FullPath': u'UI/Messages', 'messageID': 259390, 'label': u'LSCCannotSetMemberlessBody'}(u'{msg}', None, {u'{msg}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'msg'}})
- * {'FullPath': u'UI/Messages', 'messageID': 259391, 'label': u'LSCCannotSetPasswordTitle'}(u'Cannot Set Channel Password', None, None)
- * {'FullPath': u'UI/Messages', 'messageID': 259392, 'label': u'LSCCannotSetPasswordBody'}(u'{msg}', None, {u'{msg}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'msg'}})
- */
+/* {'FullPath': u'UI/Messages', 'messageID': 259365, 'label': u'LSCCannotAccessControlBody'}(u'{msg}', None, {u'{msg}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'msg'}})
+*  {'FullPath': u'UI/Messages', 'messageID': 259367, 'label': u'LSCCannotCreateBody'}(u'{msg}', None, {u'{msg}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'msg'}})
+*  {'FullPath': u'UI/Messages', 'messageID': 259369, 'label': u'LSCCannotDestroyTitle'}(u'Cannot Destroy Channel', None, None)
+*  {'FullPath': u'UI/Messages', 'messageID': 259370, 'label': u'LSCCannotDestroyBody'}(u'{msg}', None, {u'{msg}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'msg'}})
+*  {'FullPath': u'UI/Messages', 'messageID': 259371, 'label': u'LSCCannotJoinTitle'}(u'Cannot Join Channel', None, None)
+*  {'FullPath': u'UI/Messages', 'messageID': 259372, 'label': u'LSCCannotJoinBody'}(u'{msg}', None, {u'{msg}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'msg'}})
+*  {'FullPath': u'UI/Messages', 'messageID': 259374, 'label': u'LSCCannotRenameBody'}(u'{msg}', None, {u'{msg}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'msg'}})
+*  {'FullPath': u'UI/Messages', 'messageID': 259376, 'label': u'LSCCannotSendMessageBody'}(u'{msg}', None, {u'{msg}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'msg'}})
+*  {'FullPath': u'UI/Messages', 'messageID': 259377, 'label': u'LSCCannotSetCSPATitle'}(u'Cannot Configure CSPA', None, None)
+*  {'FullPath': u'UI/Messages', 'messageID': 259378, 'label': u'LSCCannotSetCSPABody'}(u'{msg}', None, {u'{msg}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'msg'}})
+*  {'FullPath': u'UI/Messages', 'messageID': 259381, 'label': u'LSCCannotSetCreatorTitle'}(u'Cannot Set Creator', None, None)
+*  {'FullPath': u'UI/Messages', 'messageID': 259382, 'label': u'LSCCannotSetCreatorBody'}(u'{msg}', None, {u'{msg}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'msg'}})
+*  {'FullPath': u'UI/Messages', 'messageID': 259387, 'label': u'LSCCannotSetMOTDTitle'}(u'Cannot Set Channel MOTD', None, None)
+*  {'FullPath': u'UI/Messages', 'messageID': 259388, 'label': u'LSCCannotSetMOTDBody'}(u'{msg}', None, {u'{msg}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'msg'}})
+*  {'FullPath': u'UI/Messages', 'messageID': 259389, 'label': u'LSCCannotSetMemberlessTitle'}(u'Cannot Configure Channel', None, None)
+*  {'FullPath': u'UI/Messages', 'messageID': 259390, 'label': u'LSCCannotSetMemberlessBody'}(u'{msg}', None, {u'{msg}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'msg'}})
+*  {'FullPath': u'UI/Messages', 'messageID': 259391, 'label': u'LSCCannotSetPasswordTitle'}(u'Cannot Set Channel Password', None, None)
+*  {'FullPath': u'UI/Messages', 'messageID': 259392, 'label': u'LSCCannotSetPasswordBody'}(u'{msg}', None, {u'{msg}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'msg'}})
+*/

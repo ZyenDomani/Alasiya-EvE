@@ -637,7 +637,7 @@ PyResult CorpRegistryBound::Handle_AddCorporation(PyCallArgs &call) {
     m_db.AddItemEvent(corpID, pClient->GetCharacterID(), Corp::EventType::CreatedCorporation);
 
     // create corp channel
-    m_manager->lsc_service->CreateSystemChannel(corpID);
+    m_manager->lsc_service->CreateDynamicChannel(corpID, pClient->GetCharacterID());
 
     CorpData data = CorpData();
         data.name = args.corpName;
