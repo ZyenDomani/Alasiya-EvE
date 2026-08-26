@@ -161,7 +161,8 @@ void LSCService::SystemUnload(int32 systemID, int32 constID, int32 regionID) {
     }
 
     itr = m_channels.find(constID);
-    if (itr != m_channels.end() && itr->second != nullptr) {
+    if (itr != m_channels.end())  {
+        //DestroyChannel(itr->second);
         LSCChannel* pChannel = itr->second;
         if (pChannel != nullptr) {
             if (pChannel->GetMemberCount() < 1) {
@@ -173,7 +174,8 @@ void LSCService::SystemUnload(int32 systemID, int32 constID, int32 regionID) {
     }
 
     itr = m_channels.find(regionID);
-    if (itr != m_channels.end() && itr->second != nullptr) {
+    if (itr != m_channels.end()) {
+        //DestroyChannel(itr->second);
         LSCChannel* pChannel = itr->second;
         if (pChannel != nullptr) {
             if (pChannel->GetMemberCount() < 1) {
@@ -224,80 +226,83 @@ void LSCService::DestroyChannel(int32 channelID) {
 
 PyResult LSCService::Handle_GetChannels(PyCallArgs &call)
 {
+// this should be a packed list
     MultiChannelInfo info;
     info.lines = new PyList();
 
     int32 charID = call.client->GetCharacterID();
     int32 corpID = call.client->GetCorporationID();
+    int32 solarSystemID   = call.client->GetSystemID();
 
     auto itr = m_channels.begin();
     if (sConfig.chat.ReturnAllChannels) {
         int32 regionID        = call.client->GetRegionID();
         int32 constellationID = call.client->GetConstellationID();
-        int32 solarSystemID   = call.client->GetSystemID();
         int32 allianceID      = call.client->GetAllianceID();
 
         for (; itr != m_channels.end(); ++itr) {
             if (itr->second == nullptr)
                 continue;
 
-            bool isSubscribed = false;
+            bool sendChannel = false;
 
             switch (itr->second->GetType()) {
                 case LSC::Type::solarsystem:
                 case LSC::Type::solarsystem2: {
                     // always auto-enable Local
                     if (itr->first == solarSystemID)
-                        isSubscribed = true;
+                        sendChannel = true;
                 } break;
 
                 case LSC::Type::corp: {
-                    // always auto-enable corp
+                    // always auto-enable own corp
                     if (itr->first == corpID)
-                        isSubscribed = true;
+                        sendChannel = true;
                 } break;
 
                 case LSC::Type::alliance: {
                     if (allianceID > 0 && itr->first == allianceID)
-                        isSubscribed = true;
+                        sendChannel = true;
                 } break;
 
                 case LSC::Type::constellation: {
                     if (itr->first == constellationID)
-                        isSubscribed = true;
+                        sendChannel = true;
                 } break;
 
                 case LSC::Type::region: {
                     if (itr->first == regionID)
-                        isSubscribed = true;
+                        sendChannel = true;
                 } break;
 
                 // 4. Safely ignore transient, dynamic user rooms during baseline login sweeps
-                case LSC::Type::fleet:
-                case LSC::Type::wing:
-                case LSC::Type::squad:
-                case LSC::Type::custom:
                 default: {
-                    continue; // Skips temporary spaces completely
+                    continue;
                 } break;
             }
 
-            if (isSubscribed) {
+            if (sendChannel)
                 info.lines->AddItem(itr->second->EncodeStaticChannel(charID));
-            }
         }
     } else {
+	// provide only the bare mininmum channel descriptors (local and corp)
         for (; itr != m_channels.end(); ++itr) {
+            bool sendChannel = false;
+
             switch (itr->second->GetType()) {
                 case LSC::Type::corp: {
-                    if (itr->first != corpID)
-                        continue;
+                    if (itr->first == corpID)
+                        sendChannel = true;
+                    continue;
                 } break;
-                // why are we not encoding these?  i dont remember...
+                case LSC::Type::solarsystem2: {
+                    if (itr->first == solarSystemID)
+                        sendChannel = true;
+                    continue;
+                } break;
                 case LSC::Type::region:
                 case LSC::Type::constellation:
                 case LSC::Type::solarsystem:
-                case LSC::Type::solarsystem2:
                 case LSC::Type::fleet:
                 case LSC::Type::wing:
                 case LSC::Type::squad:
@@ -308,9 +313,9 @@ PyResult LSCService::Handle_GetChannels(PyCallArgs &call)
                 } break;
             }
 
-            info.lines->AddItem(itr->second->EncodeStaticChannel(charID));
+            if (sendChannel)
+                info.lines->AddItem(itr->second->EncodeStaticChannel(charID));
         }
-
     }
 
     if (is_log_enabled(LSC__RSP_DUMP))
@@ -318,14 +323,23 @@ PyResult LSCService::Handle_GetChannels(PyCallArgs &call)
     return info.Encode();
 }
 
+PyTuple* LSCService::SendError(int8 error) {
+    PyTuple* errorTuple = new PyTuple(3);
+        errorTuple->SetItem(0, new PyInt(error));
+        errorTuple->SetItem(1, PyStatic.NewNone());
+        errorTuple->SetItem(2, PyStatic.NewNone());
+    return errorTuple;
+}
+
 PyResult LSCService::Handle_CreateChannel(PyCallArgs& call) {
     /*
      *            ret = sm.RemoteSvc('LSC').CreateChannel(displayName, joinExisting=False, memberless=0, create=True)
      *            if ret:
      *                info, acl, memberList = ret
-     *        // on fail,  ChannelInfo is pyint(lsc::type::error), others are null
+     *        // on fail,  info is pyint(lsc::type::error), others are null
      *            if info == CHTERR_ALREADYEXISTS:
      *            if info == CHTERR_NOSUCHCHANNEL:
+	 *  for other fails, return nullptr (no other checks in client)
      */
     if (is_log_enabled(LSC__CALL_DUMP)) {
         sLog.Warning("LSCService::Handle_CreateChannel()", "size=%u", call.tuple->size());
@@ -340,203 +354,222 @@ PyResult LSCService::Handle_CreateChannel(PyCallArgs& call) {
 
     // 1. Extract keywords
     bool create = false;
-    bool temporary = false;
-    bool joinExisting = false;
-    bool memberless = false;
-
     auto it = call.byname.find("create");
     if (it != call.byname.end())
         create = PyRep::GetBool(it->second);
 
+    bool temporary = false;
     it = call.byname.find("temporary");
     if (it != call.byname.end())
         temporary = PyRep::GetBool(it->second);
 
+    bool joinExisting = false;
     it = call.byname.find("joinExisting");
     if (it != call.byname.end())
         joinExisting = PyRep::GetBool(it->second);
 
+    bool memberless = false;
     it = call.byname.find("memberless");
     if (it != call.byname.end())
         memberless = PyRep::GetBool(it->second);
 
-    std::string cleanName = name.arg;
-    boost::algorithm::trim(cleanName);
+    // no clue what this is for; only populated for private chat
+    bool noCallThrottling = false;
+    /*
+    it = call.byname.find("noCallThrottling");
+    if (it != call.byname.end())
+        noCallThrottling = PyRep::GetBool(it->second);
+    */
 
     Client* pClient = call.client;
     ChannelJoinOK reply;
-    ChannelJoinNotOK errorRsp;
 
-    // create/get channel info
+// reviewed and updated for errors and null returns specific to create method
     LSCChannel* channel = nullptr;
-    if (joinExisting) {
-        channel = GetChannelByName(cleanName);
-        if (channel != nullptr) {
-            PyTuple* errorTuple = new PyTuple(3);
-            // Safely maps to -3 (CHTERR_NOSUCHCHANNEL) under the hood
-            errorTuple->SetItem(0, new PyInt(static_cast<int32>(LSC::Error::NoSuchChannel)));
-            errorTuple->SetItem(1, PyStatic.NewNone());
-            errorTuple->SetItem(2, PyStatic.NewNone());
-            return errorTuple;
-        }
-    } else if (create)  {
-        if (GetChannelByName(cleanName) != nullptr) {
-            PyTuple* errorTuple = new PyTuple(3);
-            // Safely maps to -6 (CHTERR_ALREADYEXISTS) under the hood
-            errorTuple->SetItem(0, new PyInt(static_cast<int32>(LSC::Error::ChannelExists)));
-            errorTuple->SetItem(1, PyStatic.NewNone());
-            errorTuple->SetItem(2, PyStatic.NewNone());
-            return errorTuple;
-        }
-        // figure out how to determine owner of this channel.....corp, ally, char.  for now, use charID
-        channel = CreateDynamicChannel(m_nextChannelID++, pClient->GetCharacterID(), name.arg.c_str());
-        // save non-temp channel info for new channels
-        if ((channel != nullptr) and (!temporary))
-            m_db->UpdateChannelInfo(channel);
-    } else {
-        // make error here for !join and !create  (should never hit)
-    }
-
-    // test for channel info
-    if (channel == nullptr) {
-        if (joinExisting) {
-            _log(LSC__ERROR, "%s: Channel not found - %s", pClient->GetName(), name.arg.c_str());
-            reply.ChannelInfo = new PyInt(LSC::Error::NoSuchChannel);
-        } else if (create)  {
-            _log(LSC__ERROR, "%s: Channel not created - %s", pClient->GetName(), name.arg.c_str());
-            reply.ChannelInfo = new PyInt(LSC::Error::Unspecified);
+	if (create) {
+        if (GetChannelByName(name.arg) != nullptr) {
+            reply.ChannelInfo = SendError(LSC::Error::ChannelExists);
+            reply.ChannelChars = PyStatic.NewNone();
+            reply.ChannelACL = PyStatic.NewNone();
         } else {
-            // make error here for !join and !create  (should never hit)
-        }
-    } else if (!channel->IsJoined(pClient->GetCharacterID()))  {
-    // join channel and send response
-        if (channel->JoinChannel(pClient)) {
+            // is this channel owner anything other than calling char?
+    	    channel = CreateDynamicChannel(m_nextChannelID++, pClient->GetCharacterID(), name.arg.c_str());
+            if (channel == nullptr)
+                return nullptr;
+            // channel created. setup acl for calling client/char
+            channel->InitACL(pClient);
             reply.ChannelInfo = channel->EncodeDynamicChannel(pClient->GetCharacterID());
             reply.ChannelChars = channel->EncodeChannelChars();
-            reply.ChannelACL = channel->EncodeChannelMods();
+            reply.ChannelACL = channel->EncodeChannelACL();
+
+            if (!temporary) {
+                // save data
+            	m_db->UpdateChannelInfo(channel);
+            	m_db->UpdateSubscription(channel->GetChannelID(), pClient);
+            }
+        }
+    } else if (joinExisting) {
+        channel = GetChannelByName(name.arg);
+        if (channel == nullptr) {
+            reply.ChannelInfo = SendError(LSC::Error::NoSuchChannel);
+            reply.ChannelChars = PyStatic.NewNone();
+            reply.ChannelACL = PyStatic.NewNone();
+        } else if (channel->IsJoined(pClient->GetCharacterID())) {
+            // already in this channel?  do nothing
+            return nullptr;
+        } else if (channel->JoinChannel(pClient)) {
+            // join channel and send response
+            reply.ChannelInfo = channel->EncodeDynamicChannel(pClient->GetCharacterID());
+            reply.ChannelChars = channel->EncodeChannelChars();
+            reply.ChannelACL = channel->EncodeChannelACL();
         } else {
-            reply.ChannelInfo = new PyInt(LSC::Error::Unspecified);
+            // do nothing
+            return nullptr;
         }
         if (!temporary)
             m_db->UpdateSubscription(channel->GetChannelID(), pClient);
     } else {
-        _log(LSC__ERROR, "%s: Already joined Channel %i \"%s\".", pClient->GetName(), channel->GetChannelID(), channel->GetDisplayName().c_str());
-        reply.ChannelInfo = new PyInt(LSC::Error::Unspecified);
+        // make error here for !join and !create  (should never hit)
+        _log(LSC__ERROR, "%s:  !join and !create - %s", pClient->GetName(), name.arg.c_str());
+        return nullptr;
     }
 
     if (is_log_enabled(LSC__RSP_DUMP))
-        reply.Dump(LSC__RSP_DUMP);
+    	reply.Dump(LSC__RSP_DUMP);
 
     return reply.Encode();
 }
 
 PyResult LSCService::Handle_JoinChannels(PyCallArgs &call) {
+    //NOTE:  cannot return nullptr here...MUST be ChannelJoinReply
     if (is_log_enabled(LSC__CALL_DUMP)) {
         sLog.White("LSCService::Handle_JoinChannels()", "size=%u", call.tuple->size());
         call.Dump(LSC__CALL_DUMP);
     }
 
+    ChannelJoinReply rsp;
+    rsp.ChannelID = 0;
+    rsp.ok = 0;
+    rsp.JoinRsp = nullptr;
+
     CallJoinChannels args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return nullptr;
+        return rsp.Encode();
     }
 
-    std::set<int32> toJoin;
-
-    PyList::const_iterator cur = args.channels->begin();
-    for (; cur != args.channels->end(); ++cur) {
-        if ((*cur)->IsInt())
-            toJoin.insert((*cur)->AsInt()->value());
-        else if ((*cur)->IsTuple()) {
-            PyTuple* prt = (*cur)->AsTuple();
-            if (prt->items.size() != 1 or !prt->items[0]->IsTuple()) {
-                codelog(SERVICE__ERROR, "%s: Failed to decode arguments", call.client->GetName());
-                continue;
-            }
-            prt = prt->items[0]->AsTuple();
-
-            if (prt->items.size() != 2 or /* !prt->items[0]->IsString() or unnessecary */ !prt->items[1]->IsInt()) {
-                codelog(SERVICE__ERROR, "%s: Failed to decode arguments", call.client->GetName());
-                continue;
-            }
-            toJoin.insert(prt->items[1]->AsInt()->value());
-        } else {
-            codelog(SERVICE__ERROR, "%s: Failed to decode argument ", call.client->GetName());
-            return nullptr;
-        }
-    }
-
-    PyList *ml = new PyList();
+    PyList* rspList = new PyList();
     LSCChannel* channel = nullptr;
     uint32 charID = call.client->GetCharacterID();
+    PyList::const_iterator cur = args.channels->begin();
+    for (; cur != args.channels->end(); ++cur) {
+        int32 channelID = 0;
+        if ((*cur)->IsInt()) {
+            channelID = PyRep::IntegerValue(*cur);
+        } else if ((*cur)->IsTuple()) {
+            PyTuple* outer = (*cur)->AsTuple();
+            if (outer->items.size() != 1 or !outer->items[0]->IsTuple()) {
+                codelog(SERVICE__ERROR, "%s: Failed to decode arguments", call.client->GetName());
+                continue;
+            }
 
-    std::set<int32>::const_iterator itr = toJoin.begin();
-    for (; itr != toJoin.end(); ++itr) {
-        int32 channelID = *itr;
+            PyTuple* inner = outer->items[0]->AsTuple();
+            if (inner->items.size() != 2 or !inner->items[1]->IsInt()) {
+                codelog(SERVICE__ERROR, "%s: Failed to decode arguments", call.client->GetName());
+                continue;
+            }
+
+            channelID = PyRep::IntegerValue(inner->items[1]);
+        } else {
+            codelog(SERVICE__ERROR, "%s: Failed to decode argument ", call.client->GetName());
+            continue;
+        }
+
+        // we got a channelID, try to join
         if (channelID == 0)
             continue;
+
         // Security Validation Guard: Rookie Help restriction checks
         if (sConfig.chat.EnforceRookieInHelp) {
-            if (channelID == 1 || channelID == 2) {
-                if (((args.role & Acct::Role::NEWBIE) != Acct::Role::NEWBIE) ||
-                    ((args.role & Acct::Role::EPLAYER) != Acct::Role::EPLAYER))
-                {
-                    continue;
-                }
+            switch (channelID) {
+                case 1:
+                case 2:
+                case 40:
+                case 55:
+                case 56: {
+                    if (((args.role & Acct::Role::NEWBIE) != Acct::Role::NEWBIE) &&
+                    	((args.role & Acct::Role::EPLAYER) != Acct::Role::EPLAYER))
+                    {
+                    	continue;
+                    }
+                } break;
+                default:
+                    break;
             }
         }
 
         // Internal lookup automatically interprets sign-bit masks via GetChannelByID
-        LSCChannel* channel = GetChannelByID(channelID);
+        channel = GetChannelByID(channelID);
         if (channel == nullptr)
             continue;
 
-        ChannelJoinReply chjr;
-            chjr.ChannelID = channel->EncodeID();
+        rsp.ChannelID = channel->EncodeID();
 
-        /** @todo  query/check password and other stipulations
+        if (channel->HasPassword()) {
+            _log(LSC__MESSAGE, "LSCS::JoinChannels: Channel %i has password.  fix this shit.", channelID);
+            continue;
+			// figure out how to send following packet...
+        /*
          *
         [PySubStream 97 bytes]
           [PyTuple 4 items]
-            [PyInt 1]
-            [PyString "GetChannelPasswordAndJoin"]
+            [PyInt 1]												<<-- ?
+            [PyString "GetChannelPasswordAndJoin"]					<<-- ?  is this "rsp args" going into idx[4]?  kinda looks like it.
             [PyTuple 3 items]
-              [PyString "Password Required For "BAA Cmd" Channel"]
-              [PyInt -9877001]
-              [PyString "BAA Cmd"]
+              [PyString "Password Required For "BAA Cmd" Channel"]	<<-- title
+              [PyInt -9877001]										<<-- channelID
+              [PyString "BAA Cmd"]									<<-- displayName
             [PyDict 1 kvp]
               [PyString "machoVersion"]
               [PyInt 1]
          */
+
+		 // then, gotta figure out htf this is checked/send/wtfe
+                ChannelJoinNotOK cjnok;
+                    cjnok.Error = "LSCWrongPassword";
+                    cjnok.rspDict = PyStatic.mtDict();   // msg args - uk format/data
+                rsp.JoinRsp = cjnok.Encode();
+                rsp.ok = 0;
+		}
+
         if (!channel->IsJoined(charID)) {
             if (channel->JoinChannel(call.client)) {
                 ChannelJoinOK cjok;
-                    cjok.ChannelInfo = channel->EncodeDynamicChannel(charID);
-                cjok.ChannelACL = channel->EncodeChannelMods();
+                cjok.ChannelInfo = channel->EncodeDynamicChannel(charID);
+                cjok.ChannelACL = channel->EncodeChannelACL();
                 cjok.ChannelChars = channel->EncodeChannelChars();
-                chjr.JoinRsp = cjok.Encode();
-                chjr.ok = 1;
+                rsp.JoinRsp = cjok.Encode();
+                rsp.ok = 1;
             } else {
                 ChannelJoinNotOK cjnok;
                     cjnok.Error = "LSCCannotJoin";
-                    cjnok.rspDict = new PyDict();   // dunno what goes here...
-                chjr.JoinRsp = cjnok.Encode();
-                chjr.ok = 0;
+                    cjnok.rspDict = PyStatic.mtDict();   // msg args - uk format/data
+                rsp.JoinRsp = cjnok.Encode();
+                rsp.ok = 0;
             }
         } else {
             ChannelJoinNotOK cjnok;
                 cjnok.Error = "LSCChannelIsJoined";
-                cjnok.rspDict = new PyDict();   // dunno what goes here...
-            chjr.JoinRsp = cjnok.Encode();
-            chjr.ok = 0;
+                cjnok.rspDict = PyStatic.mtDict();   // msg args - uk format/data
+            rsp.JoinRsp = cjnok.Encode();
+            rsp.ok = 0;
         }
-        ml->AddItem(chjr.Encode());
+        rspList->AddItem(rsp.Encode());
     }
 
     if (is_log_enabled(LSC__RSP_DUMP))
-        ml->Dump(LSC__RSP_DUMP, "   ");
-    return ml;
+        rspList->Dump(LSC__RSP_DUMP, "   ");
+    return rspList;
 }
 
 PyResult LSCService::Handle_SendMessage(PyCallArgs& call) {
@@ -1322,7 +1355,7 @@ LSCChannel* LSCService::CreateDynamicChannel(int32 channelID,
     LSC::Type type  = LSC::Type::normal;
     int32 cMsgID    = 0;
     int32 gMsgID    = 0;
-
+//TODO:  fix group/channel ids
     // override for private
     if (actualChannelID < 0) {
         temporary = true;
@@ -1333,7 +1366,7 @@ LSCChannel* LSCService::CreateDynamicChannel(int32 channelID,
         type = LSC::Type::corp;
         //name = "Corp";
         motd = m_db->GetCorporationName(channelID);
-        gMsgID = LSC::TitleID::Corporation;
+        gMsgID = LSC::cID::Corporation;
         cMsgID = 0;
         if (ownerID == 0)
             ownerID = CorporationDB::GetCorpCEO(channelID);
@@ -1349,7 +1382,7 @@ LSCChannel* LSCService::CreateDynamicChannel(int32 channelID,
         type = LSC::Type::corp;
         name = sDataMgr.GetCorpName(actualChannelID);
         motd = "Welcome to " + name + "'s Corporation channel.";
-        gMsgID = LSC::TitleID::Corporate;
+        gMsgID = LSC::cID::Corporation;
         if (ownerID == 0)
             ownerID = actualChannelID;
     } else if (IsFactionID(actualChannelID)) {
@@ -1415,20 +1448,14 @@ void LSCService::CreateStaticChannels() {
     // hardcode creating server static channels during server startup
     // these are all set to memberless to avoid constant updates
     std::ostringstream str;
-    /*  have to update channel numbers for this...just in case.
-     *  'rookieHelpChannel': 1,
-     *  'helpChannelEN': 2,
-     *  'helpChannelDE': 40,
-     *  'helpChannelRU': 55,
-     *  'helpChannelJA': 56
-     */
+
     //CreateStaticChannel(channelID, ownerID, type, motd, displayName, gMsgID, cMsgID)
 
     // ==========================================
     // --- CATEGORY 1: GLOBAL HELP CHANNELS ---
     // ==========================================
 
-    // Dynamic Room ID 1: Rookie Help
+    // Static Room ID 1: Rookie Help
     str.str("");
     str << "<color=0xff007fff><b>Welcome to the Alasiya EVE Online: Crucible Emulator</color>";
     str << "<color=0xff00ff00>Chatrules</color><color=0xffffffff>: </color>";
@@ -1449,9 +1476,9 @@ void LSCService::CreateStaticChannels() {
     str << "Sister of EVE storyline starts in <url=showinfo:5//30005001><u>Arnon</url></b></u> <b>with <url=showinfo:1378//3019356><u>Sister Alitura</url></b></u>. <br><br></color>";
     str << "<color=0xff00ff00><b>Before asking, please read: </color>";
     str << "<color=0xffffa500><url=http://wiki.eveonline.com/wiki/Rookie_Help_Channel_FAQ><u>http://wiki.eveonline.com/wiki/Rookie_Help_Channel_FAQ</color></url></b></u><br><br>";
-    CreateStaticChannel(1, 1, LSC::Type::normal, str.str().c_str(), nullptr, 0, LSC::TitleID::Help);
+    CreateStaticChannel(1, ownerSystem, LSC::Type::normal, str.str().c_str(), nullptr, LSC::gID::Help, LSC::cID::Rookie);
 
-    // Dynamic Room ID 2: General Help
+    // Static Room ID 2: English Help
     str.str("");
     str << "<color=0xffff0000><b>Welcome to The Alasiya EVE Online: Crucible Emulator</color>";
     str << "<color=0xff007fff> <br><br></color><color=0xff00ff00>Player Guides:</color>";
@@ -1462,16 +1489,20 @@ void LSCService::CreateStaticChannels() {
     str << "<color=0xff00ff00>How to contact a GM: </color>";
     str << "<color=0xffb2b2b2>File a petition (F12 - Petitions - New Petition) <br></color>";
     str << "<color=0xff00ff00><b>The topic of this channel is EVE related help.</color></b>";
-    CreateStaticChannel(2, 1, LSC::Type::normal, str.str().c_str(), nullptr, 0, LSC::TitleID::EngHelp);
+    CreateStaticChannel(2, ownerSystem, LSC::Type::normal, str.str().c_str(), nullptr, LSC::gID::Help, LSC::cID::EngHelp);
+
+    // Static Room ID 40: German Help
+    // Static Room ID 55: Russian Help
+    // Static Room ID 56: Japanese Help
 
     // ==========================================
-    // --- CATEGORY 2: EMPIRE/FACTION CORE ---
+    // --- CATEGORY 2: EMPIRE/FACTION ---
     // ==========================================
-    CreateStaticChannel(10, 1/*263268*/, LSC::Type::normal, nullptr, "Caldari Faction", 0, LSC::TitleID::Faction);
-    CreateStaticChannel(11, 1/*263246*/, LSC::Type::normal, nullptr, "Amarr Faction", 0, LSC::TitleID::Faction);
-    CreateStaticChannel(12, 1/*263281*/, LSC::Type::normal, nullptr, "Minmatar Faction", 0, LSC::TitleID::Faction);
-    CreateStaticChannel(13, 1/*263271*/, LSC::Type::normal, nullptr, "Gallente Faction", 0, LSC::TitleID::Faction);
-    CreateStaticChannel(14, 1/*263258*/, LSC::Type::normal, nullptr, "Jove Faction", 0, LSC::TitleID::Faction);
+    CreateStaticChannel(10, ownerSystem/*263268*/, LSC::Type::normal, nullptr, "Caldari Faction", LSC::gID::Faction, LSC::cID::None);
+    CreateStaticChannel(11, ownerSystem/*263246*/, LSC::Type::normal, nullptr, "Amarr Faction", LSC::gID::Faction, LSC::cID::None);
+    CreateStaticChannel(12, ownerSystem/*263281*/, LSC::Type::normal, nullptr, "Minmatar Faction", LSC::gID::Faction, LSC::cID::None);
+    CreateStaticChannel(13, ownerSystem/*263271*/, LSC::Type::normal, nullptr, "Gallente Faction", LSC::gID::Faction, LSC::cID::None);
+    CreateStaticChannel(14, ownerSystem/*263258*/, LSC::Type::normal, nullptr, "Jove Faction", LSC::gID::Faction, LSC::cID::None);
 
     // ==========================================
     // --- CATEGORY 3: CORPORATE  ---
@@ -1481,17 +1512,24 @@ void LSCService::CreateStaticChannels() {
     str << "This channel is intended for those players looking to find a new corporation, as well as those looking to enlist new players.<br>";
     str << "Other activities, such as non-recruitment discussion and scamming, are not permitted in this channel.";
 //Corporate
-    //CreateChannel(20, 9, "Recruitment", str.str().c_str(), nullptr, "recruitment", LSC::Type::normal, cspa, 263235, -1/*263286*/, true);
+    CreateStaticChannel(20, ownerSystem/*263286*/, LSC::Type::normal, str.str().c_str(), "Recruitment", LSC::gID::Corporate, LSC::cID::Corporation);
     str.str("");
     str << "<color=0xffffffff>Welcome to this</color> <color=0xff00ffff>Corporate CEO</color><color=0xffffffff> channel.<br>";
     str << "This channel is intended for corp CEOs to discuss business as they see fit.</color>";
-    //CreateChannel(21, 9, "CEO", str.str().c_str(), nullptr, "ceo", LSC::Type::normal, cspa, 263235, -1/*263287*/, true);
+    CreateStaticChannel(21, ownerSystem/*263287*/, LSC::Type::normal, str.str().c_str(), nullptr, LSC::gID::Corporate, LSC::cID::CEO);
 //Alliance
     str.str("");
     str << "<color=0xffffffff>Welcome to this</color> <color=0xff00ffff>Alliance</color><color=0xffffffff>  channel.  This channel is intended for corp CEOs to discuss business as they see fit.</color>";
-    //CreateChannel(31, 1, "Smacktalk", str.str().c_str(), nullptr, "smacktalk", LSC::Type::normal, cspa, 263330);
-    //CreateChannel(32, 1, "Rumour Mill", str.str().c_str(), nullptr, "rumourmill", LSC::Type::normal, cspa, 263330);
-    //CreateChannel(33, 1, "Freelancer", str.str().c_str(), nullptr, "freelancer", LSC::Type::normal, cspa, 263330);
+    CreateStaticChannel(22, ownerSystem/*263287*/, LSC::Type::normal, str.str().c_str(), nullptr, LSC::gID::Corporate, LSC::cID::Alliance);
+
+	// do we want static school channels?
+
+	// misc
+    str.str("");
+    str << "This channel is intended for those players looking to discuss the topic referenced in the channel title.</color>";
+    CreateStaticChannel(31, ownerSystem, LSC::Type::normal, str.str().c_str(), nullptr, LSC::gID::Misc, LSC::cID::Smacktalk);
+    CreateStaticChannel(32, ownerSystem, LSC::Type::normal, str.str().c_str(), nullptr, LSC::gID::Misc, LSC::cID::Rumor);
+    CreateStaticChannel(33, ownerSystem, LSC::Type::normal, str.str().c_str(), nullptr, LSC::gID::Misc, LSC::cID::Other);
 
     // ==========================================
     // --- CATEGORY 4: REGIONAL MARKET/TRADE/OTHER ---
@@ -1499,11 +1537,11 @@ void LSCService::CreateStaticChannels() {
     str.str("");
     str << "<color=0xffffffff>Welcome to this</color> <color=0xff00ffff>Trade</color><color=0xffffffff> channel.<br>";
     str << "This channel is intended for those players looking to trade the various items as referenced in the channel title.</color>";
-    //CreateChannel(40, 1, "Other", str.str().c_str(), nullptr, "other", LSC::Type::normal, cspa, 263240, -1/*263277*/, true);
-    //CreateChannel(41, 1, "Ships", str.str().c_str(), nullptr, "ships", LSC::Type::normal, cspa, 263240, -1/*263245*/, true);
-    //CreateChannel(42, 1, "Blueprints", str.str().c_str(), nullptr, "blueprints", LSC::Type::normal, cspa, 263240, -1/*263292*/, true);
-    //CreateChannel(43, 1, "Modules and Munitions", str.str().c_str(), nullptr, "modulesandmunitions", LSC::Type::normal, cspa, 263240, -1/*263254*/, true);
-    //CreateChannel(44, 1, "Minerals and Manufacturing", str.str().c_str(), nullptr, "mineralsandmanufacturing", LSC::Type::normal, cspa, 263240, -1/*263275*/, true);
+    CreateStaticChannel(41, ownerSystem/*263277*/, LSC::Type::normal, str.str().c_str(), nullptr, LSC::gID::Trade, LSC::cID::Blueprints);
+    CreateStaticChannel(42, ownerSystem/*263245*/, LSC::Type::normal, str.str().c_str(), nullptr, LSC::gID::Trade, LSC::cID::Industry);
+    CreateStaticChannel(43, ownerSystem/*263292*/, LSC::Type::normal, str.str().c_str(), nullptr, LSC::gID::Trade, LSC::cID::Manufacturing);
+    CreateStaticChannel(44, ownerSystem/*263254*/, LSC::Type::normal, str.str().c_str(), nullptr, LSC::gID::Trade, LSC::cID::Other);
+    CreateStaticChannel(45, ownerSystem/*263275*/, LSC::Type::normal, str.str().c_str(), nullptr, LSC::gID::Trade, LSC::cID::PI);
 
     // ==========================================
     // --- CATEGORY 5: SCIENCE & INDUSTRY ---
@@ -1511,12 +1549,12 @@ void LSCService::CreateStaticChannels() {
     str.str("");
     str << "<color=0xffffffff>Welcome to this</color> <color=0xff00ffff>Science and Industry</color><color=0xffffffff> channel.<br>";
     str << "This channel is intended for those players looking to discuss the various items as referenced in the channel title.</color>";
-    //CreateChannel(50, 1, "Boosters", str.str().c_str(), nullptr, "boosters", LSC::Type::normal, cspa, 263331, -1/*263365*/, true);
-    //CreateChannel(51, 1, "Invention", str.str().c_str(), nullptr, "invention", LSC::Type::normal, cspa, 263331, -1/*263366*/, true);
-    //CreateChannel(52, 1, "Manufacturing", str.str().c_str(), nullptr, "manufacturing", LSC::Type::normal, cspa, 263331, -1/*263367*/, true);
-    //CreateChannel(53, 1, "Mining", str.str().c_str(), nullptr, "mining", LSC::Type::normal, cspa, 263331, -1/*263368*/, true);
-    //CreateChannel(54, 1, "Planetary Interaction", str.str().c_str(), nullptr, "planetaryinteraction", LSC::Type::normal, cspa, 263331, -1/*263369*/, true);
-    //CreateChannel(55, 1, "Research", str.str().c_str(), nullptr, "research", LSC::Type::normal, cspa, 263331, -1/*263370*/, true);
+    CreateStaticChannel(50, ownerSystem/*263365*/, LSC::Type::normal, str.str().c_str(), nullptr, LSC::gID::SnI, LSC::cID::Boosters);
+    CreateStaticChannel(51, ownerSystem/*263366*/, LSC::Type::normal, str.str().c_str(), nullptr, LSC::gID::SnI, LSC::cID::Invention);
+    CreateStaticChannel(52, ownerSystem/*263367*/, LSC::Type::normal, str.str().c_str(), nullptr, LSC::gID::SnI, LSC::cID::Manufacturing);
+    CreateStaticChannel(53, ownerSystem/*263368*/, LSC::Type::normal, str.str().c_str(), nullptr, LSC::gID::SnI, LSC::cID::Mining);
+    CreateStaticChannel(54, ownerSystem/*263370*/, LSC::Type::normal, str.str().c_str(), nullptr, LSC::gID::SnI, LSC::cID::Research);
+    CreateStaticChannel(58, ownerSystem/*263369*/, LSC::Type::normal, str.str().c_str(), nullptr, LSC::gID::SnI, LSC::cID::PI);
 
     // ==========================================
     // --- CATEGORY 6: GAME CONTENT GROUPS ---
@@ -1524,10 +1562,14 @@ void LSCService::CreateStaticChannels() {
     str.str("");
     str << "<color=0xffffffff>Welcome to this</color> <color=0xff00ffff>Content</color><color=0xffffffff> channel.<br>";
     str << "This channel is intended for those players looking to discuss the various items as referenced in the channel title.</color>";
-    //CreateChannel(60, 1, "Incursions", str.str().c_str(), nullptr, "incursions", LSC::Type::normal, cspa, 263328, -1/*263289*/, true);
-    //CreateChannel(61, 1, "Ratting", str.str().c_str(), nullptr, "ratting", LSC::Type::normal, cspa, 263328, -1/*263338*/, true);
-    //CreateChannel(62, 1, "Scanning", str.str().c_str(), nullptr, "scanning", LSC::Type::normal, cspa, 263328, -1/*263339*/, true);
-    //CreateChannel(63, 1, "Wormholes", str.str().c_str(), nullptr, "wormholes", LSC::Type::normal, cspa, 263328, -1/*263340*/, true);
+    CreateStaticChannel(60, ownerSystem/*263289*/, LSC::Type::normal, str.str().c_str(), nullptr, LSC::gID::Content, LSC::cID::Mining);
+    CreateStaticChannel(61, ownerSystem/*263338*/, LSC::Type::normal, str.str().c_str(), nullptr, LSC::gID::Content, LSC::cID::Ratting);
+    CreateStaticChannel(62, ownerSystem/*263339*/, LSC::Type::normal, str.str().c_str(), nullptr, LSC::gID::Content, LSC::cID::Scanning);
+    CreateStaticChannel(63, ownerSystem/*263340*/, LSC::Type::normal, str.str().c_str(), nullptr, LSC::gID::Content, LSC::cID::Wormholes);
+    CreateStaticChannel(64, ownerSystem, LSC::Type::normal, str.str().c_str(), nullptr, LSC::gID::Content, LSC::cID::Manufacturing);
+    CreateStaticChannel(65, ownerSystem, LSC::Type::normal, str.str().c_str(), nullptr, LSC::gID::Content, LSC::cID::Invention);
+    CreateStaticChannel(66, ownerSystem, LSC::Type::normal, str.str().c_str(), nullptr, LSC::gID::Content, LSC::cID::Blueprints);
+
 
     // ==========================================
     // --- CATEGORY 7: COMMUNITY UTILITIES ---
@@ -1546,15 +1588,21 @@ void LSCService::CreateStaticChannels() {
     str << "<b><u><color=0xff00ffff>Mission Runners</color></b></u><br><color=0xffffffff>";
     str << "Please state where your bookmark will be traded, contracted or if youre hoping to fleet with the salvager looking for work. <br>";
     str << "If you are contracting or trading bookmarks dont forget to</color> <color=0xff007fff>Abandon all wrecks and containers</color><color=0xffffffff>.</color><br>";
+    CreateStaticChannel(100, ownerSystem, LSC::Type::normal, str.str().c_str(), "Free Wrecks", LSC::gID::Unspecified, LSC::cID::None);
+	 //256739 <-- this was messageID from error about "channel already joined"
+
+    str.str("");
     str << "<b><u><fontsize=10><color=0xff00ff00>Useful Links.</color></u><br>";
     str << "<loc><url=http://evemaps.dotlan.net/>DOTLAN</url></loc></b><color=0xffffffff> - A database of everything you need to know about New Eden; maps, corporations, navigations and much more.</color><color=0xcc111100>NOTE:</color><color=0xffffffff> While this site is specific for Tranquility, the maps and navigation are the same here.</color><br>";
     str << "<loc><url=http://o.smium.org>Osmium</url></loc><color=0xffffffff> - A site where pilots post their ship fittings to help players get the most out of their ship class.</color><br>";
     str << "<loc><url=http://eve-survival.org/wikka.php?wakka=MissionReports>EVE Survival</url></loc><color=0xffffffff> - A database of missions within New Eden. Here you can find information about gaining the upper hand on those sneaky NPCs and how to perfectly run the mission in question.</color><br>";
     str << "<loc><url=http://www.fuzzwork.co.uk/>Fuzz Work</url></loc><color=0xffffffff> - A brilliant site that has many awesome calculators for LP stores, Blueprints, Invention, Ore and much more!</color><br>";
-    //CreateChannel(100, 2, "Free Wrecks", str.str().c_str(), nullptr, "freewrecks", LSC::Type::normal, cspa, 0, 0, true); //256739 <-- this was messageID from error about "channel already joined"
+    CreateStaticChannel(100, ownerSystem, LSC::Type::normal, str.str().c_str(), "Useful Links", LSC::gID::Unspecified, LSC::cID::None);
 
     str.str("");
     str << "<br><color=0xffffffff>Welcome to the</color> <color=0xff00ffff>GM Command</color><color=0xffffffff> channel.<br><br>";
     str << "This channel is intended for using dot commands.</color>";
-    //CreateChannel(staticGMChannel, 1, "Command", str.str(), nullptr, "command", LSC::Type::normal, cspa, LSC::TitleID::Other, 0, true);
+    CreateStaticChannel(staticGMChannel, ownerSystem, LSC::Type::normal, str.str().c_str(), "Command", LSC::gID::Unspecified, LSC::cID::Owner);
 }
+
+    //CreateStaticChannel(channelID, ownerID, type, motd, displayName, gMsgID, cMsgID)

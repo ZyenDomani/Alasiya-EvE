@@ -158,8 +158,11 @@ typedef enum {
     ownerBank               = 2,
     ownerStation            = 4,
     ownerCombatSimulator    = 5,
-    //ownerUnknown            = 3006
-} ownerDefs;
+    ownerUnknown            = 3006,
+    ownerCONCORD            = 1000125,
+    ownerSCC                = 1000132,
+    ownerDED                = 1000137
+} owners;
 
 typedef enum {
 //locationHiddenSpace = 9000001

@@ -76,6 +76,8 @@ protected:
 
     LSCDB* m_db;
 
+    PyTuple* SendError(int8 error);
+    
     // Active room tracking
     std::unordered_map<int32, LSCChannel*> m_channels;
     std::unordered_map<std::string, int32> m_channelNameMap;

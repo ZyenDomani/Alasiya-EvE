@@ -39,19 +39,13 @@ class LSCChannel;
 
 class LSCChannelChar {
 public:
-    LSCChannelChar(LSCChannel *chan, uint32 corpID, uint32 charID, std::string charName, uint32 allianceID, uint32 warFactionID, int64 role, uint32 extra, LSC::Mode mode) :
-      m_parent(chan),
-      m_corpID(corpID),
-      m_charID(charID),
-      m_charName(charName),
-      m_allianceID(allianceID),
-      m_warFactionID(warFactionID),
-      m_role(role),
-      m_extra(extra),
-      m_mode(mode) { }
+    LSCChannelChar(LSCChannel *chan, uint32 corpID, uint32 charID, std::string charName, uint32 allianceID, \
+				uint32 warFactionID, int64 role, uint32 extra, LSC::Mode mode)
+	: m_parent(chan), m_corpID(corpID), m_charID(charID), m_charName(charName), m_allianceID(allianceID), \
+      m_warFactionID(warFactionID), m_role(role), m_extra(extra), m_mode(mode) { }
 
     ~LSCChannelChar() { }
-    PyRep *Encode() const;
+    PyRep* Encode() const;
 
     LSC::Mode GetMode() const                           { return m_mode; }
     void SetMode(LSC::Mode mode)                        { m_mode = mode; }
@@ -68,43 +62,18 @@ protected:
     LSC::Mode m_mode;
 };
 
-// Struct tracking a live ACL rule entry in memory
 struct AclEntry {
-    int8 mode;       // None, Listener, Speaker, Moderator, etc.
-    int8 originalMode;
-    uint32 adminID;
-    uint32 accessorID;    // Character ID, Corp ID, or Alliance ID
+    LSC::Mode mode;       // None, Listener, Speaker, Moderator, etc.
+    LSC::Mode originalMode;
+    int32 adminID;
+    int32 accessorID;    // Character ID, Corp ID, or Alliance ID
     int64 untilWhen;     // 64-bit absolute Win32 FileTime expiry timestamp (0 = permanent)
     std::string reason;
 
-    AclEntry(uint32 acc, int8 md, int64 until, int8 orig, std::string reas, uint32 adm)
+    AclEntry(int32 acc, LSC::Mode md, int64 until, LSC::Mode orig, std::string reas, int32 adm)
     : accessorID(acc), mode(md), untilWhen(until), originalMode(orig), reason(reas), adminID(adm) {}
 
-    PyRep *Encode() const;
-};
-
-class LSCChannelMod {
-public:
-    LSCChannelMod(LSCChannel * chan, uint32 accessor, int64 untilWhen, uint32 originalMode, std::string admin, std::string reason, LSC::Mode mode) :
-      m_parent(chan),
-      m_accessor(accessor),
-      m_mode(mode),
-      m_untilWhen(untilWhen),
-      m_originalMode(originalMode),
-      m_admin(admin),
-      m_reason(reason) { }
-
-    ~LSCChannelMod() { }
-    PyRep * Encode();
-
-protected:
-    LSCChannel * m_parent;    // we do not own this
-    uint32 m_accessor;
-    LSC::Mode m_mode;
-    int64 m_untilWhen;
-    uint32 m_originalMode;
-    std::string m_admin;
-    std::string m_reason;
+    PyRep* Encode() const;
 };
 
 class LSCChannel {
@@ -126,14 +95,14 @@ public:
     LSCChannel& operator=(const LSCChannel&) =delete;
     ~LSCChannel();
 
-    PyRep *EncodeID();
-    PyRep *EncodeStaticChannel(uint32 charID);
-    PyRep *EncodeDynamicChannel(uint32 charID);
-    PyRep *EncodeChannelMods();
-    PyRep *EncodeChannelChars();
-    PyRep *EncodeEmptyChannelChars();
+    PyRep* EncodeID();
+    PyRep* EncodeStaticChannel(uint32 charID);
+    PyRep* EncodeDynamicChannel(uint32 charID);
+    PyRep* EncodeChannelACL();
+    PyRep* EncodeChannelChars();
+    PyRep* EncodeEmptyChannelChars();
 
-    const char *GetTypeString();
+    const char* GetTypeString();
     bool JoinChannel(Client *pClient);
     void LeaveChannel(Client* pClient);
     bool IsJoined(uint32 charID);
@@ -151,6 +120,11 @@ public:
 
     void AnnouncePresence(Client* pClient, int8 appliedMode);
     void BroadcastEvent( const std::string& method, PyTuple* args );
+
+	void InitACL(Client* pClient);
+
+	// query
+	bool 				HasPassword()					{ return !m_password.empty(); }
 
     // setters
     void SetDisplayName(const std::string& displayName) { m_displayName = displayName; }
@@ -183,7 +157,7 @@ public:
     LSC_SenderInfo* FakeSenderInfo();
 
 protected:
-    LSCService *const   m_service;    //we do not own this
+    LSCService* const   m_service;    //we do not own this
 
     LSC::Type           m_type;
     // memberless - true = estimate member count, send estimatedMemberCount in packet.  false = actual memberList.count()   (5m refresh in client)
@@ -193,9 +167,8 @@ protected:
     bool                m_temporary;
     // true = english only; false = any language
     bool                m_languageRestriction;
-    // -1 for static and 'session-type' channels, must be !=0 to show 'locale.displayName'
+	// group header and channel label ids for channel sorting window
     int32               m_gMsgID;
-    // if msgID = -1, name = raw displayName if !None else locale.msgID
     int32               m_cMsgID;
     uint16              m_cspa;
     uint32              m_ownerID;
@@ -205,10 +178,8 @@ protected:
     std::string         m_comparisonKey;
     std::string         m_password;
 
-    std::map<uint32, LSCChannelMod> m_mods;
-    // Fast O(1) in-memory registrie
     std::unordered_map<uint32, AclEntry*> m_aclMap;             //charID/data
-
+    PyPackedRow* CreatePackedRow( DBRowDescriptor* header, Client* pClient );
 };
 
 #endif
@@ -221,8 +192,8 @@ protected:
  *       title = displayName
  *     else
  *       title prepend one of (group, groupalone, private, privatealone)
- *   elseif gMid != 0
- *     if cMid = -1 (systemChannel)
+ *   elseif gID != 0
+ *     if cID = -1 (systemChannel)
  *       if displayName != None
  *         title = displayName
  *       else
@@ -230,9 +201,9 @@ protected:
  *     elseif displayName != None
  *       title = displayName
  *     else
- *       title = cMid
+ *       title = cID
  *   elseif ownerID = 1 (ownerSystem)
- *     title = cMid
+ *     title = cID
  *   else
  *     title = displayName
  * else (this is for channelID[k, v] where k=type, v=channelID)

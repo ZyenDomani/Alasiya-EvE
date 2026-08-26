@@ -66,7 +66,7 @@ public:
     ///************  new
     void UpdateChannelInfo(LSCChannel* channel);
     bool SaveChannelACL(int32 channelID, const AclEntry* acl);
-    bool RemoveChannelACL(int32 channelID, uint32 accessorID);
+    bool RemoveChannelACL(int32 channelID, int32 accessorID);
     bool LoadChannelACL(int32 channelID, std::unordered_map<uint32, AclEntry*>& aclMap);
     void UpdateChannelMode(int32 channelID, int32 rawModeVal);
     void UpdateUserChannelAccess(int32 channelID, uint32 targetCharID, int32 rawModeVal);

@@ -1,5 +1,3 @@
-
-
 /*
  *
  * LSC stands for Large Scale Chat
@@ -82,12 +80,12 @@ namespace LSC {
 
         // type designations are internal-use only (client works on strings)
         enum Type :int8_t {
-            global          = 1,    // send channelID as tuple(id, desc)  uses full memberlist, never memberless
-            corp            = 2,    // send channelID as tuple(id, desc)  uses full memberlist, never memberless
-            region          = 3,    // send channelID as tuple(id, desc)  uses full memberlist, never memberless, not used in w-space
-            constellation   = 4,    // send channelID as tuple(id, desc)  uses full memberlist, never memberless, not used in w-space
-            solarsystem     = 5,    // send channelID as tuple(id, desc)  used in w-space, memberless, changes chat window title from "Local" to "System"
-            solarsystem2    = 6,    // send channelID as tuple(id, desc)  uses full memberlist, never memberless, not used in w-space (k-space "Local" channel)
+            global          = 1,    // send channelID as tuple(desc, id)  not memberless
+            corp            = 2,    // send channelID as tuple(desc, id)  not memberless
+            region          = 3,    // send channelID as tuple(desc, id)  not memberless, not used in w-space
+            constellation   = 4,    // send channelID as tuple(desc, id)  not memberless, not used in w-space
+            solarsystem     = 5,    // send channelID as tuple(desc, id)  is memberless, w-space "System" channel
+            solarsystem2    = 6,    // send channelID as tuple(desc, id)  not memberless, k-space "Local" channel
             // end of static channels
             character       = 7,    // for mailing lists using channelID = charID
             // begin dynamic channels
@@ -126,36 +124,50 @@ namespace LSC {
         };
     }
 
-    namespace TitleID {
+    namespace gID {
         enum :int32_t {
-            // these are locale messageIDs
-            System      = -1,
+	    // these are the group titles in channel list
+	    None		= 0,
+            Player              = 61587,  //Player Channels
+            Mine                = 61560,   //My Channels
+            Faction             = 63594,
+            System2             = 67203, //System Channels <<- space
+            Unspecified         = 67237,
+            Mission             = 67238,
+            Market              = 67242,
+            Dungeon             = 67243,
+            Misc                = 67265,
+            Corporate           = 263235,
+            Help                = 263238,
+            Trade               = 263240,
+            MaM                 = 263275, //Minerals and Manufacturing
+            Events              = 263306,
+            Content             = 263328,
+            Media               = 263330,
+	    SnI			= 263331  //Science and Industry
+        };
+    }
+    namespace cID {
+        enum :int32_t {
+	    // these are the channel titles in channel list
+            System      	= -1,    //SystemChannels  <<- no space
+	    None		= 0,
             Faction             = 63594,
             System2             = 67203, //System Channels
             Character           = 67230,
             Corporation         = 67231,
             Unspecified         = 67237,
-            Mission             = 67238,
             Research            = 67240,
             Alliance            = 67241,
-            Market              = 67242,
-            Dungeon             = 67243,
             Industry            = 67248,
-            Misc                = 67265,
-            Corporate           = 263235,
-            Help                = 263238,
-            Trade               = 263240,
+            Rookie              = 263259, //Rookie Help
             EngHelp             = 263262,
             Rumor               = 263265,
-            MaM                 = 263275, //Minerals and Manufacturing
             Other               = 263277,
             Smacktalk           = 263278,
             CEO                 = 263287,
             Blueprints          = 263292,
             RealEstate          = 263293,
-            Events              = 263306,
-            Content             = 263328,
-            Media               = 263330,
             Technology          = 263332,
             Ratting             = 263338,
             Scanning            = 263339,
@@ -168,4 +180,5 @@ namespace LSC {
             Owner               = 263628
         };
     }
+
 };   // namespace LSC

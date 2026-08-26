@@ -54,7 +54,7 @@ void LSCDB::UpdateChannelInfo(LSCChannel *channel) {
     int32 absoluteChannelID = (rawChannelID < 0) ? (rawChannelID & 0x7FFFFFFF) : rawChannelID;
     DBerror err;
 
-    // PATH A: Target is an Authoritative Mailing List Structure
+    // PATH A: Target is a Mailing List
     if (IsMailList(absoluteChannelID)) {
         std::string escapedListName;
         sDatabase.DoEscapeString(escapedListName, channel->GetDisplayName());
@@ -308,10 +308,10 @@ bool LSCDB::LoadChannelACL(int32 channelID, std::unordered_map<uint32, AclEntry*
         }
 
         aclMap.emplace(row.GetInt(0),  new AclEntry(
-            row.GetInt(0),
-                                                    row.GetInt8(1),
+                                                    row.GetInt(0),
+                                                    static_cast<LSC::Mode>(row.GetInt8(1)),
                                                     banTime,
-                                                    row.GetInt8(3),
+                                                    static_cast<LSC::Mode>(row.GetInt8(3)),
                                                     row.GetText(4),
                                                     row.GetInt(5))
         );
@@ -332,26 +332,26 @@ bool LSCDB::SaveChannelACL(int32 channelID, const AclEntry* acl) {
     // CRITICAL: Strict MariaDB 10.0.3 legacy VALUES() syntax required for upserts
     snprintf(queryStr, sizeof(queryStr),
              "INSERT INTO channelAcl (channelID, accessorID, mode, untilWhen, originalMode, reason, adminID) "
-             "VALUES (%d, %u, %i, %lli, %i, '%s', %u) "
+             "VALUES (%d, %i, %i, %lli, %i, '%s', %i) "
              "ON DUPLICATE KEY UPDATE "
              "mode = VALUES(mode), "
              "untilWhen = VALUES(untilWhen), "
              "originalMode = VALUES(originalMode), "
              "reason = VALUES(reason), "
              "adminID = VALUES(adminID);",
-             channelID, acl->accessorID, acl->mode,
-             acl->untilWhen, acl->originalMode,
+             channelID, acl->accessorID, static_cast<int8>(acl->mode),
+             acl->untilWhen, static_cast<int8>(acl->originalMode),
              acl->reason.c_str(), acl->adminID);
 
     return sDatabase.RunQuery(res, queryStr);
 }
 
-bool LSCDB::RemoveChannelACL(int32 channelID, uint32 accessorID) {
+bool LSCDB::RemoveChannelACL(int32 channelID, int32 accessorID) {
     DBQueryResult res;
     char queryStr[256];
 
     snprintf(queryStr, sizeof(queryStr),
-             "DELETE FROM channelAcl WHERE channelID = %i AND accessorID = %u;",
+             "DELETE FROM channelAcl WHERE channelID = %i AND accessorID = %i;",
              channelID, accessorID);
 
     return sDatabase.RunQuery(res, queryStr);

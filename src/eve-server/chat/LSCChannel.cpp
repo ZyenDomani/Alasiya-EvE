@@ -31,10 +31,14 @@
 #include "../Client.h"
 #include "chat/LSCChannel.h"
 #include "chat/LSCService.h"
-#include <npc/NPC.h>
+#include "npc/NPC.h"
 
 
+//TODO:  verifiy this!!  is this right??
 PyRep* LSCChannelChar::Encode() const {
+    Client* pClient = sEntityMgr.FindClientByCharID(m_charID);
+    if (pClient == nullptr)
+        return nullptr;
     ChannelCharsLine line;
     line.allianceID = m_allianceID;
     line.charID = m_charID;
@@ -42,27 +46,24 @@ PyRep* LSCChannelChar::Encode() const {
     line.role = m_role;
     line.warFactionID = m_warFactionID;
     line.mode = m_mode;
-    // extra is a list of charID, charName, charTypeID, unknown bool, unknown PyNone
-    util_Row rs;
-    rs.header.push_back("ownerID");
-    rs.header.push_back("ownerName");
-    rs.header.push_back("typeID");
-    rs.line = new PyList();
-    rs.line->AddItemInt( m_charID );
-    rs.line->AddItemString( m_charName.c_str() );
-    rs.line->AddItemInt( 1378 );    // fix this
-    line.extra = rs.Encode();//m_extra;
+    LSC_SenderEOL* eol = new LSC_SenderEOL();
+        eol->charID = m_charID;
+        eol->charName = pClient->GetChar()->itemName();
+        eol->typeID = pClient->GetChar()->typeID();
+        eol->gender = pClient->GetChar()->gender();
+        eol->charNameID = PyStatic.NewNone();
+    line.extra = eol->Encode();
     return line.Encode();
 }
 
-PyRep* LSCChannelMod::Encode() {
+PyRep* AclEntry::Encode() const {
     ChannelACLLine line;
-    line.accessor = m_accessor;
-    line.admin = m_admin;
-    line.mode = m_mode;
-    line.originalMode = m_originalMode;
-    line.reason = m_reason;
-    line.untilWhen = m_untilWhen;
+    line.accessor = accessorID;
+    line.admin = adminID;
+    line.mode = mode;
+    line.originalMode = originalMode;
+    line.reason = reason;
+    line.untilWhen = untilWhen;
     return line.Encode();
 }
 
@@ -93,6 +94,8 @@ LSCChannel::LSCChannel(LSCService* svc,
   m_gMsgID(gMsgID),
   m_cMsgID(cMsgID)
 {
+	m_service->GetDB()->LoadChannelACL(channelID, m_aclMap);
+
     _log(LSC__CHANNELS, "Creating channel %u(%s:%s) - type: %s", m_channelID, \
                         (m_displayName == "") ? "null" : m_displayName.c_str(), \
                         (m_comparisonKey == "") ? "null" : m_comparisonKey.c_str(),
@@ -101,6 +104,14 @@ LSCChannel::LSCChannel(LSCService* svc,
 
 LSCChannel::~LSCChannel() {
     _log(LSC__CHANNELS, "Destroying channel %u - \"%s\"", m_channelID, (m_displayName == "") ? ((m_comparisonKey == "") ? "null" : m_comparisonKey.c_str()) : m_displayName.c_str());
+}
+
+void LSCChannel::InitACL(Client* pClient) {
+	int32 charID = pClient->GetCharacterID();
+	AclEntry* entry = new AclEntry(charID, LSC::Mode::Creator, 0, LSC::Mode::None, "Channel Creation", charID);
+
+	m_aclMap.emplace(charID, entry);
+        m_service->GetDB()->SaveChannelACL(m_channelID, entry);
 }
 
 void LSCChannel::GetChannelInfo(int32* channelID, uint32* ownerID, std::string& displayName, std::string& motd, \
@@ -234,7 +245,7 @@ void LSCChannel::SendMessage(Client* pClient, std::string& message, bool self/*f
     }
 
     sm.channelID = EncodeID();
-    sm.memberCount = (int32)m_chars.size();
+    sm.memberCount = static_cast<int32>(m_chars.size());
     sm.message = message;
 
     PyTuple* rsp = sm.Encode();
@@ -355,7 +366,7 @@ bool LSCChannel::IsModeratorOrHigher(int32 charID, int32 corpID, int64 corpFlags
     if (it != m_aclMap.end() && it->second != nullptr) {
         AclEntry* acl = it->second;
 
-        // Temporal expiration safeguard check
+        // Ensure an absolute timed restriction hasn't passed yet
         if (acl->untilWhen == 0 || GetFileTimeNow() < acl->untilWhen) {
             if (acl->mode >= LSC::Mode::Moderator) {
                 return true;
@@ -496,10 +507,10 @@ PyRep* LSCChannel::EncodeID() {
         case LSC::Type::solarsystem2:   //this is 'local' in k-space
         case LSC::Type::constellation: {
             PyTuple* outer = new PyTuple(1);
-            PyTuple* inner = new PyTuple(2);
-            inner->SetItemString(0, GetTypeString());
-            inner->SetItemInt(1, m_channelID);
-            outer->SetItem(0, inner);
+                PyTuple* inner = new PyTuple(2);
+                    inner->SetItemString(0, GetTypeString());
+                    inner->SetItemInt(1, m_channelID);
+                outer->SetItem(0, inner);
             return outer;
         }
 
@@ -629,13 +640,12 @@ PyRep* LSCChannel::EncodeDynamicChannel(uint32 charID) {
     return info.Encode();
 }
 
-PyRep* LSCChannel::EncodeChannelMods()
+PyRep* LSCChannel::EncodeChannelACL()
 {
     ChannelACL info;
     info.lines = new PyList();
-    std::map<uint32, LSCChannelMod>::iterator itr = m_mods.begin();
-    for(; itr != m_mods.end(); itr++)
-        info.lines->AddItem( itr->second.Encode());
+    for (const auto& cur : m_aclMap)
+        info.lines->AddItem(cur.second->Encode());
     return info.Encode();
 }
 
@@ -651,6 +661,60 @@ PyRep* LSCChannel::EncodeEmptyChannelChars() {
     ChannelChars info;
     info.lines = new PyList();
     return info.Encode();
+}
+
+PyPackedRow* LSCChannel::CreatePackedRow(DBRowDescriptor* header, Client* pClient) {
+    PyPackedRow* res = new PyPackedRow(header);
+    // [0] channelID -> I4 (Int32) or specialized type representation
+    res->SetField(0, EncodeID());
+    // [1] ownerID -> I4
+    res->SetField(1, new PyInt(m_ownerID));
+    // [2] displayName -> WStr (Wide String / None)
+    if (!m_displayName.empty()) {
+        res->SetField(2, new PyString(m_displayName));
+    } else {
+        res->SetField(2, PyStatic.NewNone());
+    }
+    // [3] motd -> WStr
+    if (!m_motd.empty()) {
+        res->SetField(3, new PyString(m_motd));
+    } else {
+        res->SetField(3, PyStatic.NewNone());
+    }
+    // [4] comparisonKey -> WStr
+    if (!m_comparisonKey.empty()) {
+        res->SetField(4, new PyString(m_comparisonKey));
+    } else {
+        res->SetField(4, PyStatic.NewNone());
+    }
+    // [5] memberless -> Bool
+    res->SetField(5, new PyBool(m_memberless));
+    // [6] password -> WStr
+    if (!m_password.empty()) {
+        res->SetField(6, new PyString(m_password));
+    } else {
+        res->SetField(6, PyStatic.NewNone());
+    }
+    // [7] mailingList -> Bool
+    res->SetField(7, new PyBool(m_mailingList));
+    // [8] cspa -> I4
+    res->SetField(8, new PyInt(m_cspa));
+    // [9] temporary -> Bool
+    res->SetField(9, new PyBool(m_temporary));
+    // [10] languageRestriction -> Bool
+    res->SetField(10, new PyBool(m_languageRestriction));
+    // [11] groupMessageID -> I4
+    res->SetField(11, new PyInt(m_gMsgID));
+    // [12] channelMessageID -> I4
+    res->SetField(12, new PyInt(m_cMsgID));
+    // [13] subscribed -> I4
+    if (pClient != nullptr) {
+        res->SetField(13, PyStatic.NewOne());
+    } else {
+        res->SetField(13, PyStatic.NewZero());
+    }
+
+    return res;
 }
 
 const char* LSCChannel::GetTypeString() {
