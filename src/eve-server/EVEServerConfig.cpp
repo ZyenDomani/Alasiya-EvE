@@ -252,6 +252,7 @@ EVEServerConfig::EVEServerConfig()
     chat.EnableSquadChat = false;
     chat.EnableVoiceChat = false;
     chat.ReturnAllChannels = false;
+    chat.ReturnMostChannels = false;
     chat.EnforceRookieInHelp = false;
 
     // crime
@@ -850,6 +851,7 @@ bool EVEServerConfig::ProcessChat(const TiXmlElement* ele) {
     AddValueParser("EnableSquadChat",      chat.EnableSquadChat);
     AddValueParser("EnableVoiceChat",      chat.EnableVoiceChat);
     AddValueParser("ReturnAllChannels",    chat.ReturnAllChannels);
+    AddValueParser("ReturnMostChannels",   chat.ReturnMostChannels);
     AddValueParser("EnforceRookieInHelp",  chat.EnforceRookieInHelp);
 
     const bool result = ParseElementChildren(ele);
@@ -859,6 +861,7 @@ bool EVEServerConfig::ProcessChat(const TiXmlElement* ele) {
     RemoveParser("EnableSquadChat");
     RemoveParser("EnableVoiceChat");
     RemoveParser("ReturnAllChannels");
+    RemoveParser("ReturnMostChannels");
     RemoveParser("EnforceRookieInHelp");
 
     return result;

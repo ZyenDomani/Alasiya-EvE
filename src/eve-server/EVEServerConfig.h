@@ -362,6 +362,7 @@ public:
         bool EnableSquadChat;
         bool EnableVoiceChat;
         bool ReturnAllChannels;
+        bool ReturnMostChannels;
         bool EnforceRookieInHelp;
     } chat;
 

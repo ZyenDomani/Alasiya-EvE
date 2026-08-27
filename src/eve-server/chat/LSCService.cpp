@@ -71,7 +71,7 @@ m_nextChannelID(0)
 
     m_db = new LSCDB();
 
-    //CreateStaticChannels();
+    CreateStaticChannels();
 
     m_nextChannelID = m_db->GetHighestChannelIDFromDB() + 1;
     if (m_nextChannelID < minChatChannel)
@@ -236,6 +236,12 @@ PyResult LSCService::Handle_GetChannels(PyCallArgs &call)
 
     auto itr = m_channels.begin();
     if (sConfig.chat.ReturnAllChannels) {
+        for (; itr != m_channels.end(); ++itr) {
+            if (itr->second == nullptr)
+                continue;
+            info.lines->AddItem(itr->second->EncodeStaticChannel(charID));
+        }
+    } else if (sConfig.chat.ReturnMostChannels) {
         int32 regionID        = call.client->GetRegionID();
         int32 constellationID = call.client->GetConstellationID();
         int32 allianceID      = call.client->GetAllianceID();
@@ -300,15 +306,8 @@ PyResult LSCService::Handle_GetChannels(PyCallArgs &call)
                         sendChannel = true;
                     continue;
                 } break;
-                case LSC::Type::region:
-                case LSC::Type::constellation:
-                case LSC::Type::solarsystem:
-                case LSC::Type::fleet:
-                case LSC::Type::wing:
-                case LSC::Type::squad:
-                case LSC::Type::warfaction:
-                case LSC::Type::incursion:
-                case LSC::Type::custom: {
+                // ignore remaining channels
+                default: {
                     continue;
                 } break;
             }
@@ -1170,7 +1169,7 @@ PyResult LSCService::Handle_DestroyChannel(PyCallArgs& call)
 
     auto itr = m_channels.find(channelID);
     if (itr == m_channels.end() || itr->second == nullptr) {
-        _log(LSC__ERROR, "%s: Handle_DestroyChannel failed. Channel ID %i not found in hash register.",
+        _log(LSC__ERROR, "%s: Handle_DestroyChannel failed. Channel ID %i not found.",
              call.client->GetName(), channelID);
         return nullptr;
     }
@@ -1267,7 +1266,9 @@ void LSCService::CreateSystemChannel(int32 channelID) {
     if (m_channels.find(channelID) != m_channels.end())
         return;
 
-    LSC::Type type = LSC::Type::normal;
+    LSC::Type type  = LSC::Type::normal;
+    int32 gMsgID    = LSC::gID::System2;
+    int32 cMsgID    = LSC::cID::None;
     std::string name= "", motd = "";
     uint32 ownerID = ownerSystem;
 
@@ -1289,9 +1290,10 @@ void LSCService::CreateSystemChannel(int32 channelID) {
         return;
     }
 
+    //CreateStaticChannel(channelID, ownerID, type, motd, displayName, gMsgID, cMsgID)
     LSCChannel* pChannel = nullptr;
     if (name.empty()) {
-        pChannel = new LSCChannel(this, channelID, ownerID, type, motd.c_str());
+        pChannel = new LSCChannel(this, channelID, ownerID, type, motd.c_str(), nullptr, nullptr, gMsgID, cMsgID);
         if (pChannel != nullptr)
             m_channels.emplace(channelID, pChannel);
     } else {
@@ -1299,7 +1301,7 @@ void LSCService::CreateSystemChannel(int32 channelID) {
         boost::algorithm::trim(compkey);
         boost::algorithm::to_lower(compkey);
         compkey.erase(std::remove(compkey.begin(), compkey.end(), ' '), compkey.end());
-        pChannel = new LSCChannel(this, channelID, ownerID, type, motd.c_str(), name.c_str(), compkey.c_str());
+        pChannel = new LSCChannel(this, channelID, ownerID, type, motd.c_str(), name.c_str(), compkey.c_str(), gMsgID, cMsgID);
         if (pChannel != nullptr) {
             m_channels.emplace(channelID, pChannel);
             m_channelNameMap.emplace(compkey, channelID);
@@ -1348,71 +1350,80 @@ LSCChannel* LSCService::CreateDynamicChannel(int32 channelID,
 
     auto it = m_channels.find(actualChannelID);
     if (it != m_channels.end() && it->second != nullptr) {
-        _log(LSC__CHANNELS, "Channel Instance ID %i already active in memory. Returning existing reference pointer to block heap overwrite leaks.", actualChannelID);
+        _log(LSC__CHANNELS, "ChannelID %i found. Returning existing pointer.", actualChannelID);
         return it->second;
     }
 
     LSC::Type type  = LSC::Type::normal;
-    int32 cMsgID    = 0;
-    int32 gMsgID    = 0;
-//TODO:  fix group/channel ids
+    int32 gMsgID    = LSC::gID::None;
+    int32 cMsgID    = LSC::cID::None;
     // override for private
     if (actualChannelID < 0) {
         temporary = true;
-        type = LSC::Type::custom;
+        type   = LSC::Type::custom;
+     	gMsgID = LSC::gID::Player;
+    	cMsgID = LSC::cID::Unspecified;
         if (ownerID == 0)
             _log(LSC__WARNING, "ownerID = 0 for private channel %i", actualChannelID);
     } else if (IsPlayerCorp(channelID)) {
         type = LSC::Type::corp;
         //name = "Corp";
         motd = m_db->GetCorporationName(channelID);
-        gMsgID = LSC::cID::Corporation;
-        cMsgID = 0;
+        gMsgID = LSC::gID::Player;
+        cMsgID = LSC::cID::Corporation;
         if (ownerID == 0)
             ownerID = CorporationDB::GetCorpCEO(channelID);
     } else if (IsAllianceID(channelID)) {
         type = LSC::Type::alliance;
         //name = "Alliance";
         motd = m_db->GetAllianceName(channelID);
-        gMsgID = 5;
-        cMsgID = 0;
+        gMsgID = LSC::gID::Player;
+        cMsgID = LSC::cID::Alliance;
         if (ownerID == 0)
             ownerID = actualChannelID;
     } else if (IsNPCCorp(actualChannelID)) {
         type = LSC::Type::corp;
         name = sDataMgr.GetCorpName(actualChannelID);
         motd = "Welcome to " + name + "'s Corporation channel.";
-        gMsgID = LSC::cID::Corporation;
+        gMsgID = LSC::gID::Corporate;
+        cMsgID = LSC::cID::Corporation;
         if (ownerID == 0)
             ownerID = actualChannelID;
     } else if (IsFactionID(actualChannelID)) {
         type = LSC::Type::warfaction;
         name = sDataMgr.GetFactionName(actualChannelID);
+        gMsgID = LSC::gID::System2;
+        cMsgID = LSC::cID::Faction;
         if (ownerID == 0)
             ownerID = actualChannelID;
     } else if (IsFleetID(actualChannelID)) {
         type = LSC::Type::fleet;
         name = sFltSvc.GetFleetName(actualChannelID);
         motd = sFltSvc.GetFleetDescription(actualChannelID);
-        cMsgID = 0;
+        gMsgID = LSC::gID::Player;
+        cMsgID = LSC::cID::Other;
         if (ownerID == 0)
             ownerID = sFltSvc.GetFleetLeaderID(actualChannelID);
     } else if (IsWingID(actualChannelID)) {
         type = LSC::Type::wing;
         name = sFltSvc.GetWingName(actualChannelID);
         motd = name + "<br>" + sFltSvc.GetFleetDescription(actualChannelID);
-        cMsgID = 0;
+        gMsgID = LSC::gID::Player;
+        cMsgID = LSC::cID::Other;
         if (ownerID == 0)
             ownerID = sFltSvc.GetWingLeaderID(actualChannelID);
     } else if (IsSquadID(actualChannelID)) {
         type = LSC::Type::squad;
         name = sFltSvc.GetSquadName(actualChannelID);
         motd = name + "<br>" + sFltSvc.GetFleetDescription(actualChannelID);
-        cMsgID = 0;
+        gMsgID = LSC::gID::Player;
+        cMsgID = LSC::cID::Other;
         if (ownerID == 0)
             ownerID = sFltSvc.GetSquadLeaderID(actualChannelID);
     } else if (IsCharacterID(actualChannelID)) {
         type = LSC::Type::character;
+        gMsgID = LSC::gID::Player;
+        cMsgID = LSC::cID::Character;
     } else {
         // not sure what to do here....should never hit
         sLog.Error("LSC::CreateDynamicChannel", "Called to create channel %i.", channelID);
@@ -1498,11 +1509,11 @@ void LSCService::CreateStaticChannels() {
     // ==========================================
     // --- CATEGORY 2: EMPIRE/FACTION ---
     // ==========================================
-    CreateStaticChannel(10, ownerSystem/*263268*/, LSC::Type::normal, nullptr, "Caldari Faction", LSC::gID::Faction, LSC::cID::None);
-    CreateStaticChannel(11, ownerSystem/*263246*/, LSC::Type::normal, nullptr, "Amarr Faction", LSC::gID::Faction, LSC::cID::None);
-    CreateStaticChannel(12, ownerSystem/*263281*/, LSC::Type::normal, nullptr, "Minmatar Faction", LSC::gID::Faction, LSC::cID::None);
-    CreateStaticChannel(13, ownerSystem/*263271*/, LSC::Type::normal, nullptr, "Gallente Faction", LSC::gID::Faction, LSC::cID::None);
-    CreateStaticChannel(14, ownerSystem/*263258*/, LSC::Type::normal, nullptr, "Jove Faction", LSC::gID::Faction, LSC::cID::None);
+    CreateStaticChannel(10, ownerSystem/*263268*/, LSC::Type::normal, nullptr, "Caldari Faction", LSC::gID::Empire, LSC::cID::System);
+    CreateStaticChannel(11, ownerSystem/*263246*/, LSC::Type::normal, nullptr, "Amarr Faction", LSC::gID::Empire, LSC::cID::System);
+    CreateStaticChannel(12, ownerSystem/*263281*/, LSC::Type::normal, nullptr, "Minmatar Faction", LSC::gID::Empire, LSC::cID::System);
+    CreateStaticChannel(13, ownerSystem/*263271*/, LSC::Type::normal, nullptr, "Gallente Faction", LSC::gID::Empire, LSC::cID::System);
+    CreateStaticChannel(14, ownerSystem/*263258*/, LSC::Type::normal, nullptr, "Jove Faction", LSC::gID::Empire, LSC::cID::System);
 
     // ==========================================
     // --- CATEGORY 3: CORPORATE  ---
@@ -1512,7 +1523,7 @@ void LSCService::CreateStaticChannels() {
     str << "This channel is intended for those players looking to find a new corporation, as well as those looking to enlist new players.<br>";
     str << "Other activities, such as non-recruitment discussion and scamming, are not permitted in this channel.";
 //Corporate
-    CreateStaticChannel(20, ownerSystem/*263286*/, LSC::Type::normal, str.str().c_str(), "Recruitment", LSC::gID::Corporate, LSC::cID::Corporation);
+    CreateStaticChannel(20, ownerSystem/*263286*/, LSC::Type::normal, str.str().c_str(), nullptr, LSC::gID::Corporate, LSC::cID::Recruitment);
     str.str("");
     str << "<color=0xffffffff>Welcome to this</color> <color=0xff00ffff>Corporate CEO</color><color=0xffffffff> channel.<br>";
     str << "This channel is intended for corp CEOs to discuss business as they see fit.</color>";
@@ -1604,5 +1615,3 @@ void LSCService::CreateStaticChannels() {
     str << "This channel is intended for using dot commands.</color>";
     CreateStaticChannel(staticGMChannel, ownerSystem, LSC::Type::normal, str.str().c_str(), "Command", LSC::gID::Unspecified, LSC::cID::Owner);
 }
-
-    //CreateStaticChannel(channelID, ownerID, type, motd, displayName, gMsgID, cMsgID)

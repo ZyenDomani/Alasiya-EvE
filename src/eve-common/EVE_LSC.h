@@ -127,6 +127,7 @@ namespace LSC {
     namespace gID {
         enum :int32_t {
 	    // these are the group titles in channel list
+            System      	= -1,    //SystemChannels  <<- no space
 	    None		= 0,
             Player              = 61587,  //Player Channels
             Mine                = 61560,   //My Channels
@@ -137,6 +138,7 @@ namespace LSC {
             Market              = 67242,
             Dungeon             = 67243,
             Misc                = 67265,
+            Empire              = 234139, //Empire Factions
             Corporate           = 263235,
             Help                = 263238,
             Trade               = 263240,
@@ -147,11 +149,13 @@ namespace LSC {
 	    SnI			= 263331  //Science and Industry
         };
     }
+
     namespace cID {
         enum :int32_t {
 	    // these are the channel titles in channel list
             System      	= -1,    //SystemChannels  <<- no space
 	    None		= 0,
+            Recruitment         = 54230,
             Faction             = 63594,
             System2             = 67203, //System Channels
             Character           = 67230,
