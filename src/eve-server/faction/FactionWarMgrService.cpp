@@ -177,7 +177,7 @@ PyResult FactionWarMgrService::Handle_GetMyCharacterRankOverview( PyCallArgs& ca
 }
 
 PyResult FactionWarMgrService::Handle_GetMyCharacterRankInfo( PyCallArgs& call ) {
-    _log(FACWAR__CALL, "FacWarMgr::Handle_GetMyCharacterRankInfo() size= %lu", call.tuple->size() );
+    _log(FACWAR__CALL, "FacWarMgr::Handle_GetMyCharacterRankInfo() size= %zu", call.tuple->size() );
     if (is_log_enabled(FACWAR__CALL_DUMP))
   call.Dump(FACWAR__CALL_DUMP);
   util_Rowset rs;
@@ -197,7 +197,7 @@ PyResult FactionWarMgrService::Handle_GetFactionMilitiaCorporation(PyCallArgs &c
      * 05:39:07 [SvcCall]       Tuple: 1 elements
      * 05:39:07 [SvcCall]         [ 0] Integer field: 500002
      */
-    _log(FACWAR__CALL, "FacWarMgr::Handle_GetFactionMilitiaCorporation() size= %lu", call.tuple->size() );
+    _log(FACWAR__CALL, "FacWarMgr::Handle_GetFactionMilitiaCorporation() size= %zu", call.tuple->size() );
     if (is_log_enabled(FACWAR__CALL_DUMP))
   call.Dump(FACWAR__CALL_DUMP);
     SingleIntegerArg arg;

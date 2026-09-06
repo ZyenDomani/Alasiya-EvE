@@ -160,7 +160,7 @@ void MissionDataMgr::Populate() {
             m_courier.emplace(row.GetUInt8(3), data);
         }
     }
-    sLog.Cyan("   MissionDataMgr", "%lu(%lu) Courier Mission Data Sets loaded in %.3fms.", \
+    sLog.Cyan("   MissionDataMgr", "%zu(%zu) Courier Mission Data Sets loaded in %.3fms.", \
             m_courier.size(), m_courierImp.size(),(GetTimeMSeconds() - start));
 
     //res->Reset();
@@ -183,7 +183,7 @@ void MissionDataMgr::Populate() {
         data.bonusTime          = row.GetUInt(10);
         m_mining.emplace(row.GetUInt8(3), data);
     }
-    sLog.Cyan("   MissionDataMgr", "%lu Mining Mission Data Sets loaded in %.3fms.", \
+    sLog.Cyan("   MissionDataMgr", "%zu Mining Mission Data Sets loaded in %.3fms.", \
             m_mining.size(), (GetTimeMSeconds() - start));
 
     start = GetTimeMSeconds();
@@ -205,7 +205,7 @@ void MissionDataMgr::Populate() {
             m_encounter.emplace(row.GetUInt8(3), data);
         }
     }
-    sLog.Cyan("   MissionDataMgr", "%lu(%lu) Encounter Mission Data Sets loaded in %.3fms.", \
+    sLog.Cyan("   MissionDataMgr", "%zu(%zu) Encounter Mission Data Sets loaded in %.3fms.", \
             m_encounter.size(), m_encounterImp.size(), (GetTimeMSeconds() - start));
 
     start = GetTimeMSeconds();
@@ -258,7 +258,7 @@ void MissionDataMgr::Populate() {
             m_missions.emplace(row.GetUInt8(3), data);
         }
     }
-    sLog.Cyan("   MissionDataMgr", "%lu(%lu) Unsorted Mission Data Sets loaded in %.3fms.", \
+    sLog.Cyan("   MissionDataMgr", "%zu(%zu) Unsorted Mission Data Sets loaded in %.3fms.", \
             m_missions.size(), m_missionsImp.size(), (GetTimeMSeconds() - start));
 
     //res->Reset();
@@ -309,7 +309,7 @@ void MissionDataMgr::Populate() {
         m_offers.emplace(row.GetUInt(2), offer);
         m_aoffers.emplace(row.GetUInt(1), offer);    // do we really want dupe data here?  yes.  need offer by char and by agent
     }
-    sLog.Cyan("   MissionDataMgr", "%lu Open Mission Offers loaded in %.3fms.", m_offers.size(), (GetTimeMSeconds() - start));
+    sLog.Cyan("   MissionDataMgr", "%zu Open Mission Offers loaded in %.3fms.", m_offers.size(), (GetTimeMSeconds() - start));
 
     //res->Reset();
     start = GetTimeMSeconds();
@@ -358,7 +358,7 @@ void MissionDataMgr::Populate() {
         offer.bookmarks                 = new PyList(); //invalid offers will not have bms
         m_xoffers.emplace(row.GetUInt(2), offer);
     }
-    sLog.Cyan("   MissionDataMgr", "%lu Closed Mission Offers loaded in %.3fms.", m_xoffers.size(), (GetTimeMSeconds() - start));
+    sLog.Cyan("   MissionDataMgr", "%zu Closed Mission Offers loaded in %.3fms.", m_xoffers.size(), (GetTimeMSeconds() - start));
 
     // cleanup
     SafeDelete(res);

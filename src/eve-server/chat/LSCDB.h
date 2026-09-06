@@ -65,11 +65,10 @@ public:
 
     ///************  new
     void UpdateChannelInfo(LSCChannel* channel);
-    bool SaveChannelACL(int32 channelID, const AclEntry* acl);
-    bool RemoveChannelACL(int32 channelID, int32 accessorID);
-    bool LoadChannelACL(int32 channelID, std::unordered_map<uint32, AclEntry*>& aclMap);
-    void UpdateChannelMode(int32 channelID, int32 rawModeVal);
-    void UpdateUserChannelAccess(int32 channelID, uint32 targetCharID, int32 rawModeVal);
+    // this is for initial and update
+    void SaveChannelACL( int32 channelID, const AclEntry* acl );
+    void RemoveChannelACL( int32 channelID, int32 accessorID );
+    void LoadChannelACL(int32 channelID, std::unordered_map<uint32, AclEntry*>& aclMap);
     bool IsChannelSubscribedByThisChar(uint32 characterID, int32 channelID);
     void UpdateSubscription(int32 channelID, Client* pClient);
 
@@ -90,8 +89,6 @@ public:
     // --- 3. DYNAMIC DATA SYNCHRONIZATION AND STATE PERSISTENCE ---
     // Persists custom folder modifications, topic banners, or password updates safely
     void UpdateChannelInfo(LSCChannel* channel);
-    void UpdateChannelMode(int32 channelID, int32 rawModeVal);
-    void UpdateUserChannelAccess(int32 channelID, uint32 targetCharID, int32 rawModeVal);
     void UpdateSubscription(int32 channelID, Client* pClient);
     bool SaveChannelACL(int32 channelID, const AclEntry* acl);
     bool RemoveChannelACL(int32 channelID, uint32 accessorID);

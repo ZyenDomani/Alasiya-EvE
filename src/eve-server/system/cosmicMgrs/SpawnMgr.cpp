@@ -563,7 +563,7 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
     // get faction's shipClass and groupID map...is this feasible?  it's fine...there's only 21 at this time.
     if (sDataMgr.GetNPCGroups(factionID, m_factionGroups)) {
         if (is_log_enabled(SPAWN__MESSAGE))
-            _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - m_factionGroups size is %lu.", m_factionGroups.size());
+            _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - m_factionGroups size is %zu.", m_factionGroups.size());
     } else {
         _log(SPAWN__ERROR, "SpawnMgr::PrepSpawn() - No Faction data for %u.  Canceling spawn.", factionID);
         return false;
@@ -581,7 +581,7 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
         ++level;    // increment wave
         // check wave # vs possible waves.  (oob check)
         if (spawnEntry.size() < level) {
-            _log(SPAWN__ERROR, "SpawnMgr::PrepSpawn() - spawnEntry.size (%lu) < level (%u) for anomaly class %s.  Canceling spawn.", \
+            _log(SPAWN__ERROR, "SpawnMgr::PrepSpawn() - spawnEntry.size (%zu) < level (%u) for anomaly class %s.  Canceling spawn.", \
                     spawnEntry.size(), level, GetSpawnClassName(sClass));
             return false;
         }
@@ -606,13 +606,13 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
         level = MakeRandomUInt(0, spawnEntry.size() - 1);  // random commander/officer spawn type.
     } else {
         // do we need anything else here?
-        _log(SPAWN__WARNING, "SpawnMgr::PrepSpawn() - spawnEntry.size(%lu) level(%u) class(%s).  !Anomaly and class > Hell.", \
+        _log(SPAWN__WARNING, "SpawnMgr::PrepSpawn() - spawnEntry.size(%zu) level(%u) class(%s).  !Anomaly and class > Hell.", \
                 spawnEntry.size(), level, GetSpawnClassName(sClass));
         return false;
     }
 
     if (is_log_enabled(SPAWN__MESSAGE))
-        _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - spawnEntry - size: %lu, class: %s(%u), level: %u.", \
+        _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - spawnEntry - size: %zu, class: %s(%u), level: %u.", \
                 spawnEntry.size(), GetSpawnClassName(sClass), sClass, level);
 
     // get ship class data from spawnEntry[subtype]
@@ -743,7 +743,7 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
 
     if (m_toSpawn.size() > 0) {
         if (is_log_enabled(SPAWN__MESSAGE))
-            _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - Class: %s, Desc: %s - %lu ship class%s.", \
+            _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - Class: %s, Desc: %s - %zu ship class%s.", \
                    GetSpawnClassName(sClass), desc.c_str(), m_toSpawn.size(), m_toSpawn.size() > 1?"es":"");
         MakeSpawn(pBubble, factionID, sClass, level, anomaly);
         return true;
@@ -941,7 +941,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
     m_toSpawn.clear();
     m_ratSpawns.clear();
 
-    _log(SPAWN__TRACE, "MakeSpawn() completed in %s(%u) with %lu entities in m_spawns.", \
+    _log(SPAWN__TRACE, "MakeSpawn() completed in %s(%u) with %zu entities in m_spawns.", \
                 m_system->GetName(), m_system->GetID(), m_spawns.size());
 }
 
@@ -1047,7 +1047,7 @@ void SpawnMgr::RemoveSpawn(uint16 bubbleID, uint32 itemID) {
         ++itr;
     }
 
-    _log(SPAWN__TRACE, "RemoveSpawn() did not find item %u in bubble %u, out of %lu total spawns in the map.", itemID, bubbleID, m_spawns.size());
+    _log(SPAWN__TRACE, "RemoveSpawn() did not find item %u in bubble %u, out of %zu total spawns in the map.", itemID, bubbleID, m_spawns.size());
     return;
 }
 

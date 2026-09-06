@@ -101,7 +101,7 @@ PyResult StationSvc::Handle_GetAllianceSystems(PyCallArgs &call) {
 //This call is made by client when player opens 'Settled Systems' dropdown in alliance details ui
 PyResult StationSvc::Handle_GetSystemsForAlliance(PyCallArgs &call) {
     // systems = sm.RemoteSvc('stationSvc').GetSystemsForAlliance(session.allianceid)
-    sLog.White( "StationSvc::Handle_GetSystemsForAlliance()", "size=%lu", call.tuple->size());
+    sLog.White( "StationSvc::Handle_GetSystemsForAlliance()", "size=%zu", call.tuple->size());
     if (is_log_enabled(SOV__CALL_DUMP))
     call.Dump(SOV__CALL_DUMP);
     return nullptr;

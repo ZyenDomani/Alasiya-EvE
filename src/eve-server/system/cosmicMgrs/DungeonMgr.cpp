@@ -123,7 +123,7 @@ void DungeonDataMgr::Populate()
     //sLog.Cyan("   DungeonDataMgr", "%u rooms in %u buckets and %u groups in %u buckets for %u dungeon templates loaded in %.3fms.",\
               rooms.size(), rooms.bucket_count(), groups.size(), groups.bucket_count(), templates.size(), (GetTimeMSeconds() - start));
 
-    sLog.Cyan("   DungeonDataMgr", "%lu entrys, %lu rooms and %lu groups for %lu dungeon templates loaded in %.3fms.",\
+    sLog.Cyan("   DungeonDataMgr", "%zu entrys, %zu rooms and %zu groups for %zu dungeon templates loaded in %.3fms.",\
               entrys.size(), rooms.size(), groups.size(), templates.size(), (GetTimeMSeconds() - start));
 }
 
@@ -379,7 +379,7 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
     if (dTemplate.dunSpawnClass > 0)
         m_spawnMgr->DoSpawnForAnomaly(sBubbleMgr.FindBubble(m_system->GetID(), sig.position), dTemplate.dunSpawnClass);
 
-    _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - dungeonID %u created for %s with %lu items.", \
+    _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - dungeonID %u created for %s with %zu items.", \
               sig.sigItemID, sig.sigName.c_str(), m_anomalyItems.size());
 
     m_anomalyItems.clear();

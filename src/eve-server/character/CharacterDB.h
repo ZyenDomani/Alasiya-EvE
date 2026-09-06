@@ -94,6 +94,7 @@ public:
     static bool GetCharHomeStation(uint32 charID, uint32 &stationID);
     static PyRep *GetInfoWindowDataForChar(uint32 charID);
     static uint32 GetStartingStationByCareer(uint32 careerID);
+    static std::string GetCharacterName(uint32 charID);
 
     static void SetCharacterOnlineStatus(uint32 char_id, bool online=false);
 

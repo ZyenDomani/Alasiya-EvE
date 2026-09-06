@@ -302,13 +302,13 @@ void Profiler::PrintProfile()
     //std::printf("\n");     // spacer
     std::printf("\t\tUnimplemented Calls\n");
     GetRunTimes(m_server, h, l, a);
-    std::printf("        *Main()  %lu times.   \tHi: %.4f   \tLo: %8.3fus   \tAvg: %8.2fus\n", m_server.size(), h, l, a );
+    std::printf("        *Main()  %zu times.   \tHi: %.4f   \tLo: %8.3fus   \tAvg: %8.2fus\n", m_server.size(), h, l, a );
     GetRunTimes(m_map, h, l, a);
-    std::printf("          *Map   %lu times.   \tHi: %.4f   \tLo: %8.3fus   \tAvg: %8.2fus\n", m_map.size(), h, l, a );
+    std::printf("          *Map   %zu times.   \tHi: %.4f   \tLo: %8.3fus   \tAvg: %8.2fus\n", m_map.size(), h, l, a );
     GetRunTimes(m_items, h, l, a);
-    std::printf("        *Items   %lu times.   \tHi: %.4f   \tLo: %8.3fus   \tAvg: %8.2fus\n", m_items.size(),  h, l, a );
+    std::printf("        *Items   %zu times.   \tHi: %.4f   \tLo: %8.3fus   \tAvg: %8.2fus\n", m_items.size(),  h, l, a );
     GetRunTimes(m_functions, h, l, a);
-    std::printf("    *Functions   %lu times.   \tHi: %.4f   \tLo: %8.3fus   \tAvg: %8.2fus\n", m_functions.size(), h, l, a );
+    std::printf("    *Functions   %zu times.   \tHi: %.4f   \tLo: %8.3fus   \tAvg: %8.2fus\n", m_functions.size(), h, l, a );
 */
     std::printf(" Profile Times Compiled in %.2fus\n", (GetTimeUSeconds() -startTime) );
 }
@@ -330,13 +330,13 @@ void Profiler::PrintStartUpData()
     std::printf("\n");     // spacer
     std::printf("\t\tUnimplemented Calls\n");
     GetRunTimes(m_server, h, l, a);
-    std::printf("        *Main()  %lu times.   \tHi: %.4f   \tLo: %8.3fus   \tAvg: %8.2fus\n", m_server.size(), h, l, a );
+    std::printf("        *Main()  %zu times.   \tHi: %.4f   \tLo: %8.3fus   \tAvg: %8.2fus\n", m_server.size(), h, l, a );
     GetRunTimes(m_map, h, l, a);
-    std::printf("          *Map   %lu times.   \tHi: %.4f   \tLo: %8.3fus   \tAvg: %8.2fus\n", m_map.size(), h, l, a );
+    std::printf("          *Map   %zu times.   \tHi: %.4f   \tLo: %8.3fus   \tAvg: %8.2fus\n", m_map.size(), h, l, a );
     GetRunTimes(m_items, h, l, a);
-    std::printf("        *Items   %lu times.   \tHi: %.4f   \tLo: %8.3fus   \tAvg: %8.2fus\n", m_items.size(),  h, l, a );
+    std::printf("        *Items   %zu times.   \tHi: %.4f   \tLo: %8.3fus   \tAvg: %8.2fus\n", m_items.size(),  h, l, a );
     GetRunTimes(m_functions, h, l, a);
-    std::printf("    *Functions   %lu times.   \tHi: %.4f   \tLo: %8.3fus   \tAvg: %8.2fus\n", m_functions.size(), h, l, a );
+    std::printf("    *Functions   %zu times.   \tHi: %.4f   \tLo: %8.3fus   \tAvg: %8.2fus\n", m_functions.size(), h, l, a );
     */
     std::printf(" Profile Times Compiled in %.2fus\n", (GetTimeUSeconds() -startTime) );
 }

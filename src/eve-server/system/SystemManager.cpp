@@ -101,7 +101,7 @@ m_killData(SystemKillData())
 
 SystemManager::~SystemManager() {
     if (m_players or !m_clients.empty()) {
-        _log(COMMON__ERROR, "D'tor called for System %u with %u players and/or %lu clients in mmaps", m_data.systemID, m_players, m_clients.size());
+        _log(COMMON__ERROR, "D'tor called for System %u with %u players and/or %zu clients in mmaps", m_data.systemID, m_players, m_clients.size());
         for (auto &cur : m_clients)
             sEntityMgr.Remove(cur.second);
     }
@@ -367,7 +367,7 @@ void SystemManager::UnloadSystem() {
 
     // save items, then remove from system inventory, item factory and decrement item count
     m_solarSystemRef->GetMyInventory()->Unload();
-    _log(PHYSICS__MESSAGE, "SystemManager::UnloadSystem() - map count after unload: %lu npcs, %lu entities, %lu statics.", \
+    _log(PHYSICS__MESSAGE, "SystemManager::UnloadSystem() - map count after unload: %zu npcs, %zu entities, %zu statics.", \
                 m_npcs.size(), m_entities.size(), m_staticEntities.size());
 
     // at this point, these lists should be clear
@@ -462,7 +462,7 @@ bool SystemManager::LoadSystemStatics() {
         AddItemToInventory(pSE->GetSelf());
     }
 
-    _log(SERVER__INIT, "SystemManager::LoadSystemStatics() - %lu Static System entities loaded for %s (%u)", entities.size(), m_data.name.c_str(), m_data.systemID);
+    _log(SERVER__INIT, "SystemManager::LoadSystemStatics() - %zu Static System entities loaded for %s (%u)", entities.size(), m_data.name.c_str(), m_data.systemID);
     return true;
 }
 
@@ -488,7 +488,7 @@ bool SystemManager::LoadSystemDynamics() {
             //pSE->SetPosition(sMapData.GetRandPointOnMoon(m_data.systemID));
         AddEntity(pSE);
     }
-    _log(SERVER__INIT, "SystemManager::LoadSystemDynamics - %lu Dynamic System entities loaded for %s(%u)", entityData.size(), m_data.name.c_str(),m_data.systemID);
+    _log(SERVER__INIT, "SystemManager::LoadSystemDynamics - %zu Dynamic System entities loaded for %s(%u)", entityData.size(), m_data.name.c_str(),m_data.systemID);
 
     return true;
 }
@@ -514,7 +514,7 @@ bool SystemManager::LoadPlayerDynamics() {
             //pSE->SetPosition(sMapData.GetRandPointOnPlanet(m_data.systemID));
         AddEntity(pSE);
     }
-    _log(SERVER__INIT, "SystemManager::LoadPlayerDynamics() - %lu Dynamic Player entities loaded for %s(%u)", \
+    _log(SERVER__INIT, "SystemManager::LoadPlayerDynamics() - %zu Dynamic Player entities loaded for %s(%u)", \
                 entityData.size(), m_data.name.c_str(),m_data.systemID);
 
     return true;
@@ -562,7 +562,7 @@ void SystemManager::AddClient(Client* pClient, bool count/*false*/, bool jump/*f
         return;
     if (m_clients.find(pClient->GetCharacterID()) == m_clients.end()) {
         m_clients[pClient->GetCharacterID()] = pClient;
-        _log(PLAYER__TRACE, "%s(%u): Added to system manager for %s(%u) - %lu clients now in system. count %s", \
+        _log(PLAYER__TRACE, "%s(%u): Added to system manager for %s(%u) - %zu clients now in system. count %s", \
                     pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_clients.size(), count?"true":"false");
     } else {
         // error for player already in client map
@@ -599,7 +599,7 @@ void SystemManager::RemoveClient(Client* pClient, bool count/*false*/, bool jump
     if (pClient == nullptr)
         return;
     m_clients.erase(pClient->GetCharacterID());
-    _log(PLAYER__TRACE, "%s(%u): Removed from system manager for %s(%u) - %lu clients still in system.", \
+    _log(PLAYER__TRACE, "%s(%u): Removed from system manager for %s(%u) - %zu clients still in system.", \
             pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_clients.size());
 
     if (count) {

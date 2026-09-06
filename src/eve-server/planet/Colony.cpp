@@ -1471,7 +1471,7 @@ void Colony::Update() {
          *
          */
     if (is_log_enabled(COLONY__INFO))
-        _log(COLONY__INFO, "Colony::Update() - Update completed in %.3fus with %lu links, %lu pins, %lu plants, and %lu routes (s:%lu, d:%lu) ", \
+        _log(COLONY__INFO, "Colony::Update() - Update completed in %.3fus with %zu links, %zu pins, %zu plants, and %zu routes (s:%zu, d:%zu) ", \
                     GetTimeUSeconds() - profileStartTime, ccData->links.size(), ccData->pins.size(), ccData->plants.size(), ccData->routes.size(), \
                     m_srcRoutes.size(), m_destRoutes.size());
 

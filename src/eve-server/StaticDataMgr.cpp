@@ -163,7 +163,7 @@ void StaticDataMgr::Populate() {
         //SELECT corporationID, corporationName FROM crpCorporations
         m_corpName.emplace(row.GetUInt(0), row.GetText(1));
     }
-    sLog.Cyan("    StaticDataMgr", "%lu Corp Names loaded in %.3fms.", m_corpName.size(), (GetTimeMSeconds() - startTime));
+    sLog.Cyan("    StaticDataMgr", "%zu Corp Names loaded in %.3fms.", m_corpName.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
     ManagerDB::LoadNPCCorpFactionData(*res);
@@ -171,7 +171,7 @@ void StaticDataMgr::Populate() {
         //SELECT corporationID, factionID FROM crpNPCCorporations
         m_corpFaction.emplace(row.GetUInt(0), row.GetUInt(1));
     }
-    sLog.Cyan("    StaticDataMgr", "%lu Corps in NPC Corp Faction map loaded in %.3fms.", m_corpFaction.size(), (GetTimeMSeconds() - startTime));
+    sLog.Cyan("    StaticDataMgr", "%zu Corps in NPC Corp Faction map loaded in %.3fms.", m_corpFaction.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
     ManagerDB::GetCategoryData(*res);
@@ -185,7 +185,7 @@ void StaticDataMgr::Populate() {
             data.published              = (sConfig.server.AllowNonPublished ? true : row.GetBool(3));
         m_catData.emplace(row.GetUInt(0), std::move(data));
     }
-    sLog.Cyan("    StaticDataMgr", "%lu Inventory Categories loaded in %.3fms.", m_catData.size(), (GetTimeMSeconds() - startTime));
+    sLog.Cyan("    StaticDataMgr", "%zu Inventory Categories loaded in %.3fms.", m_catData.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
     ManagerDB::GetGroupData(*res);
@@ -207,7 +207,7 @@ void StaticDataMgr::Populate() {
             data.published              = (sConfig.server.AllowNonPublished ? true : row.GetBool(10));
         m_grpData.emplace(row.GetUInt(0), std::move(data));
     }
-    sLog.Cyan("    StaticDataMgr", "%lu Inventory Groups loaded in %.3fms.", m_grpData.size(), (GetTimeMSeconds() - startTime));
+    sLog.Cyan("    StaticDataMgr", "%zu Inventory Groups loaded in %.3fms.", m_grpData.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
     ManagerDB::GetTypeData(*res);
@@ -234,7 +234,7 @@ void StaticDataMgr::Populate() {
             data.isRecyclable           = row.GetUInt(16);
         m_typeData.emplace(row.GetUInt(0), std::move(data));
     }
-    sLog.Cyan("    StaticDataMgr", "%lu Inventory Types loaded in %.3fms.", m_typeData.size(), (GetTimeMSeconds() - startTime));
+    sLog.Cyan("    StaticDataMgr", "%zu Inventory Types loaded in %.3fms.", m_typeData.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
     ManagerDB::GetAttributeTypes(*res);
@@ -249,7 +249,7 @@ void StaticDataMgr::Populate() {
         typeData.categoryID             = (row.IsNull(4) ? 0        : row.GetUInt(4));
         m_attrTypeData.emplace(row.GetUInt(0), std::move(typeData));
     }
-    sLog.Cyan("    StaticDataMgr", "%lu Attribute data sets loaded in %.3fms.", m_attrTypeData.size(), (GetTimeMSeconds() - startTime));
+    sLog.Cyan("    StaticDataMgr", "%zu Attribute data sets loaded in %.3fms.", m_attrTypeData.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
     ManagerDB::GetSystemData(*res);
@@ -298,7 +298,7 @@ void StaticDataMgr::Populate() {
         //SELECT locationID, wormholeClassID FROM mapLocationWormholeClasses
         m_whRegions[row.GetUInt(0)] = row.GetUInt(1);
     }
-    sLog.Cyan("    StaticDataMgr", "%lu WH System Classes loaded in %.3fms.", m_whRegions.size(), (GetTimeMSeconds() - startTime));
+    sLog.Cyan("    StaticDataMgr", "%zu WH System Classes loaded in %.3fms.", m_whRegions.size(), (GetTimeMSeconds() - startTime));
 
     // Load wormhole destination classes into static memory object
     startTime = GetTimeMSeconds();
@@ -350,7 +350,7 @@ void StaticDataMgr::Populate() {
         //m_staticData[row.GetInt(0)] = data;
         m_staticData.emplace(row.GetUInt(0), std::move(data));
     }
-    sLog.Cyan("    StaticDataMgr", "%lu Static Entity data sets loaded in %.3fms.", m_staticData.size(), (GetTimeMSeconds() - startTime));
+    sLog.Cyan("    StaticDataMgr", "%zu Static Entity data sets loaded in %.3fms.", m_staticData.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
     ManagerDB::GetLocationNames(*res);
@@ -395,7 +395,7 @@ void StaticDataMgr::Populate() {
             m_stationList.emplace(cur.second, sVec);
         }
     }
-    sLog.Cyan("    StaticDataMgr", "%lu Static Station data sets loaded in %.3fms.", (m_stationConst.size() + m_stationRegion.size() + m_stationSystem.size() + m_stationList.size()), (GetTimeMSeconds() - startTime));
+    sLog.Cyan("    StaticDataMgr", "%zu Static Station data sets loaded in %.3fms.", (m_stationConst.size() + m_stationRegion.size() + m_stationSystem.size() + m_stationList.size()), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
     ManagerDB::GetTypeAttributes(*res);
@@ -436,7 +436,7 @@ void StaticDataMgr::Populate() {
         m_bloodlineBonuses[row.GetUInt8(0)] = data;
     }
 
-    sLog.Cyan("    StaticDataMgr", "%lu Type Attribute Sets loaded in %.3fms", m_typeAttrMap.size(), (GetTimeMSeconds() - startTime));
+    sLog.Cyan("    StaticDataMgr", "%zu Type Attribute Sets loaded in %.3fms", m_typeAttrMap.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
     ManagerDB::GetSkillList(*res);
@@ -444,7 +444,7 @@ void StaticDataMgr::Populate() {
         //SELECT typeID, typeName FROM invTypes [where type=skill]
         m_skills[row.GetUInt(0)] = row.GetText(1);
     }
-    sLog.Cyan("    StaticDataMgr", "%lu Skills loaded in %.3fms.", m_skills.size(), (GetTimeMSeconds() - startTime));
+    sLog.Cyan("    StaticDataMgr", "%zu Skills loaded in %.3fms.", m_skills.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
     uint piCount = 0;
@@ -512,7 +512,7 @@ void StaticDataMgr::Populate() {
         ramReq.extra            = row.GetBool(5);
         m_ramReq.emplace(row.GetUInt(0), ramReq);
     }
-    sLog.Cyan("    StaticDataMgr", "%lu R.A.M. defs loaded in %.3fms.", (m_ramMatl.size() + m_ramReq.size()), (GetTimeMSeconds() - startTime));
+    sLog.Cyan("    StaticDataMgr", "%zu R.A.M. defs loaded in %.3fms.", (m_ramMatl.size() + m_ramReq.size()), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
     FactoryDB::GetBlueprintType(*res);
@@ -542,7 +542,7 @@ void StaticDataMgr::Populate() {
     for (auto &cur : m_bpTypeData)
         m_bpMatlData[cur.first] = SetBPMatlType(cur.second.catID, cur.first, cur.second.productTypeID);
 
-    sLog.Cyan("    StaticDataMgr", "%lu BP Type defs loaded in %.3fms.", m_bpTypeData.size(), (GetTimeMSeconds() - startTime));
+    sLog.Cyan("    StaticDataMgr", "%zu BP Type defs loaded in %.3fms.", m_bpTypeData.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
     ManagerDB::GetMoonResouces(*res);
@@ -550,7 +550,7 @@ void StaticDataMgr::Populate() {
         //SELECT typeID,volume FROM invTypes [where group=moongoo]
         m_moonGoo[row.GetUInt(0)] = (uint8)(row.GetFloat(1) * 10);
     }
-    sLog.Cyan("    StaticDataMgr", "%lu Moon Resources loaded in %.3fms.", m_moonGoo.size(), (GetTimeMSeconds() - startTime));
+    sLog.Cyan("    StaticDataMgr", "%zu Moon Resources loaded in %.3fms.", m_moonGoo.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
     ManagerDB::GetOreBySSC(*res);
@@ -561,14 +561,14 @@ void StaticDataMgr::Populate() {
             oreChance.chance            = row.GetFloat(2);
         m_oreBySecClass.emplace(row.GetText(0), oreChance);
     }
-    sLog.Cyan("    StaticDataMgr", "%lu Ore defs loaded in %.3fms.", m_oreBySecClass.size(), (GetTimeMSeconds() - startTime));
+    sLog.Cyan("    StaticDataMgr", "%zu Ore defs loaded in %.3fms.", m_oreBySecClass.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
     //SELECT factionID, itemID FROM facSalvage
     ManagerDB::GetSalvageGroups(*res);
     while (res->GetRow(row))
         m_salvageMap.emplace(row.GetUInt(0), row.GetUInt(1));
-    sLog.Cyan("    StaticDataMgr", "%lu salvage definitions loaded in %.3fms.", m_salvageMap.size(), (GetTimeMSeconds() - startTime));
+    sLog.Cyan("    StaticDataMgr", "%zu salvage definitions loaded in %.3fms.", m_salvageMap.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
     ManagerDB::GetRegionFaction(*res);
@@ -589,7 +589,7 @@ void StaticDataMgr::Populate() {
         m_factionName.emplace(row.GetUInt(0), row.GetText(1));
     }
 
-    sLog.Cyan("    StaticDataMgr", "%lu Region Faction Data Sets loaded in %.3fms.", (m_regions.size() + m_ratRegions.size()), (GetTimeMSeconds() - startTime));
+    sLog.Cyan("    StaticDataMgr", "%zu Region Faction Data Sets loaded in %.3fms.", (m_regions.size() + m_ratRegions.size()), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
     ManagerDB::GetFactionGroups(*res);
@@ -638,7 +638,7 @@ void StaticDataMgr::Populate() {
         spawnClass.desc                 = row.GetText(16);
         m_npcClasses.emplace(row.GetUInt8(0), spawnClass);
     }
-    sLog.Cyan("    StaticDataMgr", "%lu Rat Groups, %lu Rat Classes, and %u Rat Types for %lu regions loaded in %.3fms.",\
+    sLog.Cyan("    StaticDataMgr", "%zu Rat Groups, %zu Rat Classes, and %u Rat Types for %zu regions loaded in %.3fms.",\
               m_npcGroups.size(), m_npcClasses.size(), typeCount, m_ratRegions.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
@@ -647,7 +647,7 @@ void StaticDataMgr::Populate() {
         //SELECT typeID, wreckTypeID FROM invTypesToWrecks
         m_WrecksToTypesMap[row.GetUInt(0)] = row.GetUInt(1);
     }
-    sLog.Cyan("    StaticDataMgr", "%lu wreck objects loaded in %.3fms.", m_WrecksToTypesMap.size(), (GetTimeMSeconds() - startTime));
+    sLog.Cyan("    StaticDataMgr", "%zu wreck objects loaded in %.3fms.", m_WrecksToTypesMap.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
     SystemDB::GetLootGroups(*res);
@@ -672,7 +672,7 @@ void StaticDataMgr::Populate() {
         lootType.maxQuantity           = row.GetUInt(5);
         m_LootTypeMap.emplace(row.GetUInt(0), lootType);
     }
-    sLog.Cyan("    StaticDataMgr", "%lu loot groups and %lu loot types loaded in %.3fms.",
+    sLog.Cyan("    StaticDataMgr", "%zu loot groups and %zu loot types loaded in %.3fms.",
               m_LootGroupMap.size(), m_LootTypeMap.size(), (GetTimeMSeconds() - startTime));
 
     startTime = GetTimeMSeconds();
@@ -691,7 +691,7 @@ void StaticDataMgr::Populate() {
         m_agentCorp[row.GetUInt(0)] = row.GetUInt(1);
         m_agentSystem[row.GetUInt(0)] = locationID;
     }
-    sLog.Cyan("    StaticDataMgr", "%lu Agent Data Sets loaded in %.3fms.", m_agentCorp.size() + m_agentSystem.size(), (GetTimeMSeconds() - startTime));
+    sLog.Cyan("    StaticDataMgr", "%zu Agent Data Sets loaded in %.3fms.", m_agentCorp.size() + m_agentSystem.size(), (GetTimeMSeconds() - startTime));
 
     //cleanup
     SafeDelete(res);
@@ -1094,7 +1094,7 @@ void StaticDataMgr::LoadLoot() {
         }
 
     }
-    _log(LOOT__INFO, "Loot Engine V2 Synchronized. Loaded %lu Class profiles.", m_ClassToProfileMap.size());
+    _log(LOOT__INFO, "Loot Engine V2 Synchronized. Loaded %zu Class profiles.", m_ClassToProfileMap.size());
 }
 
 std::vector<LootPool> StaticDataMgr::FetchPoolsForGroup(uint32 groupID, bool isAdvanced, bool isCommander) {
@@ -1287,7 +1287,7 @@ void StaticDataMgr::GetLoot(float secValue, uint32 groupID, std::vector<LootList
             loot_list.minDrop       = lootGrpVec[i].minQuantity;
             loot_list.maxDrop       = lootGrpVec[i].maxQuantity;
             lootList.push_back(loot_list);
-            _log(LOOT__INFO, "added %u to basic lootList of %lu possible", lootGrpVec[i].typeID, lootGrpVec.size());
+            _log(LOOT__INFO, "added %u to basic lootList of %zu possible", lootGrpVec[i].typeID, lootGrpVec.size());
         }
         */
     }
@@ -1438,7 +1438,7 @@ void StaticDataMgr::GetRamRequiredItems(const uint32 typeID, const int8 activity
 
 PyRep* StaticDataMgr::GetStationCount()
 {
-    PyList* list(new PyList());
+    PyList* list = new PyList();
     std::map<uint32, uint8>::iterator itr = m_stationCount.begin(), end = m_stationCount.end();
     while (itr != end) {
         PyTuple* tuple = new PyTuple(2);
@@ -1759,10 +1759,10 @@ bool StaticDataMgr::IsStation(uint32 stationID/*0*/) {
 
 DBRowDescriptor* StaticDataMgr::CreateItemHeader() {
     // this is correct data for crucible.  dont alter
-    PyList *keywords(new PyList());
+    PyList* keywords = new PyList();
         keywords->AddItem(new_tuple(new PyString("stacksize"), new PyToken("util.StackSize")));
         keywords->AddItem(new_tuple(new PyString("singleton"), new PyToken("util.Singleton")));
-    DBRowDescriptor* header(new DBRowDescriptor(keywords));
+    DBRowDescriptor* header = new DBRowDescriptor(keywords);
         header->AddColumn("itemID",     DBTYPE_I8);     // int64
         header->AddColumn("typeID",     DBTYPE_I4);     // int32
         header->AddColumn("ownerID",    DBTYPE_I4);     // int32
@@ -1903,22 +1903,22 @@ PyDict* StaticDataMgr::GetBPMatlData(uint16 typeID)
 
 PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
 {
-    PyList* matlListManuf(new PyList());
-    PyList* skillListManuf(new PyList());
-    PyList* extraListManuf(new PyList());
-    PyList* matlListTE(new PyList());
-    PyList* skillListTE(new PyList());
-    PyList* matlListME(new PyList());
-    PyList* skillListME(new PyList());
-    PyList* matlListCopy(new PyList());
-    PyList* skillListCopy(new PyList());
-    PyList* matlListDup(new PyList());
-    PyList* skillListDup(new PyList());
-    PyList* extraListDup(new PyList());
-    PyList* matlListRE(new PyList());
-    PyList* skillListRE(new PyList());
-    PyList* matlListInvent(new PyList());
-    PyList* skillListInvent(new PyList());
+    PyList* matlListManuf = new PyList();
+    PyList* skillListManuf = new PyList();
+    PyList* extraListManuf = new PyList();
+    PyList* matlListTE = new PyList();
+    PyList* skillListTE = new PyList();
+    PyList* matlListME = new PyList();
+    PyList* skillListME = new PyList();
+    PyList* matlListCopy = new PyList();
+    PyList* skillListCopy = new PyList();
+    PyList* matlListDup = new PyList();
+    PyList* skillListDup = new PyList();
+    PyList* extraListDup = new PyList();
+    PyList* matlListRE = new PyList();
+    PyList* skillListRE = new PyList();
+    PyList* matlListInvent = new PyList();
+    PyList* skillListInvent = new PyList();
 
     // NOTE: manuf is always populated for blueprints but not ancient relics
     if (catID == EVEDB::invCategories::Blueprint) {
@@ -2024,7 +2024,7 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
     // items not populated will not be shown in the BP info.
     DBQueryResult mtRes;
     PyRep* mtCRowSet(DBResultToCRowset(mtRes));
-    PyDict* rsp(new PyDict());
+    PyDict* rsp = new PyDict();
 
     if (manuf) {        //activityManufacturing = 1
         PyDict* Manufacturing = new PyDict();

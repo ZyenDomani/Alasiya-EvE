@@ -676,7 +676,7 @@ void FleetService::UpdateBoost(uint32 fleetID, bool fleet, std::list<int32>& win
     for (auto &cur : memberUpdateMap)
         cur.first->ApplyBoost(cur.second);
 
-    _log( FLEET__TRACE, "FleetService::UpdateBoost() - Updated %lu members of fleetID: %u in %.2fus.  fleet: %s, wing: %s, squad: %s", \
+    _log( FLEET__TRACE, "FleetService::UpdateBoost() - Updated %zu members of fleetID: %u in %.2fus.  fleet: %s, wing: %s, squad: %s", \
             memberUpdateMap.size(), fleetID, GetTimeUSeconds() - start, (fleet ? "true" : "false"), (wing.empty() ? "false" : "true"), (squad.empty() ? "false" : "true"));
 }
 

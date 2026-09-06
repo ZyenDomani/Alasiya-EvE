@@ -56,7 +56,7 @@ void EVETCPConnection::QueueRep( const PyRep* rep, bool compress/*true*/ )
     pBuffer->ResizeAt( bufLen, 1 );
 
     if (PACKET_SIZE_LIMIT < pBuffer->size()) {
-        sLog.Error( "Network", "Packet length %lu exceeds hardcoded packet length limit %u.", pBuffer->size(), PACKET_SIZE_LIMIT );
+        sLog.Error( "Network", "Packet length %zu exceeds hardcoded packet length limit %u.", pBuffer->size(), PACKET_SIZE_LIMIT );
         SafeDelete( pBuffer );
         return;
     }
@@ -91,7 +91,7 @@ PyRep* EVETCPConnection::PopRep()
 
     if (packet != nullptr) {
         if ( PACKET_SIZE_LIMIT < packet->size() ) {
-            sLog.Error( "Network", "Packet length %lu exceeds hardcoded packet length limit %u.", packet->size(), PACKET_SIZE_LIMIT );
+            sLog.Error( "Network", "Packet length %zu exceeds hardcoded packet length limit %u.", packet->size(), PACKET_SIZE_LIMIT );
         } else {
            // if (is_log_enabled(DEBUG__DEBUG))
            //     DumpBuffer( packet, PACKET_INBOUND );

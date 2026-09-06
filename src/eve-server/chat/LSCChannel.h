@@ -29,6 +29,7 @@
 #define __LSCCHANNEL_H_INCL__
 
 #include "EntityMgr.h"
+#include <Client.h>
 #include "EVE_LSC.h"
 #include "packets/LSCPkts.h"
 
@@ -63,17 +64,37 @@ protected:
 };
 
 struct AclEntry {
-    LSC::Mode mode;       // None, Listener, Speaker, Moderator, etc.
+    LSC::Mode mode;
     LSC::Mode originalMode;
     int32 adminID;
-    int32 accessorID;    // Character ID, Corp ID, or Alliance ID
-    int64 untilWhen;     // 64-bit absolute Win32 FileTime expiry timestamp (0 = permanent)
+    int32 accessorID;    // CharID, CorpID, or AllianceID
+    int64 untilWhen;     // expiry timestamp (0 = permanent)
+    std::string admin;
     std::string reason;
 
-    AclEntry(int32 acc, LSC::Mode md, int64 until, LSC::Mode orig, std::string reas, int32 adm)
-    : accessorID(acc), mode(md), untilWhen(until), originalMode(orig), reason(reas), adminID(adm) {}
+    AclEntry(int32 acc, int32 admID, LSC::Mode md, LSC::Mode orig, int64 until, std::string adm, std::string reas)
+    : accessorID(acc), mode(md), untilWhen(until), originalMode(orig), reason(reas), admin(adm), adminID( admID )
+    {
+        if (adm.empty()) {
+            if (admID == ownerSystem) {
+                admin = "Server Default";
+            } else if (IsCharacterID( admID )) {
+                Client* pClient = sEntityMgr.FindClientByCharID( admID );
+                if (pClient == nullptr) {
+                    // char not online...hit db for name
+                    admin = CharacterDB::GetCharacterName( admID );
+                } else {
+                    admin = pClient->GetCharName();
+                }
+            } else {
+                // do we need to check for corpID here?
+                adminID = ownerSystem;
+                admin = "None";
+            }
+        }
+    }
 
-    PyRep* Encode() const;
+    PyRep* Encode(LSCService* pSvc) const;
 };
 
 class LSCChannel {
@@ -95,9 +116,11 @@ public:
     LSCChannel& operator=(const LSCChannel&) =delete;
     ~LSCChannel();
 
+    void FillPackedRow( PyPackedRow* into, const Client* pClient );
+
     PyRep* EncodeID();
-    PyRep* EncodeStaticChannel(uint32 charID);
-    PyRep* EncodeDynamicChannel(uint32 charID);
+    PyRep* EncodeStaticChannel(DBRowDescriptor* pHeader, int32 charID);
+    PyRep* EncodeDynamicChannel(int32 charID);
     PyRep* EncodeChannelACL();
     PyRep* EncodeChannelChars();
     PyRep* EncodeEmptyChannelChars();
@@ -115,16 +138,18 @@ public:
     void SendServerMOTD(Client* pClient);
     void SendMessage(Client* pClient, std::string& message, bool self = false);
 
-    void GetChannelInfo(int32 * channelID, uint32 * ownerID, std::string &displayName, std::string &motd, std::string &comparisonKey,
-            bool * memberless, std::string &password, bool * mailingList, uint32 * cspa, uint32 * temporary);
+    void GetChannelInfo(int32* channelID, uint32* ownerID, std::string& displayName, std::string& motd,
+                        std::string& comparisonKey, bool* memberless, std::string& password,
+                        bool* mailingList, uint32* cspa, uint32* temporary);
 
     void AnnouncePresence(Client* pClient, int8 appliedMode);
     void BroadcastEvent( const std::string& method, PyTuple* args );
 
-	void InitACL(Client* pClient);
+    // set acl for channel creator
+    void InitACL(int32 charID);
 
-	// query
-	bool 				HasPassword()					{ return !m_password.empty(); }
+    // query
+    bool HasPassword()					{ return !m_password.empty(); }
 
     // setters
     void SetDisplayName(const std::string& displayName) { m_displayName = displayName; }
@@ -150,7 +175,7 @@ public:
     std::string         GetComparisonKey()              { return m_comparisonKey; }
     std::string         GetPassword()                   { return m_password; }
 
-    std::map<uint32, LSCChannelChar> m_chars;
+    std::map<int32, LSCChannelChar> m_chars;
 
     LSC_SenderEOL* MakeSenderEOL( Client* pClient = nullptr, NPC* pNPC = nullptr );
     LSC_SenderInfo* MakeSenderInfo(Client* pClient=nullptr, NPC* pNPC=nullptr);
@@ -170,8 +195,8 @@ protected:
 	// group header and channel label ids for channel sorting window
     int32               m_gMsgID;
     int32               m_cMsgID;
+    int32               m_ownerID;
     uint16              m_cspa;
-    uint32              m_ownerID;
     int32               m_channelID;            // ids < 0 are automatic conversationalist mode (or creator) and invite only (per client)
     std::string         m_displayName;
     std::string         m_motd;
@@ -179,7 +204,6 @@ protected:
     std::string         m_password;
 
     std::unordered_map<uint32, AclEntry*> m_aclMap;             //charID/data
-    PyPackedRow* CreatePackedRow( DBRowDescriptor* header, Client* pClient );
 };
 
 #endif

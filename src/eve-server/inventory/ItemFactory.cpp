@@ -72,14 +72,13 @@ int ItemFactory::Initialize()
 }
 
 void ItemFactory::Close() {
-    if (m_items.size() and m_types.size()) {
-        sLog.Error("      ItemFactory", "%lu Items, %lu Types still in list", \
-                m_items.size(), m_types.size());
-    } else if (m_items.empty() and m_types.empty()) {
-        sLog.Green("      ItemFactory", "%lu Items, %lu Types still in list", \
+    if (m_items.empty() and m_types.empty()) {
+        sLog.Green("      ItemFactory", "0 Items, 0 Types still in list");
+    } else if (m_items.size() and m_types.size()) {
+        sLog.Error("      ItemFactory", "%zu Items, %zu Types still in list", \
                 m_items.size(), m_types.size());
     } else {
-        sLog.Warning("      ItemFactory", "%lu Items, %lu Types still in list", \
+        sLog.Warning("      ItemFactory", "%zu Items, %zu Types still in list", \
                 m_items.size(), m_types.size());
     }
 
@@ -166,7 +165,7 @@ Inventory* ItemFactory::GetInventoryFromId(uint32 itemID, bool load /*true*/) {
         return nullptr;
 
     InventoryItemRef iRef(nullptr);
-    std::map<uint32, InventoryItemRef>::iterator itr = m_items.find(itemID);
+    auto itr = m_items.find(itemID);
     if (itr != m_items.end()) {
         iRef = itr->second;
     } else if (load) {
@@ -186,7 +185,7 @@ InventoryItemRef ItemFactory::GetItemRefFromID(uint32 itemID, bool load /*true*/
     }
 
     InventoryItemRef iRef(nullptr);
-    std::map<uint32, InventoryItemRef>::iterator itr = m_items.find(itemID);
+    auto itr = m_items.find(itemID);
     if (itr != m_items.end()) {
         iRef = itr->second;
     } else if (load) {
@@ -199,18 +198,16 @@ InventoryItemRef ItemFactory::GetItemRefFromID(uint32 itemID, bool load /*true*/
 InventoryItemRef ItemFactory::GetItemContainerRef(uint32 itemID, bool load/*true*/)
 {
     InventoryItemRef iRef(nullptr);
-    std::map<uint32, InventoryItemRef>::iterator itr = m_items.find(itemID);
-    if (itr != m_items.end()) {
-        iRef = itr->second;
-        itr = m_items.find(iRef->locationID());
-        iRef = itr->second;
+    auto itr = m_items.find(itemID);
+    if (itr != m_items.end() and (itr->second.get() != nullptr)) {
+        auto itr2 = m_items.find(itr->second->locationID());
+        iRef = itr2->second;
     } else if (load) {
         iRef = GetItemRef(itemID);
         itr = m_items.find(itemID);
-        if (itr != m_items.end()) {
-            iRef = itr->second;
-            itr = m_items.find(iRef->locationID());
-            iRef = itr->second;
+        if (itr != m_items.end() and (itr->second.get() != nullptr)) {
+            auto itr2 = m_items.find(itr->second->locationID());
+            iRef = itr2->second;
         }
     }
 
@@ -223,18 +220,16 @@ InventoryItemRef ItemFactory::GetItemContainerRef(uint32 itemID, bool load/*true
 Inventory* ItemFactory::GetItemContainerInventory(uint32 itemID, bool load/*true*/)
 {
     InventoryItemRef iRef(nullptr);
-    std::map<uint32, InventoryItemRef>::iterator itr = m_items.find(itemID);
-    if (itr != m_items.end()) {
-        iRef = itr->second;
-        itr = m_items.find(iRef->locationID());
-        iRef = itr->second;
+    auto itr = m_items.find(itemID);
+    if (itr != m_items.end() and (itr->second.get() != nullptr)) {
+        auto itr2 = m_items.find(itr->second->locationID());
+        iRef = itr2->second;
     } else if (load) {
         iRef = GetItemRef(itemID);
         itr = m_items.find(itemID);
-        if (itr != m_items.end()) {
-            iRef = itr->second;
-            itr = m_items.find(iRef->locationID());
-            iRef = itr->second;
+        if (itr != m_items.end() and (itr->second.get() != nullptr)) {
+            auto itr2 = m_items.find(itr->second->locationID());
+            iRef = itr2->second;
         }
     }
 
@@ -246,7 +241,7 @@ Inventory* ItemFactory::GetItemContainerInventory(uint32 itemID, bool load/*true
 
 template<class _Ty>
 const _Ty* ItemFactory::_GetType(uint16 typeID) {
-    std::map<uint16, ItemType*>::iterator itr = m_types.find(typeID);
+    std::unordered_map<uint16, ItemType*>::const_iterator itr = m_types.find(typeID);
     if (itr == m_types.end()) {
         _Ty* type = _Ty::Load(typeID);
         if (type == nullptr)
@@ -281,7 +276,7 @@ const StationType* ItemFactory::GetStationType(uint16 stationTypeID) {
 template<class _Ty>
 RefPtr<_Ty> ItemFactory::_GetItem(uint32 itemID)
 {
-    std::map<uint32, InventoryItemRef>::iterator itr = m_items.find(itemID);
+    auto itr = m_items.find(itemID);
     if (itr == m_items.end()) {
         // if item is currently in a temp location, then continue
         if ((itemID == 5) or (itemID == 10))

@@ -169,7 +169,7 @@ bool PyPacket::Decode(PyRep **in_packet)
     }
 
     if (tuple->items.size() != 7) {
-        codelog(NET__PACKET_ERROR, "PyPacket::Decode() - packet body does not contain a tuple of length 7 (is %lu)", tuple->items.size());
+        codelog(NET__PACKET_ERROR, "PyPacket::Decode() - packet body does not contain a tuple of length 7 (is %zu)", tuple->items.size());
         PyDecRef( pRep );
         return false;
     }
@@ -348,7 +348,7 @@ bool PyAddress::Decode(PyRep *&in_object) {
     }
 
     if (tuple->items.size() < 3) {
-        codelog(NET__PACKET_ERROR, "Not enough elements in address tuple: %lu", tuple->items.size());
+        codelog(NET__PACKET_ERROR, "Not enough elements in address tuple: %zu", tuple->items.size());
         tuple->Dump(NET__PACKET_ERROR, "  ");
         return false;
     }
@@ -363,7 +363,7 @@ bool PyAddress::Decode(PyRep *&in_object) {
     switch(PyRep::IntegerValue(tuple->items[0])) {
         case Any: {
             if (tuple->items.size() != 3) {
-                codelog(NET__PACKET_ERROR, "Invalid number of elements in Any address tuple: %lu", tuple->items.size());
+                codelog(NET__PACKET_ERROR, "Invalid number of elements in Any address tuple: %zu", tuple->items.size());
                 return false;
             }
             type = Any;
@@ -372,7 +372,7 @@ bool PyAddress::Decode(PyRep *&in_object) {
         }  break;
         case Node: {
             if (tuple->items.size() != 4) {
-                codelog(NET__PACKET_ERROR, "Invalid number of elements in Node address tuple: %lu", tuple->items.size());
+                codelog(NET__PACKET_ERROR, "Invalid number of elements in Node address tuple: %zu", tuple->items.size());
                 return false;
             }
             type = Node;
@@ -382,7 +382,7 @@ bool PyAddress::Decode(PyRep *&in_object) {
         }  break;
         case Client: {
             if (tuple->items.size() != 4) {
-                codelog(NET__PACKET_ERROR, "Invalid number of elements in Client address tuple: %lu", tuple->items.size());
+                codelog(NET__PACKET_ERROR, "Invalid number of elements in Client address tuple: %zu", tuple->items.size());
                 return false;
             }
             type = Client;
@@ -392,7 +392,7 @@ bool PyAddress::Decode(PyRep *&in_object) {
         }  break;
         case Broadcast: {
             if (tuple->items.size() != 4) {
-                codelog(NET__PACKET_ERROR, "Invalid number of elements in Broadcast address tuple: %lu", tuple->items.size());
+                codelog(NET__PACKET_ERROR, "Invalid number of elements in Broadcast address tuple: %zu", tuple->items.size());
                 return false;
             }
             type = Broadcast;
@@ -538,7 +538,7 @@ bool PyCallStream::Decode(const std::string &type, PyTuple *&in_payload) {
     }
 
     if (payload->items.size() != 1) {
-        codelog(NET__PACKET_ERROR, "PyCallStream::Decode() - invalid tuple length %lu", payload->items.size());
+        codelog(NET__PACKET_ERROR, "PyCallStream::Decode() - invalid tuple length %zu", payload->items.size());
         return false;
     }
     if (!payload->items[0]->IsTuple()) {
@@ -553,7 +553,7 @@ bool PyCallStream::Decode(const std::string &type, PyTuple *&in_payload) {
     }
 
     if (payload2->items.size() != 2) {
-        codelog(NET__PACKET_ERROR, "PyCallStream::Decode() - invalid tuple2 length %lu", payload2->items.size());
+        codelog(NET__PACKET_ERROR, "PyCallStream::Decode() - invalid tuple2 length %zu", payload2->items.size());
         return false;
     }
 
@@ -589,7 +589,7 @@ bool PyCallStream::Decode(const std::string &type, PyTuple *&in_payload) {
         return false;
     }
     if (maint->items.size() != 4) {
-        codelog(NET__PACKET_ERROR, "PyCallStream::Decode() - packet body has %lu elements, expected %d", maint->items.size(), 4);
+        codelog(NET__PACKET_ERROR, "PyCallStream::Decode() - packet body has %zu elements, expected %d", maint->items.size(), 4);
         return false;
     }
 
@@ -742,7 +742,7 @@ bool EVENotificationStream::Decode(const std::string &pkt_type, const std::strin
 
     //decode payload tuple
     if (payload->items.size() != 2) {
-        codelog(NET__PACKET_ERROR, "EVENotificationStream::Decode() - invalid tuple length %lu", payload->items.size());
+        codelog(NET__PACKET_ERROR, "EVENotificationStream::Decode() - invalid tuple length %zu", payload->items.size());
         return false;
     }
     if (!payload->items[0]->IsTuple()) {
@@ -756,7 +756,7 @@ bool EVENotificationStream::Decode(const std::string &pkt_type, const std::strin
     }
 
     if (payload2->items.size() != 2) {
-        codelog(NET__PACKET_ERROR, "EVENotificationStream::Decode() - invalid tuple2 length %lu", payload2->items.size());
+        codelog(NET__PACKET_ERROR, "EVENotificationStream::Decode() - invalid tuple2 length %zu", payload2->items.size());
         return false;
     }
 
@@ -791,7 +791,7 @@ bool EVENotificationStream::Decode(const std::string &pkt_type, const std::strin
         return false;
     }
     if (robjt->items.size() != 2) {
-        codelog(NET__PACKET_ERROR, "EVENotificationStream::Decode() - packet body has %lu elements, expected %d", robjt->items.size(), 2);
+        codelog(NET__PACKET_ERROR, "EVENotificationStream::Decode() - packet body has %zu elements, expected %d", robjt->items.size(), 2);
         return false;
     }
 
@@ -822,7 +822,7 @@ bool EVENotificationStream::Decode(const std::string &pkt_type, const std::strin
         return false;
     }
     if (subt->items.size() != 2) {
-        codelog(NET__PACKET_ERROR, "EVENotificationStream::Decode() - packet body has %lu elements, expected %d", subt->items.size(), 2);
+        codelog(NET__PACKET_ERROR, "EVENotificationStream::Decode() - packet body has %zu elements, expected %d", subt->items.size(), 2);
         return false;
     }
 

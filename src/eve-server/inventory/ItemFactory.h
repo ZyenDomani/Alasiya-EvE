@@ -26,6 +26,7 @@
 #ifndef EVE_ITEM_FACTORY_H
 #define EVE_ITEM_FACTORY_H
 
+#include <unordered_map>
 
 #include "utils/Singleton.h"
 #include "inventory/ItemRef.h"
@@ -52,7 +53,9 @@ class ItemFactory
 {
 public:
     ItemFactory();
+    ItemFactory(ItemFactory&&) =delete;
     ItemFactory(const ItemFactory&) =delete;
+    ItemFactory& operator=(ItemFactory&&) =delete;
     ItemFactory& operator=(const ItemFactory&) =delete;
     ~ItemFactory()                                      { /* do nothing here */ }
 
@@ -136,10 +139,10 @@ public:
 protected:
     Client* m_pClient;     // client currently using the ItemFactory, we do not own this
 
-    std::map<uint16, ItemType*> m_types;
-    std::map<uint32, InventoryItemRef> m_items;
-    std::map<uint32, InventoryItemRef> m_staticItems;
-    std::map<uint32, InventoryItemRef> m_dynamicItems;
+    std::unordered_map<uint16, ItemType*> m_types;
+    std::unordered_map<uint32, InventoryItemRef> m_items;
+    std::unordered_map<uint32, InventoryItemRef> m_staticItems;
+    std::unordered_map<uint32, InventoryItemRef> m_dynamicItems;
 
     template<class _Ty>
     const _Ty *_GetType(uint16 typeID);

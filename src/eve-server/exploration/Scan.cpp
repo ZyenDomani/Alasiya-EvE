@@ -89,7 +89,7 @@ void Scan::ProcessScan(bool useProbe/*false*/)
         }
         SystemScanStarted(duration);
     }
-    _log(SCAN__TRACE, "ProcessScan() - probes - active:%lu, total:%lu, duration: %u, idle: %s", \
+    _log(SCAN__TRACE, "ProcessScan() - probes - active:%zu, total:%zu, duration: %u, idle: %s", \
                 m_activeProbeMap.size(), m_probeMap.size(), duration, idle?"true":"false");
     m_client->SetScanTimer(duration, true);
 }
@@ -114,7 +114,7 @@ PyRep* Scan::ConeScan(Call_ConeScan& args) {
     const Vector3d vertex = m_client->GetShipSE()->GetPosition();
     const Vector3d U(args.x, args.y, args.z);
     m_client->SystemMgr()->DScan(args.range, vertex, seVec);
-    _log(SCAN__TRACE, "ConeScan() - query returned %lu objects within range.  angle is %.3f", seVec.size(), angle);
+    _log(SCAN__TRACE, "ConeScan() - query returned %zu objects within range.  angle is %.3f", seVec.size(), angle);
     PyList* list = new PyList();
     for (auto &cur : seVec ) {
         VR = cur->GetPosition() - vertex;
@@ -152,7 +152,7 @@ void Scan::RequestScans(PyDict* dict) {
         return;
     }
 
-    _log(SCAN__MESSAGE, "Scan::RequestScans() called by %s in %s using %lu probes.",\
+    _log(SCAN__MESSAGE, "Scan::RequestScans() called by %s in %s using %zu probes.",\
             m_client->GetName(), m_client->GetSystemName().c_str(), dict->size());
 
     uint32 probeID = 0;
@@ -505,7 +505,7 @@ struct CosmicSignature {
         hit = false;
     }
 
-    _log(SCAN__TRACE, "Scan::GetProbeDataForSig()  probeVec size: %lu for signal %s (%s)", \
+    _log(SCAN__TRACE, "Scan::GetProbeDataForSig()  probeVec size: %zu for signal %s (%s)", \
             probeVec.size(), data.sig.sigName.c_str(), m_system->GetAnomMgr()->GetScanGroupName(data.sig.scanGroupID));
 
     if (probeVec.empty())

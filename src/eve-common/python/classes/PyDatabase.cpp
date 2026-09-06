@@ -44,7 +44,7 @@ DBRowDescriptor::DBRowDescriptor(PyList* keywords)
 DBRowDescriptor::DBRowDescriptor(const DBQueryResult& res)
 : PyObjectEx_Type1(new PyToken("blue.DBRowDescriptor"), _CreateArgs())
 {
-    uint32 cc(res.ColumnCount());
+    uint32 cc = res.ColumnCount();
     for (uint32 i = 0; i < cc; ++i)
         AddColumn(res.ColumnName(i), res.ColumnType(i));
 }
@@ -52,7 +52,7 @@ DBRowDescriptor::DBRowDescriptor(const DBQueryResult& res)
 DBRowDescriptor::DBRowDescriptor(const DBResultRow& row)
 : PyObjectEx_Type1(new PyToken("blue.DBRowDescriptor"), _CreateArgs())
 {
-    uint32 cc(row.ColumnCount());
+    uint32 cc = row.ColumnCount();
     for (uint32 i = 0; i < cc; ++i)
         AddColumn(row.ColumnName(i), row.ColumnType(i));
 }
@@ -73,7 +73,7 @@ uint32 DBRowDescriptor::FindColumn(const char* name) const {
     if (name == nullptr)
         return ColumnCount();
 
-    uint32 cc(ColumnCount());
+    uint32 cc = ColumnCount();
     for (uint32 i = 0; i < cc; ++i) {
         PyString* stringName = GetColumnName(i);
         if (strcmp(name, stringName->content().c_str()) == 0)
@@ -88,7 +88,7 @@ bool DBRowDescriptor::VerifyValue(uint32 index, PyRep* value) {
 }
 
 void DBRowDescriptor::AddColumn(const char* name, DBTYPE type) {
-    PyTuple* col(new PyTuple(2));
+    PyTuple* col = new PyTuple(2);
     col->SetItem(0, new PyString(name));
     col->SetItem(1, new PyInt(type));
     _GetColumnList()->items.push_back(col);
@@ -103,8 +103,8 @@ PyTuple* DBRowDescriptor::_GetColumn(size_t index) const {
 }
 
 PyTuple* DBRowDescriptor::_CreateArgs() {
-    PyTuple* columnList(new PyTuple(0));
-    PyTuple* args(new PyTuple(1));
+    PyTuple* columnList = new PyTuple(0);
+    PyTuple* args = new PyTuple(1);
     args->SetItem(0, columnList);
 
     return args;
@@ -120,7 +120,7 @@ CRowSet::CRowSet(DBRowDescriptor* rowDesc)
 }
 
 PyPackedRow* CRowSet::NewRow() {
-    PyPackedRow* row(new PyPackedRow(_GetRowDesc()));
+    PyPackedRow* row = new PyPackedRow(_GetRowDesc());
     list().AddItem(row);
     return row;
 }
@@ -133,7 +133,7 @@ DBRowDescriptor* CRowSet::_GetRowDesc() const {
 }
 
 PyTuple* CRowSet::_CreateArgs() {
-    PyTuple* args(new PyTuple(1));
+    PyTuple* args = new PyTuple(1);
     args->SetItem(0, new PyToken("dbutil.CRowset"));
     return args;
 }
@@ -142,7 +142,7 @@ PyDict* CRowSet::_CreateKeywords(DBRowDescriptor* rowDesc) {
     assert(rowDesc);
 
     PyIncRef(rowDesc);
-    PyDict* keywords(new PyDict());
+    PyDict* keywords = new PyDict();
     keywords->SetItemString("header", rowDesc);
 
     //The Type_2 i had no longer used this
@@ -165,7 +165,7 @@ CIndexedRowSet::CIndexedRowSet(DBRowDescriptor* rowDesc)
 }
 
 PyPackedRow* CIndexedRowSet::NewRow(PyRep* key) {
-    PyPackedRow* row(new PyPackedRow(_GetRowDesc()));
+    PyPackedRow* row = new PyPackedRow(_GetRowDesc());
     PyIncRef(key);
     dict().SetItem(key , row);
     return row;
@@ -179,7 +179,7 @@ DBRowDescriptor* CIndexedRowSet::_GetRowDesc() const {
 }
 
 PyTuple* CIndexedRowSet::_CreateArgs() {
-    PyTuple* args(new PyTuple(1));
+    PyTuple* args = new PyTuple(1);
     args->SetItem(0, new PyToken("dbutil.CIndexedRowset"));
     return args;
 }
@@ -187,7 +187,7 @@ PyTuple* CIndexedRowSet::_CreateArgs() {
 PyDict* CIndexedRowSet::_CreateKeywords(DBRowDescriptor* rowDesc) {
     assert(rowDesc);
 
-    PyDict* keywords(new PyDict());
+    PyDict* keywords = new PyDict();
     PyIncRef(rowDesc);
     keywords->SetItemString("header", rowDesc);
     PyString* pyString = rowDesc->GetColumnName(0);
@@ -214,7 +214,7 @@ CFilterRowSet::~CFilterRowSet() {
 CRowSet* CFilterRowSet::NewRowset(PyRep* key) {
     DBRowDescriptor* rowDesc = _GetRowDesc();
     PyIncRef(rowDesc);
-    CRowSet* row(new CRowSet(rowDesc));
+    CRowSet* row = new CRowSet(rowDesc);
     PyIncRef(key);
     PyIncRef(key);
     dict().SetItem(key, row);
@@ -229,7 +229,7 @@ DBRowDescriptor* CFilterRowSet::_GetRowDesc() const {
 }
 
 PyTuple* CFilterRowSet::_CreateArgs() {
-    PyTuple* args(new PyTuple(1));
+    PyTuple* args = new PyTuple(1);
     args->SetItem(0, new PyToken("dbutil.CFilterRowset"));
     return args;
 }
@@ -237,7 +237,7 @@ PyTuple* CFilterRowSet::_CreateArgs() {
 PyDict* CFilterRowSet::_CreateKeywords(DBRowDescriptor* rowDesc) {
     assert(rowDesc);
 
-    PyDict* keywords(new PyDict());
+    PyDict* keywords = new PyDict();
     keywords->SetItemString("header", rowDesc);
     keywords->SetItemString("columnName", rowDesc->GetColumnName(0));
 

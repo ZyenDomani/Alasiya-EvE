@@ -116,7 +116,7 @@ PyResult AgentMgrService::Handle_GetMyJournalDetails(PyCallArgs &call) {
 // note:  this will show mission data in journal AND "offered" msg in agent data bloc on agent tab in station
 
     if (is_log_enabled(AGENT__DUMP)) {
-        _log(AGENT__INFO, "AgentMgrService::Handle_GetMyJournalDetails() - size= %lu", call.tuple->size() );
+        _log(AGENT__INFO, "AgentMgrService::Handle_GetMyJournalDetails() - size= %zu", call.tuple->size() );
         call.Dump(AGENT__DUMP);
     }
 
@@ -283,7 +283,7 @@ PyResult AgentMgrService::Handle_GetMyJournalDetails(PyCallArgs &call) {
 PyResult AgentMgrService::Handle_GetMyEpicJournalDetails( PyCallArgs& call )
 {
     //no args
-  _log(AGENT__INFO, "AgentMgrBound::Handle_GetMyEpicJournalDetails() - size= %lu", call.tuple->size() );
+  _log(AGENT__INFO, "AgentMgrBound::Handle_GetMyEpicJournalDetails() - size= %zu", call.tuple->size() );
 
   return PyStatic.mtList();
 }
@@ -291,7 +291,7 @@ PyResult AgentMgrService::Handle_GetMyEpicJournalDetails( PyCallArgs& call )
 PyResult AgentMgrService::Handle_GetCareerAgents(PyCallArgs &call)
 {
     if (is_log_enabled(AGENT__DUMP)) {
-        _log(AGENT__INFO, "AgentMgrBound::Handle_GetCareerAgents() - size= %lu", call.tuple->size() );
+        _log(AGENT__INFO, "AgentMgrBound::Handle_GetCareerAgents() - size= %zu", call.tuple->size() );
         call.Dump(AGENT__DUMP);
     }
 
@@ -319,7 +319,7 @@ PyResult EpicArcService::Handle_AgentHasEpicMissionsForCharacter(PyCallArgs &cal
      epicArcStatusSvc = sm.RemoteSvc('epicArcStatus').AgentHasEpicMissionsForCharacter(agent.agentID):
      */
     if (is_log_enabled(AGENT__DUMP)) {
-        _log(AGENT__INFO, "EpicArcService::Handle_AgentHasEpicMissionsForCharacter() - size= %lu", call.tuple->size() );
+        _log(AGENT__INFO, "EpicArcService::Handle_AgentHasEpicMissionsForCharacter() - size= %zu", call.tuple->size() );
         call.Dump(AGENT__DUMP);
     }
 

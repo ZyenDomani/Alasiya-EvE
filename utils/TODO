@@ -3,7 +3,7 @@
 ****  Allan's EvEmu TODO LIST
 ****     26 June 26
 
-    note:  this whole file needs to be reorganized (wip)
+    note:  this whole file needs to be updated and reorganized (wip)
 
 
 *******************************************************
@@ -42,8 +42,6 @@ jettison customs office causes segfault
   to fix this, as there are very few cases it's required, cast the int8 data to int16 before insertion
   there are ~1600 uses of (u)int8 in current code; around 20 of them are saved
 
-subsequent chars not added to existing char's local chat (but new chars have existing chars in chat)
-
 same acct can be logged in multiple times
 work on buglist, integrate this list in there where i can (in order)
     - modules/fitting  ...  see 'module system coding' below for list of current problems
@@ -70,6 +68,9 @@ check insurance payouts.   rounds full ship value up
 many unimplemented salvage error msgs noted in prospector.h
   - current code is working POC and not many checks made at this time
 
+
+when chars change corps, update the corp/ally chat channel acl
+
 *******************************************************
 *******************************************************
 **********  liveupdates code improvements ... hi priority
@@ -82,6 +83,7 @@ update all 16 references to www.eveonline.com and create pages on server to resp
 
 finish rule of 5 for all classes
   - use systementity.h or PyRep.h or xmlpGen* as template
+  - adding to classes while updating
 
 any client message errors like  [no messageID: xxxxxx]
 needs the call sent as text, not as integer  i.e. send message as follows:
@@ -103,10 +105,6 @@ NOTE:  copy idea from drones (state/actions) using lessons gleaned
     In particular, elite rats (see NPC Naming Convention) have a higher probability of attacking your drones.
     At the extreme end, Sleeper NPC are very fond of attacking drones.
 
-lsc system better, but incomplete and needs revisiting    -priority level: med-lo
-    - may need xmlp code instead of muddled python decoding
-    - whole system needs update or possible rewrite
-    - "join channel" window->corp has "None" as corp name
 
 entire Inv codebase is slow.  loading chars (and their inventory) is biggest bottleneck in server (>400ms avg)
   updated as much as i know how right now
@@ -276,7 +274,7 @@ DogmaIMBound::Handle_StopOverloadRack
 review all classes to add rule of 5 or =delete as required
     - PyRep Classes  all c'tor =delete'd
     - InventoryItem done  (copy, move c'tor assert'd.  assign =delete'd   -- no hits on any yet)
-    - others?
+    - others: updating classes as i review them
 
 *******************************************************
 *******************************************************
@@ -688,6 +686,13 @@ npc->rclick->gm menu->view attribs?
 *******************************************************
 *****************  uk calls
   ** none at this time **  (all known calls coded, albeit some only skeleton)
+
+  rclick pic in chat->gm->gag user
+19:49:41 [Service] slash::SlashCmd()
+19:49:41 [CmdError] Unable to find command 'gag' for Allan
+19:51:57 [Service] slash::SlashCmd()
+19:51:57 [CmdError] Unable to find command 'gagiskspammer' for Allan
+
 
 *******************************************************
 *******************************************************

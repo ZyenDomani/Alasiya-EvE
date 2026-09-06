@@ -119,7 +119,7 @@ PyResult ScanMgrService::Handle_GetSystemScanMgr( PyCallArgs& call ) {
 PyResult ScanBound::Handle_ConeScan( PyCallArgs& call ) {
     //result = sm.GetService('scanSvc').ConeScan(self.scanangle, rnge * 1000, vec.x, vec.y, vec.z)
     //return sm.RemoteSvc('scanMgr').GetSystemScanMgr().ConeScan(scanangle, scanRange, x, y, z)
-    //_log(SCAN__TRACE, "ScanBound::Handle_ConeScan() - size= %lu", call.tuple->size() );
+    //_log(SCAN__TRACE, "ScanBound::Handle_ConeScan() - size= %zu", call.tuple->size() );
     //call.Dump(SCAN__DUMP);
 
     Call_ConeScan args;
@@ -150,7 +150,7 @@ PyResult ScanBound::Handle_ConeScan( PyCallArgs& call ) {
 }
 
 PyResult ScanBound::Handle_RequestScans( PyCallArgs& call ) {
-    _log(SCAN__TRACE, "ScanBound::Handle_RequestScans() - size= %lu", call.tuple->size() );
+    _log(SCAN__TRACE, "ScanBound::Handle_RequestScans() - size= %zu", call.tuple->size() );
     if (is_log_enabled(SCAN__DUMP))
     call.Dump(SCAN__DUMP);
 
@@ -207,7 +207,7 @@ PyResult ScanBound::Handle_RecoverProbes( PyCallArgs& call ) {
 PyResult ScanBound::Handle_DestroyProbe( PyCallArgs& call ) {
     //scanMan = sm.RemoteSvc('scanMgr').GetSystemScanMgr()
     //scanMan.DestroyProbe(probeID)
-    _log(SCAN__TRACE, "ScanBound::Handle_DestroyProbe() - size= %lu", call.tuple->size() );
+    _log(SCAN__TRACE, "ScanBound::Handle_DestroyProbe() - size= %zu", call.tuple->size() );
     if (is_log_enabled(SCAN__DUMP))
     call.Dump(SCAN__DUMP);
 

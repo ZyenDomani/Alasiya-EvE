@@ -27,7 +27,7 @@ std::string cmd_parse_eq_arg(const Seperator &args, const char *name) {
     for (int i = 1; i < args.argCount(); i++) {
         std::string arg = args.arg(i);
         size_t pos = arg.find(name);
-        codelog(COMMAND__ERROR, "cmd_parse_eq_arg: %i name '%s' arg '%s' pos: '%lu'",
+        codelog(COMMAND__ERROR, "cmd_parse_eq_arg: %i name '%s' arg '%s' pos: '%zu'",
                 i, name, arg.c_str(), pos);
         if (pos == std::string::npos) {
             continue;

@@ -44,7 +44,7 @@ PyResult WorldSpaceServer::Handle_GetWorldSpaceTypeIDFromWorldSpaceID(PyCallArgs
     /**
      *        worldSpaceTypeID = self.GetWorldSpaceTypeIDFromWorldSpaceID(worldSpaceID)
      */
-    sLog.White( "WorldSpaceServer::Handle_GetWorldSpaceTypeIDFromWorldSpaceID()", "size=%lu", call.tuple->size());
+    sLog.White( "WorldSpaceServer::Handle_GetWorldSpaceTypeIDFromWorldSpaceID()", "size=%zu", call.tuple->size());
     if (is_log_enabled(SERVICE__CALL_DUMP))
     call.Dump(SERVICE__CALL_DUMP);
 
@@ -55,7 +55,7 @@ PyResult WorldSpaceServer::Handle_GetWorldSpaceMachoAddress(PyCallArgs &call) {
     /**
      *       service, address = wss.GetWorldSpaceMachoAddress(address)
      */
-    sLog.White( "WorldSpaceServer::Handle_GetWorldSpaceMachoAddress()", "size=%lu", call.tuple->size());
+    sLog.White( "WorldSpaceServer::Handle_GetWorldSpaceMachoAddress()", "size=%zu", call.tuple->size());
     if (is_log_enabled(SERVICE__CALL_DUMP))
     call.Dump(SERVICE__CALL_DUMP);
 

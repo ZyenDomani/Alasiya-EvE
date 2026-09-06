@@ -60,7 +60,7 @@ void PlanetDataMgr::Populate()
 
     //cleanup
     SafeDelete(res);
-    sLog.Cyan("    PlanetDataMgr", "%lu planet data groups in %lu buckets loaded in %.3fms.",\
+    sLog.Cyan("    PlanetDataMgr", "%zu planet data groups in %zu buckets loaded in %.3fms.",\
             m_planetData.size(), m_planetData.bucket_count(), (GetTimeMSeconds() - start));
 }
 
@@ -383,7 +383,7 @@ void PIDataMgr::Populate()
 
     //cleanup
     SafeDelete(res);
-    sLog.Cyan("        PIDataMgr", "%lu PI Schematic data groups loaded in %.3fms.", m_schematicData.size(), (GetTimeMSeconds() - start));
+    sLog.Cyan("        PIDataMgr", "%zu PI Schematic data groups loaded in %.3fms.", m_schematicData.size(), (GetTimeMSeconds() - start));
 }
 
 void PIDataMgr::GetSchematicData(uint8 schematicID, PI::Schematic& data)

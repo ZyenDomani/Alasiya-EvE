@@ -24,7 +24,7 @@ The server may not respond or only partially respond to these requests. You may 
 Items listed as "<font color=yellow>Preliminary Implementation</font>" have a first draft of their specific code, possibably a step or two above skeleton code, and may not function properly or completely. <BR>
 There will be some response, like opening windows, but *should not* generate an error or crash the server.</font><BR><BR><BR>
 <font color=magenta>Server Version:</font>&nbsp;&nbsp;&nbsp;<font color=orange>0.91.13</font><BR>
-<font color=magenta>Latest Update:</font>&nbsp;&nbsp;&nbsp;<font color=green>27 July 2026</font><BR>
+<font color=magenta>Latest Update:</font>&nbsp;&nbsp;&nbsp;<font color=green>5 August 2026</font><BR>
 <font color=magenta>Page Status:</font>&nbsp;&nbsp;&nbsp;<font color=yellow>WIP</font><BR>
 <font color=magenta>Incomplete Data:</font>&nbsp;&nbsp;&nbsp;<font color=brown>Anything not listed as (<font color=green>Current</font>) is pending review/update/rewrite.</font><BR><BR>
 <a href="https://scan.coverity.com/projects/zyendomani-alasiyaeve">
@@ -771,7 +771,7 @@ Expiration, Failure or Denial forever blocks giving agent.<BR>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=red>NOT IMPLEMENTED</font><BR>19Nov18</td></tr></table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Chats_-_Local_Corp_Custom_Private"> LSC - Large Scale Chat System (<font color=pink>Rewrite on hold</font>) </span></h2>
+<h2> <span class="mw-headline" id="Chats_-_Local_Corp_Custom_Private"> LSC - Large Scale Chat System (<font color=pink>Rewrite incomplete</font>) </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: #2222EE; width:68%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
@@ -821,26 +821,26 @@ Expiration, Failure or Denial forever blocks giving agent.<BR>
 <tr><td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=brown>Mostly Complete</font><BR>24Nov17</td></tr>
-<tr><td> - Initiate Private Conversation Chat</td><td class="broken">20%
+<tr><td> - Initiate Private Conversation Chat</td><td class="broken">85%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 20%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=red>Broken</font><BR><font color=magenta>Needs Work</font><BR>2Feb20</td></tr>
-<tr><td> - Create Private Chat Channels</td><td class="broken">20%
+<td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>5Aug26</td></tr>
+<tr><td> - Create Private Chat Channels</td><td class="broken">85%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 20%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=red>Broken</font><BR><font color=magenta>Needs Work</font><BR>2Feb20</td></tr>
-<tr><td> - Joining Created Private Chat Channels</td><td class="broken">20%
+<td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>5Aug26</td></tr>
+<tr><td> - Joining Created Private Chat Channels</td><td class="broken">85%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 20%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=red>Broken</font><BR><font color=magenta>Needs Work</font><BR>2Feb20</td></tr>
-<tr><td> - Chat in Private Chat Channels</td><td class="broken">20%
+<td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>5Aug26</td></tr>
+<tr><td> - Chat in Private Chat Channels</td><td class="broken">85%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 20%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=red>Broken</font><BR><font color=magenta>Needs Work</font><BR>2Feb20</td></tr>
+<td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>5Aug26</td></tr>
 <tr><td> - Load Subscribed Chat Channels Upon Login</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -856,11 +856,11 @@ Expiration, Failure or Denial forever blocks giving agent.<BR>
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=green>COMPLETE</font><BR>27Jun17</td></tr>
-<tr><td> - Unsubscribe from Private Chat Channel</td><td class="broken">20%
+<tr><td> - Unsubscribe from Private Chat Channel</td><td class="broken">85%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 20%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=red>Broken</font><BR><font color=magenta>Needs Work</font><BR>2Feb20</td></tr>
+<td><font color=brown>Mostly Complete</font> - <font color=pink>PlayTesting</font><BR>5Aug26</td></tr>
 <tr><td> - Character and Corporation Lookup (via Search)</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>

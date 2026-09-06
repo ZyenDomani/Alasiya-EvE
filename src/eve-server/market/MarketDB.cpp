@@ -123,7 +123,7 @@ PyRep *MarketDB::GetOrders( uint32 regionID, int32 typeID )
         PyDecRef(tup);
         return nullptr;
     }
-    _log(MARKET__DB_TRACE, "GetOrders() - Fetched %lu sell orders for type %i", res.GetRowCount(), typeID);
+    _log(MARKET__DB_TRACE, "GetOrders() - Fetched %zu sell orders for type %i", res.GetRowCount(), typeID);
     tup->SetItem(0, DBResultToCRowset( res ) );
 
     //query buy orders
@@ -139,7 +139,7 @@ PyRep *MarketDB::GetOrders( uint32 regionID, int32 typeID )
         PyDecRef(tup);
         return nullptr;
     }
-    _log(MARKET__DB_TRACE, "GetOrders() - Fetched %lu buy orders for type %i", res.GetRowCount(), typeID);
+    _log(MARKET__DB_TRACE, "GetOrders() - Fetched %zu buy orders for type %i", res.GetRowCount(), typeID);
     tup->SetItem(1, DBResultToCRowset( res ) );
 
     if (is_log_enabled(MARKET__DUMP))
@@ -163,7 +163,7 @@ PyRep* MarketDB::GetOrdersForOwner(int32 ownerID)
         return nullptr;
     }
 
-    _log(MARKET__DB_TRACE, "GetOrdersForOwner() - Fetched %lu buy orders for %i", res.GetRowCount(), ownerID);
+    _log(MARKET__DB_TRACE, "GetOrdersForOwner() - Fetched %zu buy orders for %i", res.GetRowCount(), ownerID);
 
     return DBResultToRowset(res);
 }
@@ -509,7 +509,7 @@ PyRep* MarketDB::GetNewPriceHistory(uint32 regionID, uint16 typeID, int64 m_time
         _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
     }
-    _log(MARKET__DB_TRACE, "MarketDB::GetNewPriceHistory() - Fetched %lu buy orders for type %i in region %u from mktTransactions", res.GetRowCount(), typeID, regionID);
+    _log(MARKET__DB_TRACE, "MarketDB::GetNewPriceHistory() - Fetched %zu buy orders for type %i in region %u from mktTransactions", res.GetRowCount(), typeID, regionID);
 
     PyRep* result = DBResultToCRowset(res);
     if (result == nullptr) {
@@ -532,7 +532,7 @@ PyRep* MarketDB::GetOldPriceHistory(uint32 regionID, uint16 typeID, int64 m_time
         _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
     }
-    _log(MARKET__DB_TRACE, "MarketDB::GetOldPriceHistory() - Fetched %lu orders for type %i in region %u from mktHistory", res.GetRowCount(), typeID, regionID);
+    _log(MARKET__DB_TRACE, "MarketDB::GetOldPriceHistory() - Fetched %zu orders for type %i in region %u from mktHistory", res.GetRowCount(), typeID, regionID);
 
     PyRep* result = DBResultToCRowset(res);
     if (result == nullptr) {

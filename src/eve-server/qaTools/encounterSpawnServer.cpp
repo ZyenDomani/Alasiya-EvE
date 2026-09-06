@@ -62,7 +62,7 @@ PyResult encounterSpawnServer::Handle_GetMyEncounters( PyCallArgs& call )
             'disableToggle': True,
             'hint': encounter['encounterName']}
             */
-    _log(QATOOLS__CALL,  "encounterSpawnServer::Handle_GetMyEncounters size: %lu", call.tuple->size());
+    _log(QATOOLS__CALL,  "encounterSpawnServer::Handle_GetMyEncounters size: %zu", call.tuple->size());
     if (is_log_enabled(QATOOLS__DUMP))
     call.Dump(QATOOLS__DUMP);
 
@@ -72,7 +72,7 @@ PyResult encounterSpawnServer::Handle_GetMyEncounters( PyCallArgs& call )
 PyResult encounterSpawnServer::Handle_RequestActivateEncounters( PyCallArgs& call )
 {
     //    logResults = self.encounterSpawnServer.RequestActivateEncounters(encounterList, logResults=True)
-    _log(QATOOLS__CALL,  "encounterSpawnServer::Handle_RequestActivateEncounters size: %lu", call.tuple->size());
+    _log(QATOOLS__CALL,  "encounterSpawnServer::Handle_RequestActivateEncounters size: %zu", call.tuple->size());
     if (is_log_enabled(QATOOLS__DUMP))
     call.Dump(QATOOLS__DUMP);
 
@@ -82,7 +82,7 @@ PyResult encounterSpawnServer::Handle_RequestActivateEncounters( PyCallArgs& cal
 PyResult encounterSpawnServer::Handle_RequestDeactivateEncounters( PyCallArgs& call )
 {
     //  logResults = self.encounterSpawnServer.RequestDeactivateEncounters(encounterList, logResults=True)
-    _log(QATOOLS__CALL,  "encounterSpawnServer::Handle_RequestDeactivateEncounters size: %lu", call.tuple->size());
+    _log(QATOOLS__CALL,  "encounterSpawnServer::Handle_RequestDeactivateEncounters size: %zu", call.tuple->size());
     if (is_log_enabled(QATOOLS__DUMP))
     call.Dump(QATOOLS__DUMP);
 

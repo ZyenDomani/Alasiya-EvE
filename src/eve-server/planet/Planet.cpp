@@ -127,19 +127,19 @@ bool PlanetSE::LoadExtras() {
         m_data.dist_5 = (MakeRandomFloat(baseMin, baseMax) * m_abundance); // + MakeRandomFloat(1.0f, 5.0f)) * sysSec;
 
         // Populate planet buffer string with 18 bands
-        sLog.Warning("PlanetLoad", "%s - generating buffer for %s (%u)", \
+        //sLog.Warning("PlanetLoad", "%s - generating buffer for %s (%u)", \
                 m_self->name(), sDataMgr.GetTypeName(m_data.type_1), m_data.type_1);
         m_data.buffer_1 = GenerateResourceBuffer(m_data.dist_1);
-        sLog.Warning("PlanetLoad", "%s - generating buffer for %s (%u)", \
+        //sLog.Warning("PlanetLoad", "%s - generating buffer for %s (%u)", \
                 m_self->name(), sDataMgr.GetTypeName(m_data.type_2), m_data.type_2);
         m_data.buffer_2 = GenerateResourceBuffer(m_data.dist_2);
-        sLog.Warning("PlanetLoad", "%s - generating buffer for %s (%u)", \
+        //sLog.Warning("PlanetLoad", "%s - generating buffer for %s (%u)", \
                 m_self->name(), sDataMgr.GetTypeName(m_data.type_3), m_data.type_3);
         m_data.buffer_3 = GenerateResourceBuffer(m_data.dist_3);
-        sLog.Warning("PlanetLoad", "%s - generating buffer for %s (%u)", \
+        //sLog.Warning("PlanetLoad", "%s - generating buffer for %s (%u)", \
                 m_self->name(), sDataMgr.GetTypeName(m_data.type_4), m_data.type_4);
         m_data.buffer_4 = GenerateResourceBuffer(m_data.dist_4);
-        sLog.Warning("PlanetLoad", "%s - generating buffer for %s (%u)", \
+        //sLog.Warning("PlanetLoad", "%s - generating buffer for %s (%u)", \
                 m_self->name(), sDataMgr.GetTypeName(m_data.type_5), m_data.type_5);
         m_data.buffer_5 = GenerateResourceBuffer(m_data.dist_5);
 
@@ -213,7 +213,7 @@ PyRep* PlanetSE::GetResourceData(Call_ResourceDataDict& dict) {
             dist = m_data.dist_5;
         }
 
-        _log(PLANET__DEBUG, "PlanetSE::GetResourceData() for %s (%u) using remoteSense: %u, planetology: %u, advPlanetology: %u - updateTime: %lu, proximity: %s, newBand: %u, oldBand: %u, dist:%0.5f,  bufferSize: %i", \
+        _log(PLANET__DEBUG, "PlanetSE::GetResourceData() for %s (%u) using remoteSense: %u, planetology: %u, advPlanetology: %u - updateTime: %zu, proximity: %s, newBand: %u, oldBand: %u, dist:%0.5f,  bufferSize: %i", \
                 sPIDataMgr.GetProductName(dict.resourceTypeID), dict.resourceTypeID, dict.remoteSensing, dict.planetology, dict.advancedPlanetology, \
                 dict.updateTime, sPlanetDataMgr.GetProximity(dict.proximity), dict.newBand, dict.oldBand, dist, size);
 

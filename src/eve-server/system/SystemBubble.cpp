@@ -249,7 +249,7 @@ void SystemBubble::Add(SystemEntity* pSE) {
         distance /= ONE_AU_IN_METERS;
         _log(BUBBLE__DEBUG, "SysBubble::Add() - Added entity %u to bubble %u.", \
                 pSE->GetID(), m_bubbleID);
-        _log(BUBBLE__DEBUG, "SysBubble::Add() - Distance to Star %.2f AU.  %lu/%lu Entities in bubble %u",\
+        _log(BUBBLE__DEBUG, "SysBubble::Add() - Distance to Star %.2f AU.  %zu/%zu Entities in bubble %u",\
                 distance, m_entities.size(), m_dynamicEntities.size(), m_bubbleID);
     } else if (is_log_enabled(BUBBLE__TRACE)) {
         Vector3d delta =  m_center - pSE->GetPosition();

@@ -238,7 +238,7 @@ void GenericModule::ProcessEffects(int8 state, bool active/*false*/)
     // get module/charge pre/post effects in state x
     std::map<uint16, Effect> effectMap;
     m_modRef->type().GetEffectMap(state, effectMap);
-    _log(EFFECTS__TRACE, "GenericModule::ProcessEffects() called for %s. effects: %lu, state: %s, online: %s", \
+    _log(EFFECTS__TRACE, "GenericModule::ProcessEffects() called for %s. effects: %zu, state: %s, online: %s", \
             m_modRef->name(), effectMap.size(), sFxProc.GetStateName(state), (active ? "true" : "false"));
     for (auto &cur : effectMap) {
         if (cur.first == 16)    // skip the online effect.  this is done internally elsewhere

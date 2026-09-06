@@ -162,7 +162,7 @@ PyResult DungeonService::Handle_AddObject( PyCallArgs& call )
 {
     // (newObjectID, revisionID,) = sm.RemoteSvc('dungeon').AddObject(roomID, typeID, x, y, z, yaw, pitch, roll, radius)
 
-    _log(DUNG__CALL,  "DungeonService::Handle_AddObject size: %lu", call.tuple->size());
+    _log(DUNG__CALL,  "DungeonService::Handle_AddObject size: %zu", call.tuple->size());
     if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
@@ -220,7 +220,7 @@ PyResult DungeonService::Handle_AddObject( PyCallArgs& call )
 PyResult DungeonService::Handle_CopyObject( PyCallArgs& call )
 {
     //newObjectID = sm.RemoteSvc('dungeon').CopyObject(objectID, roomID, offsetX, offsetY, offsetZ)
-    _log(DUNG__CALL,  "DungeonService::Handle_CopyObject  size: %lu", call.tuple->size());
+    _log(DUNG__CALL,  "DungeonService::Handle_CopyObject  size: %zu", call.tuple->size());
     if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
@@ -282,7 +282,7 @@ PyResult DungeonService::Handle_CopyObject( PyCallArgs& call )
 PyResult DungeonService::Handle_EditObjectRadius( PyCallArgs& call )
 {
     //sm.RemoteSvc('dungeon').EditObjectRadius(objectID=objectID, radius=radius)
-    _log(DUNG__CALL,  "DungeonService::Handle_EditObjectRadius  size: %lu", call.tuple->size());
+    _log(DUNG__CALL,  "DungeonService::Handle_EditObjectRadius  size: %zu", call.tuple->size());
     if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
@@ -311,7 +311,7 @@ PyResult DungeonService::Handle_EditObjectRadius( PyCallArgs& call )
 PyResult DungeonService::Handle_EditObjectXYZ( PyCallArgs& call )
 {
     //sm.RemoteSvc('dungeon').EditObjectXYZ(objectID=objectID, x=x, y=y, z=z)
-    _log(DUNG__CALL,  "DungeonService::Handle_EditObjectXYZ  size: %lu", call.tuple->size());
+    _log(DUNG__CALL,  "DungeonService::Handle_EditObjectXYZ  size: %zu", call.tuple->size());
     if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
@@ -345,7 +345,7 @@ PyResult DungeonService::Handle_EditObjectXYZ( PyCallArgs& call )
 
 PyResult DungeonService::Handle_EditObjectYawPitchRoll( PyCallArgs& call ) {
     //sm.RemoteSvc('dungeon').EditObjectYawPitchRoll(objectID=objectID, yaw=yaw, pitch=pitch, roll=roll)
-    _log(DUNG__CALL,  "DungeonService::Handle_EditObjectYawPitchRoll size: %lu", call.tuple->size());
+    _log(DUNG__CALL,  "DungeonService::Handle_EditObjectYawPitchRoll size: %zu", call.tuple->size());
     if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
@@ -378,7 +378,7 @@ PyResult DungeonService::Handle_EditObjectYawPitchRoll( PyCallArgs& call ) {
 PyResult DungeonService::Handle_TemplateAdd( PyCallArgs& call )
 {
     //templateID = sm.RemoteSvc('dungeon').TemplateAdd(templateName, templateDescription)
-    _log(DUNG__CALL,  "DungeonService::Handle_TemplateAdd  size: %lu", call.tuple->size());
+    _log(DUNG__CALL,  "DungeonService::Handle_TemplateAdd  size: %zu", call.tuple->size());
     if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
@@ -406,7 +406,7 @@ PyResult DungeonService::Handle_AddTemplateObjects( PyCallArgs& call )
 {
     // objectIDs = sm.RemoteSvc('dungeon').AddTemplateObjects(roomID, self.sr.node.id, (posInRoom.x, posInRoom.y, posInRoom.z)
 
-    _log(DUNG__CALL,  "DungeonService::Handle_AddTemplateObjects  size: %lu", call.tuple->size());
+    _log(DUNG__CALL,  "DungeonService::Handle_AddTemplateObjects  size: %zu", call.tuple->size());
     if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
@@ -483,7 +483,7 @@ PyResult DungeonService::Handle_AddTemplateObjects( PyCallArgs& call )
 
 PyResult DungeonService::Handle_EditObject( PyCallArgs& call )
 {
-    _log(DUNG__CALL,  "DungeonService::Handle_EditObject  size: %lu", call.tuple->size());
+    _log(DUNG__CALL,  "DungeonService::Handle_EditObject  size: %zu", call.tuple->size());
     if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
@@ -496,7 +496,7 @@ PyResult DungeonService::Handle_IsObjectLocked( PyCallArgs& call )
 {
     //locked, byWho = dungeonHelper.IsObjectLocked(slimItem.dunObjectID)
     //  userId, userName in byWho
-    _log(DUNG__CALL,  "DungeonService::Handle_IsObjectLocked size: %lu", call.tuple->size());
+    _log(DUNG__CALL,  "DungeonService::Handle_IsObjectLocked size: %zu", call.tuple->size());
     if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
@@ -525,7 +525,7 @@ PyResult DungeonService::Handle_IsObjectLocked( PyCallArgs& call )
 PyResult DungeonService::Handle_EditObjectName( PyCallArgs& call )
 {
     //sm.RemoteSvc('dungeon').EditObjectName(newObjectID, objectName)
-    _log(DUNG__CALL,  "DungeonService::Handle_EditObjectName  size: %lu", call.tuple->size());
+    _log(DUNG__CALL,  "DungeonService::Handle_EditObjectName  size: %zu", call.tuple->size());
     if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
@@ -549,7 +549,7 @@ PyResult DungeonService::Handle_EditObjectName( PyCallArgs& call )
 PyResult DungeonService::Handle_TemplateObjectAddDungeonList( PyCallArgs& call )
 {
     //sm.RemoteSvc('dungeon').TemplateObjectAddDungeonList(templateID, objectIDList)
-    _log(DUNG__CALL,  "DungeonService::Handle_TemplateObjectAddDungeonList  size: %lu", call.tuple->size());
+    _log(DUNG__CALL,  "DungeonService::Handle_TemplateObjectAddDungeonList  size: %zu", call.tuple->size());
     if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
@@ -561,7 +561,7 @@ PyResult DungeonService::Handle_TemplateObjectAddDungeonList( PyCallArgs& call )
 PyResult DungeonService::Handle_TemplateRemove( PyCallArgs& call )
 {
     //sm.RemoteSvc('dungeon').TemplateRemove(self.sr.node.id)
-    _log(DUNG__CALL,  "DungeonService::Handle_TemplateRemove  size: %lu", call.tuple->size());
+    _log(DUNG__CALL,  "DungeonService::Handle_TemplateRemove  size: %zu", call.tuple->size());
     if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
     /*
@@ -579,7 +579,7 @@ PyResult DungeonService::Handle_TemplateRemove( PyCallArgs& call )
 PyResult DungeonService::Handle_TemplateEdit( PyCallArgs& call )
 {
     //dungeonSvc.TemplateEdit(self.templateRow.templateID, templateName, templateDescription)
-    _log(DUNG__CALL,  "DungeonService::Handle_TemplateEdit  size: %lu", call.tuple->size());
+    _log(DUNG__CALL,  "DungeonService::Handle_TemplateEdit  size: %zu", call.tuple->size());
     if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 
@@ -591,7 +591,7 @@ PyResult DungeonService::Handle_TemplateEdit( PyCallArgs& call )
 PyResult DungeonService::Handle_RemoveObject( PyCallArgs& call )
 {
     //sm.RemoteSvc('dungeon').RemoveObject(objectID)
-    _log(DUNG__CALL,  "DungeonService::Handle_RemoveObject  size: %lu", call.tuple->size());
+    _log(DUNG__CALL,  "DungeonService::Handle_RemoveObject  size: %zu", call.tuple->size());
     if (is_log_enabled(DUNG__CALL_DUMP))
     call.Dump(DUNG__CALL_DUMP);
 

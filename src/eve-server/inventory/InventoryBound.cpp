@@ -291,7 +291,7 @@ PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
  */
 PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
     if (is_log_enabled(INV__DUMP)) {
-        _log(INV__DUMP, "IB::Handle_Add() size= %lu", call.tuple->size());
+        _log(INV__DUMP, "IB::Handle_Add() size= %zu", call.tuple->size());
         call.Dump(INV__DUMP);
     }
 
@@ -375,7 +375,7 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
 PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
     // MultiAdd([list]itemIDs, locationID, flag, fromManyFlags(for charges), qty)
     if (is_log_enabled(INV__DUMP)) {
-        _log(INV__DUMP, "IB::Handle_MultiAdd() size= %lu", call.tuple->size());
+        _log(INV__DUMP, "IB::Handle_MultiAdd() size= %zu", call.tuple->size());
         call.Dump(INV__DUMP);
     }
 
@@ -448,7 +448,7 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
     }
 
     if (is_log_enabled(INV__MESSAGE))
-        _log(INV__MESSAGE, "IB::Handle_MultiAdd() - moving %lu item%s from (%u:%s) to me(%s:%u:%s).", \
+        _log(INV__MESSAGE, "IB::Handle_MultiAdd() - moving %zu item%s from (%u:%s) to me(%s:%u:%s).", \
                 args.itemIDs.size(), args.itemIDs.size() > 1?"s":"", args.containerID, \
                 sDataMgr.GetFlagName(m_flag), m_self->name(), m_itemID, sDataMgr.GetFlagName(toFlag));
 
@@ -764,7 +764,7 @@ std::vector< int32 > InventoryBound::CatSortItems(std::vector< InventoryItemRef 
         items.push_back(cur->itemID());
 
     if (sConfig.debug.IsTestServer and sConfig.debug.UseProfiling)
-        sLog.Warning("IB::CatSortItems", "%lu items sorted in %.3fus with %u loops.", items.size(), (GetTimeUSeconds() - start), count);
+        sLog.Warning("IB::CatSortItems", "%zu items sorted in %.3fus with %u loops.", items.size(), (GetTimeUSeconds() - start), count);
 
     return items;  //returns sorted list
 }

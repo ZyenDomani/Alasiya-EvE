@@ -1081,7 +1081,7 @@ PyPackedRow::~PyPackedRow() {
 PyPackedRow* PyPackedRow::Clone() const {
     sLog.Magenta("PyPackedRow()", "Clone.");
     PySafeIncRef(mHeader);
-    PyPackedRow* packedRow(new PyPackedRow(mHeader));
+    PyPackedRow* packedRow = new PyPackedRow(mHeader);
     packedRow->mFields = mFields->Clone();
     return packedRow;
 }

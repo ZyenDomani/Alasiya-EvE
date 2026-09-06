@@ -13,7 +13,7 @@
 namespace Acct {
 
     namespace Role {
-        enum:int64_t {
+        enum :int64_t {
             DUST               = 1L,                      // 0x01                0b0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0001
             BANNING            = 2L,                      // 0x02                0b0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0010
             MARKET             = 4L,                      // 0x04                0b0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0100
@@ -54,7 +54,7 @@ namespace Acct {
             QA                 = 4503599627370496LL,
             GMH                = 9007199254740992LL,
             // the client requires a module named "dna" for many menu items for the "gml" role
-                    //  we do not have this module, which leads to an error, and an inoperable rclick menu
+            //  we do not have this module, which leads to an error, and an inoperable rclick menu
             //  when GML is part of a client's roles
             //      groove fixed this in a previous "liveupdates" patch
             GML                = 18014398509481984LL,
@@ -72,7 +72,7 @@ namespace Acct {
             STD                = LOGIN | PLAYER | IGB,
             VIP                = STD | VIPLOGIN | HEALSELF,
             TRANSAM            = VIP | TRANSLATION | TRANSLATIONADMIN | TRANSLATIONEDITOR,
-            SLASH              = VIP | GML | LEGIONEER | SPAWN | HEALOTHERS,
+            SLASH              = VIP | GML | SPAWN | HEALOTHERS, //| LEGIONEER
             CREATOR            = SLASH | GMH | WORLDMOD | CONTENT,
             DEV                = CREATOR | QA | PROGRAMMER,
             BOSS               = DEV | ADMIN,
@@ -133,7 +133,7 @@ namespace SessionType {
 
 namespace Corp {
     namespace Role {
-        enum:int64_t {
+        enum :int64_t {
             Member                          = 0,        // initial setting for all members
             Director                        = 1,        // only role that can lock/unlock bp
             PersonnelManager                = 128,

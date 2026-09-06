@@ -87,7 +87,7 @@ void BulkDB::Initialize()
     if (m_bulkDataChunks.size() > 0)
         m_loaded = true;
 
-    sLog.Cyan("      BulkDataMgr", "%lu BulkData Chunks loaded in %.3fms.", m_bulkDataChunks.size(), (GetTimeMSeconds() - start));
+    sLog.Cyan("      BulkDataMgr", "%zu BulkData Chunks loaded in %.3fms.", m_bulkDataChunks.size(), (GetTimeMSeconds() - start));
 }
 
 uint8 BulkDB::GetNumChunks(uint8 setID /*0*/)

@@ -34,7 +34,7 @@
 #include "npc/NPC.h"
 
 
-//TODO:  verifiy this!!  is this right??
+//TODO:  verify this!!  is this right??
 PyRep* LSCChannelChar::Encode() const {
     Client* pClient = sEntityMgr.FindClientByCharID(m_charID);
     if (pClient == nullptr)
@@ -56,15 +56,25 @@ PyRep* LSCChannelChar::Encode() const {
     return line.Encode();
 }
 
-PyRep* AclEntry::Encode() const {
-    ChannelACLLine line;
-    line.accessor = accessorID;
-    line.admin = adminID;
-    line.mode = mode;
-    line.originalMode = originalMode;
-    line.reason = reason;
-    line.untilWhen = untilWhen;
-    return line.Encode();
+PyRep* AclEntry::Encode(LSCService* pSvc) const {
+    if (pSvc == nullptr)
+        return PyStatic.NewNone();
+    PyPackedRow* row = new PyPackedRow(pSvc->GetACLHeader());
+    row->SetFieldC("accessor",     new PyInt(accessorID));
+    row->SetFieldC("mode",         new PyInt(mode));
+    row->SetFieldC("untilWhen",    new PyLong(untilWhen));
+    row->SetFieldC("originalMode", new PyInt(originalMode));
+    if (reason.empty()) {
+        row->SetFieldC("reason",   PyStatic.NewNone());
+    } else {
+        row->SetFieldC("reason",   new PyString(reason));
+    }
+    if (admin.empty()) {
+        row->SetFieldC("admin",    PyStatic.NewNone());
+    } else {
+        row->SetFieldC("admin",    new PyString(admin));
+    }
+    return row;
 }
 
 LSCChannel::LSCChannel(LSCService* svc,
@@ -103,15 +113,27 @@ LSCChannel::LSCChannel(LSCService* svc,
 }
 
 LSCChannel::~LSCChannel() {
-    _log(LSC__CHANNELS, "Destroying channel %u - \"%s\"", m_channelID, (m_displayName == "") ? ((m_comparisonKey == "") ? "null" : m_comparisonKey.c_str()) : m_displayName.c_str());
+    _log(LSC__CHANNELS, "Destroying channel %u(%s:%s) - type: %s", m_channelID,  \
+                        (m_displayName == "") ? "null" : m_displayName.c_str(), \
+                        (m_comparisonKey == "") ? "null" : m_comparisonKey.c_str(),
+                        GetTypeString());
+
+    if (m_temporary) {
+        // delete all channel info
+        m_service->GetDB()->DeleteChannel(m_channelID);
+    }
 }
 
-void LSCChannel::InitACL(Client* pClient) {
-	int32 charID = pClient->GetCharacterID();
-	AclEntry* entry = new AclEntry(charID, LSC::Mode::Creator, 0, LSC::Mode::None, "Channel Creation", charID);
+void LSCChannel::InitACL(int32 charID) {
+    if (!IsCharacterID(charID))
+        return;
 
-	m_aclMap.emplace(charID, entry);
-        m_service->GetDB()->SaveChannelACL(m_channelID, entry);
+    if (m_aclMap.find(charID) != m_aclMap.end())
+        return;
+
+    AclEntry* entry = new AclEntry(charID, ownerSystem, LSC::Mode::Creator, LSC::Mode::None, 0, "LSC System", "Channel Creation");
+    m_aclMap.emplace(charID, entry);
+    m_service->GetDB()->SaveChannelACL(m_channelID, entry);
 }
 
 void LSCChannel::GetChannelInfo(int32* channelID, uint32* ownerID, std::string& displayName, std::string& motd, \
@@ -131,13 +153,66 @@ void LSCChannel::GetChannelInfo(int32* channelID, uint32* ownerID, std::string& 
 }
 
 bool LSCChannel::JoinChannel(Client* pClient) {
-    /** @todo determine moderator/other rights for given char in this channel and set Mode accordingly */
-    m_chars.emplace(pClient->GetCharacterID(),
-            LSCChannelChar(this, pClient->GetCorporationID(), pClient->GetCharacterID(), pClient->GetName(), \
-                           pClient->GetAllianceID(), pClient->GetWarFactionID(), pClient->GetAccountRole(), 0, \
-                           (m_ownerID == pClient->GetCharacterID() ? LSC::Mode::Creator : LSC::Mode::Moderator))
-            );
-    pClient->ChannelJoined( this );
+    int32 charID = pClient->GetCharacterID();
+    LSC::Mode mode = LSC::Mode::None;
+
+    auto it = m_aclMap.find(charID);
+    if (it != m_aclMap.end() && it->second != nullptr) {
+        mode = it->second->mode;
+    } else {
+        // this char is not in acl map.  could be missed, empty map, or other error; run the gambit
+        if (IsNPCCorp(m_channelID)) {
+            if (m_channelID == pClient->GetCorporationID()) {
+                mode = LSC::Mode::Speaker;
+                // add acl for this char
+                AclEntry* entry =  new AclEntry(charID, ownerSystem, mode, LSC::Mode::None, 0, "LSC System", "Channel Default ACL");
+                m_aclMap.emplace(charID, entry);
+                m_service->GetDB()->SaveChannelACL(m_channelID, entry);
+            } else {
+                // should non-corp members be allowed into other non-player-corp chat?
+                mode = LSC::Mode::Listener;
+            }
+        } else if (IsPlayerCorp(m_channelID)) {
+            // player corp channel with no acl for this char.
+            if (m_channelID == pClient->GetCorporationID()) {
+                using namespace Corp::Role;
+                int64 role = pClient->GetCorpRole();
+                if (m_ownerID == charID) {
+                    mode = LSC::Mode::Creator;
+                } else if ((role & ChatManager) == ChatManager) {
+                    mode = LSC::Mode::Creator;
+                } else if (((role & PersonnelManager) == PersonnelManager)
+                       or ((role & SecurityOfficer) == SecurityOfficer)) {
+                    mode = LSC::Mode::Operator;
+                } else if ((role & AllManager) == AllManager) {
+                    mode = LSC::Mode::Moderator;
+                } else {
+                    mode = LSC::Mode::Speaker;
+                }
+                // add acl for this char
+                AclEntry* entry =  new AclEntry(charID, ownerSystem, mode, LSC::Mode::None, 0, "LSC System", "Channel Default ACL");
+                m_aclMap.emplace(charID, entry);
+                m_service->GetDB()->SaveChannelACL(m_channelID, entry);
+            }
+        } else if (IsAllianceID(m_channelID)) {
+            // not sure how to determine roles here yet...
+            if (m_channelID == pClient->GetAllianceID()) {
+                mode = LSC::Mode::Speaker;
+                // add acl for this char
+                AclEntry* entry =  new AclEntry(charID, ownerSystem, mode, LSC::Mode::None, 0, "LSC System", "Channel Default ACL");
+                m_aclMap.emplace(charID, entry);
+                m_service->GetDB()->SaveChannelACL(m_channelID, entry);
+            }
+        }
+    }
+
+    m_chars.emplace(charID,
+                    LSCChannelChar(this, pClient->GetCorporationID(), charID, pClient->GetName(), \
+                        pClient->GetAllianceID(), pClient->GetWarFactionID(), pClient->GetAccountRole(), 0, \
+                        mode)
+                    );
+
+    pClient->ChannelJoined(this);
 
     LSC_JoinChannel join;
         join.channelID = EncodeID();
@@ -175,7 +250,7 @@ void LSCChannel::LeaveChannel(Client* pClient) {
 
     if (m_chars.empty()) {
         if (m_temporary)
-            m_service->DestroyChannel(m_channelID);
+            m_service->DeleteSystemChannel(m_channelID);
         return;
     }
 
@@ -220,14 +295,20 @@ void LSCChannel::Evacuate(Client* pClient) {
 void LSCChannel::SendMessage(Client* pClient, std::string& message, bool self/*false*/) {
     // to send system msgs, senderID should be 1 (system owner)
     // will need better arg checks to determine actual message origin, unless we overload and/or keep this for player-only
-    uint32 senderID = pClient ? pClient->GetCharacterID() : 1;
+    int32 senderID = ownerSystem;
+    if (pClient != nullptr)
+        senderID = pClient->GetCharacterID();
 
-    auto it = m_chars.find(senderID);
-    if (it != m_chars.end() /*&& it->second != nullptr*/) {
-        // CHTMODE_LISTENER = 1. If their mode drops below Speaker (2), they are read-only!
-        if (static_cast<int8_t>(it->second.GetMode()) < 2) {
-            _log(LSC__CHANNELS, "SendMessage blocked. Character %u is gagged/muted in room %u.", senderID, m_channelID);
-            return;
+    if (IsCharacterID(senderID)) {
+        // we're only checking modes for characters.
+        auto it = m_chars.find(senderID);
+        if (it != m_chars.end() /*&& it->second != nullptr*/) {
+            // CHTMODE_LISTENER = 1. If their mode drops below Speaker (2), they are read-only!
+            if (static_cast<int8_t>(it->second.GetMode()) < LSC::Mode::Speaker) {
+                //  throw error
+                throw UserError("LSCCannotSendMessage")
+                        .AddFormatValue("msg", new PyString("You are not allowed to speak in this channel."));
+            }
         }
     }
 
@@ -247,7 +328,6 @@ void LSCChannel::SendMessage(Client* pClient, std::string& message, bool self/*f
     sm.channelID = EncodeID();
     sm.memberCount = static_cast<int32>(m_chars.size());
     sm.message = message;
-
     PyTuple* rsp = sm.Encode();
 
     if (is_log_enabled(LSC__MESSAGE)) {
@@ -256,68 +336,6 @@ void LSCChannel::SendMessage(Client* pClient, std::string& message, bool self/*f
     }
 
     sEntityMgr.Multicast("OnLSC", GetTypeString(), &rsp, mct, false);
-}
-
-// this works...leave it alone
-void LSCChannel::SendServerMOTD(Client* pClient) {
-    std::string uptime = sEntityMgr.GetUpTime();
-    std::string msg = "<br>Welcome to Alasiya's EvEmu Server ";
-    msg += pClient->GetCharName();
-    msg += ".<br>Server Version: ";
-    msg += EVEMU_REVISION;
-    msg += "<br>Revision Date: ";
-    msg += EVEMU_BUILD_DATE;
-    msg += "<br>Uptime: ";
-    msg += uptime;
-    msg += "<br>Current Population: ";
-    msg += std::to_string(sEntityMgr.GetClientCount());
-    // TODO:  update to use new color enums
-    msg += "<br><br><color=" + std::string(LSC::Color::Yellow.hexStr) + ">Character Options:</color>";
-    msg += "<br><font color='white'>Ship Tracking: </font>";
-    if (sEntityMgr.GetTracking()) {
-        msg += "<font color='green'>On</font>";
-    } else {
-        msg += "<font color='red'>Off</font>";
-    }
-    msg += "<br><font color='white'>Module AutoStop: </font>";
-    if (pClient->AutoStop()) {
-        msg += "<font color='green'>On</font>";
-    } else {
-        msg += "<font color='red'>Off</font>";
-    }
-    msg += "<br><font color='white'>Drone AutoAttack: </font>";
-    if (pClient->AutoAttack()) {
-        msg += "<font color='green'>On</font>";
-    } else {
-        msg += "<font color='red'>Off</font>";
-    }
-    msg += "<br><font color='white'>RAM Event: </font>";
-    //msg += (pClient->RAMEvent() ? "On" : "Off");
-    if (sConfig.ram.AutoEvent) {
-        msg += "<font color='green'>On</font>";
-    } else {
-        msg += "<font color='red'>Off</font>";
-    }
-    // check account roles for this one
-    if ((pClient->GetAccountRole() & Acct::Role::EPLAYER) == Acct::Role::EPLAYER) {
-        msg += "<br><font color='white'>ShowAll: </font>";
-        if (pClient->IsShowall()) {
-            msg += "<font color='green'>On</font>";
-        } else {
-            msg += "<font color='red'>Off</font>";
-        }
-    }
-
-    LSC_SendMessage sm;
-    sm.sender = FakeSenderInfo();
-    sm.channelID = EncodeID();
-    sm.message = msg;
-    sm.memberCount = static_cast<int32>(m_chars.size());
-
-    PyTuple* motd = sm.Encode();
-    motd->Dump(LSC__RSP_DUMP, "   ");
-    //NOTE:  this is to send chat msg to single char using <this> window (searched via id/name from sender)
-    pClient->SendNotification("OnLSC", GetTypeString(), &motd, false);
 }
 
 bool LSCChannel::IsJoined(uint32 charID) {
@@ -394,12 +412,12 @@ bool LSCChannel::IsBanned(uint32 charID, uint32 corpID, uint32 allyID) {
         if (currentID == 0)
             continue; // Skip unassigned IDs (e.g., if allianceID is 0)
 
-            auto it = m_aclMap.find(currentID);
+        auto it = m_aclMap.find(currentID);
         if (it != m_aclMap.end() && it->second != nullptr) {
             AclEntry* acl = it->second;
 
             // 2. Mode Evaluation: Mode::None (0) or Mode::Disallowed (-2) represent active bans
-            if (acl->mode == LSC::Mode::None || acl->mode == LSC::Mode::Disallowed) {
+            if (acl->mode < LSC::Mode::Listener) {
                 _log(LSC__CHANNELS, "Access Denied: Accessor %u is explicitly banned from room %u. Reason: %s",
                      currentID, m_channelID, acl->reason.c_str());
                 return true; // Explicitly banned
@@ -450,7 +468,7 @@ LSC_SenderInfo* LSCChannel::MakeSenderInfo(Client* pClient/*nullptr*/, NPC* pNPC
     sender->allianceID = pClient->GetAllianceID();
     sender->corpID = pClient->GetCorporationID();
     sender->whoEOL = MakeSenderEOL(pClient, pNPC);
-    sender->chatMode = LSC::Mode::Creator; //pClient->GetChar()->chatMode(channelID);
+    sender->chatMode = LSC::Mode::Operator; //pClient->GetChar()->chatMode(channelID);
     sender->corpRole = pClient->GetCorpRole();
     sender->factionID = (pClient->GetWarFactionID() > 0 ? new PyInt(pClient->GetWarFactionID()) : PyStatic.NewNone());
     return sender;
@@ -499,6 +517,9 @@ PyRep* LSCChannel::EncodeID() {
     switch (m_type) {
         // --- Category A: Pure Solar System / Static Base Space ---
         case LSC::Type::corp:
+        case LSC::Type::wing:
+        case LSC::Type::fleet:
+        case LSC::Type::squad:
         case LSC::Type::global:
         case LSC::Type::region:
         case LSC::Type::alliance:
@@ -520,24 +541,6 @@ PyRep* LSCChannel::EncodeID() {
             int64 actualChannelID = -1 * (static_cast<int64>(m_channelID) + 2147483647);
             return new PyInt(static_cast<int32>(actualChannelID));
         }
-
-        // --- Category C: Fleet Channels ---
-        case LSC::Type::fleet: {
-            // Fulfills the exact wire requirements to allow fleet voice chat: PyString("fleetid:XXXX")
-            std::string wireID = "fleetid:" + std::to_string(m_channelID);
-            return new PyString(wireID.c_str());
-        }
-        case LSC::Type::wing: {
-            // Fulfills the exact wire requirements to allow fleet voice chat: PyString("wingid:XXXX")
-            std::string wireID = "wingid:" + std::to_string(m_channelID);
-            return new PyString(wireID.c_str());
-        }
-        case LSC::Type::squad: {
-            // Fulfills the exact wire requirements to allow fleet voice chat: PyString("squadid:XXXX")
-            std::string wireID = "squadid:" + std::to_string(m_channelID);
-            return new PyString(wireID.c_str());
-        }
-
         case LSC::Type::character: {
             sLog.Warning("LSC::EncodeID", "type::char hit for channel %i", m_channelID);
             // fallthru and let it continue...not sure what else to do yet...
@@ -547,11 +550,18 @@ PyRep* LSCChannel::EncodeID() {
     }
 }
 
-PyRep* LSCChannel::EncodeStaticChannel(uint32 charID) {
+PyRep* LSCChannel::EncodeStaticChannel(DBRowDescriptor* pHeader, int32 charID) {
+    if (pHeader == nullptr)
+        return PyStatic.NewNone();
     MultiChannelLine line;
-        line.channelID = m_channelID;
         line.ownerID = m_ownerID;
-        line.displayName = (m_displayName.empty() ? PyStatic.NewNone() : new PyString(m_displayName));
+        line.channelID = m_channelID;
+        if ((m_cMsgID == LSC::gID::Faction)
+         or (m_cMsgID == LSC::cID::Other)) {
+            line.displayName = new PyString(m_displayName);
+        } else {
+            line.displayName = PyStatic.NewNone();
+        }
         line.motd = m_motd;
         line.comparisonKey = m_comparisonKey;
         line.memberless = m_memberless;
@@ -563,7 +573,7 @@ PyRep* LSCChannel::EncodeStaticChannel(uint32 charID) {
         line.groupMessageID = m_gMsgID;
         line.channelMessageID = m_cMsgID;
         line.estimatedMemberCount = (int32)m_chars.size();
-
+/*
         // This (may) tint the tab title bar or chat room icons
         if (m_type == LSC::Type::fleet) {
             line.channelColor = LSC::Color::Azure.clientInt; // Blue fleet theme
@@ -572,7 +582,7 @@ PyRep* LSCChannel::EncodeStaticChannel(uint32 charID) {
         } else {
             line.channelColor = LSC::Color::LiteGrey.clientInt; // Standard grey background
         }
-
+*/
         if (m_type <= LSC::Type::solarsystem2) {
             line.subscribed = true;
         } else {
@@ -583,25 +593,7 @@ PyRep* LSCChannel::EncodeStaticChannel(uint32 charID) {
     return line.Encode();
 }
 
-PyRep* LSCChannel::EncodeDynamicChannel(uint32 charID) {
-    /*
-              [PyPackedRow 27 bytes]
-                ["channelID" => <1630077495> [I4]]
-                ["ownerID" => <1630077495> [I4]]
-                ["displayName" => <None> [WStr]]
-                ["motd" => <None> [WStr]]
-                ["comparisonKey" => <None> [WStr]]
-                ["memberless" => <1> [Bool]]
-                ["password" => <None> [WStr]]
-                ["mailingList" => <1> [Bool]]
-                ["cspa" => <2950> [I4]]
-                ["temporary" => <0> [Bool]]
-                ["languageRestriction" => <0> [Bool]]
-                ["groupMessageID" => <0> [I4]]
-                ["channelMessageID" => <0> [I4]]
-                ["subscribed" => <1> [I4]]
-        */
-   // PyPackedRow row;
+PyRep* LSCChannel::EncodeDynamicChannel(int32 charID) {
     SingleChannelInfo info;
         info.channelID = m_channelID;
         info.cspa = m_cspa;
@@ -627,8 +619,7 @@ PyRep* LSCChannel::EncodeDynamicChannel(uint32 charID) {
         } else {
             info.subscribed = m_service->GetDB()->IsChannelSubscribedByThisChar(m_channelID, charID);
         }
-
-        // This tints the tab title bar or chat room icons natively in the UI.
+/*
         if (m_type == LSC::Type::fleet) {
             info.channelColor = LSC::Color::Azure.clientInt; // Blue fleet theme
         } else if (m_type == LSC::Type::corp) {
@@ -636,7 +627,7 @@ PyRep* LSCChannel::EncodeDynamicChannel(uint32 charID) {
         } else {
             info.channelColor = LSC::Color::LiteGrey.clientInt; // Standard grey background
         }
-
+*/
     return info.Encode();
 }
 
@@ -645,7 +636,7 @@ PyRep* LSCChannel::EncodeChannelACL()
     ChannelACL info;
     info.lines = new PyList();
     for (const auto& cur : m_aclMap)
-        info.lines->AddItem(cur.second->Encode());
+        info.lines->AddItem(cur.second->Encode(m_service));
     return info.Encode();
 }
 
@@ -663,58 +654,64 @@ PyRep* LSCChannel::EncodeEmptyChannelChars() {
     return info.Encode();
 }
 
-PyPackedRow* LSCChannel::CreatePackedRow(DBRowDescriptor* header, Client* pClient) {
-    PyPackedRow* res = new PyPackedRow(header);
-    // [0] channelID -> I4 (Int32) or specialized type representation
-    res->SetField(0, EncodeID());
+void LSCChannel::FillPackedRow(PyPackedRow* into, const Client* pClient) {
+    // [0] channelID -> I4
+    into->SetField(0, EncodeID());
     // [1] ownerID -> I4
-    res->SetField(1, new PyInt(m_ownerID));
+    into->SetField(1, new PyInt(m_ownerID));
     // [2] displayName -> WStr (Wide String / None)
-    if (!m_displayName.empty()) {
-        res->SetField(2, new PyString(m_displayName));
+    if ((m_gMsgID == LSC::gID::Empire)
+     or (m_cMsgID == LSC::cID::None)
+     or (m_cMsgID == LSC::cID::Other)) {
+        if (m_displayName.empty()) {
+            into->SetField(2, PyStatic.NewNone());
+        } else {
+            into->SetField(2, new PyString(m_displayName));
+        }
     } else {
-        res->SetField(2, PyStatic.NewNone());
+        into->SetField(2, PyStatic.NewNone());
     }
     // [3] motd -> WStr
-    if (!m_motd.empty()) {
-        res->SetField(3, new PyString(m_motd));
+    if (m_motd.empty()) {
+        into->SetField(3, PyStatic.NewNone());
     } else {
-        res->SetField(3, PyStatic.NewNone());
+        into->SetField(3, new PyString(m_motd));
     }
     // [4] comparisonKey -> WStr
-    if (!m_comparisonKey.empty()) {
-        res->SetField(4, new PyString(m_comparisonKey));
+    if (m_comparisonKey.empty()) {
+        into->SetField(4, PyStatic.NewNone());
     } else {
-        res->SetField(4, PyStatic.NewNone());
+        into->SetField(4, new PyString(m_comparisonKey));
     }
     // [5] memberless -> Bool
-    res->SetField(5, new PyBool(m_memberless));
+    into->SetField(5, new PyBool(m_memberless));
     // [6] password -> WStr
-    if (!m_password.empty()) {
-        res->SetField(6, new PyString(m_password));
-    } else {
-        res->SetField(6, PyStatic.NewNone());
-    }
+    into->SetField(6, new PyString(m_password));
     // [7] mailingList -> Bool
-    res->SetField(7, new PyBool(m_mailingList));
+    into->SetField(7, new PyBool(m_mailingList));
     // [8] cspa -> I4
-    res->SetField(8, new PyInt(m_cspa));
+    into->SetField(8, new PyInt(m_cspa));
     // [9] temporary -> Bool
-    res->SetField(9, new PyBool(m_temporary));
+    into->SetField(9, new PyBool(m_temporary));
     // [10] languageRestriction -> Bool
-    res->SetField(10, new PyBool(m_languageRestriction));
+    into->SetField(10, new PyBool(m_languageRestriction));
     // [11] groupMessageID -> I4
-    res->SetField(11, new PyInt(m_gMsgID));
+    into->SetField(11, new PyInt(m_gMsgID));
     // [12] channelMessageID -> I4
-    res->SetField(12, new PyInt(m_cMsgID));
-    // [13] subscribed -> I4
+    into->SetField(12, new PyInt(m_cMsgID));
     if (pClient != nullptr) {
-        res->SetField(13, PyStatic.NewOne());
+        // [13] subscribed -> I4
+        into->SetField(13, PyStatic.NewOne());
+        // [15] mode -> I4
+        //into->SetField(15, new PyInt(LSC::Mode::Operator));
     } else {
-        res->SetField(13, PyStatic.NewZero());
+        // [13] subscribed -> I4
+        into->SetField(13, PyStatic.NewZero());
+        // [15] mode -> I4
+        //into->SetField(15, new PyInt(LSC::Mode::Speaker));
     }
-
-    return res;
+    // [14] estimatedMemberCount -> I4
+    into->SetField(14, new PyInt(m_chars.size()));
 }
 
 const char* LSCChannel::GetTypeString() {
@@ -740,3 +737,65 @@ const char* LSCChannel::GetTypeString() {
     return "invalid";
 }
 
+
+// this works...leave it alone
+void LSCChannel::SendServerMOTD(Client* pClient) {
+    std::string uptime = sEntityMgr.GetUpTime();
+    std::string msg = "<br>Welcome to Alasiya's EvEmu Server ";
+    msg += pClient->GetCharName();
+    msg += ".<br>Server Version: ";
+    msg += EVEMU_REVISION;
+    msg += "<br>Revision Date: ";
+    msg += EVEMU_BUILD_DATE;
+    msg += "<br>Uptime: ";
+    msg += uptime;
+    msg += "<br>Current Population: ";
+    msg += std::to_string(sEntityMgr.GetClientCount());
+    // TODO:  update to use new color enums
+    msg += "<br><br><color=" + std::string(LSC::Color::Yellow.hexStr) + ">Character Options:</color>";
+    msg += "<br><font color='white'>Ship Tracking: </font>";
+    if (sEntityMgr.GetTracking()) {
+        msg += "<font color='green'>On</font>";
+    } else {
+        msg += "<font color='red'>Off</font>";
+    }
+    msg += "<br><font color='white'>Module AutoStop: </font>";
+    if (pClient->AutoStop()) {
+        msg += "<font color='green'>On</font>";
+    } else {
+        msg += "<font color='red'>Off</font>";
+    }
+    msg += "<br><font color='white'>Drone AutoAttack: </font>";
+    if (pClient->AutoAttack()) {
+        msg += "<font color='green'>On</font>";
+    } else {
+        msg += "<font color='red'>Off</font>";
+    }
+    msg += "<br><font color='white'>RAM Event: </font>";
+    //msg += (pClient->RAMEvent() ? "On" : "Off");
+    if (sConfig.ram.AutoEvent) {
+        msg += "<font color='green'>On</font>";
+    } else {
+        msg += "<font color='red'>Off</font>";
+    }
+    // check account roles for this one
+    if ((pClient->GetAccountRole() & Acct::Role::EPLAYER) == Acct::Role::EPLAYER) {
+        msg += "<br><font color='white'>ShowAll: </font>";
+        if (pClient->IsShowall()) {
+            msg += "<font color='green'>On</font>";
+        } else {
+            msg += "<font color='red'>Off</font>";
+        }
+    }
+
+    LSC_SendMessage sm;
+    sm.sender = FakeSenderInfo();
+    sm.channelID = EncodeID();
+    sm.message = msg;
+    sm.memberCount = static_cast<int32>(m_chars.size());
+
+    PyTuple* motd = sm.Encode();
+    motd->Dump(LSC__RSP_DUMP, "   ");
+    //NOTE:  this is to send chat msg to single char using <this> window (searched via id/name from sender)
+    pClient->SendNotification("OnLSC", GetTypeString(), &motd, false);
+}

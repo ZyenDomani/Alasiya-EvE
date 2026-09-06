@@ -202,7 +202,7 @@ void PyServiceMgr::Initalize(double startTime) {
         cache_service->GiveCache(str, (PyRep **)&pDictPayload);
     }
 
-    sLog.Cyan("     PyServiceMgr", "%lu services registered in %.3fms", m_svcList.size(),(GetTimeMSeconds() - startTime));
+    sLog.Cyan("     PyServiceMgr", "%zu services registered in %.3fms", m_svcList.size(),(GetTimeMSeconds() - startTime));
 }
 
 void PyServiceMgr::Process() {

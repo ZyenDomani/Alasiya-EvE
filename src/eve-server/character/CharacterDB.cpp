@@ -508,6 +508,22 @@ PyRep *CharacterDB::GetCharPublicInfo(uint32 characterID) {
     return(DBRowToKeyVal(row));
 }
 
+std::string CharacterDB::GetCharacterName(uint32 charID) {
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res, "SELECT characterName FROM chrCharacters WHERE characterID = %u", charID))
+    {
+        codelog(DATABASE__ERROR, "Error in GetCharacterName query: %s", res.error.c_str());
+        return "";
+    }
+    DBResultRow row;
+    if (!res.GetRow(row)) {
+        _log(DATABASE__MESSAGE, "character %u not found for GetCharacterName() call.", charID);
+        return "";
+    }
+
+    return row.GetText(0);
+}
+
 bool CharacterDB::GetCharacterData(uint32 characterID, CharacterData &into) {
     DBQueryResult res;
 
@@ -1657,7 +1673,7 @@ PyRep* CharacterDB::GetKillOrLoss(uint32 charID) {
         return nullptr;
     }
 
-    _log(DATABASE__RESULTS, "GetKillOrLoss for %u returned %lu items", charID, res.GetRowCount());
+    _log(DATABASE__RESULTS, "GetKillOrLoss for %u returned %zu items", charID, res.GetRowCount());
 
     return DBResultToCRowset(res);
 }

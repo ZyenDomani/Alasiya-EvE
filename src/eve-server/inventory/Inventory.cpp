@@ -187,7 +187,7 @@ bool Inventory::LoadContents() {
         return false;
     }
 
-    _log(INV__TRACE, "Inventory::LoadContents() - Adding %lu items to inventory of %s(%u) with owner %u", \
+    _log(INV__TRACE, "Inventory::LoadContents() - Adding %zu items to inventory of %s(%u) with owner %u", \
             items.size(), m_self->name(), m_myID, od.ownerID);
     for (auto &cur : items) {
         if ((cur == od.ownerID) or (cur == od.locID) or (cur == m_myID))
@@ -411,7 +411,7 @@ std::vector<InventoryItemRef>& Inventory::SortVector(std::vector<InventoryItemRe
     });
 
     if (sConfig.debug.IsTestServer) {
-        _log(INV__TRACE, "Inventory::SortVector() - %lu items optimized-sorted in %.3fus.",
+        _log(INV__TRACE, "Inventory::SortVector() - %zu items optimized-sorted in %.3fus.",
              itemVec.size(), (GetTimeUSeconds() - start));
     }
 

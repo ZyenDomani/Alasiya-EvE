@@ -99,7 +99,7 @@ PyResult RepairSvcBound::Handle_DamageModules(PyCallArgs &call) {
      */
 
     if (is_log_enabled(PHYSICS__INFO)) {
-        _log(PHYSICS__INFO, "RepairSvcBound::Handle_DamageModules() size= %lu", call.tuple->size() );
+        _log(PHYSICS__INFO, "RepairSvcBound::Handle_DamageModules() size= %zu", call.tuple->size() );
         call.Dump(PHYSICS__INFO);
     }
 

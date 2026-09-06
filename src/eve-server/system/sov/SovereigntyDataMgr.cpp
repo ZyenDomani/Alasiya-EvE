@@ -72,7 +72,7 @@ void SovereigntyDataMgr::Populate()
         bySolar.insert(sData);
     }
 
-    sLog.Cyan("       SovDataMgr", "%lu Sovereignty data sets loaded in %.3fms.",
+    sLog.Cyan("       SovDataMgr", "%zu Sovereignty data sets loaded in %.3fms.",
               bySolar.size(), (GetTimeMSeconds() - start));
 
     //cleanup

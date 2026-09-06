@@ -739,7 +739,7 @@ bool ClassDecodeGenerator::ProcessTupleInline(const TiXmlElement* field)
         "    }\n\n"
         "    const PyTuple* %s(%s->AsTuple());\n"
         "    if (%s->size() != %u) {\n"
-        "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is the wrong size: expected %u, but got %%lu\", %s->size());\n"
+        "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is the wrong size: expected %u, but got %%zu\", %s->size());\n"
         "        return false;\n"
         "    }\n\n",
         v,
@@ -821,7 +821,7 @@ bool ClassDecodeGenerator::ProcessListInline(const TiXmlElement* field)
         "    }\n\n"
         "    const PyList* %s(%s->AsList());\n"
         "    if (%s->size() != %u) {\n"
-        "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is the wrong size: expected %u, but got %%lu\", %s->size());\n"
+        "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is the wrong size: expected %u, but got %%zu\", %s->size());\n"
         "        return false;\n"
         "    }\n\n",
         v,

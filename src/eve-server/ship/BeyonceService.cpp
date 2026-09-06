@@ -491,7 +491,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
     _log(AUTOPILOT__MESSAGE, "%s called WarpToStuff. AP: %s", call.client->GetName(), (call.client->IsAutoPilot() ? "true" : "false"));
 
     if (is_log_enabled(SERVICE__CALL_DUMP)) {
-  _log(SERVICE__CALL_DUMP, "BeyonceBound::Handle_CmdWarpToStuff() - size %lu", call.tuple->size() );
+  _log(SERVICE__CALL_DUMP, "BeyonceBound::Handle_CmdWarpToStuff() - size %zu", call.tuple->size() );
    call.Dump(SERVICE__CALL_DUMP);
     }
 
@@ -856,7 +856,7 @@ PyResult BeyonceBound::Handle_CmdAbandonLoot(PyCallArgs &call) {
      *  remotePark.CmdAbandonLoot([wreckID]) <- single itemID in list
      */
     if (is_log_enabled(SERVICE__CALL_DUMP)) {
-    sLog.White( "BeyonceBound::Handle_CmdAbandonLoot()", "size= %lu", call.tuple->size() );
+    sLog.White( "BeyonceBound::Handle_CmdAbandonLoot()", "size= %zu", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
     }
 

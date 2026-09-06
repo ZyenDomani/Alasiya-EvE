@@ -111,14 +111,14 @@ PetitionerService::~PetitionerService() {
 
 PyResult PetitionerService::Handle_GetCategories( PyCallArgs& call )
 {
-    sLog.White( "PetitionerService::Handle_GetCategories()", "size=%lu ", call.tuple->size() );
+    sLog.White( "PetitionerService::Handle_GetCategories()", "size=%zu ", call.tuple->size() );
 
     return PyStatic.mtList();
 }
 
 PyResult PetitionerService::Handle_GetCategoryHierarchicalInfo( PyCallArgs& call )
 {
-    sLog.White( "PetitionerService::Handle_GetCategoryHierarchicalInfo()", "size=%lu ", call.tuple->size() );
+    sLog.White( "PetitionerService::Handle_GetCategoryHierarchicalInfo()", "size=%zu ", call.tuple->size() );
 
     return PyStatic.mtList();
 }

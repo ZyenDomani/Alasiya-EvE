@@ -127,12 +127,12 @@ namespace LSC {
     namespace gID {
         enum :int32_t {
 	    // these are the group titles in channel list
-            System      	= -1,    //SystemChannels  <<- no space
+            System      	= -1,     //SystemChannels  <<- no space
 	    None		= 0,
             Player              = 61587,  //Player Channels
-            Mine                = 61560,   //My Channels
+            Mine                = 61560,  //My Channels
             Faction             = 63594,
-            System2             = 67203, //System Channels <<- space
+            System2             = 67203,  //System Channels <<- space
             Unspecified         = 67237,
             Mission             = 67238,
             Market              = 67242,
@@ -153,13 +153,14 @@ namespace LSC {
     namespace cID {
         enum :int32_t {
 	    // these are the channel titles in channel list
-            System      	= -1,    //SystemChannels  <<- no space
+            System      	= -1,     //SystemChannels  <<- no space
 	    None		= 0,
             Recruitment         = 54230,
+            Command             = 60097,
             Faction             = 63594,
-            System2             = 67203, //System Channels
+            System2             = 67203,  //System Channels
             Character           = 67230,
-            Corporation         = 67231,
+            Corporation         = 67231, // doesnt show
             Unspecified         = 67237,
             Research            = 67240,
             Alliance            = 67241,
@@ -167,7 +168,7 @@ namespace LSC {
             Rookie              = 263259, //Rookie Help
             EngHelp             = 263262,
             Rumor               = 263265,
-            Other               = 263277,
+            Other               = 263277, // doesnt show
             Smacktalk           = 263278,
             CEO                 = 263287,
             Blueprints          = 263292,
@@ -181,7 +182,7 @@ namespace LSC {
             Manufacturing       = 263367,
             Mining              = 263368,
             PI                  = 263369, //Planetary Interaction
-            Owner               = 263628
+            Owner               = 263628  // doesnt show
         };
     }
 

@@ -24,7 +24,6 @@
             <stringInline value="channelMessageID" />
             <stringInline value="subscribed" />
             <stringInline value="estimatedMemberCount" />
-            <stringInline value="channelColor" />
           </listInline>
         </dictInlineEntry>
         <dictInlineEntry key="RowClass">
@@ -54,7 +53,6 @@
       <int name="channelMessageID" />
       <bool name="subscribed" default="false" />
       <int name="estimatedMemberCount" />
-      <int name="channelColor" />
     </listInline>
   </elementDef>
 
@@ -80,7 +78,6 @@
             <stringInline value="mode" />
             <stringInline value="subscribed" />
             <stringInline value="estimatedMemberCount" />
-            <stringInline value="channelColor" />
           </listInline>
         </dictInlineEntry>
         <dictInlineEntry key="line">
@@ -100,7 +97,6 @@
             <int name="channelMessageID" none_marker="0" />
             <bool name="subscribed" default="false" />
             <int name="estimatedMemberCount" />
-            <int name="channelColor" />
           </listInline>
         </dictInlineEntry>
       </dictInline>

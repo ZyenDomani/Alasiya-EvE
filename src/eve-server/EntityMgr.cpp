@@ -67,7 +67,6 @@ m_profileTime(0)
 }
 
 EntityMgr::~EntityMgr() {
-    sLog.Green("   ServerShutdown", " Complete.");
 }
 
 void EntityMgr::Initialize() {
@@ -100,10 +99,10 @@ void EntityMgr::Shutdown() {
 void EntityMgr::Close()
 {
     if (m_clients.size() > 0) {
-        sLog.Yellow("       EntityMgr", "Cleaning up %lu clients, %lu systems, %lu agents, and %lu stations", \
+        sLog.Yellow("       EntityMgr", "Cleaning up %zu clients, %zu systems, %zu agents, and %zu stations", \
                     m_clients.size(), m_systems.size(), m_agents.size(), m_stations.size());
     } else {
-        sLog.Green("       EntityMgr", "Cleaning up %lu systems, %lu agents, and %lu stations", \
+        sLog.Green("       EntityMgr", "Cleaning up %zu systems, %zu agents, and %zu stations", \
                     m_systems.size(), m_agents.size(), m_stations.size());
     }
 

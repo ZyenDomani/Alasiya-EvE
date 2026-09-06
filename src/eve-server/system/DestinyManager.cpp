@@ -2365,7 +2365,7 @@ void DestinyManager::SendDestinyUpdates(std::vector<PyTuple*>& updates, bool sel
             // this entity is NOT a player ship...change to BubbleCast (or silently fail)
             if (mySE->SysBubble() != nullptr) {
                 if (is_log_enabled(DESTINY__UPDATES))
-                    _log( DESTINY__UPDATES, "[%u] DM::SendUpdates() - BubbleCasting %lu DestinyUpdates as Self-Only to bubbleID %u from %s(%u)", \
+                    _log( DESTINY__UPDATES, "[%u] DM::SendUpdates() - BubbleCasting %zu DestinyUpdates as Self-Only to bubbleID %u from %s(%u)", \
                             mySE->SystemMgr()->GetTicCount(), updates.size(), mySE->SysBubble()->GetID(), mySE->GetName(), mySE->GetID() );
                 mySE->SysBubble()->BubblecastDestinyUpdate(updates, "DestinyUpdates");
             } else {
@@ -2396,13 +2396,13 @@ void DestinyManager::SendDestinyUpdates(std::vector<PyTuple*>& updates, bool sel
                 player->QueueDestinyUpdates(updates);
     } else if (mySE->SysBubble() != nullptr) {
         if (is_log_enabled(DESTINY__UPDATES))
-            _log(DESTINY__UPDATES, "[%u] DM::SendUpdates() - BubbleCasting %lu DestinyUpdates to bubbleID %u from %s(%u)", \
+            _log(DESTINY__UPDATES, "[%u] DM::SendUpdates() - BubbleCasting %zu DestinyUpdates to bubbleID %u from %s(%u)", \
                     mySE->SystemMgr()->GetTicCount(), updates.size(), mySE->SysBubble()->GetID(),   \
                     (mySE->HasPilot()?mySE->GetPilot()->GetName():mySE->GetName()), \
                     (mySE->HasPilot()?mySE->GetPilot()->GetCharID():mySE->GetID()) );
             mySE->SysBubble()->BubblecastDestinyUpdate(updates, "DestinyUpdates");
     } else {
-        _log(DESTINY__WARNING, "[%u] DM::SendUpdates() - Cannot BubbleCast %lu DestinyUpdates; entity (%u) is not in any bubble. (mySE->SysBubble() == nullptr)", \
+        _log(DESTINY__WARNING, "[%u] DM::SendUpdates() - Cannot BubbleCast %zu DestinyUpdates; entity (%u) is not in any bubble. (mySE->SysBubble() == nullptr)", \
                 mySE->SystemMgr()->GetTicCount(), updates.size(), mySE->GetID() );
         for (auto &cur : updates)
             PySafeDecRef(cur);

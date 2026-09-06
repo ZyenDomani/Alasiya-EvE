@@ -356,9 +356,13 @@ bool MarshalStream::VisitPackedRow(const PyPackedRow* pyPackedRow)
     cur = sizeMap.begin();
     // limit the search to booleans, the rest of the values are encoded differently
     end = sizeMap.lower_bound(1);
-    PyRep* value(nullptr);
+    PyRep* value = nullptr;
     for (; cur != end; ++cur) {
         value = pyPackedRow->GetField(cur->second);
+
+        // not sure how bad this will fuck things up, but check for null (segfault fix)
+        if (value == nullptr)
+            continue;
 
         // handle the column being none
         if (value->IsNone()) {

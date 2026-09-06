@@ -67,7 +67,7 @@ void StandingMgr::Populate() {
         SetStanding(row.GetUInt(0), row.GetUInt(1), row.GetFloat(2));
     }
 
-    sLog.Cyan("      StandingMgr", "%lu Standing Data Sets loaded in %.3fms.", m_standings.size(), (GetTimeMSeconds() - start));
+    sLog.Cyan("      StandingMgr", "%zu Standing Data Sets loaded in %.3fms.", m_standings.size(), (GetTimeMSeconds() - start));
 }
 
 void StandingMgr::SetStanding(uint32 fromID, uint32 toID, float value) {

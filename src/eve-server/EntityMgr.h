@@ -33,9 +33,6 @@
 #include "utils/Singleton.h"
 #include "inventory/ItemRef.h"
 
-// this is not used.  was supposed to be for eventual MT work
-//#include "threading/Mutex.h"
-
 class Agent;
 class PyRep;
 class Client;

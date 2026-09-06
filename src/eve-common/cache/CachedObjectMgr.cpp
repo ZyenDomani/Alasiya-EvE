@@ -232,11 +232,11 @@ void CachedObjectMgr::_UpdateCache(const PyRep *objectID, PyBuffer *pbuf)
     CachedObjMapItr itr = m_cachedObjects.find(str);
 
     if (itr != m_cachedObjects.end()) {
-        _log(CACHE__INFO,"Destroying old cached object with ID '%s' of length %lu with checksum 0x%x", str.c_str(), itr->second->cache->content().size(), itr->second->version);
+        _log(CACHE__INFO,"Destroying old cached object with ID '%s' of length %zu with checksum 0x%x", str.c_str(), itr->second->cache->content().size(), itr->second->version);
         SafeDelete(itr->second);
     }
 
-    _log(CACHE__INFO,"Registering new cached object with ID '%s' of length %lu with checksum 0x%x", str.c_str(), r->cache->content().size(), r->version);
+    _log(CACHE__INFO,"Registering new cached object with ID '%s' of length %zu with checksum 0x%x", str.c_str(), r->cache->content().size(), r->version);
 
     m_cachedObjects[str] = r;
     //PySafeDecRef(objectID);
@@ -671,7 +671,7 @@ bool PyCachedObjectDecoder::Decode(PySubStream **in_ss)
     PyTuple *args = (PyTuple *) po->arguments();
 
     if (args->items.size() != 7) {
-        sLog.Error("PyCachedObjectDecoder","Cache object's args tuple has %lu elements instead of 7", args->items.size());
+        sLog.Error("PyCachedObjectDecoder","Cache object's args tuple has %zu elements instead of 7", args->items.size());
 
         PyDecRef(ss);
         return false;

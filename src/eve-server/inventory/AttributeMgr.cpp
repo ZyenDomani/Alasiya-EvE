@@ -98,7 +98,7 @@ bool AttributeMgr::Load(bool reset/*false*/) {
 
     /* item now has it's own attribute map, and is deleted when item object is destroyed or reset */
     if (is_log_enabled(ATTRIBUTE__INFO))
-        _log(ATTRIBUTE__INFO, "AttributeMgr::Load(%s)  Loaded %lu attribs for %s(%u).", \
+        _log(ATTRIBUTE__INFO, "AttributeMgr::Load(%s)  Loaded %zu attribs for %s(%u).", \
             reset?"reset":"", mAttributes.size(), mItem.name(), mItem.itemID());
     return true;
 }

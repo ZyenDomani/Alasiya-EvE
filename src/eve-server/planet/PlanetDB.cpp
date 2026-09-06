@@ -169,7 +169,7 @@ PyRep* PlanetDB::GetPlanetsForChar(uint32 charID) {
         _log(DATABASE__ERROR, "Error in GetPlanetsForChar query: %s", res.error.c_str());
         return nullptr;
     }
-    _log(DATABASE__RESULTS, "GetPlanetsForChar returned %lu items", res.GetRowCount());
+    _log(DATABASE__RESULTS, "GetPlanetsForChar returned %zu items", res.GetRowCount());
     return DBResultToCRowset(res);
 }
 
@@ -297,7 +297,7 @@ void PlanetDB::GetExtractorsForPlanet(uint32 planetID, DBQueryResult& res)
         return;
     }
 
-    _log(DATABASE__RESULTS, "GetExtractorsForPlanet returned %lu items", res.GetRowCount());
+    _log(DATABASE__RESULTS, "GetExtractorsForPlanet returned %zu items", res.GetRowCount());
 }
 
 bool PlanetDB::LoadColony(uint32 charID, uint32 planetID, PI_CCData* pData)
@@ -337,7 +337,7 @@ void PlanetDB::LoadPins(uint32 colonyID, std::unordered_map<uint32, PI::PinData>
         return;
     }
 
-    _log(DATABASE__RESULTS, "LoadPins returned %lu items", res.GetRowCount());
+    _log(DATABASE__RESULTS, "LoadPins returned %zu items", res.GetRowCount());
 
     DBResultRow row;
     while (res.GetRow(row)) {
@@ -379,7 +379,7 @@ void PlanetDB::LoadLinks(uint32 colonyID, std::unordered_map<uint32, PI::Link >&
         return;
     }
 
-    _log(DATABASE__RESULTS, "LoadLinks returned %lu items", res.GetRowCount());
+    _log(DATABASE__RESULTS, "LoadLinks returned %zu items", res.GetRowCount());
 
     DBResultRow row;
     while (res.GetRow(row)) {
@@ -404,7 +404,7 @@ void PlanetDB::LoadRoutes(uint32 colonyID, std::unordered_map<uint16, PI::Route 
         return;
     }
 
-    _log(DATABASE__RESULTS, "LoadRoutes returned %lu items", res.GetRowCount());
+    _log(DATABASE__RESULTS, "LoadRoutes returned %zu items", res.GetRowCount());
 
     DBResultRow row;
     std::string tempPath;
@@ -450,7 +450,7 @@ void PlanetDB::LoadContents(uint32 pinID, std::map<uint16, uint32>& contents)
         return;
     }
 
-    _log(DATABASE__RESULTS, "LoadContents returned %lu items", res.GetRowCount());
+    _log(DATABASE__RESULTS, "LoadContents returned %zu items", res.GetRowCount());
 
     DBResultRow row;
     while (res.GetRow(row)) {
@@ -468,7 +468,7 @@ void PlanetDB::LoadECU(uint32 ecuID, DBQueryResult& res) {
         return;
     }
 
-    _log(DATABASE__RESULTS, "LoadECU returned %lu items", res.GetRowCount());
+    _log(DATABASE__RESULTS, "LoadECU returned %zu items", res.GetRowCount());
 }
 
 void PlanetDB::LoadHeads(uint32 ecuID, std::unordered_map< uint16, PI::Heads >& heads)
@@ -484,7 +484,7 @@ void PlanetDB::LoadHeads(uint32 ecuID, std::unordered_map< uint16, PI::Heads >& 
         return;
     }
 
-    _log(DATABASE__RESULTS, "LoadHeads returned %lu items", res.GetRowCount());
+    _log(DATABASE__RESULTS, "LoadHeads returned %zu items", res.GetRowCount());
 
     DBResultRow row;
     while (res.GetRow(row)) {
