@@ -39,7 +39,7 @@ SuperWeapon::SuperWeapon( InventoryItemRef item, ShipItemRef ship )
 {
 }
 
-void SuperWeapon::Activate(SystemEntity* pSE)
+void SuperWeapon::Activate(SpaceEntity* pSE)
 {
 	// TODO:
 	// 1. Prevent activation on certain targets: asteroids, NPC stations, ice, clouds...  Perhaps restrict to ships and structures.

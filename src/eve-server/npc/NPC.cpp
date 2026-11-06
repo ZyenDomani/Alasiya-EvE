@@ -44,7 +44,7 @@
 
 
 NPC::NPC(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, const FactionData& data, SpawnMgr* spawnMgr)
-: DynamicSystemEntity(self, services, system),
+: DynamicSpaceEntity(self, services, system),
 m_AI(new NPCAIMgr(this)),
 m_spawnMgr(spawnMgr),
 m_squad(nullptr),
@@ -94,7 +94,7 @@ bool NPC::Load() {
     m_destiny->UpdateShipVariables();
 
     //dSE::Load() just returns true for now (no code)
-    return DynamicSystemEntity::Load();
+    return DynamicSpaceEntity::Load();
 }
 
 void NPC::Process() {
@@ -104,7 +104,7 @@ void NPC::Process() {
     double profileStartTime = GetTimeUSeconds();
 
     /*   Base call to Process Movement  */
-    SystemEntity::Process();
+    SpaceEntity::Process();
 
     /*  Process AI after moving */
     m_AI->Process();
@@ -115,7 +115,7 @@ void NPC::Process() {
         sProfiler.AddTime(Profile::npc, GetTimeUSeconds() - profileStartTime);
 }
 
-void NPC::Orbit(SystemEntity *pTargetSE) {
+void NPC::Orbit(SpaceEntity *pTargetSE) {
     if (pTargetSE == nullptr) {
         m_orbitingID = 0;
     } else {
@@ -334,7 +334,7 @@ void NPC::Killed(Damage &fatal_blow) {
     // set killer info
     uint32 killerID = 0;
     Client* pClient(nullptr);
-    SystemEntity* killer(fatal_blow.srcSE);
+    SpaceEntity* killer(fatal_blow.srcSE);
 
     if (killer->HasPilot()) {
         pClient = killer->GetPilot();

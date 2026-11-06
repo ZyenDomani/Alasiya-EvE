@@ -15,11 +15,11 @@
 
 #include "Client.h"
 #include "StaticDataMgr.h"
-#include "system/SystemEntity.h"
+#include "system/SpaceEntity.h"
 #include "testing/test.h"
 
 void testing::posTest(Client* pClient) {
-    SystemEntity* mySE(pClient->GetShipSE());
+    SpaceEntity* mySE(pClient->GetShipSE());
 
     sLog.Warning("\ttesting","Test competed (did nothing)");
 }

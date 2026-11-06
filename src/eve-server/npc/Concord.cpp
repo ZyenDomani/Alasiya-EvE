@@ -36,7 +36,7 @@ Concord::Concord(
      InventoryItemRef self,
      const Vector3d& position,
      ConcordSpawnMgr* spawnMgr )
- : DynamicSystemEntity(this, system, self),
+ : DynamicSpaceEntity(this, system, self),
  m_system(system),
  m_services(services),
  m_spawnMgr(spawnMgr),
@@ -98,24 +98,24 @@ void Concord::Process() {
 
     m_AI->Process();
     /*   Base call to Process Movement  */
-    SystemEntity::Process();
+    SpaceEntity::Process();
 
     if (sConfig.debug.UseProfiling)
         sProfiler.AddTime(Profile::concord, GetTimeUSeconds() - profileStartTime);
 }
 
-void Concord::Orbit(SystemEntity *who) {
+void Concord::Orbit(SpaceEntity *who) {
     if (!who)
         m_orbitingID = 0;
     else
         m_orbitingID = who->GetID();
 }
 
-void Concord::TargetLost(SystemEntity *who) {
+void Concord::TargetLost(SpaceEntity *who) {
     m_AI->TargetLost(who);
 }
 
-void Concord::TargetedAdd(SystemEntity *who) {
+void Concord::TargetedAdd(SpaceEntity *who) {
     m_AI->Targeted(who);
 }
 
@@ -346,7 +346,7 @@ void ConcordAI::Process() {
 
                 case Chasing: {
                     //NOTE: getting our target like this is pretty weak...
-                    SystemEntity* pTarget = m_npc->TargetMgr()->GetFirstTarget(true);
+                    SpaceEntity* pTarget = m_npc->TargetMgr()->GetFirstTarget(true);
                     if (pTarget == nullptr) {
                         if (m_npc->TargetMgr()->HasNoTargets()) {
                             //_log(CONCORD__AI_TRACE, "%s(%u): Stopped chasing, GetFirstTarget() returned NULL.",  m_npc->GetName(), m_npc->GetID());
@@ -363,7 +363,7 @@ void ConcordAI::Process() {
 
                 case Following: {
                     //NOTE: getting our target like this is pretty weak...
-                    SystemEntity* pTarget = m_npc->TargetMgr()->GetFirstTarget(true);
+                    SpaceEntity* pTarget = m_npc->TargetMgr()->GetFirstTarget(true);
                     if (pTarget == nullptr) {
                         if (m_npc->TargetMgr()->HasNoTargets()) {
                             //_log(CONCORD__AI_TRACE, "%s(%u): Stopped following, GetFirstTarget() returned NULL.",  m_npc->GetName(), m_npc->GetID());
@@ -380,7 +380,7 @@ void ConcordAI::Process() {
 
                 case Engaged: {
                     //NOTE: getting our pTarget like this is pretty weak...
-                    SystemEntity* pTarget = m_npc->TargetMgr()->GetFirstTarget(true);
+                    SpaceEntity* pTarget = m_npc->TargetMgr()->GetFirstTarget(true);
                     if (pTarget == nullptr) {
                         if (m_npc->TargetMgr()->HasNoTargets()) {
                             //_log(CONCORD__AI_TRACE, "%s(%u): Stopped engagement, GetFirstTarget() returned NULL.", m_npc->GetName(), m_npc->GetID());
@@ -427,7 +427,7 @@ void ConcordAI::SetIdle() {
     // sounds like a good idea, but will take process power away from other shit.
 }
 
-void ConcordAI::SetChasing(SystemEntity* pTarget) {
+void ConcordAI::SetChasing(SpaceEntity* pTarget) {
     if (m_state == Chasing) return;
     //_log(CONCORD__AI_TRACE, "%s(%u): SetChasing: %s(%u) begin chasing.",
          m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
@@ -437,7 +437,7 @@ void ConcordAI::SetChasing(SystemEntity* pTarget) {
     m_state = Chasing;
 }
 
-void ConcordAI::SetFollowing(SystemEntity* pTarget) {
+void ConcordAI::SetFollowing(SpaceEntity* pTarget) {
     if (m_state == Following) return;
     //_log(CONCORD__AI_TRACE, "%s(%u): SetFollowing: %s(%u) begin following.",
          m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
@@ -447,7 +447,7 @@ void ConcordAI::SetFollowing(SystemEntity* pTarget) {
     m_state = Following;
 }
 
-void ConcordAI::SetEngaged(SystemEntity* pTarget) {
+void ConcordAI::SetEngaged(SpaceEntity* pTarget) {
     if (m_state == Engaged) return;
     //_log(CONCORD__AI_TRACE, "%s(%u): SetEngaged: %s(%u) begin engaging.", \
          m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
@@ -460,7 +460,7 @@ void ConcordAI::SetEngaged(SystemEntity* pTarget) {
     m_state = Engaged;
 }
 
-void ConcordAI::SetFleeing(SystemEntity* pTarget) {
+void ConcordAI::SetFleeing(SpaceEntity* pTarget) {
     if (m_state == Fleeing) return;
     //_log(CONCORD__AI_TRACE, "%s(%u): SetFleeing: %s(%u) begin fleeing.", \
          m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
@@ -471,7 +471,7 @@ void ConcordAI::SetFleeing(SystemEntity* pTarget) {
     m_state = Fleeing;
 }
 
-void ConcordAI::SetSignaling(SystemEntity* pTarget) {
+void ConcordAI::SetSignaling(SpaceEntity* pTarget) {
     if (m_state == Signaling) return;
     //_log(CONCORD__AI_TRACE, "%s(%u): SetSignaling: %s(%u) begin signaling.", \
          m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
@@ -483,7 +483,7 @@ void ConcordAI::SetSignaling(SystemEntity* pTarget) {
     m_state = Signaling;
 }
 
-void ConcordAI::CheckDistance(SystemEntity* pSE)
+void ConcordAI::CheckDistance(SpaceEntity* pSE)
 {
     //rewrote distance checks for correct logic this time
     Vector3d usToThem = m_npc->GetPosition() - pSE->GetPosition();
@@ -530,7 +530,7 @@ void ConcordAI::ClearAllTargets() {
     m_npc->TargetMgr()->OnTarget(nullptr, TargMgr::Mode::Clear, TargMgr::Msg::ClientReq);
 }
 
-void ConcordAI::Target(SystemEntity* pTarget) {
+void ConcordAI::Target(SpaceEntity* pTarget) {
     double targetTime = GetTargetTime();
 
 	if (!m_npc->TargetMgr()->StartTargeting(pTarget, targetTime, (uint8)m_npc->GetSelf()->GetAttribute(AttrMaxAttackTargets).get_int(), m_entityAttackRange )) {
@@ -544,7 +544,7 @@ void ConcordAI::Target(SystemEntity* pTarget) {
     CheckDistance(pTarget);
 }
 
-void ConcordAI::Targeted(SystemEntity* pAgressor) {
+void ConcordAI::Targeted(SpaceEntity* pAgressor) {
     double targetTime = GetTargetTime();
 
     switch(m_state) {
@@ -585,7 +585,7 @@ void ConcordAI::Targeted(SystemEntity* pAgressor) {
     }
 }
 
-void ConcordAI::TargetLost(SystemEntity* pTarget) {
+void ConcordAI::TargetLost(SpaceEntity* pTarget) {
     switch(m_state) {
         case Chasing:
         case Following:
@@ -604,7 +604,7 @@ void ConcordAI::TargetLost(SystemEntity* pTarget) {
     }
 }
 
-void ConcordAI::Attack(SystemEntity* pSE)
+void ConcordAI::Attack(SpaceEntity* pSE)
 {
     if (m_mainAttackTimer.Check()) {
         if (pSE == nullptr)
@@ -644,7 +644,7 @@ void ConcordAI::Attack(SystemEntity* pSE)
 //also check for special effects and write code to implement them
 //modifyTargetSpeedRange, modifyTargetSpeedChance
 //entityWarpScrambleChance
-void ConcordAI::AttackTarget(SystemEntity* pTarget) {
+void ConcordAI::AttackTarget(SpaceEntity* pTarget) {
     std::string guid = "effects.Laser";
     m_npc->DestinyMgr()->SendGFX14(m_npc->GetSelf()->itemID(),
                                    m_npc->GetSelf()->itemID(),

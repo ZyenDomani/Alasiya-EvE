@@ -72,7 +72,7 @@ namespace TargMgr {
 
 class MiningLaser;
 class ActiveModule;
-class SystemEntity;
+class SpaceEntity;
 class PyRep;
 class PyTuple;
 class PyList;
@@ -82,7 +82,7 @@ public:
     TargetEntry()
     : state(TargMgr::State::Idle), timer(0) {}
 
-    void Dump(SystemEntity* pSE) const;
+    void Dump(SpaceEntity* pSE) const;
 
     uint8 state;
 
@@ -94,14 +94,14 @@ public:
     TargetedByEntry()
     : state(TargMgr::State::Idle) {}
 
-    void Dump(SystemEntity* pSE) const;
+    void Dump(SpaceEntity* pSE) const;
 
     uint8 state;
 };
 
 class TargetManager {
 public:
-    TargetManager(SystemEntity* self);
+    TargetManager(SpaceEntity* self);
     ~TargetManager()                            { /* do nothing here */ }
     TargetManager(const TargetManager&) =delete;
     TargetManager& operator=(const TargetManager&) =delete;
@@ -118,14 +118,14 @@ public:
 
     void                TargetsCleared();
     void                ClearFromTargets();
-    void                TargetLost(SystemEntity *tSE);
-    void                ClearTarget(SystemEntity *tSE);
-    void                TargetAdded(SystemEntity *tSE);
+    void                TargetLost(SpaceEntity *tSE);
+    void                ClearTarget(SpaceEntity *tSE);
+    void                TargetAdded(SpaceEntity *tSE);
     void                ClearTargets(bool notify=true);
     void                ClearAllTargets(bool notify=true);
 
     /* method to remove target without triggering anything else (target destroyed) */
-    void                RemoveTarget(SystemEntity* tSE);
+    void                RemoveTarget(SpaceEntity* tSE);
 
     /*
      *    OnTarget.mode
@@ -143,20 +143,20 @@ public:
      *    OnTargetClear - immediately removes all target info from ship, including pending targets
      *        - this is done automagically when client jump, dock, or warp.  we just clean up our side
      */
-    //void                OnTarget(SystemEntity* tSE, uint8 mode=TargMgr::Mode::None, uint8 msg=TargMgr::Msg::NoMsg);
+    //void                OnTarget(SpaceEntity* tSE, uint8 mode=TargMgr::Mode::None, uint8 msg=TargMgr::Msg::NoMsg);
     //void                ClearTargets(uint8 msg=TargMgr::Msg::NoMsg);
     // notify targeters this entity is gone
     //void                ClearFromTargets(bool update=true, uint8 msg=TargMgr::Msg::NoMsg);
 
 
-    bool                StartTargeting(SystemEntity* tSE, ShipItemRef sRef);
+    bool                StartTargeting(SpaceEntity* tSE, ShipItemRef sRef);
 
     /* NPC AI Methods */
-    bool                IsTargetedBy(SystemEntity *pSE);
-    SystemEntity*       GetFirstTarget(bool need_locked=false);
-    SystemEntity*       GetTarget(uint32 targetID, bool need_locked=true) const;
+    bool                IsTargetedBy(SpaceEntity *pSE);
+    SpaceEntity*       GetFirstTarget(bool need_locked=false);
+    SpaceEntity*       GetTarget(uint32 targetID, bool need_locked=true) const;
 
-    bool                StartTargeting(SystemEntity* tSE, uint16 lockTime, uint8 maxLockedTargets, double maxTargetLockRange, bool& chase);
+    bool                StartTargeting(SpaceEntity* tSE, uint16 lockTime, uint8 maxLockedTargets, double maxTargetLockRange, bool& chase);
 
     bool                CanAttack()                     { return m_canAttack; }
     bool                HasNoTargets() const            { return m_targets.empty(); }
@@ -178,7 +178,7 @@ public:
     void                QueueUpdate(PyTuple **up) const;   //queue an update to all SEs targeting me.
 
     // querying
-    bool                IsTargeting(SystemEntity* tSE);
+    bool                IsTargeting(SpaceEntity* tSE);
 
     /* debugging methods */
     void                Dump() const;
@@ -188,31 +188,31 @@ public:
     uint8               GetTargetCount()                { return m_targets.size(); }
 
     // get full target list for advanced AI
-    void                GetAllTargets(std::map<SystemEntity*, TargetEntry*> &targets)
+    void                GetAllTargets(std::map<SpaceEntity*, TargetEntry*> &targets)
                                                         { targets = m_targets; }
     // get full targeter list for advanced AI
-    void                GetAllTargeters(std::map<SystemEntity*, TargetedByEntry*> &targetby)
+    void                GetAllTargeters(std::map<SpaceEntity*, TargetedByEntry*> &targetby)
                                                         { targetby = m_targetedBy; }
 
 
 protected:
-    float               TimeToLock(ShipItemRef sRef, SystemEntity* tSE) const;
+    float               TimeToLock(ShipItemRef sRef, SpaceEntity* tSE) const;
 
     //  add this object to our target list and informing target of yellowbox
-    void                TargetedAdd(SystemEntity *tSE); // this is initial targeting call.
+    void                TargetedAdd(SpaceEntity *tSE); // this is initial targeting call.
     //called from other targMgr once locking has been completed on this object
-    void                TargetedByLocked(SystemEntity *tSE);
+    void                TargetedByLocked(SpaceEntity *tSE);
 
-    void                TargetedLost(SystemEntity *tSE);
-    void                TargetedByLost(SystemEntity *tSE);
+    void                TargetedLost(SpaceEntity *tSE);
+    void                TargetedByLost(SpaceEntity *tSE);
 
 private:
-    SystemEntity* mySE;    //we do not own this.
+    SpaceEntity* mySE;    //we do not own this.
 
     // update:  change these to unordered_map
     std::map<uint32, ActiveModule*> m_modules;               // map of modID/Mod* targeting this object
-    std::map<SystemEntity*, TargetEntry*> m_targets;         //we own these values, not the keys
-    std::map<SystemEntity*, TargetedByEntry*> m_targetedBy;  //we own these values, not the keys
+    std::map<SpaceEntity*, TargetEntry*> m_targets;         //we own these values, not the keys
+    std::map<SpaceEntity*, TargetedByEntry*> m_targetedBy;  //we own these values, not the keys
 
     bool m_canAttack;   // true if npcs can begin attack (to correct attacking before targetlock)
 };

@@ -42,7 +42,7 @@ namespace Civ {
 }
 
 class SystemBubble;
-class SystemEntity;
+class SpaceEntity;
 
 class Civilian
 {
@@ -51,7 +51,7 @@ public:
     Civilian(uint32 itemID, uint16 typeID);
     ~Civilian();
 
-    void 		Init(SystemEntity* pOrig, SystemEntity* pDest);
+    void 		Init(SpaceEntity* pOrig, SpaceEntity* pDest);
     void                Process();
 
     // Getters
@@ -75,11 +75,11 @@ public:
 protected:
     void 		Undock();
     void 		Add(SystemBubble* pBubble);
-    void 		Warp(SystemEntity* ptargSE);
+    void 		Warp(SpaceEntity* ptargSE);
     void 		Remove(SystemBubble* pBubble);
-    void 		SendGateActivity(SystemEntity* pGateSE) const;
+    void 		SendGateActivity(SpaceEntity* pGateSE) const;
 
-    /* (fake) SystemEntity interface */
+    /* (fake) SpaceEntity interface */
     void                EncodeDestiny(Buffer& into);
     PyTuple*            MakeDamageState();
     PyDict*             MakeSlimItem();
@@ -98,8 +98,8 @@ private:
 
     Civilian*           m_pLeader;
     const ItemType*	m_type;
-    SystemEntity*       m_origSE;
-    SystemEntity*       m_destSE;
+    SpaceEntity*       m_origSE;
+    SpaceEntity*       m_destSE;
 
     std::vector<Civilian*> m_guards;
 };

@@ -23,7 +23,7 @@
 
 
 Sentry::Sentry(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, const FactionData& data)
-: ObjectSystemEntity(self, services, system)
+: ObjectSpaceEntity(self, services, system)
 {
     m_allyID = data.allianceID;
     m_warID = data.factionID;
@@ -69,17 +69,17 @@ void Sentry::Process() {
 
     m_AI->Process();
     /*   Base call to Process Movement  */
-    SystemEntity::Process();
+    SpaceEntity::Process();
 
     if (sConfig.debug.UseProfiling)
         sProfiler.AddTime(Profile::npc, GetTimeUSeconds() - profileStartTime);
 }
 
-void Sentry::TargetLost(SystemEntity *who) {
+void Sentry::TargetLost(SpaceEntity *who) {
     m_AI->TargetLost(who);
 }
 
-void Sentry::TargetedAdd(SystemEntity *who) {
+void Sentry::TargetedAdd(SpaceEntity *who) {
     m_AI->Targeted(who);
 }
 
@@ -143,7 +143,7 @@ void Sentry::Killed(Damage &fatal_blow) {
 
     uint32 killerID = 0;
     Client* pClient(nullptr);
-    SystemEntity* killer = fatal_blow.srcSE;
+    SpaceEntity* killer = fatal_blow.srcSE;
 
     if (killer->HasPilot()) {
         pClient = killer->GetPilot();

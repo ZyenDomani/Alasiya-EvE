@@ -13,7 +13,7 @@
 #include "../eve-server.h"
 
 #include "ship/modules/TurretFormulas.h"
-#include "system/SystemEntity.h"
+#include "system/SpaceEntity.h"
 
 /*  basic notes for concord actions...
  *
@@ -34,14 +34,14 @@ class ConcordSpawnMgr;
 class ConcordAI;
 
 class Concord
-: public DynamicSystemEntity
+: public DynamicSpaceEntity
 {
 public:
     Concord(SystemManager* system, PyServiceMgr& services, InventoryItemRef self, const Vector3d& position, ConcordSpawnMgr* spawnMgr);
 
     virtual ~Concord();
 
-    void Orbit(SystemEntity* who);
+    void Orbit(SpaceEntity* who);
 
     void Process();
     void EncodeDestiny(Buffer& into) const;
@@ -50,10 +50,10 @@ public:
     void MakeDamageState(DoDestinyDamageState& into) const;
     void Killed(Damage& fatal_blow);
 
-    void TargetLost(SystemEntity* who);
-    void TargetedAdd(SystemEntity* who);
-    void TargetAdded(SystemEntity* who) {}
-    void TargetedLost(SystemEntity* who) {}
+    void TargetLost(SpaceEntity* who);
+    void TargetedAdd(SpaceEntity* who);
+    void TargetAdded(SpaceEntity* who) {}
+    void TargetedLost(SpaceEntity* who) {}
     void TargetsCleared() {}
 
     void UseShieldRecharge();
@@ -70,7 +70,7 @@ public:
     ConcordAI* AI() const { return m_AI; }
 
 protected:
-    void _AwardBounty(SystemEntity* who);
+    void _AwardBounty(SpaceEntity* who);
     /** @todo finish this... */
     void DropLoot(uint32 groupID, uint32 owner, uint32 locationID);
     void _UpdateDamage();
@@ -103,9 +103,9 @@ public:
 
     void Process();
 
-    void Target(SystemEntity *by_who);
-    void Targeted(SystemEntity *by_who);
-    void TargetLost(SystemEntity *by_who);
+    void Target(SpaceEntity *by_who);
+    void Targeted(SpaceEntity *by_who);
+    void TargetLost(SpaceEntity *by_who);
 
     void ClearTargets();
     void ClearAllTargets();
@@ -113,15 +113,15 @@ public:
     void DisableRepTimers();
 
 protected:
-    void Attack(SystemEntity* pTarget);
-    void AttackTarget(SystemEntity* pTarget);
+    void Attack(SpaceEntity* pTarget);
+    void AttackTarget(SpaceEntity* pTarget);
     void SetIdle();
-    void SetChasing(SystemEntity* pTarget);
-    void SetFollowing(SystemEntity* pTarget);
-    void SetEngaged(SystemEntity* pTarget);
-    void SetFleeing(SystemEntity* pTarget);
-    void SetSignaling(SystemEntity* pTarget);
-    void CheckDistance(SystemEntity* pTarget);
+    void SetChasing(SpaceEntity* pTarget);
+    void SetFollowing(SpaceEntity* pTarget);
+    void SetEngaged(SpaceEntity* pTarget);
+    void SetFleeing(SpaceEntity* pTarget);
+    void SetSignaling(SpaceEntity* pTarget);
+    void CheckDistance(SpaceEntity* pTarget);
 
     uint16 GetTargetTime();
 

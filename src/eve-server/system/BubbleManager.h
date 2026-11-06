@@ -27,7 +27,7 @@
 
 
 #include <unordered_map>
-#include "system/SystemEntity.h"
+#include "system/SpaceEntity.h"
 
 static const uint32 BUBBLE_RADIUS_METERS = 250000;       // EVE retail uses 250km and allows grid manipulation  NOTE:  this is based on testing for best results.  -allan
 static const uint32 BUBBLE_HYSTERESIS_METERS = 5000;     // How far out of the existing bubble a ship needs to fly before being placed into a new or different bubble
@@ -56,11 +56,11 @@ public:
     // call to check for and remove empty bubbles from bubble vector
     void RemoveEmpty();
     //call whenever an entity may have left its bubble.
-    void CheckBubble(SystemEntity* pSE);
+    void CheckBubble(SpaceEntity* pSE);
     //call when an entity is added to the system.
-    void Add(SystemEntity* pSE, bool isPostWarp = false);
-    //call to find the bubble containing the SystemEntity specified, if no bubble does, return NULL
-    SystemBubble* FindBubble(SystemEntity* pSE) const;
+    void Add(SpaceEntity* pSE, bool isPostWarp = false);
+    //call to find the bubble containing the SpaceEntity specified, if no bubble does, return NULL
+    SystemBubble* FindBubble(SpaceEntity* pSE) const;
     //call to find the bubble containing the Vector3d specified, if no bubble does, return NULL
     SystemBubble* FindBubble(uint32 systemID, const Vector3d& pos) const;
     SystemBubble* FindBubbleByID(uint16 bubbleID);
@@ -70,7 +70,7 @@ public:
     //call to calculate new bubble's center from entity's velocity:
     void NewBubbleCenter(Vector3d shipVelocity, Vector3d& newCenter);
     //call when an entity is removed from the system.
-    void Remove(SystemEntity* pSE);
+    void Remove(SpaceEntity* pSE);
     void clear();
     void ClearSystemBubbles(uint32 systemID);
     void RemoveBubble(uint32 systemID, SystemBubble* pSB);
@@ -109,7 +109,7 @@ private:
     std::map<uint16, uint32> m_spawnIDs;
 
     std::list<SystemBubble*> m_bubbles;                 //for proc only.
-    std::vector<SystemEntity*> m_wanderers;             //entities that are no longer in their bubble, but not removed
+    std::vector<SpaceEntity*> m_wanderers;             //entities that are no longer in their bubble, but not removed
 
     std::map<uint32, SystemBubble*> m_bubbleIDMap;     // bubbleID/bubble*
 

@@ -16,7 +16,7 @@
 #include "math/Trig.h"
 #include "station/StationDataMgr.h"
 #include "system/SystemManager.h"
-#include "system/SystemEntity.h"
+#include "system/SpaceEntity.h"
 
 #include "../../eve-common/EVE_Map.h"
 
@@ -216,7 +216,7 @@ const Vector3d MapData::GetAnomalyPoint(SystemManager* pSys)
     std::vector<DBVector3dEntity> planetIDs;
     MapDB::GetPlanets(pSys->GetID(), planetIDs, total);
 
-    SystemEntity* pSE(pSys->GetSE(planetIDs[MakeRandomUInt(0, total - 1)].itemID));
+    SpaceEntity* pSE(pSys->GetSE(planetIDs[MakeRandomUInt(0, total - 1)].itemID));
 
     Vector3d pos = pSE->GetPosition();
     pos.MakeRandomPointOnSphereLayer(ONE_AU_IN_METERS / 3, ONE_AU_IN_METERS * 4);

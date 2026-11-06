@@ -16,7 +16,7 @@
 
 #include "EntityMgr.h"
 #include "StaticDataMgr.h"
-#include "system/SystemEntity.h"
+#include "system/SpaceEntity.h"
 
 /** @todo update this to create a planet item instead of the default celestial item */
 class Planet
@@ -41,7 +41,7 @@ class CustomsSE;
 class Call_ResourceDataDict;
 
 class PlanetSE
-: public StaticSystemEntity
+: public StaticSpaceEntity
 {
 public:
     PlanetSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);

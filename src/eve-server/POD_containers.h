@@ -329,7 +329,7 @@ struct FactionData {
 };
 
 /* structure for loading static system items */
-struct DBSystemEntity {
+struct DBSpaceEntity {
     uint16 typeID=0;
     uint16 groupID=0;
     uint32 itemID=0;

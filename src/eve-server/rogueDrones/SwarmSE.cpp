@@ -29,7 +29,7 @@
 
 
 SwarmSE::SwarmSE(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, const FactionData& data, SpawnMgr* spawnMgr)
-: DynamicSystemEntity(self, services, system),
+: DynamicSpaceEntity(self, services, system),
 m_AI(new SwarmAI(this)),
 m_spawnMgr(spawnMgr),
 m_hauler(false),
@@ -106,7 +106,7 @@ bool SwarmSE::Load() {
     m_destiny->UpdateShipVariables();
 
     //dSE::Load() just returns true for now (no code)
-    return DynamicSystemEntity::Load();
+    return DynamicSpaceEntity::Load();
 }
 
 void SwarmSE::Process() {
@@ -119,7 +119,7 @@ void SwarmSE::Process() {
     m_AI->Process();
 
     /*   Base call to Process Movement  */
-    SystemEntity::Process();
+    SpaceEntity::Process();
 
     // make random chance to reset buffs (wip)
 
@@ -127,7 +127,7 @@ void SwarmSE::Process() {
         sProfiler.AddTime(Profile::npc, GetTimeUSeconds() - profileStartTime);
 }
 
-void SwarmSE::Orbit(SystemEntity *pTargetSE) {
+void SwarmSE::Orbit(SpaceEntity *pTargetSE) {
     if (pTargetSE == nullptr) {
         m_orbitingID = 0;
     } else {
@@ -345,7 +345,7 @@ void SwarmSE::Killed(Damage &fatal_blow) {
     // set killer info
     uint32 killerID = 0;
     Client* pClient(nullptr);
-    SystemEntity* killer(fatal_blow.srcSE);
+    SpaceEntity* killer(fatal_blow.srcSE);
 
     if (killer->HasPilot()) {
         pClient = killer->GetPilot();

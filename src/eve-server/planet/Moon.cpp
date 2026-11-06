@@ -53,7 +53,7 @@ Moon::Moon()
 
 
 MoonSE::MoonSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
-: StaticSystemEntity(self, services, system),
+: StaticSpaceEntity(self, services, system),
 m_towerSE(nullptr)
 {
     /** @todo finish moon resources...this is hacked */
@@ -126,7 +126,7 @@ m_towerSE(nullptr)
 }
 
 bool MoonSE::LoadExtras() {
-    if (!StaticSystemEntity::LoadExtras())
+    if (!StaticSpaceEntity::LoadExtras())
         return false;
 
     /** @todo use this to initialize moongoo data, create planet manager for moon, or whatever else

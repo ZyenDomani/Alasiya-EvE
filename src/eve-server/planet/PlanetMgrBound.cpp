@@ -169,7 +169,7 @@ PyBoundObject* PlanetMgrService::CreateBoundObject(Client* pClient, const PyRep 
         pClient->SendErrorMsg("system boot failure");
         return nullptr;
     }
-    SystemEntity* pSE = pSysMgr->GetSE(sData.itemID);
+    SpaceEntity* pSE = pSysMgr->GetSE(sData.itemID);
     if (!pSE->IsPlanetSE()) {
         _log(SERVICE__ERROR, "%s Service: itemID is not planetID or planet not found", GetName());
         return nullptr;

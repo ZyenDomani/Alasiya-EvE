@@ -12,7 +12,7 @@
 #ifndef EVEMU_PLANET_MOON_H_
 #define EVEMU_PLANET_MOON_H_
 
-#include "system/SystemEntity.h"
+#include "system/SpaceEntity.h"
 
 class PyServiceMgr;
 class SystemManager;
@@ -26,7 +26,7 @@ public:
 };
 
 class MoonSE
-: public StaticSystemEntity
+: public StaticSpaceEntity
 {
 public:
     MoonSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);

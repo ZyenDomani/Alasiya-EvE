@@ -17,7 +17,7 @@
 #include "PyService.h"
 
 class GenericModule;
-class SystemEntity;
+class SpaceEntity;
 
 class ModuleManager
 {
@@ -32,7 +32,7 @@ public:
     uint16 GetAvailableSlotInBank(uint16 slotBank);
 
     void CargoFull();
-    void RemoveTarget(SystemEntity* pSE);
+    void RemoveTarget(SpaceEntity* pSE);
 
      // verify slot available
     // will throw if no slots available

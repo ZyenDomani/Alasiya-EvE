@@ -83,7 +83,7 @@ void CelestialObject::Delete() {
 
 
 CelestialSE::CelestialSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
-: ItemSystemEntity(self, services, system)
+: ItemSpaceEntity(self, services, system)
 {
     _log(SE__DEBUG, "Created CSE for item %s (%u) with radius of %.1f.", self->name(), self->itemID(), self->radius());
 }

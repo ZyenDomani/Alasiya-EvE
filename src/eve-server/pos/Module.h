@@ -30,7 +30,7 @@ public:
     /* class type tests. */
     virtual bool                IsModuleSE()            { return true; }
 
-    /* SystemEntity interface */
+    /* SpaceEntity interface */
     virtual void                Process();
 
     /* virtual functions default to base class and overridden as needed */
@@ -54,7 +54,7 @@ public:
     /* class type tests. */
     virtual bool                IsReactorSE()           { return true; }
 
-    /* SystemEntity interface */
+    /* SpaceEntity interface */
     virtual void                Process();
 
     /* virtual functions default to base class and overridden as needed */

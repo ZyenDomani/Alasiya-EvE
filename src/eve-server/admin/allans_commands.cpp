@@ -158,7 +158,7 @@ PyResult Command_list(Client* pClient, CommandDB* db, PyServiceMgr* services, co
     uint32 players = pSys->PlayerCount();
     uint32 bubbles = sBubbleMgr.GetBubbleCount(pSys->GetID());
 
-    std::map<uint32, SystemEntity*> into = pSys->GetEntities();
+    std::map<uint32, SpaceEntity*> into = pSys->GetEntities();
 
     std::ostringstream str;
     str << "System: %s(%u)<br>"; //42
@@ -216,7 +216,7 @@ PyResult Command_bubblelist(Client* pClient, CommandDB* db, PyServiceMgr* servic
     uint32 drones = b->CountDrones();
     uint32 players = b->CountPlayers();
 
-    std::map<uint32, SystemEntity*> into;
+    std::map<uint32, SpaceEntity*> into;
     b->GetEntities(into);
 
     std::ostringstream str;
@@ -475,7 +475,7 @@ PyResult Command_inventory(Client* pClient, CommandDB* db, PyServiceMgr* service
     str << "InventoryID %u(%p) (Item %p) has %u items.<br><br>"; //70
 
     if (IsSolarSystemID(inventoryID)) {
-        SystemEntity* pSE = nullptr;
+        SpaceEntity* pSE = nullptr;
         SystemManager* sMgr = pClient->SystemMgr();
         for (auto &cur : invMap) {
             pSE = sMgr->GetEntityByID(cur.first);
@@ -1246,7 +1246,7 @@ PyResult Command_distance(Client* pClient, CommandDB* db, PyServiceMgr* services
         return nullptr;
     }
 
-    SystemEntity* pSE = pClient->GetShipSE()->TargetMgr()->GetFirstTarget();
+    SpaceEntity* pSE = pClient->GetShipSE()->TargetMgr()->GetFirstTarget();
     uint32 distance = 0;
     if (pSE != nullptr) {
         Vector3d delta = pSE->GetPosition() - pClient->GetShipSE()->GetPosition();

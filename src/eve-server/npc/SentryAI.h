@@ -9,10 +9,10 @@
 #define __NPC_SENTRY_AI_H
 
 #include "ship/modules/TurretFormulas.h"
-#include "system/SystemEntity.h"
+#include "system/SpaceEntity.h"
 
 class Sentry;
-class SystemEntity;
+class SpaceEntity;
 class Timer;
 
 class SentryAI {
@@ -29,9 +29,9 @@ public:
 
     void Process();
 
-    void Target(SystemEntity *by_who);
-    void Targeted(SystemEntity *by_who);
-    void TargetLost(SystemEntity *by_who);
+    void Target(SpaceEntity *by_who);
+    void Targeted(SpaceEntity *by_who);
+    void TargetLost(SpaceEntity *by_who);
 
     void ClearTargets();
     void ClearAllTargets();
@@ -48,12 +48,12 @@ public:
 
 protected:
     void SetIdle();
-    void Attack(SystemEntity* pTarget);
-    void SetEngaged(SystemEntity* pTarget);
-    void ClearTarget(SystemEntity* pTarget);
-    void AttackTarget(SystemEntity* pTarget);
-    void SetSignaling(SystemEntity* pTarget);
-    void CheckDistance(SystemEntity* pTarget);
+    void Attack(SpaceEntity* pTarget);
+    void SetEngaged(SpaceEntity* pTarget);
+    void ClearTarget(SpaceEntity* pTarget);
+    void AttackTarget(SpaceEntity* pTarget);
+    void SetSignaling(SpaceEntity* pTarget);
+    void CheckDistance(SpaceEntity* pTarget);
 
     uint16 GetTargetTime();
 

@@ -109,7 +109,7 @@ PyRep* Scan::ConeScan(Call_ConeScan& args) {
      */
     bool test = false;
     double dot = 0, acDP = 0, angle = (args.ScanAngle * 0.5);
-    std::vector<SystemEntity*> seVec;
+    std::vector<SpaceEntity*> seVec;
     Vector3d VR;
     const Vector3d vertex = m_client->GetShipSE()->GetPosition();
     const Vector3d U(args.x, args.y, args.z);

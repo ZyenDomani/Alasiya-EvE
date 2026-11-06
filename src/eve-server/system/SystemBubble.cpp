@@ -38,7 +38,7 @@
 #include "system/Container.h"
 #include "system/DestinyManager.h"
 #include "system/SystemBubble.h"
-#include "system/SystemEntity.h"
+#include "system/SpaceEntity.h"
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/BeltMgr.h"
 
@@ -119,9 +119,9 @@ void SystemBubble::Process() {
 
 //called from the bubble manager.
 //if any entity is no longer in their registered bubble, they are added to the vector for re-classification.
-void SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
-    SystemEntity* pSE = nullptr;
-    std::map<uint32, SystemEntity*>::iterator itr = m_dynamicEntities.begin();
+void SystemBubble::ProcessWander(std::vector<SpaceEntity*> &wanderers) {
+    SpaceEntity* pSE = nullptr;
+    std::map<uint32, SpaceEntity*>::iterator itr = m_dynamicEntities.begin();
     while (itr != m_dynamicEntities.end()) {
         pSE = itr->second;
         if (pSE == nullptr) {
@@ -152,7 +152,7 @@ void SystemBubble::ProcessCollisions() {
 
 }
 
-void SystemBubble::Add(SystemEntity* pSE) {
+void SystemBubble::Add(SpaceEntity* pSE) {
     //if they are already in this bubble, do not continue.
     if (m_entities.find(pSE->GetID()) != m_entities.end()) {
         _log(BUBBLE__MESSAGE, "SysBubble::Add() - Tried to add Static Entity %u to bubble %u, but it is already in here.",\
@@ -259,7 +259,7 @@ void SystemBubble::Add(SystemEntity* pSE) {
     }
 }
 
-void SystemBubble::Remove(SystemEntity *pSE) {
+void SystemBubble::Remove(SpaceEntity *pSE) {
     //assume that the entity is properly registered for its ID
     if (pSE->m_bubble == nullptr) {
        // if (sConfig.debug.StackTrace)
@@ -290,7 +290,7 @@ void SystemBubble::Remove(SystemEntity *pSE) {
     pSE->m_bubble = nullptr;
 }
 
-void SystemBubble::RemoveExclusive(SystemEntity *pSE) {
+void SystemBubble::RemoveExclusive(SpaceEntity *pSE) {
     if (pSE->m_bubble == nullptr)
         return;
 
@@ -376,11 +376,11 @@ void SystemBubble::SetGate(uint32 gateID) {
     sBubbleMgr.AddSpawnID(m_bubbleID, gateID);
 }
 
-SystemEntity* const SystemBubble::GetEntity(uint32 entityID) const {
+SpaceEntity* const SystemBubble::GetEntity(uint32 entityID) const {
     /* updated to send ONLY dynamic entities to the following:          -allan 17Apr15
      *     ModuleManager::Activate()       --for module activation (with a target)
      */
-    std::map<uint32, SystemEntity*>::const_iterator itr = m_dynamicEntities.find(entityID);
+    std::map<uint32, SpaceEntity*>::const_iterator itr = m_dynamicEntities.find(entityID);
     if (itr != m_dynamicEntities.end())
         return itr->second;
 
@@ -403,7 +403,7 @@ void SystemBubble::RemoveActiveModule(ActiveModule* pMod) {
     m_activeModules.erase(pMod->itemID());
 }
 
-void SystemBubble::GetEntities(std::map<uint32, SystemEntity*> &into) const {
+void SystemBubble::GetEntities(std::map<uint32, SpaceEntity*> &into) const {
     /* updated to send non-cloaked dynamic entities to the following:         -allan 14Feb15
      *    SystemManager::MakeSetState()   --for player entering new system
      *    Command_killallnpcs()           --GM command
@@ -422,7 +422,7 @@ void SystemBubble::GetEntities(std::map<uint32, SystemEntity*> &into) const {
     }
 }
 
-void SystemBubble::GetAllEntities(std::map< uint32, SystemEntity* >& into) const {
+void SystemBubble::GetAllEntities(std::map< uint32, SpaceEntity* >& into) const {
     if (m_dynamicEntities.empty())
         return;
 
@@ -432,7 +432,7 @@ void SystemBubble::GetAllEntities(std::map< uint32, SystemEntity* >& into) const
 }
 
 
-void SystemBubble::GetEntityVec(std::vector< SystemEntity* >& into) const {
+void SystemBubble::GetEntityVec(std::vector< SpaceEntity* >& into) const {
     if (m_players.empty())
         return;
 
@@ -479,7 +479,7 @@ void SystemBubble::GetDrones(std::vector<DroneSE*> &into) const {
         into.push_back(cur.second);
 }
 
-SystemEntity* SystemBubble::GetRandomEntity() {
+SpaceEntity* SystemBubble::GetRandomEntity() {
     // this is used for idle npc's as a orbit target while waiting for something to pewpew
     if (m_dynamicEntities.empty())
         return nullptr;
@@ -519,7 +519,7 @@ void SystemBubble::PrintEntityList() {
     }
 
     bool found = false;
-    std::vector<SystemEntity*> SElist;
+    std::vector<SpaceEntity*> SElist;
     // load all entities visible in this bubble
     for (auto &cur : m_entities)
         SElist.push_back(cur.second);
@@ -600,7 +600,7 @@ void SystemBubble::PrintEntityList() {
     }
 }
 
-void SystemBubble::SendAddBalls(SystemEntity* to_who) {
+void SystemBubble::SendAddBalls(SpaceEntity* to_who) {
     if (!m_system->IsLoaded())
         return;
     if (m_dynamicEntities.empty())
@@ -651,7 +651,7 @@ void SystemBubble::SendAddBalls(SystemEntity* to_who) {
     pClient->QueueDestinyUpdate(&t);    //consumed
 }
 
-void SystemBubble::SendAddBalls2(SystemEntity* to_who) {
+void SystemBubble::SendAddBalls2(SpaceEntity* to_who) {
     if (!m_system->IsLoaded())
         return;
     if (m_dynamicEntities.empty())
@@ -711,7 +711,7 @@ void SystemBubble::SendAddBalls2(SystemEntity* to_who) {
     pClient->QueueDestinyUpdate(&tmp, true);    //consumed
 }
 
-void SystemBubble::AddBallExclusive(SystemEntity* pSE) {
+void SystemBubble::AddBallExclusive(SpaceEntity* pSE) {
     if (!m_system->IsLoaded())
         return;
     if ((pSE->DestinyMgr() != nullptr) and (pSE->DestinyMgr()->IsCloaked()))
@@ -764,7 +764,7 @@ void SystemBubble::AddBallExclusive(SystemEntity* pSE) {
  *      NOTE  RemoveBall doesnt not work as i thought it should....doesnt trigger explosion.
  */
 //TODO  update these based on above notes   (also look into better (non-ambigious) naming)
-void SystemBubble::RemoveBall(SystemEntity *pSE) {
+void SystemBubble::RemoveBall(SpaceEntity *pSE) {
     if (!m_system->IsLoaded())
         return;
     RemoveBallsFromBP removeball;
@@ -780,7 +780,7 @@ void SystemBubble::RemoveBall(SystemEntity *pSE) {
 }
 
 // this *should* only be called from DestinyMgr::Cloak() and DestinyMgr::Jump()
-void SystemBubble::RemoveBallExclusive(SystemEntity *pSE) {
+void SystemBubble::RemoveBallExclusive(SpaceEntity *pSE) {
     RemoveBallFromBP removeball;
         removeball.entityID = pSE->GetID();
     // RemoveBalls removeball;
@@ -795,7 +795,7 @@ void SystemBubble::RemoveBallExclusive(SystemEntity *pSE) {
     PySafeDecRef(tmp);
 }
 
-void SystemBubble::RemoveBalls(SystemEntity* pSE) {
+void SystemBubble::RemoveBalls(SpaceEntity* pSE) {
     if (!m_system->IsLoaded())
         return;
     if (m_dynamicEntities.empty())
@@ -874,7 +874,7 @@ void SystemBubble::CmdDropLoot() {
 
 void SystemBubble::RemoveMarkers() {
     if (m_hasMarkers) {
-        SystemEntity* pSE = nullptr;
+        SpaceEntity* pSE = nullptr;
         for (auto &cur : m_markers) {
             pSE = cur.second;
             pSE->Delete();
@@ -1014,9 +1014,9 @@ void SystemBubble::BubblecastDestinyUpdate(PyTuple** payload, const char* desc) 
     }
 }
 
-void SystemBubble::BubblecastDestinyUpdateExclusive(PyTuple** payload, const char* desc, SystemEntity* pSE) const {
+void SystemBubble::BubblecastDestinyUpdateExclusive(PyTuple** payload, const char* desc, SpaceEntity* pSE) const {
     for (auto &cur : m_players) {
-        // Only queue a Destiny update for this bubble if the current SystemEntity is not 'pSE':
+        // Only queue a Destiny update for this bubble if the current SpaceEntity is not 'pSE':
         // (this is an update to all client objects in the bubble EXCLUDING 'pSE')
         if (cur.second->GetShipSE() != pSE) {
             _log(BUBBLE__CAST, "Exclusive Bubblecast %s update to %s(%u)", desc, cur.second->GetName(), cur.first);

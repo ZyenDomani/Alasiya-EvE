@@ -146,7 +146,7 @@ void CynoModule::CreateCyno()
 
     _log(MODULE__DEBUG, "Creating Cynosural field");
 
-    cSE = new ItemSystemEntity(cRef, pClient->services(), m_sysMgr);
+    cSE = new ItemSpaceEntity(cRef, pClient->services(), m_sysMgr);
     Vector3d location = pShipSE->GetPosition();
     location.MakeRandomPointOnSphere(1500.0f + cRef->type().radius());
     cSE->SetPosition(location);

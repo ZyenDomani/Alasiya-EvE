@@ -16,7 +16,7 @@
 #include "ship/Ship.h"
 #include "ship/modules/ModuleDefs.h"
 #include "ship/modules/ModuleItem.h"
-#include "system/SystemEntity.h"
+#include "system/SpaceEntity.h"
 
 class ActiveModule;
 class PassiveModule;
@@ -128,7 +128,7 @@ public:
 
     virtual void Activate(uint16 effectID, uint32 targetID=0, int16 repeat=0)
                                                         { /* do nothing here */ }
-    virtual void RemoveTarget(SystemEntity* pSE)        { /* do nothing here */ }
+    virtual void RemoveTarget(SpaceEntity* pSE)        { /* do nothing here */ }
 
     // check for Prospector (so far) modules defaulted here for generic access
     virtual bool IsSuccess()                            { return false; }

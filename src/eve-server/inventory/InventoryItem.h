@@ -46,7 +46,7 @@ class Rsp_CommonGetInfo_Entry;
 
 /*
  * NOTE:
- * this object system should somehow be merged with the SystemEntity stuff
+ * this object system should somehow be merged with the SpaceEntity stuff
  * and class hierarchy built from it (Client, NPC, etc..) in the system manager...
  * however, the creation and destruction time logic is why it has not been done.
  *

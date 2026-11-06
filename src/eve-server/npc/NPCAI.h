@@ -92,7 +92,7 @@ namespace NPCAI {
 
 
 #include "ship/modules/TurretFormulas.h"
-#include "system/SystemEntity.h"
+#include "system/SpaceEntity.h"
 
 class Client;
 class Missile;
@@ -109,11 +109,11 @@ public:
     // this is called from NPC::Process() which is called from SystemManager::Process()
     void                Process();
 
-    void                Target(SystemEntity* pTargetSE);
-    void                Targeted(SystemEntity* pSE);
-    void                TargetLost(SystemEntity* pSE);
-    void                TargetWarping(SystemEntity* pSE);
-    void                ReportDamage(uint8 type=0, SystemEntity* pSourceSE=nullptr);
+    void                Target(SpaceEntity* pTargetSE);
+    void                Targeted(SpaceEntity* pSE);
+    void                TargetLost(SpaceEntity* pSE);
+    void                TargetWarping(SpaceEntity* pSE);
+    void                ReportDamage(uint8 type=0, SpaceEntity* pSourceSE=nullptr);
 
     void                DisableRepTimers(bool shield=true, bool armor=true);
 
@@ -134,7 +134,7 @@ public:
     void                DisableWarpOutTimer()           { m_warpOutTimer.Disable(); }
     void                WarpOutComplete();
 
-    void                LaunchMissile(uint16 typeID, SystemEntity* pTargetSE);   // us to them
+    void                LaunchMissile(uint16 typeID, SpaceEntity* pTargetSE);   // us to them
     void                MissileLaunched(Missile* pMissile); // them to us
 
     void                ShipArrived(Client* pClient);
@@ -148,12 +148,12 @@ protected:
     // no targets in sight.  wandering around until warp out or targets appear
     void                SetWander();
     // running away....use m_maxSpeed then warp away when out of range (does this make sense??)
-    void                SetFleeing(SystemEntity* pTargetSE);
-    void                ClearTarget(SystemEntity* pTargetSE);
+    void                SetFleeing(SpaceEntity* pTargetSE);
+    void                ClearTarget(SpaceEntity* pTargetSE);
     // calling for help..use m_orbitSpeed *2 to speed tank while calling for reinforcements
-    void                SetSignaling(SystemEntity* pTargetSE);
+    void                SetSignaling(SpaceEntity* pTargetSE);
     // updates target distance to determine action
-    void                CheckDistance(SystemEntity* pTargetSE);
+    void                CheckDistance(SpaceEntity* pTargetSE);
     // advanced method to pick preferred target
     void                PickTarget();
     // NOTE:  must call destiny->follow (or another movement call) after changing speed
@@ -165,11 +165,11 @@ protected:
 
     //actual attacking methods
     // target within npc sight range. range 4+  use m_maxSpeed to get within falloff
-    void                SetChasing(SystemEntity* pTargetSE);
+    void                SetChasing(SpaceEntity* pTargetSE);
     // between optimal and falloff.  range 3   try to get closer, but still orbiting and attacking
-    void                SetFollowing(SystemEntity* pTargetSE);
+    void                SetFollowing(SpaceEntity* pTargetSE);
     // actively fighting (in orbit).  range 2  use m_orbitSpeed.
-    void                SetEngaged(SystemEntity* pTargetSE);
+    void                SetEngaged(SpaceEntity* pTargetSE);
     // only for using lasers
     void                ShootTarget();
     // only for modules (not pewpew or missiles)
@@ -180,12 +180,12 @@ protected:
     // for npcs that have modules
     void                UseModule();
 
-    bool                InFlyRange(SystemEntity* pTargetSE);            // near    - range 1
-    bool                InOptimalRange(SystemEntity* pTargetSE);        // close   - range 2
-    bool                InFalloffDistance(SystemEntity* pTargetSE);     // mid     - range 3
-    bool                InAttackRange(SystemEntity* pTargetSE);         // far     - range 4
-    bool                InChaseRange(SystemEntity* pTargetSE);          // distant - range 5
-    bool                InSightRange(SystemEntity* pTargetSE);          // sight   - range 6
+    bool                InFlyRange(SpaceEntity* pTargetSE);            // near    - range 1
+    bool                InOptimalRange(SpaceEntity* pTargetSE);        // close   - range 2
+    bool                InFalloffDistance(SpaceEntity* pTargetSE);     // mid     - range 3
+    bool                InAttackRange(SpaceEntity* pTargetSE);         // far     - range 4
+    bool                InChaseRange(SpaceEntity* pTargetSE);          // distant - range 5
+    bool                InSightRange(SpaceEntity* pTargetSE);          // sight   - range 6
 
     // checks all targets
     bool                isValidTarget();
@@ -203,17 +203,17 @@ protected:
 
     // advanced AI methods
     void                SwitchTarget();
-    void                Guard(SystemEntity* pTargetSE); // for now, orbit? target ship at 1/2 orbit range
-    void                Assist(SystemEntity* pTargetSE);// use reppers on target
-    SystemEntity*       FindSecondaryTarget();
-    float               AggroModifiers(SystemEntity* pTargetSE);
-    SystemEntity*       EvaluateThreats();
-    void                ExecuteCombatMovement(SystemEntity* pPlayerTarget);
+    void                Guard(SpaceEntity* pTargetSE); // for now, orbit? target ship at 1/2 orbit range
+    void                Assist(SpaceEntity* pTargetSE);// use reppers on target
+    SpaceEntity*       FindSecondaryTarget();
+    float               AggroModifiers(SpaceEntity* pTargetSE);
+    SpaceEntity*       EvaluateThreats();
+    void                ExecuteCombatMovement(SpaceEntity* pPlayerTarget);
 
 private:
     NPC*                myNPC;
-    SystemEntity*       m_actionTarget;
-    SystemEntity*       m_attackTarget;
+    SpaceEntity*       m_actionTarget;
+    SpaceEntity*       m_attackTarget;
     DestinyManager*     m_destiny;
     InventoryItemRef    m_self;
 

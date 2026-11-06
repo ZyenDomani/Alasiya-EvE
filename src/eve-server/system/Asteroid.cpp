@@ -72,7 +72,7 @@ AsteroidItemRef AsteroidItem::SpawnTemp(ItemData& idata, AsteroidData& adata) {
 //iRef = InventoryItem::SpawnItem(sItemFactory.GetNextTempID(), iData);
 
 AsteroidSE::AsteroidSE(InventoryItemRef self, PyServiceMgr& services, SystemManager* system)
-: ObjectSystemEntity(self, services, system),
+: ObjectSpaceEntity(self, services, system),
 m_beltMgr(nullptr),
 m_growTimer(0),
 //m_growTimer(sConfig.cosmic.BeltGrowTime * EvE::Time::Hour),  // hours->ms
@@ -83,7 +83,7 @@ m_beltID(0)
 void AsteroidSE::Process() {
     /* called by EntityMgr::Process on every loop */
     /*   Base call to Process Movement  */
-    SystemEntity::Process();
+    SpaceEntity::Process();
 
     if (m_growTimer.Check())
         if (!m_system->GetBeltMgr()->IsActive(m_bubble->GetID()))
@@ -169,7 +169,7 @@ void AsteroidSE::Delete() {
     _log(SPAWN__DEPOP, "AsteroidSE::Delete() - Removing asteroid %s(%u) from beltID %u", \
             m_self->name(), m_self->itemID(), m_beltID);
     m_beltMgr->RemoveAsteroid(m_beltID, this);
-    SystemEntity::Delete();
+    SpaceEntity::Delete();
 }
 
 /*

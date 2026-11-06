@@ -29,7 +29,7 @@
 #include "EVEServerConfig.h"
 #include "StaticDataMgr.h"
 #include "inventory/InventoryItem.h"
-#include "system/SystemEntity.h"
+#include "system/SpaceEntity.h"
 
 /**
  * InventoryItem for generic celestial object.
@@ -88,10 +88,10 @@ protected:
 class PyServiceMgr;
 
 /**
- * ItemSystemEntity which represents celestial object in space
+ * ItemSpaceEntity which represents celestial object in space
  */
 class CelestialSE
-: public ItemSystemEntity {
+: public ItemSpaceEntity {
 public:
     CelestialSE(InventoryItemRef self, PyServiceMgr& services, SystemManager* system);
     virtual ~CelestialSE()                              { /* Do nothing here */ }
@@ -102,7 +102,7 @@ public:
     /* class type tests. */
     virtual bool                IsCelestialSE()         { return true; }
 
-    /* SystemEntity interface */
+    /* SpaceEntity interface */
     virtual void                MakeDamageState(DoDestinyDamageState &into);
 };
 
@@ -118,7 +118,7 @@ public:
     /* Base */
     virtual bool                IsAnomalySE()           { return true; }
 
-    /* SystemEntity interface */
+    /* SpaceEntity interface */
     virtual void                EncodeDestiny(Buffer& into);
 
     virtual PyDict*             MakeSlimItem();
@@ -136,7 +136,7 @@ public:
     /* Base */
     virtual bool                IsWormholeSE()          { return true; }
 
-    /* SystemEntity interface */
+    /* SpaceEntity interface */
     virtual void                EncodeDestiny(Buffer& into);
 
     virtual PyDict*             MakeSlimItem();

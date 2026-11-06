@@ -40,7 +40,7 @@ class PyList;
 class Client;
 class NPC;
 class InventoryItem;
-class SystemEntity;
+class SpaceEntity;
 class SystemBubble;
 class SetState;
 class DestinyManager;
@@ -70,7 +70,7 @@ public:
 
     bool IsLoaded()                                     { return m_loaded; }
 
-    SystemEntity* GetSE(uint32 entityID) const;
+    SpaceEntity* GetSE(uint32 entityID) const;
     NPC* GetNPCSE(uint32 entityID) const;
     ShipItemRef GetShipFromInventory(uint32 shipID);
     StationItemRef GetStationFromInventory(uint32 stationID);
@@ -121,12 +121,12 @@ public:
 
     void AddNPC(NPC* pNPC);
     void RemoveNPC(NPC* pNPC);
-    void AddEntity(SystemEntity* pSE, bool addSignal=true);    // add entity to system, and (optionally) add signal to AnomalyMgr
-    void AddTicEntity(SystemEntity* pSE);  // this is ONLY to add an entity to the ProcessTic() loop
-    void RemoveEntity(SystemEntity* pSE);   // this also removes SE* from bubble and sig from AnomalyMgr (if applicable)
-    void RemoveTicEntity(SystemEntity* pSE);  // this is ONLY to remove an entity from the ProcessTic() loop
+    void AddEntity(SpaceEntity* pSE, bool addSignal=true);    // add entity to system, and (optionally) add signal to AnomalyMgr
+    void AddTicEntity(SpaceEntity* pSE);  // this is ONLY to add an entity to the ProcessTic() loop
+    void RemoveEntity(SpaceEntity* pSE);   // this also removes SE* from bubble and sig from AnomalyMgr (if applicable)
+    void RemoveTicEntity(SpaceEntity* pSE);  // this is ONLY to remove an entity from the ProcessTic() loop
     void AddClient(Client* pClient, bool count=false, bool jump=false);
-    void AddMarker(SystemEntity* pSE, bool sendBall=false, bool addSignal=false);    // rather specific here.
+    void AddMarker(SpaceEntity* pSE, bool sendBall=false, bool addSignal=false);    // rather specific here.
     void RemoveClient(Client* pClient, bool count=false, bool jump=false);
     void SetDockCount(Client* pClient, bool docked=false);
 
@@ -135,7 +135,7 @@ public:
     void RemoveItemFromInventory(InventoryItemRef item);
 
     /* this is to send new global ball added to system AFTER SetState has been sent */
-    void SendStaticBall(SystemEntity* pSE);
+    void SendStaticBall(SpaceEntity* pSE);
     void MakeSetState(const SystemBubble* pBubble, SetState& into) const;
 
     uint32 GetRandBeltID();
@@ -149,27 +149,27 @@ public:
     StargateSE* GetClosestGateSE(const Vector3d& myPos);
 
     // this returns entities in range for display on dscan.
-    void DScan(int64 range, const Vector3d& position, std::vector< SystemEntity* >& vector);
+    void DScan(int64 range, const Vector3d& position, std::vector< SpaceEntity* >& vector);
     // this returns entities in system for display on Groove's Entity Map in client
     PyRep* GetCurrentEntities();
     // this returns entities in system for display on ship scanner when enabled.
     void GetAllEntities(std::vector<CosmicSignature>& vector);
 
-    std::map<uint32, SystemEntity*> GetOperationalStatics() { return m_opStaticEntities; }
-    std::map<uint32, SystemEntity*> GetGates()          { return m_gateMap; }
+    std::map<uint32, SpaceEntity*> GetOperationalStatics() { return m_opStaticEntities; }
+    std::map<uint32, SpaceEntity*> GetGates()          { return m_gateMap; }
 
-    SystemEntity* GetEntityByID(uint32 itemID);
+    SpaceEntity* GetEntityByID(uint32 itemID);
 
     void GetClientList(std::vector<Client*>& cVec);
 
-    std::map< uint32, SystemEntity* > GetEntities()     { return m_entities; }
+    std::map< uint32, SpaceEntity* > GetEntities()     { return m_entities; }
 
     PlanetSE* GetPlanet(uint32 planetID);
 
     void ResetAsteroids();
 
     // adds SEs to deleteLater list, which is purged on next tic
-    void AddToDeleteLater(SystemEntity* pSE)            { m_deleteLater[pSE->GetID()] = pSE; }
+    void AddToDeleteLater(SpaceEntity* pSE)            { m_deleteLater[pSE->GetID()] = pSE; }
 
     // find all cans and wrecks in this system owned by calling char and set new fleetID
     void UpdateContainerFleetID(uint32 ownerID, uint32 fleetID);           // this will allow fleet salvagers to tractor wrecks and cans
@@ -178,7 +178,7 @@ public:
     void AddCiv(Civilian* pCiv)                         { m_civilians.push_back(pCiv); }
     // also handles deletion
     void RemoveCiv(Civilian* pCiv);
-    void GetCivPath(SystemEntity* pOrig, SystemEntity* pDest);
+    void GetCivPath(SpaceEntity* pOrig, SpaceEntity* pDest);
 
 protected:
     /** @todo  this needs more work */
@@ -228,9 +228,9 @@ private:
     SpawnBubbleMap m_roidBubbles;                       // map of id/bubble with roid spawns  - not actually used yet
 
     // for POS system       -allan 23July17
-    std::map<uint32, SystemEntity*> m_moonMap;        // our container, but we DONT own the SE*
-    std::map<uint32, SystemEntity*> m_planetMap;      // our container, but we DONT own the SE*
-    std::map<uint32, SystemEntity*> m_gateMap;      // our container, but we DONT own the SE*
+    std::map<uint32, SpaceEntity*> m_moonMap;        // our container, but we DONT own the SE*
+    std::map<uint32, SpaceEntity*> m_planetMap;      // our container, but we DONT own the SE*
+    std::map<uint32, SpaceEntity*> m_gateMap;      // our container, but we DONT own the SE*
 
     // for grid Unloading system  -allan  27June2015
     bool m_loaded;
@@ -243,12 +243,12 @@ private:
     bool m_entityChanged :1;
     std::map<uint32, NPC*> m_npcs;                      //npcID/ptr  we do not own these
     std::map<uint32, Client*> m_clients;                //charID/ptr  we do not own these
-    std::map<uint32, SystemEntity*> m_entities;         // this list is all entities in this system.  we own these.
-    std::map<uint32, SystemEntity*> m_ticEntities;      // this list is for entities that need process tics (objects, npc, client ships)
-    std::map<uint32, SystemEntity*> m_staticEntities;   // this list is for static entities to send in setstate
-    std::map<uint32, SystemEntity*> m_opStaticEntities; // this list is for static entities which are operational and need to be initialized and operated upon even when system is empty
+    std::map<uint32, SpaceEntity*> m_entities;         // this list is all entities in this system.  we own these.
+    std::map<uint32, SpaceEntity*> m_ticEntities;      // this list is for entities that need process tics (objects, npc, client ships)
+    std::map<uint32, SpaceEntity*> m_staticEntities;   // this list is for static entities to send in setstate
+    std::map<uint32, SpaceEntity*> m_opStaticEntities; // this list is for static entities which are operational and need to be initialized and operated upon even when system is empty
 
-    std::map<uint32, SystemEntity*> m_deleteLater;      //  this list contains SEs that cannot be deleted immediately when removed from system.
+    std::map<uint32, SpaceEntity*> m_deleteLater;      //  this list contains SEs that cannot be deleted immediately when removed from system.
 
     // for bounty processing (20m timer)
     Timer m_bountyTimer;
@@ -269,7 +269,7 @@ private:
 
     // check for null iterator.  this will need to be moved to a memory code file eventually.
     // unfortunately, this is very specific for which iterators it can check.  see notes in code.
-    bool IsNull(std::map<uint32, SystemEntity*>::iterator& i);
+    bool IsNull(std::map<uint32, SpaceEntity*>::iterator& i);
 };
 
 #endif

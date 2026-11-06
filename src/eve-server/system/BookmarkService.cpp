@@ -180,7 +180,7 @@ PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {
         data.locationID = call.client->GetLocationID();       // locationID of bm is current sol system
         data.itemID = data.locationID;      //  itemID = locationID for coord bm.  shows jumps, s/c/r in bm window, green in system
     } else if (sDataMgr.IsStation(args.itemID)) {  // not player-owned, check for station.
-        SystemEntity* pSE = call.client->SystemMgr()->GetSE(args.itemID);
+        SpaceEntity* pSE = call.client->SystemMgr()->GetSE(args.itemID);
         if (pSE == nullptr) {
             // send player error also
             return nullptr;

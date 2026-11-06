@@ -38,7 +38,7 @@
 #include "system/cosmicMgrs/AnomalyMgr.h"
 
 DroneSE::DroneSE(InventoryItemRef drone, PyServiceMgr &services, SystemManager* pSystem, const FactionData& data)
-: ObjectSystemEntity(drone, services, pSystem),
+: ObjectSpaceEntity(drone, services, pSystem),
 m_system(pSystem),
 m_AI(new DroneAIMgr(this)),
 m_pClient(nullptr),
@@ -270,7 +270,7 @@ void DroneSE::Reconnect(ShipSE* pShipSE, PyDict* dict) {
     }
 }
 
-void DroneSE::Assist(SystemEntity* pTargetSE, PyDict* dict) {
+void DroneSE::Assist(SpaceEntity* pTargetSE, PyDict* dict) {
     if (!CheckCommand(dict))
         return;
     if (!CheckTarget(pTargetSE, dict))
@@ -281,7 +281,7 @@ void DroneSE::Assist(SystemEntity* pTargetSE, PyDict* dict) {
     m_AI->Engage(dict, DroneAI::State::Assisting);
 }
 
-void DroneSE::Guard(SystemEntity* pTargetSE, PyDict* dict) {
+void DroneSE::Guard(SpaceEntity* pTargetSE, PyDict* dict) {
     if (!CheckCommand(dict))
         return;
     if (!CheckTarget(pTargetSE, dict))
@@ -292,7 +292,7 @@ void DroneSE::Guard(SystemEntity* pTargetSE, PyDict* dict) {
     m_AI->Engage(dict, DroneAI::State::Guarding);
 }
 
-void DroneSE::Mine(SystemEntity* pTargetSE, PyDict* dict, bool repeat/*false*/) {
+void DroneSE::Mine(SpaceEntity* pTargetSE, PyDict* dict, bool repeat/*false*/) {
     if (!CheckCommand(dict))
         return;
     if (!CheckTarget(pTargetSE, dict))
@@ -302,7 +302,7 @@ void DroneSE::Mine(SystemEntity* pTargetSE, PyDict* dict, bool repeat/*false*/) 
     m_AI->Engage(dict, DroneAI::State::Mining, repeat);
 }
 
-void DroneSE::Engage(SystemEntity* pTargetSE, PyDict* dict/*nullptr*/) {
+void DroneSE::Engage(SpaceEntity* pTargetSE, PyDict* dict/*nullptr*/) {
     if (dict != nullptr)
         if (!CheckCommand(dict))
             return;
@@ -427,7 +427,7 @@ void DroneSE::Engage(SystemEntity* pTargetSE, PyDict* dict/*nullptr*/) {
     }
 }
 
-void DroneSE::Delegate(SystemEntity* pSE, PyDict* dict) {
+void DroneSE::Delegate(SpaceEntity* pSE, PyDict* dict) {
     if (!CheckCommand(dict))
         return;
     // need to do more checks here...
@@ -454,7 +454,7 @@ void DroneSE::SetAutoAttack(bool set) {
     m_self->SetAttribute(AttrDroneIsChaotic, set, false);
 }
 
-void DroneSE::TargetAdded(SystemEntity* pTargetSE) {
+void DroneSE::TargetAdded(SpaceEntity* pTargetSE) {
     if (!m_online)
         return;
 
@@ -524,7 +524,7 @@ bool DroneSE::CheckCommand(PyDict* dict) {
     return true;
 }
 
-bool DroneSE::CheckTarget(SystemEntity* pTargetSE, PyDict* dict) {
+bool DroneSE::CheckTarget(SpaceEntity* pTargetSE, PyDict* dict) {
     // run generic target checks against drone type for verification
     switch (GetGroupID()) {
         case EVEDB::invGroups::Mining_Drone:  {
@@ -889,7 +889,7 @@ void DroneSE::Killed(Damage &fatal_blow) {
 
     uint32 killerID = 0;
     Client* pClient(nullptr);
-    SystemEntity *killer(fatal_blow.srcSE);
+    SpaceEntity *killer(fatal_blow.srcSE);
 
     if (killer->HasPilot()) {
         pClient = killer->GetPilot();

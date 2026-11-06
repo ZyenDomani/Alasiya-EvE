@@ -34,7 +34,7 @@ public:
     virtual ~SuperWeapon() { }
 
     /* ActiveModule overrides */
-    virtual void Activate(SystemEntity* pSE);
+    virtual void Activate(SpaceEntity* pSE);
     virtual double DoCycle();
     virtual void StopCycle(bool abort=false);
 

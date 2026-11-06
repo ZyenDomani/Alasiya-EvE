@@ -28,7 +28,7 @@ static const char* const BOT_CONFIG_FILE = EVEMU_ROOT "/etc/MarketBot.xml";
 #include "inventory/InventoryItem.h"
 #include "station/StationDataMgr.h"
 #include "system/SystemManager.h"
-#include "system/SystemEntity.h"
+#include "system/SpaceEntity.h"
 #include <random>
 #include <cstdint>
 #include <chrono>

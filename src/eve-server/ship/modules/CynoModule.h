@@ -10,7 +10,7 @@
 #define _EVE_SHIP_MODULES_CYNO_MODULE_H_
 
 #include "ship/modules/ActiveModule.h"
-#include "system/SystemEntity.h"
+#include "system/SpaceEntity.h"
 #include "Client.h"
 
 class CynoModule: public ActiveModule
@@ -36,7 +36,7 @@ public:
 private:
     Client* pClient;
     ShipSE* pShipSE;
-    SystemEntity* cSE;
+    SpaceEntity* cSE;
 
     bool m_firstRun;
 

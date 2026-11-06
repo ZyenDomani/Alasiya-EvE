@@ -21,7 +21,7 @@
 #include "npc/Civilian.h"
 #include "station/StationDataMgr.h"
 #include "system/SystemBubble.h"
-#include "system/SystemEntity.h"
+#include "system/SpaceEntity.h"
 #include "system/SystemManager.h"
 
 
@@ -47,7 +47,7 @@ Civilian::~Civilian() {
         m_origSE->SystemMgr()->RemoveCiv(cur);
 }
 
-void Civilian::Init(SystemEntity* pOrig, SystemEntity* pDest) {
+void Civilian::Init(SpaceEntity* pOrig, SpaceEntity* pDest) {
     m_origSE = pOrig;
     m_destSE = pDest;
 
@@ -182,7 +182,7 @@ void Civilian::Undock() {
     m_velocity = stationData.dockOrientation * m_type->GetAttribute(AttrMaxVelocity).get_uint32();
 }
 
-void Civilian::Warp(SystemEntity* ptargSE) {
+void Civilian::Warp(SpaceEntity* ptargSE) {
     std::vector<PyTuple*> up;
     // send warp update
     CmdWarpTo wt;
@@ -263,7 +263,7 @@ PyDict* Civilian::MakeSlimItem() {
     return slim;
 }
 
-void Civilian::SendGateActivity(SystemEntity* pGateSE) const {
+void Civilian::SendGateActivity(SpaceEntity* pGateSE) const {
     std::string guid = "effects.GateActivity";
     OnSpecialFX10 effect;
         effect.entityID = pGateSE->GetID();

@@ -29,7 +29,7 @@ public:
     virtual bool                IsTCUSE()               { return true; }
     virtual bool                IsOperSE()              { return true; }
 
-    /* SystemEntity interface */
+    /* SpaceEntity interface */
     virtual void                Process();
     virtual void                SetOnline();
     virtual void                SetOffline();

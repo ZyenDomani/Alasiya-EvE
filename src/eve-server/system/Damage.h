@@ -32,11 +32,11 @@
 
 class Damage {
 public:
-    Damage(SystemEntity* pSE, InventoryItemRef wRef, float mod);
-    Damage(SystemEntity* pSE, InventoryItemRef wRef, InventoryItemRef cRef);
-    Damage(SystemEntity* pSE, InventoryItemRef wRef, float kin, float ther, float emp, float exp, float mod);
-    // constructor for Killed() methods of derived SystemEntity objects with no weapon
-    Damage(SystemEntity *pSE, bool fatal_blow=false);
+    Damage(SpaceEntity* pSE, InventoryItemRef wRef, float mod);
+    Damage(SpaceEntity* pSE, InventoryItemRef wRef, InventoryItemRef cRef);
+    Damage(SpaceEntity* pSE, InventoryItemRef wRef, float kin, float ther, float emp, float exp, float mod);
+    // constructor for Killed() methods of derived SpaceEntity objects with no weapon
+    Damage(SpaceEntity *pSE, bool fatal_blow=false);
 
     ~Damage()                                           { /* do nothing here */ }
 
@@ -80,7 +80,7 @@ public:
         return *this;
     }
 
-    SystemEntity*           srcSE;     //we do not own this.
+    SpaceEntity*           srcSE;     //we do not own this.
     InventoryItemRef        weaponRef;
     InventoryItemRef        chargeRef;    // May be null.
 

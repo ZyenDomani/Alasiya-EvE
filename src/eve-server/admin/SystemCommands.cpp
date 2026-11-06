@@ -527,7 +527,7 @@ PyResult Command_kill(Client* pClient, CommandDB* db, PyServiceMgr* services, co
         if (itemRef.get() == NULL)
             throw CustomError("/kill NOT supported on non-ship types at this time");
 
-        SystemEntity* shipEntity = pClient->SystemMgr()->GetSE(entity);
+        SpaceEntity* shipEntity = pClient->SystemMgr()->GetSE(entity);
         if (shipEntity == nullptr) {
             sLog.Error("GMCommands - Command_kill()", "Cannot process this object, aborting kill: %s [%u]", itemRef->name(), itemRef->itemID());
             throw CustomError("/kill cannot process this object");
@@ -561,7 +561,7 @@ PyResult Command_killallnpcs(Client* pClient, CommandDB* db, PyServiceMgr* servi
     if (pClient->GetShipSE()->SysBubble() == nullptr)
         throw CustomError("SysBubble invalid.");
 
-    std::map< uint32, SystemEntity* > entityVec;
+    std::map< uint32, SpaceEntity* > entityVec;
     pClient->GetShipSE()->SysBubble()->GetEntities(entityVec);
     for (auto &cur : entityVec) {
         if (cur.second == nullptr)
@@ -617,7 +617,7 @@ PyResult Command_unspawn(Client* pClient, CommandDB* db, PyServiceMgr* services,
 
     if (target != 0) {
         InventoryItemRef iRef = sItemFactory.GetItemRef(target);
-        SystemEntity *sys_entity = pClient->SystemMgr()->GetSE(target);
+        SpaceEntity *sys_entity = pClient->SystemMgr()->GetSE(target);
         if (sys_entity == nullptr) {
             throw CustomError("/unspawn failed.  Item %u not found.", target);
         }
@@ -653,7 +653,7 @@ PyResult Command_unspawn(Client* pClient, CommandDB* db, PyServiceMgr* services,
 
     Vector3d player_pos = pClient->GetShipSE()->GetPosition();
     Vector3d delta;
-    std::map< uint32, SystemEntity* > entMap;
+    std::map< uint32, SpaceEntity* > entMap;
     pBubble->GetEntities(entMap);
     for (auto &cur : entMap) {
         if (is_group_match and match_id != cur.second->GetGroupID()) {

@@ -742,7 +742,7 @@ void NPCAIMgr::WarpOut()
         if (newBeltID == sBubbleMgr.GetBeltID(myNPC->SysBubble()->GetID()))
             newBeltID = pSys->GetRandBeltID();
 
-        SystemEntity* newBeltSE = pSys->GetSE(newBeltID);
+        SpaceEntity* newBeltSE = pSys->GetSE(newBeltID);
         SystemBubble* pBubble = sBubbleMgr.FindBubble(newBeltSE);
         if (is_log_enabled(NPC__AI_LOGIC))
             _log(NPC__AI_LOGIC, "%s(%u):  Calling WarpOut.  Headed to bubble %u", \
@@ -853,7 +853,7 @@ void NPCAIMgr::SetIdle() {
 }
 
 // this one should distinguish between shoot and effect
-void NPCAIMgr::SetEngaged(SystemEntity* pTargetSE) {
+void NPCAIMgr::SetEngaged(SpaceEntity* pTargetSE) {
     if (pTargetSE == nullptr)
         return;
     // are we switching targets?
@@ -894,7 +894,7 @@ void NPCAIMgr::SetEngaged(SystemEntity* pTargetSE) {
     }
 }
 
-void NPCAIMgr::SetFollowing(SystemEntity* pTargetSE) {
+void NPCAIMgr::SetFollowing(SpaceEntity* pTargetSE) {
     if (pTargetSE == nullptr)
         return;
 	// are we switching targets?
@@ -930,7 +930,7 @@ void NPCAIMgr::SetFollowing(SystemEntity* pTargetSE) {
     m_destiny->FollowBall(pTargetSE, m_attackRange);
 }
 
-void NPCAIMgr::SetChasing(SystemEntity* pTargetSE) {
+void NPCAIMgr::SetChasing(SpaceEntity* pTargetSE) {
     if (pTargetSE == nullptr)
         return;
 	// are we switching targets?   if not, determine if chase delay was set so we can activate full speed
@@ -1005,7 +1005,7 @@ void NPCAIMgr::SetChasing(SystemEntity* pTargetSE) {
 }
 
 // not used yet
-void NPCAIMgr::SetFleeing(SystemEntity* pTargetSE) {
+void NPCAIMgr::SetFleeing(SpaceEntity* pTargetSE) {
     if (pTargetSE == nullptr)
         return;
 	// are we switching targets?
@@ -1042,7 +1042,7 @@ void NPCAIMgr::SetFleeing(SystemEntity* pTargetSE) {
 }
 
 // not used yet
-void NPCAIMgr::SetSignaling(SystemEntity* pTargetSE) {
+void NPCAIMgr::SetSignaling(SpaceEntity* pTargetSE) {
 	if (pTargetSE == nullptr)
 		return;
     // are we switching targets?
@@ -1089,43 +1089,43 @@ void NPCAIMgr::SetSignaling(SystemEntity* pTargetSE) {
 }
 
 // distance checks;  far to near
-bool NPCAIMgr::InFlyRange(SystemEntity* pTargetSE) {
+bool NPCAIMgr::InFlyRange(SpaceEntity* pTargetSE) {
     Vector3d delta = pTargetSE->GetPosition() - myNPC->GetPosition();
     double distSq = delta.LengthSq();
     return (distSq < m_flyRangeSq);
 }
 
-bool NPCAIMgr::InOptimalRange(SystemEntity* pTargetSE) {
+bool NPCAIMgr::InOptimalRange(SpaceEntity* pTargetSE) {
     Vector3d delta = pTargetSE->GetPosition() - myNPC->GetPosition();
     double distSq = delta.LengthSq();
     return (distSq < m_optimalRangeSq);
 }
 
-bool NPCAIMgr::InFalloffDistance(SystemEntity* pTargetSE) {
+bool NPCAIMgr::InFalloffDistance(SpaceEntity* pTargetSE) {
     Vector3d delta = pTargetSE->GetPosition() - myNPC->GetPosition();
     double distSq = delta.LengthSq();
     return (distSq < m_falloffDistanceSq + m_optimalRangeSq);
 }
 
-bool NPCAIMgr::InAttackRange(SystemEntity* pTargetSE) {
+bool NPCAIMgr::InAttackRange(SpaceEntity* pTargetSE) {
     Vector3d delta = pTargetSE->GetPosition() - myNPC->GetPosition();
     double distSq = delta.LengthSq();
     return (distSq < m_attackRangeSq);
 }
 
-bool NPCAIMgr::InChaseRange(SystemEntity* pTargetSE) {
+bool NPCAIMgr::InChaseRange(SpaceEntity* pTargetSE) {
     Vector3d delta = pTargetSE->GetPosition() - myNPC->GetPosition();
     double distSq = delta.LengthSq();
     return (distSq < m_chaseRangeSq);
 }
 
-bool NPCAIMgr::InSightRange(SystemEntity* pTargetSE) {
+bool NPCAIMgr::InSightRange(SpaceEntity* pTargetSE) {
     Vector3d delta = pTargetSE->GetPosition() - myNPC->GetPosition();
     double distSq = delta.LengthSq();
     return (distSq < m_sightRangeSq);
 }
 
-void NPCAIMgr::CheckDistance(SystemEntity* pTargetSE) {
+void NPCAIMgr::CheckDistance(SpaceEntity* pTargetSE) {
     if (pTargetSE == nullptr)
         return;
 
@@ -1165,7 +1165,7 @@ void NPCAIMgr::CheckDistance(SystemEntity* pTargetSE) {
 }
 
 // called from state::idle, state::wander, set*()
-void NPCAIMgr::Target(SystemEntity* pTargetSE) {
+void NPCAIMgr::Target(SpaceEntity* pTargetSE) {
     // passives that dont have weapons do not have locked targets attrib either
     if (m_maxLockedTargets < 1)
         return;
@@ -1249,7 +1249,7 @@ void NPCAIMgr::CheckHomePoint() {
 
 }
 
-void NPCAIMgr::Targeted(SystemEntity* pTargetSE) {
+void NPCAIMgr::Targeted(SpaceEntity* pTargetSE) {
     if (pTargetSE == nullptr)
         return;
 
@@ -1276,7 +1276,7 @@ void NPCAIMgr::Targeted(SystemEntity* pTargetSE) {
     }
 }
 
-void NPCAIMgr::TargetLost(SystemEntity* pTargetSE) {
+void NPCAIMgr::TargetLost(SpaceEntity* pTargetSE) {
     if (pTargetSE == nullptr)
         return;
 
@@ -1307,7 +1307,7 @@ void NPCAIMgr::TargetLost(SystemEntity* pTargetSE) {
     }
 }
 
-void NPCAIMgr::TargetWarping(SystemEntity* pSE) {
+void NPCAIMgr::TargetWarping(SpaceEntity* pSE) {
     // implement chance for npc to follow warping player
     // sConfig.npc.WarpFollowChance;
     // NPCAI::State::WarpFollow
@@ -1315,7 +1315,7 @@ void NPCAIMgr::TargetWarping(SystemEntity* pSE) {
 
 bool NPCAIMgr::isValidTarget() {
     // there will be more to this here...wip
-	SystemEntity* pTarget = nullptr;
+	SpaceEntity* pTarget = nullptr;
     switch (m_action) {
         case NPCAI::Action::Invalid:
         case NPCAI::Action::Wandering:
@@ -1369,7 +1369,7 @@ bool NPCAIMgr::isValidTarget() {
     return true;
 }
 
-void NPCAIMgr::ClearTarget(SystemEntity* pTargetSE) {
+void NPCAIMgr::ClearTarget(SpaceEntity* pTargetSE) {
     myNPC->TargetMgr()->ClearTarget(pTargetSE);
 
     m_attackTime = 0;
@@ -1686,7 +1686,7 @@ void NPCAIMgr::SendGFX(Client* pClient /*nullptr*/) {
     bool sendTurret = false;
     int32 duration = m_attackSpeed;
     int64 startTime = m_attackTime;
-    SystemEntity* pTargetSE = m_attackTarget;
+    SpaceEntity* pTargetSE = m_attackTarget;
 
     // or can use (m_action > attack) here
     switch (m_effectID) {
@@ -1756,7 +1756,7 @@ void NPCAIMgr::SendGFX(Client* pClient /*nullptr*/) {
     PyDecRef(up);
 }
 
-void NPCAIMgr::ReportDamage(uint8 type, SystemEntity* pSourceSE) {
+void NPCAIMgr::ReportDamage(uint8 type, SpaceEntity* pSourceSE) {
     // TODO:  fix this to still allow rep if enabled no matter source's status
     if (pSourceSE == nullptr or pSourceSE->IsDead())
         return;
@@ -1886,13 +1886,13 @@ void NPCAIMgr::EffectTarget() {
 }
 
 // not used yet
-void NPCAIMgr::Guard(SystemEntity* pTargetSE) {
+void NPCAIMgr::Guard(SpaceEntity* pTargetSE) {
     // this will be used by escorts in hauler spawn
     _log(NPC__AI_LOGIC, "Guard(); ");
 }
 
 // not used yet
-void NPCAIMgr::Assist(SystemEntity* pTargetSE) {
+void NPCAIMgr::Assist(SpaceEntity* pTargetSE) {
     // relocate after completion
     // this will determine what is needed and call UseModule()
     _log(NPC__AI_LOGIC, "Assist(); ");
@@ -1935,7 +1935,7 @@ void NPCAIMgr::Heal() {
 }
 
 
-void NPCAIMgr::LaunchMissile(uint16 typeID, SystemEntity* pTargetSE) {
+void NPCAIMgr::LaunchMissile(uint16 typeID, SpaceEntity* pTargetSE) {
     if ((typeID == 0) or (pTargetSE == nullptr))
         return;
     // create and Launch a missile; start flying
@@ -2533,8 +2533,8 @@ void NPCAIMgr::PickTarget() {
     float highestThreatScore = -1.0f;
     size_t totalCandidates = clientVec.size() + droneVec.size();
 
-    SystemEntity* bestCandidate = nullptr;
-    SystemEntity* targetEntity = nullptr;
+    SpaceEntity* bestCandidate = nullptr;
+    SpaceEntity* targetEntity = nullptr;
     bool isDrone = false;
     Client* pClient = nullptr;
     // threat assessment loop
@@ -2650,14 +2650,14 @@ void NPCAIMgr::PickTarget() {
 void NPCAIMgr::SwitchTarget() {
     _log(NPC__AI_LOGIC, "SwitchTarget(); ");
     // find a way to get all targets, are we picking by preferred here?   probably so
-    std::map<SystemEntity*, TargetEntry*> targets;
+    std::map<SpaceEntity*, TargetEntry*> targets;
     myNPC->TargetMgr()->GetAllTargets(targets);
-    std::map<SystemEntity*, TargetedByEntry*> targetby;
+    std::map<SpaceEntity*, TargetedByEntry*> targetby;
     myNPC->TargetMgr()->GetAllTargeters(targetby);
     m_attackTarget = nullptr;
 }
 
-float NPCAIMgr::AggroModifiers(SystemEntity* pTargetSE) {
+float NPCAIMgr::AggroModifiers(SpaceEntity* pTargetSE) {
     if (pTargetSE == nullptr)
         return 0.0f;
 
@@ -2700,13 +2700,13 @@ float NPCAIMgr::AggroModifiers(SystemEntity* pTargetSE) {
 }
 
 // poll this at 1/10s or less
-SystemEntity* NPCAIMgr::EvaluateThreats() {
+SpaceEntity* NPCAIMgr::EvaluateThreats() {
     // sConfig.npc.ThreatRadius
-    SystemEntity* bestTarget = nullptr;
+    SpaceEntity* bestTarget = nullptr;
     float highestThreatScore = -1.0f;
 
     // Get the list of all active entities on our current grid/bubble
-    std::map<uint32, SystemEntity*> visibleEntities;
+    std::map<uint32, SpaceEntity*> visibleEntities;
     myNPC->SysBubble()->GetEntities(visibleEntities);
 
     Vector3d delta;
@@ -2768,12 +2768,12 @@ SystemEntity* NPCAIMgr::EvaluateThreats() {
     return bestTarget;
 }
 
-SystemEntity* NPCAIMgr::FindSecondaryTarget() {
+SpaceEntity* NPCAIMgr::FindSecondaryTarget() {
     //  finish this...
     return nullptr;
 }
 
-void NPCAIMgr::ExecuteCombatMovement(SystemEntity* pPlayerTarget) {
+void NPCAIMgr::ExecuteCombatMovement(SpaceEntity* pPlayerTarget) {
     NPCSquad* pSquad = myNPC->GetSquad();
 /** todo:  will need more thought and infrastructure to implement this
     // Fallback: If no squad or formation is active, run your original free-for-all pathfinding

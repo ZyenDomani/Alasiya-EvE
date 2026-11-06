@@ -83,7 +83,7 @@ void ProbeItem::Delete() {
 
 // abandoned probe c'tor
 ProbeSE::ProbeSE(ProbeItemRef self, PyServiceMgr& services, SystemManager* system)
-: DynamicSystemEntity(self, services, system),
+: DynamicSpaceEntity(self, services, system),
 m_scan(nullptr),
 m_client(nullptr),
 m_shipRef(nullptr),
@@ -115,7 +115,7 @@ m_scanShips(false)
 }
 
 ProbeSE::ProbeSE(ProbeItemRef self, PyServiceMgr& services, SystemManager* system, InventoryItemRef moduleRef, ShipItemRef shipRef)
-: DynamicSystemEntity(self, services, system),
+: DynamicSpaceEntity(self, services, system),
 m_scan(nullptr),
 m_state(Probe::State::Idle),
 m_client(shipRef->GetPilot()),

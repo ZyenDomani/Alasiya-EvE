@@ -215,7 +215,7 @@ bool SystemManager::ProcessTic() {
         m_deleteLater.clear();
     }
 
-    std::map<uint32, SystemEntity*>::iterator itr = m_ticEntities.begin(), end = m_ticEntities.end();
+    std::map<uint32, SpaceEntity*>::iterator itr = m_ticEntities.begin(), end = m_ticEntities.end();
     while (itr != end) {
         /* main process call. */
         itr->second->Process();
@@ -320,8 +320,8 @@ void SystemManager::UnloadSystem() {
     //sMktBotMgr.RemoveSystem();
 
     // remove all loaded entities
-    std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin();
-    SystemEntity* pSE = nullptr;
+    std::map<uint32, SpaceEntity*>::iterator itr = m_entities.begin();
+    SpaceEntity* pSE = nullptr;
     while (itr != m_entities.end()) {
         if ((itr->first == 0) or (itr->second == nullptr)) {
             // this will catch entities we deleted earlier (roids, dungeons, etc)
@@ -385,14 +385,14 @@ void SystemManager::UnloadSystem() {
 }
 
 bool SystemManager::LoadSystemStatics() {
-    std::vector<DBSystemEntity> entities;
+    std::vector<DBSpaceEntity> entities;
 
     if (!SystemDB::LoadSystemStaticEntities(m_data.systemID, entities)) {
         sLog.Error( "SystemManager::LoadSystemStatics()", "Unable to load celestial entities during boot of %s(%u).", m_data.name.c_str(), m_data.systemID);
         return false;
     }
 
-    SystemEntity* pSE = nullptr;
+    SpaceEntity* pSE = nullptr;
     for (auto &cur : entities) {
         switch (cur.groupID) {
             case EVEDB::invGroups::Station: {
@@ -415,7 +415,7 @@ bool SystemManager::LoadSystemStatics() {
                 CelestialObjectRef itemRef = sItemFactory.GetCelestialRef(cur.itemID);
                 itemRef->SetAttribute(AttrRadius, cur.radius, false);
                 StargateSE *pSSE = new StargateSE(itemRef, *(GetServiceMgr()), this);
-                m_gateMap.insert(std::pair<uint32, SystemEntity*>(cur.itemID, pSSE));
+                m_gateMap.insert(std::pair<uint32, SpaceEntity*>(cur.itemID, pSSE));
                 ++m_gateCount;
                 pSE = pSSE;
             } break;
@@ -423,20 +423,20 @@ bool SystemManager::LoadSystemStatics() {
                 CelestialObjectRef itemRef = sItemFactory.GetCelestialRef(cur.itemID);
                 itemRef->SetAttribute(AttrRadius, cur.radius, false);
                 PlanetSE *pPSE = new PlanetSE(itemRef, *(GetServiceMgr()), this);
-                m_planetMap.insert(std::pair<uint32, SystemEntity*>(cur.itemID, pPSE));
+                m_planetMap.insert(std::pair<uint32, SpaceEntity*>(cur.itemID, pPSE));
                 pSE = pPSE;
             } break;
             case EVEDB::invGroups::Moon: {
                 CelestialObjectRef itemRef = sItemFactory.GetCelestialRef(cur.itemID);
                 itemRef->SetAttribute(AttrRadius, cur.radius, false);
                 MoonSE *pMSE = new MoonSE(itemRef, *(GetServiceMgr()), this);
-                m_moonMap.insert(std::pair<uint32, SystemEntity*>(cur.itemID, pMSE));
+                m_moonMap.insert(std::pair<uint32, SpaceEntity*>(cur.itemID, pMSE));
                 pSE = pMSE;
             } break;
             case EVEDB::invGroups::Sun: {    // suns dont have anything special, so they are generic SSEs
                 CelestialObjectRef itemRef = sItemFactory.GetCelestialRef(cur.itemID);
                 itemRef->SetAttribute(AttrRadius, cur.radius, false);
-                StaticSystemEntity *pSSE = new StaticSystemEntity(itemRef, *(GetServiceMgr()), this);
+                StaticSpaceEntity *pSSE = new StaticSpaceEntity(itemRef, *(GetServiceMgr()), this);
                 pSE = pSSE;
             } break;
             default: {
@@ -473,7 +473,7 @@ bool SystemManager::LoadSystemDynamics() {
         return false;
     }
 
-    SystemEntity* pSE = nullptr;
+    SpaceEntity* pSE = nullptr;
     for (auto &cur : entityData) {
         pSE = sEntityFactory.BuildEntity(*this, cur);
         if (pSE == nullptr) {
@@ -500,7 +500,7 @@ bool SystemManager::LoadPlayerDynamics() {
         return false;
     }
 
-    SystemEntity* pSE = nullptr;
+    SpaceEntity* pSE = nullptr;
     for (auto &cur : entityData) {
         pSE = sEntityFactory.BuildEntity(*this, cur);
         if (pSE == nullptr) {
@@ -521,7 +521,7 @@ bool SystemManager::LoadPlayerDynamics() {
 }
 
 bool SystemManager::BuildDynamicEntity(const DBSystemDynamicEntity& data, uint32 launcherID/*0*/) {
-    SystemEntity* pSE = sEntityFactory.BuildEntity(*this, data);
+    SpaceEntity* pSE = sEntityFactory.BuildEntity(*this, data);
     if (pSE == nullptr) {
         sLog.Error( "SystemManager::BuildDynamicEntity()", "Failed to create entity for item %u (grp: %u, type %u)", data.itemID, data.groupID, data.typeID);
         return false;
@@ -546,7 +546,7 @@ bool SystemManager::BuildDynamicEntity(const DBSystemDynamicEntity& data, uint32
         }
 
         // set wreck speed based on killed object
-        SystemEntity* pSE = GetSE(launcherID);
+        SpaceEntity* pSE = GetSE(launcherID);
         if (pSE != nullptr) {
             pWE->DestinyMgr()->SetTrollData(pSE->DestinyMgr());
         }
@@ -674,7 +674,7 @@ void SystemManager::RemoveNPC(NPC* pNPC) {
     pNPC->RemoveNPC();   // this deletes NPC from DB.  NPC's dont jump, so no reason to remove from system unless killed
 }
 
-void SystemManager::AddEntity(SystemEntity* pSE, bool addSignal/*true*/) {
+void SystemManager::AddEntity(SpaceEntity* pSE, bool addSignal/*true*/) {
     if (pSE == nullptr)
         return;
     uint32 itemID(pSE->GetID());
@@ -714,12 +714,12 @@ void SystemManager::AddEntity(SystemEntity* pSE, bool addSignal/*true*/) {
         m_anomMgr->AddSignal(pSE);
 }
 
-void SystemManager::AddTicEntity(SystemEntity* pSE) {
+void SystemManager::AddTicEntity(SpaceEntity* pSE) {
     m_entityChanged = true;
     m_ticEntities[pSE->GetID()] = pSE;
 }
 
-void SystemManager::RemoveEntity(SystemEntity* pSE) {
+void SystemManager::RemoveEntity(SpaceEntity* pSE) {
     if (pSE == nullptr)
         return;
     sBubbleMgr.Remove(pSE);
@@ -736,12 +736,12 @@ void SystemManager::RemoveEntity(SystemEntity* pSE) {
     m_anomMgr->RemoveSignal(itemID);
 }
 
-void SystemManager::RemoveTicEntity(SystemEntity* pSE) {
+void SystemManager::RemoveTicEntity(SpaceEntity* pSE) {
     m_entityChanged = true;
     m_ticEntities.erase(pSE->GetID());
 }
 
-void SystemManager::AddMarker(SystemEntity* pSE, bool sendBall/*false*/, bool addSignal/*false*/) {
+void SystemManager::AddMarker(SpaceEntity* pSE, bool sendBall/*false*/, bool addSignal/*false*/) {
     if (pSE == nullptr)
         return;
 
@@ -991,14 +991,14 @@ void SystemManager::MakeSetState(const SystemBubble* pBubble,  SetState& into) c
     stateBuffer->Append( head );
 
     // use map as it automagically orders by itemID
-    std::map<uint32, SystemEntity*> visibleEntities;
+    std::map<uint32, SpaceEntity*> visibleEntities;
 
     // get all static entities for this system
     for (auto &cur : m_staticEntities)
         visibleEntities.emplace(cur.first, cur.second);
 
     // get our ship.  bubble->GetEntities() does not include cloaked items
-    std::map<uint32, SystemEntity*>::const_iterator itr = m_ticEntities.find(into.ego);
+    std::map<uint32, SpaceEntity*>::const_iterator itr = m_ticEntities.find(into.ego);
     if (itr != m_ticEntities.end())
        visibleEntities.emplace(itr->first, itr->second);
 
@@ -1065,7 +1065,7 @@ void SystemManager::MakeSetState(const SystemBubble* pBubble,  SetState& into) c
     }
 }
 
-void SystemManager::SendStaticBall(SystemEntity* pSE)
+void SystemManager::SendStaticBall(SpaceEntity* pSE)
 {
     if (m_clients.empty())
         return;
@@ -1140,8 +1140,8 @@ void SystemManager::RemoveItemFromInventory(InventoryItemRef iRef) {
     m_solarSystemRef->RemoveItemFromInventory( iRef );
 }
 
-SystemEntity* SystemManager::GetSE(uint32 entityID) const {
-    std::map<uint32, SystemEntity*>::const_iterator itr = m_entities.find(entityID);
+SpaceEntity* SystemManager::GetSE(uint32 entityID) const {
+    std::map<uint32, SpaceEntity*>::const_iterator itr = m_entities.find(entityID);
     if (itr == m_entities.end())
         return nullptr;
     return itr->second;
@@ -1167,14 +1167,14 @@ StationItemRef SystemManager::GetStationFromInventory(uint32 stationID) {
 }
 
 PlanetSE* SystemManager::GetPlanet(uint32 planetID) {
-    std::map<uint32, SystemEntity*>::iterator itr = m_planetMap.find(planetID);
+    std::map<uint32, SpaceEntity*>::iterator itr = m_planetMap.find(planetID);
     if (itr != m_planetMap.end())
         return itr->second->GetPlanetSE();
     return nullptr;
 }
 
 uint32 SystemManager::GetClosestPlanetID(const Vector3d& myPos) {
-    std::map<double, SystemEntity*> sorted;
+    std::map<double, SpaceEntity*> sorted;
     Vector3d delta;
     double dist;
     for (auto &cur : m_planetMap) {
@@ -1187,7 +1187,7 @@ uint32 SystemManager::GetClosestPlanetID(const Vector3d& myPos) {
 }
 
 PlanetSE* SystemManager::GetClosestPlanetSE(const Vector3d& myPos) {
-    std::map<double, SystemEntity*> sorted;
+    std::map<double, SpaceEntity*> sorted;
     Vector3d delta;
     double dist;
     for (auto &cur : m_planetMap) {
@@ -1200,7 +1200,7 @@ PlanetSE* SystemManager::GetClosestPlanetSE(const Vector3d& myPos) {
 }
 
 StargateSE* SystemManager::GetClosestGateSE(const Vector3d& myPos) {
-    std::map<double, SystemEntity*> sorted;
+    std::map<double, SpaceEntity*> sorted;
     Vector3d delta;
     double dist;
     for (auto &cur : m_gateMap) {
@@ -1213,7 +1213,7 @@ StargateSE* SystemManager::GetClosestGateSE(const Vector3d& myPos) {
 }
 
 MoonSE* SystemManager::GetClosestMoonSE(const Vector3d& myPos) {
-    std::map<double, SystemEntity*> sorted;
+    std::map<double, SpaceEntity*> sorted;
     Vector3d delta;
     double dist;
     for (auto &cur : m_moonMap) {
@@ -1230,7 +1230,7 @@ void SystemManager::GetClientList(std::vector< Client* >& cVec) {
         cVec.push_back(cur.second);
 }
 
-SystemEntity* SystemManager::GetEntityByID(uint32 itemID) {
+SpaceEntity* SystemManager::GetEntityByID(uint32 itemID) {
     // only used by Cmd_Inventory()
     if (m_entities.find(itemID) == m_entities.end())
         return nullptr;
@@ -1238,7 +1238,7 @@ SystemEntity* SystemManager::GetEntityByID(uint32 itemID) {
     return m_entities.find(itemID)->second;
 }
 
-void SystemManager::DScan(int64 range, const Vector3d& position, std::vector<SystemEntity*>& vector )
+void SystemManager::DScan(int64 range, const Vector3d& position, std::vector<SpaceEntity*>& vector )
 {
     /** @todo finish this for correct dscan entity reporting
      * all ships (not cloaked)
@@ -1410,8 +1410,8 @@ void SystemManager::ResetAsteroids() {
     // player command to remove all asteroids in a system (roid reset)
     m_beltMgr->ClearAll(true);
     /*
-    std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin();
-    SystemEntity* pSE = nullptr;
+    std::map<uint32, SpaceEntity*>::iterator itr = m_entities.begin();
+    SpaceEntity* pSE = nullptr;
     while (itr != m_entities.begin()) {
         if (IsAsteroidID(itr->first)) {
             pSE = itr->second;
@@ -1443,7 +1443,7 @@ void SystemManager::RemoveCiv(Civilian* pCiv) {
     }
 }
 
-void SystemManager::GetCivPath(SystemEntity* pOrig, SystemEntity* pDest) {
+void SystemManager::GetCivPath(SpaceEntity* pOrig, SpaceEntity* pDest) {
     // method to get travel points for Civilian ships using system objects (gates/stations)
 }
 
@@ -1530,7 +1530,7 @@ void SystemManager::GetPlayerCount()
     */
 
 
-bool SystemManager::IsNull(std::map<uint32, SystemEntity*>::iterator& i)
+bool SystemManager::IsNull(std::map<uint32, SpaceEntity*>::iterator& i)
 {
     /* you have to change this parameter to the type of the container
      * you are using and the type of the element inside the container.

@@ -416,7 +416,7 @@ Vector3d AnomalyMgr::GetAnomalyPos(std::string& sigID)
 }
 
 
-void AnomalyMgr::AddSignal(SystemEntity* pSE, uint32 id/*0*/)
+void AnomalyMgr::AddSignal(SpaceEntity* pSE, uint32 id/*0*/)
 {
     if (!m_initalized)
         return;

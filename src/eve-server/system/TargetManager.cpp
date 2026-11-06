@@ -48,10 +48,10 @@
 #include "ship/modules/MiningLaser.h"
 #include "ship/modules/Prospector.h"
 #include "system/TargetManager.h"
-#include "system/SystemEntity.h"
+#include "system/SpaceEntity.h"
 #include "system/SystemBubble.h"
 
-TargetManager::TargetManager(SystemEntity *self)
+TargetManager::TargetManager(SpaceEntity *self)
 : mySE(self),
 m_canAttack(false)
 {
@@ -64,7 +64,7 @@ bool TargetManager::Process() {
         return false;
 
     //process outgoing targeting (outgoing will call incoming as needed)
-    std::map<SystemEntity*, TargetEntry*>::iterator itr = m_targets.begin(), end = m_targets.end();
+    std::map<SpaceEntity*, TargetEntry*>::iterator itr = m_targets.begin(), end = m_targets.end();
     while (itr != end) {
         if ((itr->first == nullptr) or (itr->second == nullptr)) {
             itr = m_targets.erase(itr);
@@ -106,7 +106,7 @@ void TargetManager::Unload() {
     m_targetedBy.clear();
 }
 
-bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
+bool TargetManager::StartTargeting(SpaceEntity *tSE, ShipItemRef sRef)
 {   // NOTE this is for players and CAN throw (client calls this inside try/catch block)
     if (!mySE->HasPilot()) {
         codelog(TARGET__ERROR, "StartTargeting() called by pilot-less ship %s(%u) to target %s(%u)", \
@@ -194,7 +194,7 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
     return true;
 }
 
-bool TargetManager::StartTargeting(SystemEntity* tSE, uint16 lockTime, uint8 maxLockedTargets, double maxTargetLockRange, bool &chase)
+bool TargetManager::StartTargeting(SpaceEntity* tSE, uint16 lockTime, uint8 maxLockedTargets, double maxTargetLockRange, bool &chase)
 {       // NOTE  this is for npcs (including player drones)
     if (tSE == nullptr)
         return false;
@@ -247,10 +247,10 @@ bool TargetManager::StartTargeting(SystemEntity* tSE, uint16 lockTime, uint8 max
     return true;
 }
 
-void TargetManager::RemoveTarget(SystemEntity* tSE) {
+void TargetManager::RemoveTarget(SpaceEntity* tSE) {
     if (tSE == nullptr)
         return;
-    std::map<SystemEntity*, TargetEntry*>::iterator itr = m_targets.find(tSE);
+    std::map<SpaceEntity*, TargetEntry*>::iterator itr = m_targets.find(tSE);
     if (itr != m_targets.end()) {
         SafeDelete(itr->second);
         m_targets.erase(itr);
@@ -266,7 +266,7 @@ void TargetManager::RemoveTarget(SystemEntity* tSE) {
     Dump();
 }
 
-void TargetManager::ClearTarget(SystemEntity *tSE) {
+void TargetManager::ClearTarget(SpaceEntity *tSE) {
     if (tSE == nullptr)
         return;
     //let the other entity know they are no longer targeted.
@@ -323,7 +323,7 @@ void TargetManager::ClearFromTargets() {
     if (m_targetedBy.empty())
         return;
 
-    std::vector<SystemEntity *> ToNotify;
+    std::vector<SpaceEntity *> ToNotify;
     for (auto &cur : m_targetedBy) {
         SafeDelete(cur.second);
         //do not notify until we clear our target list! otherwise Bad Things happen. (invalidate iterator here)
@@ -341,10 +341,10 @@ void TargetManager::ClearFromTargets() {
     Dump();
 }
 
-void TargetManager::TargetLost(SystemEntity *tSE) {
+void TargetManager::TargetLost(SpaceEntity *tSE) {
     if (tSE == nullptr)
         return;
-    std::map<SystemEntity *, TargetEntry *>::iterator itr = m_targets.find(tSE);
+    std::map<SpaceEntity *, TargetEntry *>::iterator itr = m_targets.find(tSE);
     if (itr == m_targets.end())
         return;
 
@@ -388,7 +388,7 @@ void TargetManager::TargetLost(SystemEntity *tSE) {
     Dump();
 }
 
-void TargetManager::TargetedByLocked(SystemEntity* pSE) {
+void TargetManager::TargetedByLocked(SpaceEntity* pSE) {
     // this call tells object that target lock has been completed
     _log(TARGET__TRACE, "%s(%u) has been locked by %s(%u)", \
             mySE->GetName(), mySE->GetID(), pSE->GetName(), pSE->GetID());
@@ -396,8 +396,8 @@ void TargetManager::TargetedByLocked(SystemEntity* pSE) {
     mySE->ShipTargeted(pSE);
 }
 
-void TargetManager::TargetedByLost(SystemEntity* pSE) {
-    std::map<SystemEntity *, TargetedByEntry *>::iterator itr = m_targetedBy.find(pSE);
+void TargetManager::TargetedByLost(SpaceEntity* pSE) {
+    std::map<SpaceEntity *, TargetedByEntry *>::iterator itr = m_targetedBy.find(pSE);
     if (itr == m_targetedBy.end()) {
         _log(TARGET__DEBUG, "%s(%u) TargetByLost() - Tried to notify %s(%u) of target lost, but they did not have us targeted.", \
                 mySE->GetName(), mySE->GetID(), pSE->GetName(), pSE->GetID());
@@ -432,7 +432,7 @@ void TargetManager::TargetedByLost(SystemEntity* pSE) {
             - WarpingOut - you warped away before their target lock completed  (notification; not OnTarget event)
 */
 
-void TargetManager::TargetAdded(SystemEntity* tSE) {
+void TargetManager::TargetAdded(SpaceEntity* tSE) {
     if (tSE == nullptr)
         return;
     _log(TARGET__TRACE, "%s(%u) - adding locked target %s(%u).", \
@@ -456,7 +456,7 @@ void TargetManager::TargetAdded(SystemEntity* tSE) {
     mySE->GetPilot()->QueueDestinyUpdate(&up);
 }
 
-void TargetManager::TargetedAdd(SystemEntity *tSE) {
+void TargetManager::TargetedAdd(SpaceEntity *tSE) {
     if (tSE == nullptr)
         return;
     //first make sure they are not already in the list
@@ -487,7 +487,7 @@ void TargetManager::TargetedAdd(SystemEntity *tSE) {
     mySE->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
 }
 
-void TargetManager::TargetedLost(SystemEntity *tSE) {
+void TargetManager::TargetedLost(SpaceEntity *tSE) {
     if (tSE == nullptr)
         return;
     _log(TARGET__TRACE, "%s(%u) - %s(%u) has lost target lock on me.", \
@@ -519,25 +519,25 @@ void TargetManager::TargetsCleared() {
     mySE->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
 }
 
-bool TargetManager::IsTargeting(SystemEntity* tSE) {
+bool TargetManager::IsTargeting(SpaceEntity* tSE) {
     if (m_targets.empty())
         return false;
 
     return (m_targets.find(tSE) != m_targets.end());
 }
 
-bool TargetManager::IsTargetedBy(SystemEntity* pSE) {
+bool TargetManager::IsTargetedBy(SpaceEntity* pSE) {
     return (m_targetedBy.find(pSE) != m_targetedBy.end());
 }
 
-SystemEntity* TargetManager::GetFirstTarget(bool need_locked/*false*/) {
+SpaceEntity* TargetManager::GetFirstTarget(bool need_locked/*false*/) {
     if (m_targets.empty())
         return nullptr;
 
     if (!need_locked)
         return m_targets.begin()->first;
 
-    std::map<SystemEntity *, TargetEntry *>::iterator itr = m_targets.begin();
+    std::map<SpaceEntity *, TargetEntry *>::iterator itr = m_targets.begin();
     for (; itr != m_targets.end(); itr++)
         if (itr->second->state == TargMgr::State::Locked)
             return itr->first;
@@ -550,7 +550,7 @@ PyList* TargetManager::GetTargets() const {
     if (m_targets.empty())
         return result;
 
-    std::map<SystemEntity *, TargetEntry *>::const_iterator itr = m_targets.begin();
+    std::map<SpaceEntity *, TargetEntry *>::const_iterator itr = m_targets.begin();
     for (; itr != m_targets.end(); itr++)
         result->AddItemInt(itr->first->GetID());
 
@@ -562,7 +562,7 @@ PyList* TargetManager::GetTargeters() const {
     if (m_targetedBy.empty())
         return result;
 
-    std::map<SystemEntity*, TargetedByEntry*>::const_iterator itr = m_targetedBy.begin();
+    std::map<SpaceEntity*, TargetedByEntry*>::const_iterator itr = m_targetedBy.begin();
     for(; itr != m_targetedBy.end(); itr++)
         result->AddItemInt(itr->first->GetID());
 
@@ -571,11 +571,11 @@ PyList* TargetManager::GetTargeters() const {
 
 // no longer used.  1Feb18
 // will be used by advanced NPCs....eventually
-SystemEntity* TargetManager::GetTarget(uint32 targetID, bool need_locked/*true*/) const {
+SpaceEntity* TargetManager::GetTarget(uint32 targetID, bool need_locked/*true*/) const {
     if (m_targets.empty())
         return nullptr;
 
-    std::map<SystemEntity*, TargetEntry*>::const_iterator itr = m_targets.begin();
+    std::map<SpaceEntity*, TargetEntry*>::const_iterator itr = m_targets.begin();
     for (; itr != m_targets.end(); itr++) {
         if (itr->first->GetID() != targetID)
             continue;
@@ -607,7 +607,7 @@ void TargetManager::RemoveTargetModule(ActiveModule* pMod)
     m_modules.erase(pMod->itemID());
 }
 
-// called by SystemEntity::Killed() and SystemEntity::Delete()
+// called by SpaceEntity::Killed() and SpaceEntity::Delete()
 void TargetManager::Destroyed()
 {
     _log(TARGET__INFO, "%s(%u) has been destroyed. %zu modules, %zu targets, and %zu targeters in maps.", \
@@ -707,7 +707,7 @@ void TargetManager::Depleted(MiningLaser* pMod) {
     pMod->Depleted(mMap);
 }
 
-float TargetManager::TimeToLock(ShipItemRef sRef, SystemEntity* tSE) const {
+float TargetManager::TimeToLock(ShipItemRef sRef, SpaceEntity* tSE) const {
     /*  default to using lock times for all entities
     if ((tSE->IsAsteroidSE()) or (tSE->IsDeployableSE()) or (tSE->IsWreckSE())
         or  (tSE->IsContainerSE()) or (tSE->IsInanimateSE()))
@@ -849,7 +849,7 @@ void TargetManager::Dump() const {
     }
 }
 
-void TargetEntry::Dump(SystemEntity* pSE) const {
+void TargetEntry::Dump(SpaceEntity* pSE) const {
     if (pSE == nullptr)
         return;
     if (timer.Enabled()) {
@@ -860,7 +860,7 @@ void TargetEntry::Dump(SystemEntity* pSE) const {
     }
 }
 
-void TargetedByEntry::Dump(SystemEntity* pSE) const {
+void TargetedByEntry::Dump(SpaceEntity* pSE) const {
     if (pSE == nullptr)
         return;
     _log(TARGET__DUMP, "    Targeted By %s(%u): %s", pSE->GetName(), pSE->GetID(), TargetManager::GetStateName(state));

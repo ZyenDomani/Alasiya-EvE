@@ -43,7 +43,7 @@ EntityFactory::~EntityFactory() {
     //delete[] m_routingArray;
 }
 
-SystemEntity* EntityFactory::BuildEntity(SystemManager& sysMgr, const DBSystemDynamicEntity& eData) {
+SpaceEntity* EntityFactory::BuildEntity(SystemManager& sysMgr, const DBSystemDynamicEntity& eData) {
     FactionData fData = FactionData();
         fData.allianceID = eData.allianceID;
         fData.corporationID = eData.corporationID;
@@ -200,7 +200,7 @@ SystemEntity* EntityFactory::BuildEntity(SystemManager& sysMgr, const DBSystemDy
                     //structure->GetMyInventory()->LoadContents();  this is called during structureItem creation
                     if ((eData.planetID) and (eData.groupID != EVEDB::invGroups::Test_Orbitals)) {
                         pCoSE->SetPlanet(eData.planetID);
-                        SystemEntity* pPE = sysMgr.GetSE(eData.planetID);
+                        SpaceEntity* pPE = sysMgr.GetSE(eData.planetID);
                         if ((pPE != nullptr) and pPE->IsPlanetSE())
                             pPE->GetPlanetSE()->SetCustomsOffice(pCoSE);
                     }
@@ -302,7 +302,7 @@ SystemEntity* EntityFactory::BuildEntity(SystemManager& sysMgr, const DBSystemDy
                 		_log(ITEM__ERROR, "EntityFactory - iRef = nullptr for %s (%u)", eData.itemName.c_str(), eData.itemID);
                 		return nullptr;
             		}
-                    ItemSystemEntity* iSE = new ItemSystemEntity(iRef, *(sysMgr.GetServiceMgr()), &sysMgr);
+                    ItemSpaceEntity* iSE = new ItemSpaceEntity(iRef, *(sysMgr.GetServiceMgr()), &sysMgr);
                     _log(ITEM__TRACE, "EntityFactory making ISE for %s (%u)", eData.itemName.c_str(), eData.itemID);
                     return iSE;
                 } break;
@@ -357,7 +357,7 @@ SystemEntity* EntityFactory::BuildEntity(SystemManager& sysMgr, const DBSystemDy
                		_log(ITEM__ERROR, "EntityFactory - iRef = nullptr for %s (%u)", eData.itemName.c_str(), eData.itemID);
                		return nullptr;
                     }
-                    ItemSystemEntity* cSE = new ItemSystemEntity(iRef, *(sysMgr.GetServiceMgr()), &sysMgr);
+                    ItemSpaceEntity* cSE = new ItemSpaceEntity(iRef, *(sysMgr.GetServiceMgr()), &sysMgr);
                     _log(ITEM__TRACE, "EntityFactory making ISE item for %s (%u)", eData.itemName.c_str(), eData.itemID);
                     return cSE;
                 } break;

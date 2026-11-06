@@ -97,7 +97,7 @@ P3             60,000 ISK
 P4          1,200,000 ISK
 */
 
-Colony::Colony(PyServiceMgr* mgr, Client* pClient, SystemEntity* pSE)
+Colony::Colony(PyServiceMgr* mgr, Client* pClient, SpaceEntity* pSE)
 :m_svcMgr(mgr),
 m_pSE(pSE->GetPlanetSE()),
 ccData(new PI_CCData()),

@@ -190,7 +190,7 @@ void StructureItem::Rename(std::string name) {
 }
 
 StructureSE::StructureSE(StructureItemRef structure, PyServiceMgr &services, SystemManager *system, const FactionData &data)
-    : ObjectSystemEntity(structure, services, system),
+    : ObjectSpaceEntity(structure, services, system),
     m_moonSE(nullptr),
     m_planetSE(nullptr),
     m_towerSE(nullptr),
@@ -355,7 +355,7 @@ void StructureSE::Init()
     }
 
     //Get entity for anchor point (type is determined by what is being anchored)
-    SystemEntity *pSE = m_system->GetSE(m_data.anchorpointID);
+    SpaceEntity *pSE = m_system->GetSE(m_data.anchorpointID);
     if (pSE == nullptr) {
         _log(POS__WARNING, "StructureSE::Init %s(%u) - Cannot find SE for anchorpointID %u. Load Failure.", \
                 m_self->name(), m_data.itemID, m_data.anchorpointID);
@@ -408,7 +408,7 @@ void StructureSE::Init()
     if (m_tower) {
         m_duration = m_self->GetAttribute(AttrPosControlTowerPeriod).get_uint32();
     } else if (m_module) {
-        SystemEntity *pSE = m_system->GetSE(m_data.towerID);
+        SpaceEntity *pSE = m_system->GetSE(m_data.towerID);
         if (pSE == nullptr) {
             _log(POS__ERROR, "StructureSE::Init %s(%u) is invalid.  why are we here?", m_self->name(), m_data.itemID);
             m_loaded = false;
@@ -443,7 +443,7 @@ void StructureSE::Process()
 {
     /* called by EntityMgr::Process on every loop */
     /*   Base call to Process Movement  */
-    SystemEntity::Process();
+    SpaceEntity::Process();
 
     if (m_procTimer.Check(false))
     {
@@ -1230,7 +1230,7 @@ void StructureSE::Killed(Damage &damage)
 
     uint32 killerID = 0;
     Client* pClient(nullptr);
-    SystemEntity *killer = damage.srcSE;
+    SpaceEntity *killer = damage.srcSE;
 
     if (killer->HasPilot()) {
         pClient = killer->GetPilot();

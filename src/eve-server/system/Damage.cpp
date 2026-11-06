@@ -54,7 +54,7 @@ DAMAGE__DEBUG
 */
 
 // this is for turrets
-Damage::Damage(SystemEntity* pSE, InventoryItemRef wRef,
+Damage::Damage(SpaceEntity* pSE, InventoryItemRef wRef,
                float kin, float ther, float emp, float exp, float mod)
 : srcSE(pSE), weaponRef(wRef), chargeRef(InventoryItemRef(nullptr)),
 em(emp), kinetic(kin), thermal(ther), explosive(exp), modifier(mod)
@@ -65,7 +65,7 @@ em(emp), kinetic(kin), thermal(ther), explosive(exp), modifier(mod)
 }
 
 // this is for npcs
-Damage::Damage(SystemEntity* pSE, InventoryItemRef wRef, float mod)
+Damage::Damage(SpaceEntity* pSE, InventoryItemRef wRef, float mod)
 : srcSE(pSE), weaponRef(wRef), chargeRef(InventoryItemRef(nullptr)),modifier(mod),
 em(wRef->GetAttribute(AttrEmDamage).get_float()),
 kinetic(wRef->GetAttribute(AttrKineticDamage).get_float()),
@@ -77,7 +77,7 @@ explosive(wRef->GetAttribute(AttrExplosiveDamage).get_float())
 }
 
 // this is for missiles
-Damage::Damage(SystemEntity* pSE, InventoryItemRef wRef, InventoryItemRef cRef)
+Damage::Damage(SpaceEntity* pSE, InventoryItemRef wRef, InventoryItemRef cRef)
 : srcSE(pSE), weaponRef(wRef), chargeRef(cRef),modifier(1),
 em(cRef->GetAttribute(AttrEmDamage).get_float()),
 kinetic(cRef->GetAttribute(AttrKineticDamage).get_float()),
@@ -90,7 +90,7 @@ explosive(cRef->GetAttribute(AttrExplosiveDamage).get_float())
 }
 
 // No specific damage dealt here, just killed
-Damage::Damage(SystemEntity* pSE, bool fatal_blow/*false*/)
+Damage::Damage(SpaceEntity* pSE, bool fatal_blow/*false*/)
 : srcSE(pSE), em(0.0f),kinetic(0.0f),thermal(0.0f),explosive(0.0f),modifier(1),
 weaponRef(InventoryItemRef(nullptr)),
 chargeRef(InventoryItemRef(nullptr))
@@ -98,7 +98,7 @@ chargeRef(InventoryItemRef(nullptr))
     assert(fatal_blow and "Damage() fatal_blow called without 2nd param being true!");
 }
 
-bool SystemEntity::ApplyDamage(Damage &damage) {
+bool SpaceEntity::ApplyDamage(Damage &damage) {
     double profileStartTime = GetTimeUSeconds();
     if ((damage.GetTotal() < 0.0f) or (damage.GetModifier() < 0.1f)) {
         // no damage. exit early
@@ -351,8 +351,8 @@ bool SystemEntity::ApplyDamage(Damage &damage) {
 
         //TODO: find a way to determine if this entity has missiles out and update missile for dead launcher
         Killed(damage);  // this must NOT remove dead SE from system. (except base class)
-        if (!IsSystemEntity())
-            SystemEntity::Killed(damage); // this removes dead SE from system then deletes itemRef and all its contents
+        if (!IsSpaceEntity())
+            SpaceEntity::Killed(damage); // this removes dead SE from system then deletes itemRef and all its contents
     } else {
         /**
          * ALL dmg msgs working  22Apr15
@@ -436,7 +436,7 @@ void ShipSE::Killed(Damage &damage) {
      */
     uint32 killerID = 0, locationID = GetLocationID();
     Client* pClient(nullptr);
-    SystemEntity* killer(damage.srcSE);
+    SpaceEntity* killer(damage.srcSE);
 
     if (killer->HasPilot()) {
         pClient = killer->GetPilot();

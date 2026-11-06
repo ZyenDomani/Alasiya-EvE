@@ -20,7 +20,7 @@
 #include "inventory/InventoryItem.h"
 #include "pos/PosMgrDB.h"
 #include "system/SystemBubble.h"
-#include "system/SystemEntity.h"
+#include "system/SpaceEntity.h"
 
 // TODO: We may need to create StructureTypeData and StructureType classes just as Ship.h/Ship.cpp
 // has in order to load up type data specific to structures.  For now, the generic ItemType class is used.
@@ -49,8 +49,8 @@ public:
 
     PyObject *StructureGetInfo();
 
-    void SetMySE(SystemEntity* pSE)                     { mySE = pSE; }
-    SystemEntity* GetMySE()                             { return mySE; }
+    void SetMySE(SpaceEntity* pSE)                     { mySE = pSE; }
+    SpaceEntity* GetMySE()                             { return mySE; }
 
 
 protected:
@@ -78,7 +78,7 @@ protected:
     }
 
 private:
-    SystemEntity* mySE;
+    SpaceEntity* mySE;
 };
 
 
@@ -95,10 +95,10 @@ class BatterySE;
 class WeaponSE;
 
 /**
- * ObjectSystemEntity which represents structure object in space
+ * ObjectSpaceEntity which represents structure object in space
  */
 class StructureSE
-: public ObjectSystemEntity
+: public ObjectSpaceEntity
 {
 public:
     StructureSE(StructureItemRef structure, PyServiceMgr& services, SystemManager* system, const FactionData& data);
@@ -133,7 +133,7 @@ public:
     virtual bool                IsWeaponSE()            { return false; }
     virtual bool                IsReactorSE()           { return false; }
 
-    /* SystemEntity interface */
+    /* SpaceEntity interface */
     virtual void                Process();
     virtual void                EncodeDestiny(Buffer& into);
     virtual PyDict*             MakeSlimItem();

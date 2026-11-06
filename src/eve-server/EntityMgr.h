@@ -40,7 +40,7 @@ class ProbeSE;
 class PyTuple;
 class PyAddress;
 class PyServiceMgr;
-class SystemEntity;
+class SpaceEntity;
 class SystemManager;
 class TargetManager;
 class EVENotificationStream;
@@ -148,10 +148,10 @@ public:
 
     //testing target tics in <1hz
     // add SE* and their associated targMgr* to map
-    void AddTargMgr(SystemEntity* pSE, TargetManager* pTM)
+    void AddTargMgr(SpaceEntity* pSE, TargetManager* pTM)
                                                         { m_targMgrs.emplace(pSE, pTM); }
     // remove SE* and their associated targMgr* from map
-    void DeleteTargMgr(SystemEntity* pSE)               { m_targMgrs.erase(pSE); }
+    void DeleteTargMgr(SpaceEntity* pSE)               { m_targMgrs.erase(pSE); }
 
     // add ProbeSE* to map
     void AddProbe(uint32 probeID, ProbeSE* pSE)         { m_probes[probeID] = pSE; }
@@ -182,7 +182,7 @@ private:
     std::map<uint32, Agent*> m_agents;
 
     //testing target tics in <1hz
-    std::unordered_map<SystemEntity*, TargetManager*> m_targMgrs;
+    std::unordered_map<SpaceEntity*, TargetManager*> m_targMgrs;
     // also running scan probes at sub-hz tics
     std::map<uint32, ProbeSE*> m_probes;
 

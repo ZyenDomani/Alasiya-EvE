@@ -61,7 +61,7 @@ public:
     double GetCelestialRadius(uint32 itemID);
     static Vector3d GetSolarSystemPosition(uint32 systemID);
 
-    static bool LoadSystemStaticEntities(uint32 systemID, std::vector<DBSystemEntity>& into);
+    static bool LoadSystemStaticEntities(uint32 systemID, std::vector<DBSpaceEntity>& into);
     static bool LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDynamicEntity>& into);
     static bool LoadPlayerDynamicEntities(uint32 systemID, std::vector<DBSystemDynamicEntity>& into);
 };

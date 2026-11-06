@@ -15,7 +15,7 @@
 #include "StaticDataMgr.h"
 #include "../../eve-common/EVE_Scanning.h"
 #include "inventory/InventoryItem.h"
-#include "system/SystemEntity.h"
+#include "system/SpaceEntity.h"
 
 
 /**
@@ -63,12 +63,12 @@ protected:
 
 
 /**
- * DynamicSystemEntity which represents celestial object in space
+ * DynamicSpaceEntity which represents celestial object in space
  */
 class PyServiceMgr;
 class Scan;
 
-class ProbeSE : public DynamicSystemEntity {
+class ProbeSE : public DynamicSpaceEntity {
 public:
     // abandoned probe c'tor
     ProbeSE(ProbeItemRef self, PyServiceMgr& services, SystemManager* system);

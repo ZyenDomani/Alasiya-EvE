@@ -202,7 +202,7 @@ bool ModuleManager::IsSlotOccupied(EVEItemFlags flag)
     return (m_modules.find((uint8)flag)->second != nullptr);
 }
 
-void ModuleManager::RemoveTarget(SystemEntity* pSE) {
+void ModuleManager::RemoveTarget(SpaceEntity* pSE) {
     for (auto &cur : m_modules)
         if (cur.second != nullptr)
             cur.second->RemoveTarget(pSE);
@@ -707,7 +707,7 @@ void ModuleManager::Activate(int32 itemID, uint16 effectID, int32 targetID, int3
      */
 
     if (effectID == 2255) { // tractorBeamCan
-        SystemEntity* pSE = pShipItem->GetPilot()->SystemMgr()->GetSE(targetID);
+        SpaceEntity* pSE = pShipItem->GetPilot()->SystemMgr()->GetSE(targetID);
         if (pSE == nullptr)
             throw UserError("DeniedActivateTargetNotPresent");
         if (pSE->DestinyMgr()->IsTractored()) {

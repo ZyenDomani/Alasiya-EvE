@@ -15,7 +15,7 @@
 #include <unordered_map>
 
 #include "system/Asteroid.h"
-#include "system/SystemEntity.h"
+#include "system/SpaceEntity.h"
 #include "system/cosmicMgrs/ManagerDB.h"
 
 /*  this class will keep track of all asteroid belts in a system

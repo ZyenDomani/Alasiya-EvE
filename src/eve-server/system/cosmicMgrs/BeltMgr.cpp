@@ -244,7 +244,7 @@ struct CosmicSignature {
 
 bool BeltMgr::Create(CosmicSignature& sig, std::unordered_multimap<float, uint16>& roidTypes) {
     // register this as a belt.
-    SystemEntity* pSE = m_system->GetSE(sig.sigItemID);
+    SpaceEntity* pSE = m_system->GetSE(sig.sigItemID);
     if (pSE == nullptr)
         return false;
     pSE->SysBubble()->SetBelt(pSE->GetSelf());
@@ -261,7 +261,7 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>&
     if ((!IsCelestialID(beltID)) and (!anomaly))
         return;
 
-    SystemEntity* pSE = m_system->GetSE(beltID);
+    SpaceEntity* pSE = m_system->GetSE(beltID);
     if (pSE == nullptr)
         return;
 

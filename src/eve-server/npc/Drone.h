@@ -29,10 +29,10 @@
 
 #include "Client.h"
 #include "npc/DroneAI.h"
-#include "system/SystemEntity.h"
+#include "system/SpaceEntity.h"
 
 /**
- * ObjectSystemEntity which represents drone object in space
+ * ObjectSpaceEntity which represents drone object in space
  */
 
 class PyServiceMgr;
@@ -43,7 +43,7 @@ class NPCAIMgr;
 class Damage;
 
 class DroneSE
-: public ObjectSystemEntity
+: public ObjectSpaceEntity
 {
 public:
   friend DroneAIMgr;
@@ -56,7 +56,7 @@ public:
     virtual bool        IsDroneSE()                     { return true; }
     // this will initialize abandoned or offline drones during system load and launched drones into existing system
     virtual void        Init();
-    /* SystemEntity interface */
+    /* SpaceEntity interface */
     virtual void        Process();
     virtual void        EncodeDestiny(Buffer &into);
     virtual void        MakeDamageState(DoDestinyDamageState &into);
@@ -67,24 +67,24 @@ public:
     virtual void        Abandon();     // reset all owner info and bubblecast new data
     virtual const Vector3d& GetVelocity()                { return m_AI->GetVelocity(); }
     // our ship has added a new target
-    virtual void   TargetAdded(SystemEntity* pTargetSE);
+    virtual void   TargetAdded(SpaceEntity* pTargetSE);
     // this is call to inform us of yellowbox
-    virtual void   TargetedAdd(SystemEntity* pSourceSE) { m_AI->Targeted(pSourceSE); }
+    virtual void   TargetedAdd(SpaceEntity* pSourceSE) { m_AI->Targeted(pSourceSE); }
     // check mode to determine next action
-    virtual void    TargetLost(SystemEntity* pTargetSE) { m_AI->TargetLost(pTargetSE); }
+    virtual void    TargetLost(SpaceEntity* pTargetSE) { m_AI->TargetLost(pTargetSE); }
     // pass - dont care if we were unlocked
-    virtual void  TargetedLost(SystemEntity* pSourceSE) { /* do nothing here */ }
+    virtual void  TargetedLost(SpaceEntity* pSourceSE) { /* do nothing here */ }
 
     /* for advanced AI communication */
-    virtual void  ShipAttacked(SystemEntity* pSourceSE) { m_AI->ShipAttacked(pSourceSE); }
-    virtual void ShipTakingDamage(SystemEntity* pSourceSE) { m_AI->ShipTakingDamage(pSourceSE); }
+    virtual void  ShipAttacked(SpaceEntity* pSourceSE) { m_AI->ShipAttacked(pSourceSE); }
+    virtual void ShipTakingDamage(SpaceEntity* pSourceSE) { m_AI->ShipTakingDamage(pSourceSE); }
     // tell AI a missile has been launched at us.  allows defender missile code (for drone??  probably not)
     virtual void     MissileLaunched(Missile* pMissile) { /* m_AI->ShipAttacked(pMissile); */ }
-    virtual void        ReportDamage(uint8 type=0, SystemEntity* pSourceSE=nullptr)
+    virtual void        ReportDamage(uint8 type=0, SpaceEntity* pSourceSE=nullptr)
                                                         { /* m_AI->ShipAttacked(type); */ }
 
     // tell AI it's target has been destroyed.
-    void       TargetDestroyed(SystemEntity* pTargetSE) { m_AI->TargetDestroyed(pTargetSE); }
+    void       TargetDestroyed(SpaceEntity* pTargetSE) { m_AI->TargetDestroyed(pTargetSE); }
     // player command
     void                SetAutoAttack(bool set=false);
 
@@ -143,15 +143,15 @@ public:
      * check all possibilities...when first combo check passes, allow action.
      *   if any checks fail, return first error (unknown command)
      */
-    void                Engage(SystemEntity* pTargetSE, PyDict* dict=nullptr);
-    void                Assist(SystemEntity* pTargetSE, PyDict* dict);  // this is for assisting another pilot
-    void                Guard(SystemEntity* pTargetSE, PyDict* dict);   // this is for guarding another pilot
-    void                Delegate(SystemEntity* pShipSE, PyDict* dict);// this is to give control to another pilot
-    void                Mine(SystemEntity* pTargetSE, PyDict* dict, bool repeat=false); // should i explain?
+    void                Engage(SpaceEntity* pTargetSE, PyDict* dict=nullptr);
+    void                Assist(SpaceEntity* pTargetSE, PyDict* dict);  // this is for assisting another pilot
+    void                Guard(SpaceEntity* pTargetSE, PyDict* dict);   // this is for guarding another pilot
+    void                Delegate(SpaceEntity* pShipSE, PyDict* dict);// this is to give control to another pilot
+    void                Mine(SpaceEntity* pTargetSE, PyDict* dict, bool repeat=false); // should i explain?
 
     /* helper methods */
     bool                InControlDistance();            // returns true if drone within control distance
-    bool                CheckTarget( SystemEntity* pTargetSE, PyDict* dict ); // run generic target checks against drone type for verification
+    bool                CheckTarget( SpaceEntity* pTargetSE, PyDict* dict ); // run generic target checks against drone type for verification
     bool                CheckCommand(PyDict* dict);     // runs multiple checks and will return on error
     void                ChargeShield();                 // shield recharging while in space
     float               CalculateRechargeRate(float Capacity, float RechargeTimeMS, float Current);

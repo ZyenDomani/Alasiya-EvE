@@ -29,7 +29,7 @@
 
 #include "EVEServerConfig.h"
 #include "StaticDataMgr.h"
-#include "system/SystemEntity.h"
+#include "system/SpaceEntity.h"
 #include "system/cosmicMgrs/ManagerDB.h"
 
 
@@ -75,10 +75,10 @@ private:
 
 
 /**
- * ObjectSystemEntity which represents asteroid object in space
+ * ObjectSpaceEntity which represents asteroid object in space
  */
 class AsteroidSE
-: public ObjectSystemEntity
+: public ObjectSpaceEntity
 {
 public:
     AsteroidSE(InventoryItemRef self, PyServiceMgr &services, SystemManager *system);
@@ -90,7 +90,7 @@ public:
     /* class type tests. */
     virtual bool                IsAsteroidSE()          { return true; }
 
-    /* SystemEntity interface */
+    /* SpaceEntity interface */
     virtual void                Delete();
     virtual void                Process();
     virtual void                Killed(Damage &damage);

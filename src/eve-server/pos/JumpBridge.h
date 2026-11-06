@@ -29,7 +29,7 @@ public:
     /* class type tests. */
     virtual bool                IsJumpBridgeSE()        { return true; }
 
-    /* SystemEntity interface */
+    /* SpaceEntity interface */
     virtual void                Process();
     virtual PyDict*             MakeSlimItem();
     virtual void                SetOnline();

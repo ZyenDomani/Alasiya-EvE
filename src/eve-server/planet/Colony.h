@@ -32,12 +32,12 @@
 #include "planet/PlanetDB.h"
 
 class PlanetSE;
-class SystemEntity;
+class SpaceEntity;
 class PlanetMgr;
 
 class Colony {
 public:
-    Colony(PyServiceMgr* mgr, Client* pClient, SystemEntity* pSE);
+    Colony(PyServiceMgr* mgr, Client* pClient, SpaceEntity* pSE);
     Colony(Colony&&) =delete;
     Colony(const Colony&) =delete;
     Colony& operator=(Colony&&) =delete;

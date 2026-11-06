@@ -30,7 +30,7 @@
 
 #include "npc/NPCAI.h"
 #include "system/cosmicMgrs/SpawnMgr.h"
-#include "system/SystemEntity.h"
+#include "system/SpaceEntity.h"
 
 class PyServiceMgr;
 class DestinyManager;
@@ -40,7 +40,7 @@ class NPCSquad;
 class SystemManager;
 
 class NPC
-: public DynamicSystemEntity
+: public DynamicSpaceEntity
 {
 public:
     NPC(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, const FactionData& data, SpawnMgr* spawnMgr = nullptr);
@@ -52,7 +52,7 @@ public:
     /* class type tests. */
     virtual bool        IsNPCSE()                       { return true; }
 
-    /* SystemEntity interface */
+    /* SpaceEntity interface */
     virtual void        Process();
     virtual void        EncodeDestiny(Buffer& into);
 
@@ -61,15 +61,15 @@ public:
     virtual bool        Load();  // sets npc resists and inits destiny vars
 
     /* virtual functions for npc/drone AI and player reporting */
-    virtual void        ReportDamage(uint8 type=0, SystemEntity* pSourceSE=nullptr)
+    virtual void        ReportDamage(uint8 type=0, SpaceEntity* pSourceSE=nullptr)
                                                         { m_AI->ReportDamage(type, pSourceSE); }
     // tell AI a missile has been launched at us.  allows defender missile code
     virtual void     MissileLaunched(Missile* pMissile) { m_AI->MissileLaunched(pMissile); }
-    virtual void    TargetLost(SystemEntity* pTargetSE) { m_AI->TargetLost(pTargetSE); }
-    virtual void   TargetAdded(SystemEntity* pTargetSE) { /* do nothing here */ }
+    virtual void    TargetLost(SpaceEntity* pTargetSE) { m_AI->TargetLost(pTargetSE); }
+    virtual void   TargetAdded(SpaceEntity* pTargetSE) { /* do nothing here */ }
     // this is call to inform us of yellowbox
-    virtual void   TargetedAdd(SystemEntity* pTargetSE) { m_AI->Targeted(pTargetSE); }
-    virtual void  TargetedLost(SystemEntity* pTargetSE) { /* do nothing here */ }
+    virtual void   TargetedAdd(SpaceEntity* pTargetSE) { m_AI->Targeted(pTargetSE); }
+    virtual void  TargetedLost(SpaceEntity* pTargetSE) { /* do nothing here */ }
 
 
     /* specific functions handled here. */
@@ -79,7 +79,7 @@ public:
     void                SetResists();
     void                UseArmorRepairer();
     void                UseShieldRecharge();
-    void                Orbit(SystemEntity* pTargetSE);
+    void                Orbit(SpaceEntity* pTargetSE);
     void            ForceSetSpawner(SpawnMgr* spawnMgr) { m_spawnMgr = spawnMgr; }
 
     float               GetThermal()                    { return m_self->GetAttribute(AttrThermalDamage).get_float(); }
@@ -144,8 +144,8 @@ public:
     void                OnAllMembersArrived();
 
     // The Master Focus-Fire Hook
-    SystemEntity*       GetSquadTarget()                { return m_squadTarget; }
-    void                SetSquadTarget(SystemEntity* pTarget)
+    SpaceEntity*       GetSquadTarget()                { return m_squadTarget; }
+    void                SetSquadTarget(SpaceEntity* pTarget)
                                                         { m_squadTarget = pTarget; }
 
     uint16              GetID()                         { return m_squadID; }
@@ -165,7 +165,7 @@ private:
     uint8               m_formationID;
     float               m_spacing;
     NPC*                m_squadLeader;
-    SystemEntity*       m_squadTarget;
+    SpaceEntity*       m_squadTarget;
     std::vector<NPC*>   m_members;     // Safe transient references to active grid rats
 };
 

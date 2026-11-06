@@ -29,7 +29,7 @@ public:
     /* class type tests. */
     virtual bool                IsWeaponSE()            { return true; }
 
-    /* SystemEntity interface */
+    /* SpaceEntity interface */
     virtual void                Process();
 
     /* virtual functions default to base class and overridden as needed */

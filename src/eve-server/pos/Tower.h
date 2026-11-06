@@ -30,7 +30,7 @@ public:
     /* class type tests. */
     virtual bool                IsTowerSE()             { return true; }
 
-    /* SystemEntity interface */
+    /* SpaceEntity interface */
     virtual void                Process();
     virtual PyDict*             MakeSlimItem();
 
@@ -118,7 +118,7 @@ public:
 protected:
     EVEPOS::TowerData m_tdata;
 
-    SystemEntity* m_pShieldSE;
+    SpaceEntity* m_pShieldSE;
     //POS_AI* m_ai;
 
 private:

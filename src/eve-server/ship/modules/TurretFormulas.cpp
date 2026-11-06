@@ -23,7 +23,7 @@
 #include "ship/modules/TurretModule.h"
 
 
-float TurretFormulas::GetToHit(ShipItemRef shipRef, TurretModule* pMod, SystemEntity* pTarget) {
+float TurretFormulas::GetToHit(ShipItemRef shipRef, TurretModule* pMod, SpaceEntity* pTarget) {
     if (pTarget == nullptr)
         return 0;
 
@@ -82,7 +82,7 @@ float TurretFormulas::GetToHit(ShipItemRef shipRef, TurretModule* pMod, SystemEn
     return 0.0f;
 }
 
-float TurretFormulas::GetNPCToHit(NPC* pNPC, SystemEntity* pTarget) {
+float TurretFormulas::GetNPCToHit(NPC* pNPC, SpaceEntity* pTarget) {
     if (pTarget == nullptr)
         return 0;
 
@@ -144,7 +144,7 @@ float TurretFormulas::GetNPCToHit(NPC* pNPC, SystemEntity* pTarget) {
     return 0.0f;
 }
 
-float TurretFormulas::GetDroneToHit(DroneSE* pDrone, SystemEntity* pTarget) {
+float TurretFormulas::GetDroneToHit(DroneSE* pDrone, SpaceEntity* pTarget) {
     if (pTarget == nullptr)
         return 0;
     InventoryItemRef dRef = pDrone->GetSelf();
@@ -168,7 +168,7 @@ float TurretFormulas::GetDroneToHit(DroneSE* pDrone, SystemEntity* pTarget) {
     return 0.1f;
 }
 
-float TurretFormulas::GetSentryToHit(Sentry* pSentry, SystemEntity* pTarget) {
+float TurretFormulas::GetSentryToHit(Sentry* pSentry, SpaceEntity* pTarget) {
     if (pTarget == nullptr)
         return 0;
     double sigRes = pSentry->GetSelf()->GetAttribute(AttrOptimalSigRadius).get_double();

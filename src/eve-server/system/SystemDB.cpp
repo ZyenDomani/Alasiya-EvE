@@ -120,7 +120,7 @@ Vector3d SystemDB::GetSolarSystemPosition(uint32 systemID) {
     return point;
 }
 
-bool SystemDB::LoadSystemStaticEntities(uint32 systemID, std::vector<DBSystemEntity>& into) {
+bool SystemDB::LoadSystemStaticEntities(uint32 systemID, std::vector<DBSpaceEntity>& into) {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         "SELECT itemID,typeID,groupID,radius"
@@ -135,7 +135,7 @@ bool SystemDB::LoadSystemStaticEntities(uint32 systemID, std::vector<DBSystemEnt
 
     DBResultRow row;
     while(res.GetRow(row)) {
-        DBSystemEntity entry = DBSystemEntity();
+        DBSpaceEntity entry = DBSpaceEntity();
         entry.itemID    = row.GetUInt(0);
         entry.typeID    = row.GetInt(1);
         entry.groupID   = row.GetInt(2);

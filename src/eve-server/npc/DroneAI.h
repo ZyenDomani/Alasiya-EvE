@@ -55,7 +55,7 @@ namespace DroneAI {
 }
 
 class DroneSE;
-class SystemEntity;
+class SpaceEntity;
 class Timer;
 
 class DroneAIMgr {
@@ -83,8 +83,8 @@ public:
      */
     void                Process();
 
-    SystemEntity*       GetTargetSE();
-    SystemEntity*       GetAssignedShipSE()             { return shipSE; }
+    SpaceEntity*       GetTargetSE();
+    SpaceEntity*       GetAssignedShipSE()             { return shipSE; }
 
     uint32              GetTargetID();
     uint32              GetControllerID()               { return shipSE->GetID(); }
@@ -97,12 +97,12 @@ public:
     bool                IsIdle();
     void                SetIdle();                      // clears targets and timers then sets state and action to idle
 
-    void                Target(SystemEntity* pTargetSE);
-    void                Targeted(SystemEntity* pTargetSE);
-    void                TargetLost(SystemEntity* pTargetSE);
+    void                Target(SpaceEntity* pTargetSE);
+    void                Targeted(SpaceEntity* pTargetSE);
+    void                TargetLost(SpaceEntity* pTargetSE);
 
     // to assign drones to same target.  called by drone
-    void                FocusFire(DroneSE* pFromSE, SystemEntity* pTargetSE);
+    void                FocusFire(DroneSE* pFromSE, SpaceEntity* pTargetSE);
 
     void                ClearTargets();                 // clear our targets and set repeat=false
     void                ClearAllTargets();              // clear all targets and set repeat=false
@@ -124,20 +124,20 @@ public:
 
     /* for advanced AI communication */
     // our assigned ship has acquired a new target
-    void                ShipAddedTarget(SystemEntity* pTargetSE);
+    void                ShipAddedTarget(SpaceEntity* pTargetSE);
     // our assigned ship has been yellowboxed
-    void                ShipAttacked(SystemEntity* pSourceSE)   { /* not implemented */ }
+    void                ShipAttacked(SpaceEntity* pSourceSE)   { /* not implemented */ }
     // source has completed target lock on our assigned ship
-    void                ShipTargeted(SystemEntity* pSourceSE);
+    void                ShipTargeted(SpaceEntity* pSourceSE);
     // our assigned ship is taking damage
-    void                ShipTakingDamage(SystemEntity* pSourceSE)  { /* not implemented */ }
+    void                ShipTakingDamage(SpaceEntity* pSourceSE)  { /* not implemented */ }
     // our assigned ship has been attacked
     void                MissileLaunched(Missile* pMissile);
     // our assigned ship has has lost (0=none, 1=shields, 2=armor)
-    void                ReportDamage(uint8 type=0, SystemEntity* pSourceSE=nullptr);
-    void                TargetDestroyed(SystemEntity* pTargetSE);
+    void                ReportDamage(uint8 type=0, SpaceEntity* pSourceSE=nullptr);
+    void                TargetDestroyed(SpaceEntity* pTargetSE);
     // for assisting.  offensive module activated on target
-    void                ModuleActivated(SystemEntity* pTargetSE);
+    void                ModuleActivated(SpaceEntity* pTargetSE);
 
     // this is public to allow deletion from DroneSE object
     InventoryItemRef    m_ore;                          //ore from mining
@@ -158,19 +158,19 @@ protected:
     bool                ValidTarget();
 
     // checks if target is within m_proximityDistance to react
-    bool                InProxmityDistance(SystemEntity* pTargetSE);      // mutable 2 - 4
+    bool                InProxmityDistance(SpaceEntity* pTargetSE);      // mutable 2 - 4
     // checks if target is within <config.interactdist> to interact with target
-    bool                InActionDistance(SystemEntity* pTargetSE);        // ~600m
+    bool                InActionDistance(SpaceEntity* pTargetSE);        // ~600m
     // checks if target is within m_orbitRange to orbit target
-    bool                InOrbitDistance(SystemEntity* pTargetSE);         // near - range 1
+    bool                InOrbitDistance(SpaceEntity* pTargetSE);         // near - range 1
     // checks if target is within m_falloffRange to move closer to target
-    bool                InFalloffDistance(SystemEntity* pTargetSE);        // close - range 2
+    bool                InFalloffDistance(SpaceEntity* pTargetSE);        // close - range 2
     // checks if target is within m_engageDistance to engage with target
-    bool                InEngageDistance(SystemEntity* pTargetSE);        // mid - range 3
+    bool                InEngageDistance(SpaceEntity* pTargetSE);        // mid - range 3
     // checks if target is within m_chaseRange to chase target
-    bool                InChaseDistance(SystemEntity* pTargetSE);         // far - range 4
+    bool                InChaseDistance(SpaceEntity* pTargetSE);         // far - range 4
     // checks if target is within m_maxRange of target
-    bool                InMaxDistance(SystemEntity* pTargetSE);           // distant - range 5
+    bool                InMaxDistance(SpaceEntity* pTargetSE);           // distant - range 5
 
     const char*         GetStateName(int8 stateID);
     const char*         GetActionName(int8 stateID);
@@ -195,14 +195,14 @@ protected:
     void                MarkPoint(const Vector3d& position);
 
     // this is for tracking position changes from moving target
-    void                MoveDrone(SystemEntity* pTarget); // where drone remains in set orbit around moving target
+    void                MoveDrone(SpaceEntity* pTarget); // where drone remains in set orbit around moving target
     // this is for tracking position changes from moving drone
     void                UpdatePosition(bool update=false); // where drone velocity changes
 
 
 private:
-    SystemEntity*       targSE;
-    SystemEntity*       fTargSE;                        // FocusFire target (for later)
+    SpaceEntity*       targSE;
+    SpaceEntity*       fTargSE;                        // FocusFire target (for later)
     DroneSE*            mySE;
     ShipSE*             shipSE;
 

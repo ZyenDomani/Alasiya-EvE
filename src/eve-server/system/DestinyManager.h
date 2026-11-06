@@ -89,7 +89,7 @@ class PyList;
 class PyTuple;
 class ShipSE;
 class SystemBubble;
-class SystemEntity;
+class SpaceEntity;
 class SystemManager;
 
 
@@ -97,7 +97,7 @@ class SystemManager;
 
 class DestinyManager {
 public:
-    DestinyManager(SystemEntity* self);
+    DestinyManager(SpaceEntity* self);
     ~DestinyManager();
     DestinyManager(const DestinyManager&) =delete;
     DestinyManager& operator=(const DestinyManager&) =delete;
@@ -112,7 +112,7 @@ public:
     double GetSpeed()                                   { return m_shipVelocity.Length(); }
     int32 GetWarpSpeed()                                { return static_cast<int32>(m_shipWarpSpeed * 10); }
     uint32 GetTargetID()                                { return m_targetEntity.first; }
-    SystemEntity* GetTargetEntity()                     { return m_targetEntity.second; }
+    SpaceEntity* GetTargetEntity()                     { return m_targetEntity.second; }
     Vector3d GetTargetPoint()                           { return m_targetPoint; }
     // this is distance from where we are to where we want to be
     double GetTargetDistance()                          { return static_cast<double>(m_targetDistance); }
@@ -151,26 +151,26 @@ public:
     void Stop();
     void Halt(bool commanded=false);			// puts entity at 0 velocity
     void Eject();								// avoid numerous other redirect calls
-    void EntityRemoved(SystemEntity* pSE);
+    void EntityRemoved(SpaceEntity* pSE);
     void SetCloak(bool set=false)                       { m_cloaked = set; }
     void SkipTic(bool set=true)                         { m_skipTic = set; }
     void SetAutoPilot(bool set=false)                   { m_autoPilot = set; }
 
     /* Local Movement */
-    void OrbitBall(SystemEntity* pSE, uint32 distance=0);
-    void FollowBall(SystemEntity* pSE, int32 distance=0);
-    void ApproachBall(SystemEntity* pSE);
-    void AlignTo(SystemEntity* pSE);
+    void OrbitBall(SpaceEntity* pSE, uint32 distance=0);
+    void FollowBall(SpaceEntity* pSE, int32 distance=0);
+    void ApproachBall(SpaceEntity* pSE);
+    void AlignTo(SpaceEntity* pSE);
     void GotoPoint(const Vector3d &point);
     void GotoDirection(const Vector3d &direction);
     void SetSpeedFraction(float fraction=1.0f);
 
     /* TractorBeam */
     void TractorBeamStop();
-    void TractorBeamStart(SystemEntity* pSE, EvilNumber speed);
+    void TractorBeamStart(SpaceEntity* pSE, EvilNumber speed);
 
     /* Larger movement */
-    void WarpTo( const Vector3d& destPoint, int32 distance = 0, bool autoPilot = false, SystemEntity* pSE = nullptr );
+    void WarpTo( const Vector3d& destPoint, int32 distance = 0, bool autoPilot = false, SpaceEntity* pSE = nullptr );
 
     /* special */
     void ApplyVortexGravityTug(ShipSE* pShipSE, Vector3d vortexCenterAxis);
@@ -255,10 +255,10 @@ protected:
     Vector3d m_shipVelocity;            //current ship velocity
     Vector3d m_targetHeading;           //direction to current target
     Vector3d m_targetVelocity;          //desired ship velocity
-    std::pair<uint32, SystemEntity*> m_targetEntity;   //we do not own the SystemEntity*
+    std::pair<uint32, SpaceEntity*> m_targetEntity;   //we do not own the SpaceEntity*
 
 private:
-    SystemEntity* const mySE;           //we do not own this.
+    SpaceEntity* const mySE;           //we do not own this.
     SystemBubble* m_targBubble;         //we do not own this.
 
     bool m_moveDelay;                   // his is to try to sync destiny with client, as client has a delay when changing destiny states.
@@ -278,14 +278,14 @@ private:
     void CalculateFormationPoint();
     void GotoVelocity();
     void OrbitVelocity();
-    Vector3d RotateVectorByEntityOrientation(const Vector3d& localVec, SystemEntity* leader);
+    Vector3d RotateVectorByEntityOrientation(const Vector3d& localVec, SpaceEntity* leader);
 
     // these will eventually be commands....
     void CreateShipMarker();
     void RemoveAllMarkers();
     void RemoveShipMarkers();
     void MarkPoint(const Vector3d& position, std::string& name, std::string& desc, bool orbit=false);
-    std::map<uint32, SystemEntity*> m_shipMarkers;           // ship position marker cans.  we do own these.
+    std::map<uint32, SpaceEntity*> m_shipMarkers;           // ship position marker cans.  we do own these.
 
     void SetAgilityInertia();
 

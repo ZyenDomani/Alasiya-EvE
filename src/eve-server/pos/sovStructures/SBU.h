@@ -28,7 +28,7 @@ public:
     /* class type tests. */
     virtual bool                IsSBUSE()               { return true; }
 
-    /* SystemEntity interface */
+    /* SpaceEntity interface */
     virtual void                Process();
     virtual void                SetOnline();
     virtual void                SetOffline();

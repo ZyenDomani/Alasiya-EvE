@@ -124,7 +124,7 @@ void SentryAI::Process() {
                 SetIdle();
                 return;
             }
-            SystemEntity* pTarget = m_npc->TargetMgr()->GetFirstTarget(false);
+            SpaceEntity* pTarget = m_npc->TargetMgr()->GetFirstTarget(false);
             if (pTarget == nullptr) {
                 _log(NPC__AI_TRACE, "%s(%u): Stopped %s, GetFirstTarget() returned NULL.", m_npc->GetName(), m_npc->GetID(), GetStateName(m_state).c_str());
                 SetIdle();
@@ -155,7 +155,7 @@ void SentryAI::SetIdle() {
     m_warpScramblerTimer.Disable();
 }
 
-void SentryAI::SetEngaged(SystemEntity* pTarget) {
+void SentryAI::SetEngaged(SpaceEntity* pTarget) {
     if (m_state == State::Engaged)
         return;
     _log(NPC__AI_TRACE, "%s(%u): Engaged: Begin engaging.  Target is %s(%u).", \
@@ -164,7 +164,7 @@ void SentryAI::SetEngaged(SystemEntity* pTarget) {
     m_state = State::Engaged;
 }
 
-void SentryAI::SetSignaling(SystemEntity* pTarget) {
+void SentryAI::SetSignaling(SpaceEntity* pTarget) {
     if (m_state == State::Signaling)
         return;
     _log(NPC__AI_TRACE, "%s(%u): Signaling: Begin signaling.  Target is %s(%u).", \
@@ -173,7 +173,7 @@ void SentryAI::SetSignaling(SystemEntity* pTarget) {
     m_state = State::Signaling;
 }
 
-void SentryAI::CheckDistance(SystemEntity* pTarget)
+void SentryAI::CheckDistance(SpaceEntity* pTarget)
 {
     Vector3d delta = pTarget->GetPosition() - m_npc->GetPosition();
     double dist = delta.Length();
@@ -197,7 +197,7 @@ void SentryAI::CheckDistance(SystemEntity* pTarget)
     Attack(pTarget);
 }
 
-void SentryAI::ClearTarget(SystemEntity* pTarget) {
+void SentryAI::ClearTarget(SpaceEntity* pTarget) {
     m_npc->TargetMgr()->ClearTarget(pTarget);
     //m_npc->TargetMgr()->OnTarget(pTarget, TargMgr::Mode::Lost);
 
@@ -210,7 +210,7 @@ void SentryAI::ClearAllTargets() {
     //m_npc->TargetMgr()->OnTarget(nullptr, TargMgr::Mode::Clear, TargMgr::Msg::ClientReq);
 }
 
-void SentryAI::Target(SystemEntity* pTarget) {
+void SentryAI::Target(SpaceEntity* pTarget) {
     double targetTime = GetTargetTime();
     bool chase = false;
 
@@ -226,7 +226,7 @@ void SentryAI::Target(SystemEntity* pTarget) {
     CheckDistance(pTarget);
 }
 
-void SentryAI::Targeted(SystemEntity* pAgressor) {
+void SentryAI::Targeted(SpaceEntity* pAgressor) {
     double targetTime = GetTargetTime();
     switch(m_state) {
         case State::Idle: {
@@ -255,7 +255,7 @@ void SentryAI::Targeted(SystemEntity* pAgressor) {
     }
 }
 
-void SentryAI::TargetLost(SystemEntity* pTarget) {
+void SentryAI::TargetLost(SpaceEntity* pTarget) {
     if (m_state == State::Engaged) {
         if (m_npc->TargetMgr()->HasNoTargets()) {
             _log(NPC__AI_TRACE, "%s(%u): Target %s(%u) lost. No targets remain.  Return to Idle.", \
@@ -269,7 +269,7 @@ void SentryAI::TargetLost(SystemEntity* pTarget) {
     }
 }
 
-void SentryAI::Attack(SystemEntity* pTarget)
+void SentryAI::Attack(SpaceEntity* pTarget)
 {
     if (m_mainAttackTimer.Check()) {
         if (pTarget == nullptr)
@@ -302,7 +302,7 @@ void SentryAI::Attack(SystemEntity* pTarget)
 //also check for special effects and write code to implement them
 //modifyTargetSpeedRange, modifyTargetSpeedChance
 //entityWarpScrambleChance
-void SentryAI::AttackTarget(SystemEntity* pTarget) {
+void SentryAI::AttackTarget(SpaceEntity* pTarget) {
     // some npcs use missiles.....write code for using missiles   -- entityMissileTypeID
     std::string guid = "effects.Laser";
     // sentry does NOT have a destiny manager...use target's destiny manager for sending fx

@@ -34,7 +34,7 @@
 #include "station/StationDataMgr.h"
 #include "system/Container.h"
 #include "system/DestinyManager.h"
-#include "system/SystemEntity.h"
+#include "system/SpaceEntity.h"
 #include "system/SystemManager.h"
 
 /*
@@ -291,7 +291,7 @@ CargoContainerRef StationItem::GetContainerFromInventory(uint32 contID)
  * Station Entity
  */
 StationSE::StationSE(StationItemRef station, PyServiceMgr &services, SystemManager* system)
-: StaticSystemEntity(station, services, system)
+: StaticSpaceEntity(station, services, system)
 {
     // Create default dynamic attributes in the AttributeMgr:
     station->SetAttribute(AttrOnline,             EvilOne, false);

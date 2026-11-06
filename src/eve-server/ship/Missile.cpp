@@ -38,8 +38,8 @@
 #include "ship/modules/GenericModule.h"
 #include "system/Damage.h"
 
-Missile::Missile( InventoryItemRef self, PyServiceMgr& services, SystemManager* pSystem, InventoryItemRef modRef, SystemEntity* tSE, SystemEntity* pSE, GenericModule* pMod)
-: DynamicSystemEntity(self, services, pSystem),
+Missile::Missile( InventoryItemRef self, PyServiceMgr& services, SystemManager* pSystem, InventoryItemRef modRef, SpaceEntity* tSE, SpaceEntity* pSE, GenericModule* pMod)
+: DynamicSpaceEntity(self, services, pSystem),
   m_targetSE(tSE),
   m_fromSE(pSE),
   m_modRef(modRef),
@@ -156,7 +156,7 @@ void Missile::Process() {
     double profileStartTime = GetTimeUSeconds();
 
     /*   Base call to Process Movement  */
-    SystemEntity::Process();
+    SpaceEntity::Process();
 
     //TODO:  this is never set?!?!?
     if (m_hitTimer.Check(false)) {
@@ -294,5 +294,5 @@ void Missile::Delete() {
     if (m_alive)
         return;
     // do we need to do anything else here?
-    SystemEntity::Delete();
+    SpaceEntity::Delete();
 }

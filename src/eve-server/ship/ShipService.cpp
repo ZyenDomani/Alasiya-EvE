@@ -234,7 +234,7 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
      */
     //256625, 'label': u'NoEjectingToSpaceInStationBody'}(u"You can't eject into space while you're docked. Try leaving your ship the usual way.", None, None)
 
-    SystemEntity* pShipSE = pClient->GetShipSE();
+    SpaceEntity* pShipSE = pClient->GetShipSE();
     if (pShipSE == nullptr)
         throw CustomError("Invalid Ship.");
     /** @todo  check for active cyno (when we implement it...) and other things that affect eject */
@@ -517,7 +517,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
 
                 if (entity.groupID == EVEDB::invGroups::Orbital_Infrastructure)
                     entity.planetID = pSysMgr->GetClosestPlanetID(location);
-                SystemEntity* pSE = sEntityFactory.BuildEntity(*pSysMgr, entity);
+                SpaceEntity* pSE = sEntityFactory.BuildEntity(*pSysMgr, entity);
                 if (pSE == nullptr) {
                     //couldnt create entity.  move item back to orig location and continue
                     iRef->Donate(pClient->GetCharacterID(), pShip->itemID(), flagCargoHold);
@@ -582,7 +582,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
                         }
 
                         // Check if there is already an SBU on this stargate
-                        SystemEntity* pSE = pSysMgr->GetClosestGateSE(pClient->GetShipSE()->GetPosition());
+                        SpaceEntity* pSE = pSysMgr->GetClosestGateSE(pClient->GetShipSE()->GetPosition());
                         if (pSE->GetGateSE()->HasSBU()) {
                             pClient->SendErrorMsg("There is already a Sovereignty Blockade Unit on this stargate.  Aborting Drop.");
                             return nullptr;
@@ -658,7 +658,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
 
                 entity.position = iRef->position();
 
-                SystemEntity* pSE = sEntityFactory.BuildEntity(*pSysMgr, entity);
+                SpaceEntity* pSE = sEntityFactory.BuildEntity(*pSysMgr, entity);
                 if (pSE == nullptr) {
                     //couldnt create entity.  move item back to orig location and continue
                     iRef->Donate(pClient->GetCharacterID(), pShip->itemID(), flagCargoHold);
@@ -718,7 +718,7 @@ PyResult ShipBound::Handle_Scoop(PyCallArgs &call) {
         codelog(CLIENT__ERROR, "%s: Client has no system manager.", pClient->GetName());
         return PyStatic.mtDict();
     }
-    SystemEntity* pSE = pSysMgr->GetSE(arg.arg);
+    SpaceEntity* pSE = pSysMgr->GetSE(arg.arg);
     if (pSE == nullptr) {
         _log(SERVICE__ERROR, "%s: Unable to find object %u to scoop.", pClient->GetName(), arg.arg);
 
@@ -782,7 +782,7 @@ PyResult ShipBound::Handle_ScoopDrone(PyCallArgs &call) {
 
     PyDict* errorDict = new PyDict();
     Client* pClient = call.client;
-    SystemEntity* pDroneSE(nullptr);
+    SpaceEntity* pDroneSE(nullptr);
     InventoryItemRef iRef(nullptr);
     SystemManager* pSysMgr(pClient->SystemMgr());
     //PyList* droneList = call.tuple->AsTuple()->GetItem(0)->AsList();
@@ -850,7 +850,7 @@ void ShipBound::CheckScoop(SystemManager* sysMgr, PyList* itemList, PyDict* erro
      */
 
     uint32 itemID = 0;
-    SystemEntity* pSE = nullptr;
+    SpaceEntity* pSE = nullptr;
     InventoryItemRef iRef(nullptr);
     PyList::const_iterator itr = itemList->begin();
     while (itr != itemList->end()) {
@@ -1387,7 +1387,7 @@ PyResult ShipBound::Handle_SelfDestruct(PyCallArgs &call) {
                     [PyInt 4]
                     [PyInt 24700]
     ***********  not sure how to kill ship  *************
-    Damage fatal_blow((static_cast<SystemEntity*>(who)),true);
+    Damage fatal_blow((static_cast<SpaceEntity*>(who)),true);
     entity->Killed(fatal_blow);
     *************  cancel destruct  *****************
     [PyTuple 3 items]

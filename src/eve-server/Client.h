@@ -39,7 +39,7 @@
 #include "packets/LSCPkts.h"
 #include "ship/Ship.h"
 #include "ship/modules/ModuleManager.h"
-#include "system/SystemEntity.h"
+#include "system/SpaceEntity.h"
 
 #include "../eve-common/EVE_Missions.h"
 #include "../eve-common/EVE_Player.h"
@@ -359,7 +359,7 @@ protected:
     void ExecuteWormholeJump();
     void DestroyShipSE();
 
-    //void _AwardBounty(SystemEntity *who);
+    //void _AwardBounty(SpaceEntity *who);
 
     bool m_afk;             // for map info (pilots docked and active)
     bool m_invul;

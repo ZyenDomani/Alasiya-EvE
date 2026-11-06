@@ -499,7 +499,7 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
     }
 
     // target tests
-    SystemEntity* tSE = pSysMgr->GetSE(args.arg);
+    SpaceEntity* tSE = pSysMgr->GetSE(args.arg);
     if (tSE == nullptr) {
         _log(INV__WARNING, "Unable to find entity %u in system %u from '%s'", args.arg, pSysMgr->GetID(), pClient->GetName());
         throw UserError("DeniedTargetingAttemptFailed")
@@ -594,7 +594,7 @@ PyResult DogmaIMBound::Handle_RemoveTarget(PyCallArgs& call) {
         _log(SERVICE__ERROR, "Unable to find system manager for '%s'", pClient->GetName());
         return nullptr;
     }
-    SystemEntity* pTSE = pSysMgr->GetSE(args.arg);
+    SpaceEntity* pTSE = pSysMgr->GetSE(args.arg);
     if (pTSE == nullptr) {
         _log(SERVICE__ERROR, "Unable to find entity %u in system %u for '%s'", args.arg, pSysMgr->GetID(), pClient->GetName());
         return nullptr;
@@ -969,7 +969,7 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
             anchorLiftOrbital =   4770,     // effects.AnchorLift
         */
 
-        SystemEntity* pSE = pClient->SystemMgr()->GetSE(args.arg1);
+        SpaceEntity* pSE = pClient->SystemMgr()->GetSE(args.arg1);
         if (pSE == nullptr) {
             sLog.Error("DogmaIMBound::Handle_Activate()", "%u is not a valid EntityID in this system.", args.arg1);
             return PyStatic.NewZero();
@@ -1036,7 +1036,7 @@ PyResult DogmaIMBound::Handle_Deactivate(PyCallArgs& call)
             codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
             return PyStatic.NewNone();
         }
-        SystemEntity* pSE = pClient->SystemMgr()->GetSE(args.arg1);
+        SpaceEntity* pSE = pClient->SystemMgr()->GetSE(args.arg1);
         if (pSE == nullptr) {
             sLog.Error("DogmaIMBound::Handle_Deactivate()", "%u is not a valid EntityID in this system.", args.arg1);
              return PyStatic.NewNone();

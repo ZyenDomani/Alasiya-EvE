@@ -2351,9 +2351,9 @@ bool ShipItem::ValidateItemSpecifics(InventoryItemRef iRef)
 }
 
 
-/* DynamicSystemEntity representing ship object in space */
+/* DynamicSpaceEntity representing ship object in space */
 ShipSE::ShipSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* pSystem, const FactionData& data)
-: DynamicSystemEntity(self, services, pSystem),
+: DynamicSpaceEntity(self, services, pSystem),
 m_shipRef(ShipItemRef::StaticCast(self)),
 m_processTimerTick(SHIP_PROCESS_TICK_MS),   //5s
 m_processTimer(SHIP_PROCESS_TICK_MS),
@@ -2407,7 +2407,7 @@ void ShipSE::Process() {
         return;
 
     /*  Enable base call to Process Movement  */
-    SystemEntity::Process();
+    SpaceEntity::Process();
 
     // check to see if this is an empty ship, and return if so.
     //  we're not worried about recharge and modules for empty ships (segfaults)
@@ -2534,7 +2534,7 @@ void ShipSE::Warp() {
     m_shipRef->Warp();
 }
 
-void ShipSE::RemoveTarget(SystemEntity* pSE) {
+void ShipSE::RemoveTarget(SpaceEntity* pSE) {
     // target has been unlocked
     m_shipRef->GetModuleManager()->RemoveTarget(pSE);
 
@@ -2827,7 +2827,7 @@ bool ShipSE::ReconnectDrone(DroneSE* pSE) {
     return false;
 }
 
-void ShipSE::ScoopDrone(SystemEntity* pSE) {
+void ShipSE::ScoopDrone(SpaceEntity* pSE) {
     m_drones.erase(pSE->GetID());
     pSE->GetDroneSE()->OfflineDrone();
     // this isnt entirely right....what if we are scooping another drone we didnt launch?
@@ -2842,7 +2842,7 @@ void ShipSE::ScoopDrone(SystemEntity* pSE) {
     ReleaseBandwidth(pSE->GetDroneSE());
 }
 
-void ShipSE::FocusFire(DroneSE* pFromSE, SystemEntity* pTargetSE) {
+void ShipSE::FocusFire(DroneSE* pFromSE, SpaceEntity* pTargetSE) {
     for (auto &cur : m_drones) {
         if (cur.second == nullptr)
             continue;
@@ -2862,7 +2862,7 @@ void ShipSE::SetAutoAttack(bool set) {
     }
 }
 
-void ShipSE::ModuleActivated(SystemEntity* pTargetSE) {
+void ShipSE::ModuleActivated(SpaceEntity* pTargetSE) {
     for (auto &cur : m_drones) {
         if (cur.second == nullptr)
             continue;
@@ -2989,32 +2989,32 @@ void ShipSE::ReleaseBandwidth(DroneSE* pSE) {
 //{'FullPath': u'UI/Messages', 'messageID': 258031, 'label': u'MaxBandwidthExceededBody'}(u"You don't have enough bandwidth to launch {droneName}. You need {bandwidthNeeded} Mbit/s but {droneName} requires {droneBandwidthUsed} Mbit/s.", None, {u'{droneName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'droneName'}, u'{droneBandwidthUsed}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'droneBandwidthUsed'}, u'{bandwidthNeeded}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'bandwidthNeeded'}})
 //{'FullPath': u'UI/Messages', 'messageID': 258041, 'label': u'MaxBandwidthExceeded2Body'}(u"You don't have enough bandwidth to launch {droneName}. You need {droneBandwidthUsed} Mbit/s but only have {bandwidthLeft} Mbit/s available.", None, {u'{droneName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'droneName'}, u'{bandwidthLeft}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'bandwidthLeft'}, u'{droneBandwidthUsed}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'droneBandwidthUsed'}})
 
-void ShipSE::TargetedAdd(SystemEntity* pSourceSE) {
+void ShipSE::TargetedAdd(SpaceEntity* pSourceSE) {
     // if we have any drones out, let them know we've been targeted
     for (auto &cur : m_drones)
         cur.second->GetAI()->ShipAttacked(pSourceSE);
 }
 
-void ShipSE::TargetAdded(SystemEntity* pSourceSE) {
+void ShipSE::TargetAdded(SpaceEntity* pSourceSE) {
     // if we have any drones out, let them know we've got a new target
     for (auto &cur : m_drones)
         cur.second->TargetAdded(pSourceSE);
 }
 
-void ShipSE::ShipTakingDamage(SystemEntity* pSourceSE) {
+void ShipSE::ShipTakingDamage(SpaceEntity* pSourceSE) {
 }
 
-void ShipSE::ShipAttacked(SystemEntity* pSourceSE) {
+void ShipSE::ShipAttacked(SpaceEntity* pSourceSE) {
 }
 
-void ShipSE::ShipTargeted(SystemEntity* pSourceSE) {
+void ShipSE::ShipTargeted(SpaceEntity* pSourceSE) {
     // if we have any drones out, let them know we've been target locked
     for (auto &cur : m_drones)
         cur.second->GetAI()->ShipTargeted(pSourceSE);
 
 }
 
-void ShipSE::ShipKilled(SystemEntity* pSourceSE) {
+void ShipSE::ShipKilled(SpaceEntity* pSourceSE) {
     // if we have any drones out, let them know we've been killed and they have been abandoned
     for (auto &cur : m_drones)
         cur.second->Abandon();

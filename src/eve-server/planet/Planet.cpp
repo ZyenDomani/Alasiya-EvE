@@ -47,7 +47,7 @@ Planet::Planet()
 
 
 PlanetSE::PlanetSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
-: StaticSystemEntity(self, services, system),
+: StaticSpaceEntity(self, services, system),
 pCO(nullptr),
 m_abundance(sPlanetDataMgr.GetAbundanceMod(self->typeID())),
 m_scarcity(system->GetSecValue()),
@@ -85,7 +85,7 @@ PlanetSE::~PlanetSE()
 //TODO:  update this to change data on *some yet-unknown* timeframe
 bool PlanetSE::LoadExtras() {
     // this is called after SE is created.
-    if (!StaticSystemEntity::LoadExtras())
+    if (!StaticSpaceEntity::LoadExtras())
         return false;
 
     // has this planet been created/populated already?

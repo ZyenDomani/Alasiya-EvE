@@ -39,7 +39,7 @@
 
 
 CustomsSE::CustomsSE(StructureItemRef sRef, PyServiceMgr &services, SystemManager* system, const FactionData& data)
-: ObjectSystemEntity(sRef, services, system),
+: ObjectSpaceEntity(sRef, services, system),
 m_system(system),
 // zero-init data
 m_cData(EVEPOS::CustomsData()),
@@ -466,7 +466,7 @@ void CustomsSE::Killed(Damage &fatal_blow) {
 
     uint32 killerID = 0;
     Client* pClient(nullptr);
-    SystemEntity* killer = fatal_blow.srcSE;
+    SpaceEntity* killer = fatal_blow.srcSE;
 
     if (killer->HasPilot()) {
         pClient = killer->GetPilot();

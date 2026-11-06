@@ -314,7 +314,7 @@ PyResult KeeperService::Handle_ActivateAccelerationGate(PyCallArgs &call) {
 
     Client* pClient = call.client;
 
-    SystemEntity* pSE = pClient->SystemMgr()->GetEntityByID(arg.arg);
+    SpaceEntity* pSE = pClient->SystemMgr()->GetEntityByID(arg.arg);
     if ((pSE != nullptr) and (pSE->DestinyMgr() != nullptr))
         pSE->DestinyMgr()->SendGFX10(arg.arg, "effects.WarpGateEffect");
 

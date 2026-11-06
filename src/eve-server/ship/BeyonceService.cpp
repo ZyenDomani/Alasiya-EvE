@@ -250,7 +250,7 @@ PyResult BeyonceBound::Handle_CmdAlignTo(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
-    SystemEntity* pSE = pSystem->GetSE(arg.entityID);
+    SpaceEntity* pSE = pSystem->GetSE(arg.entityID);
     if (pSE == nullptr) {
         _log(CLIENT__ERROR, "%s: Unable to find entity %u to AlignTo.", call.client->GetName(), arg.entityID);
         return PyStatic.NewNone();
@@ -312,7 +312,7 @@ PyResult BeyonceBound::Handle_CmdStargateJump(PyCallArgs &call) {
     }
 
     /** @todo  check distance from ship to gate */
-    SystemEntity* pGateSE = call.client->SystemMgr()->GetSE(args.fromStargateID);
+    SpaceEntity* pGateSE = call.client->SystemMgr()->GetSE(args.fromStargateID);
     if (pGateSE == nullptr) {
         call.client->SendNotifyMsg("Error - Stargate not found.");
         _log(SERVICE__ERROR, "%s: Unable to find stargate %i.", call.client->GetName(), args.fromStargateID);
@@ -363,7 +363,7 @@ PyResult BeyonceBound::Handle_CmdFollowBall(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
-    SystemEntity* pSE = pSystem->GetSE(args.ballID);
+    SpaceEntity* pSE = pSystem->GetSE(args.ballID);
     if (pSE == nullptr) {
         _log(CLIENT__ERROR, "%s: Unable to find entity %i to Follow/Approach.", call.client->GetName(), args.ballID);
         return PyStatic.NewNone();
@@ -423,7 +423,7 @@ PyResult BeyonceBound::Handle_CmdGotoBookmark(PyCallArgs &call) {
             pDestiny->GotoPoint(point);
         } else {
             // Bookmark type is of a static system entity, so search for it and obtain its coordinates:
-            SystemEntity* pSE = call.client->SystemMgr()->GetSE(itemID);
+            SpaceEntity* pSE = call.client->SystemMgr()->GetSE(itemID);
             if (pSE == nullptr) {
                 sLog.Error( "BeyonceService::Handle_GotoBookmark()", "%s: unable to find location %d", call.client->GetName(), itemID );
                 return PyStatic.NewNone();
@@ -472,7 +472,7 @@ PyResult BeyonceBound::Handle_CmdOrbit(PyCallArgs &call) {
     }
 
 
-    SystemEntity* pEntity = pSystem->GetSE(args.entityID);
+    SpaceEntity* pEntity = pSystem->GetSE(args.entityID);
     if (pEntity == nullptr) {
         _log(CLIENT__ERROR, "%s: Unable to find entity %u to Orbit.", call.client->GetName(), args.entityID);
         return PyStatic.NewNone();
@@ -534,7 +534,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
         distance = PyRep::IntegerValueI32(call.byname.find("minRange")->second);
 
     Vector3d warpToPoint = NULL_ORIGIN;
-    SystemEntity* pSE = nullptr;
+    SpaceEntity* pSE = nullptr;
     int32 radius = 0;
     uint32 toID = 0;
     std::string stringArg = "";
@@ -788,7 +788,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuffAutopilot(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
-    SystemEntity* pSE = pSystem->GetSE(arg.destID);
+    SpaceEntity* pSE = pSystem->GetSE(arg.destID);
     if (pSE == nullptr) {
         codelog(CLIENT__ERROR, "%s: unable to find destination Entity for ID %u", call.client->GetName(), arg.destID);
         return PyStatic.NewNone();
@@ -867,7 +867,7 @@ PyResult BeyonceBound::Handle_CmdAbandonLoot(PyCallArgs &call) {
     }
 
     /** @todo  change ownerID to _system for all loot also!!  */
-    SystemEntity* pSE = nullptr;
+    SpaceEntity* pSE = nullptr;
     SystemManager* pSysMgr = call.client->SystemMgr();
     for (auto &cur : arg.ints) {
         pSE = pSysMgr->GetSE(cur);

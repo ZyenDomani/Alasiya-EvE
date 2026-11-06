@@ -280,7 +280,7 @@ void MiningLaser::ProcessCycle(bool abort/*false*/) {
         _log(MINING__TRACE, "roid %s targeted by %s on %s is depleted", roidRef->name(), m_modRef->name(), m_shipRef->name());
         // this will get all active miners on depleted rock and set mined amount accordingly for each.
         m_targetSE->TargetMgr()->Depleted(this);
-        SystemEntity* pSE(m_targetSE);
+        SpaceEntity* pSE(m_targetSE);
         RemoveTarget(m_targetSE);
         // m_targetSE is null after above call returns
         pSE->Delete();

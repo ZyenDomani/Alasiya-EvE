@@ -50,8 +50,8 @@ void CivilianMgr::SpawnCiv(SystemManager* sMgr) {
         return;
 
     // Pick random point-to-point warp points inside the system manager landmarks
-    SystemEntity* pOrig;
-    SystemEntity* pDest;
+    SpaceEntity* pOrig;
+    SpaceEntity* pDest;
     sMgr->GetCivPath(pOrig, pDest);
 
     if (pOrig->SysBubble()->IsEmpty() and pDest->SysBubble()->IsEmpty())

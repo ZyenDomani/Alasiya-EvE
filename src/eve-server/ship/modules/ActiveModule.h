@@ -42,7 +42,7 @@ public:
     /* cancel current cycle after timer ends. */
     virtual void        DeactivateCycle(bool abortCycle=false); // this needs state=Deactivating for normal op.  set abortCycle=true to cancel current cycle
     virtual void        Activate(uint16 effectID, uint32 targetID=0, int16 repeat=0);
-    virtual void        RemoveTarget(SystemEntity* pSE);
+    virtual void        RemoveTarget(SpaceEntity* pSE);
 
     // to call bubble->RemoveActiveModule() from GenericModule base class
     virtual void        RemoveFromBubbleMap();
@@ -63,7 +63,7 @@ public:
 
     /* ActiveModule methods */
     virtual uint32      GetTargetID()                   { return m_targetID; }
-    SystemEntity*       GetTargetSE()                   { return m_targetSE; }
+    SpaceEntity*       GetTargetSE()                   { return m_targetSE; }
 
     void                LaunchProbe();
     void                LaunchMissile();
@@ -79,7 +79,7 @@ public:
 protected:
     // we do not own any of these next 5
     SystemBubble*       m_bubble;
-    SystemEntity*       m_targetSE;
+    SpaceEntity*       m_targetSE;
     DestinyManager*     m_destinyMgr;   // ship's DestinyManager
     SystemManager*      m_sysMgr;       // ship's SystemManager
     TargetManager*      m_targMgr;      // ship's TargetManager

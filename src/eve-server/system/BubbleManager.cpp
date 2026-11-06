@@ -37,7 +37,7 @@
 #include "system/BubbleManager.h"
 #include "system/Container.h"
 #include "system/SystemBubble.h"
-#include "system/SystemEntity.h"
+#include "system/SpaceEntity.h"
 #include "system/SystemManager.h"
 
 
@@ -88,9 +88,9 @@ void BubbleManager::Process() {
         }
 
         if (!m_wanderers.empty()) {
-            SystemEntity* pSE = nullptr;
+            SpaceEntity* pSE = nullptr;
             // these are never null
-            std::vector<SystemEntity*>::iterator itr = m_wanderers.begin();
+            std::vector<SpaceEntity*>::iterator itr = m_wanderers.begin();
             while (itr != m_wanderers.end()) {
                 pSE = *itr;
                 // do we really want to check this?  yes.  have found errors where position isNaN
@@ -124,7 +124,7 @@ void BubbleManager::Process() {
         sProfiler.AddTime(Profile::bubbles, GetTimeUSeconds() - m_profileStartTime);
 }
 
-void BubbleManager::CheckBubble(SystemEntity* pSE) {
+void BubbleManager::CheckBubble(SpaceEntity* pSE) {
     SystemBubble *pBubble = pSE->SysBubble();
     if (pBubble != nullptr) {
         if (pBubble->InBubble(pSE->GetPosition())) {
@@ -140,7 +140,7 @@ void BubbleManager::CheckBubble(SystemEntity* pSE) {
         pBubble->Remove(pSE);
     }
 
-    _log(BUBBLE__DEBUG, "BubbleManager::CheckBubble() - SystemEntity '%s'(%u) not currently in any Bubble...adding", pSE->GetName(), pSE->GetID() );
+    _log(BUBBLE__DEBUG, "BubbleManager::CheckBubble() - SpaceEntity '%s'(%u) not currently in any Bubble...adding", pSE->GetName(), pSE->GetID() );
     Add(pSE);
 }
 
@@ -157,7 +157,7 @@ void BubbleManager::RemoveEmpty() {
     }
 }
 
-void BubbleManager::Add(SystemEntity* pSE, bool isPostWarp /*false*/) {
+void BubbleManager::Add(SpaceEntity* pSE, bool isPostWarp /*false*/) {
     if (pSE == nullptr)
         return;
 
@@ -204,7 +204,7 @@ void BubbleManager::NewBubbleCenter(Vector3d shipVelocity, Vector3d& newCenter) 
     newCenter.z += (shipVelocity.z * dist);
 }
 
-void BubbleManager::Remove(SystemEntity* pSE) {
+void BubbleManager::Remove(SpaceEntity* pSE) {
     if (pSE->SysBubble() != nullptr) {
         _log(BUBBLE__TRACE, "BubbleManager::Remove(): Entity %s(%u) being removed from Bubble %u", pSE->GetName(), pSE->GetID(), pSE->SysBubble()->GetID() );
         pSE->SysBubble()->Remove(pSE);
@@ -218,7 +218,7 @@ void BubbleManager::Remove(SystemEntity* pSE) {
  *
  * NOTE:  these are only used here...
  */
-SystemBubble* BubbleManager::FindBubble(SystemEntity* pSE) const {
+SystemBubble* BubbleManager::FindBubble(SpaceEntity* pSE) const {
     return FindBubble(pSE->SystemMgr()->GetID(), pSE->GetPosition());
 }
 

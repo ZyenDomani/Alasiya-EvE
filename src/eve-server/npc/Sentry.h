@@ -8,7 +8,7 @@
 #ifndef __NPC_SENTRY_H
 #define __NPC_SENTRY_H
 
-#include "system/SystemEntity.h"
+#include "system/SpaceEntity.h"
 
 class PyServiceMgr;
 class DestinyManager;
@@ -18,7 +18,7 @@ class SystemManager;
 class ServiceDB;
 
 class Sentry
-: public ObjectSystemEntity
+: public ObjectSpaceEntity
 {
 public:
     Sentry(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, const FactionData& data);
@@ -30,10 +30,10 @@ public:
     /* class type tests. */
     virtual bool IsSentrySE()                           { return true; }
 
-    /* SystemEntity interface */
+    /* SpaceEntity interface */
     virtual void Process();
-    virtual void TargetLost(SystemEntity* who);
-    virtual void TargetedAdd(SystemEntity* who);
+    virtual void TargetLost(SpaceEntity* who);
+    virtual void TargetedAdd(SpaceEntity* who);
     virtual void EncodeDestiny(Buffer& into);
 
     /* virtual functions default to base class and overridden as needed */

@@ -26,7 +26,7 @@
 #ifndef EVE_SHIP_MISSILE_H
 #define EVE_SHIP_MISSILE_H
 
-#include "system/SystemEntity.h"
+#include "system/SpaceEntity.h"
 
 class PyServiceMgr;
 class InventoryItem;
@@ -36,9 +36,9 @@ class ShipItem;
 class GenericModule;
 
 class Missile
-: public DynamicSystemEntity {
+: public DynamicSpaceEntity {
 public:
-    Missile(InventoryItemRef self, PyServiceMgr& services, SystemManager* pSystem, InventoryItemRef modRef, SystemEntity* tSE, SystemEntity* pSE, GenericModule* pMod=nullptr);
+    Missile(InventoryItemRef self, PyServiceMgr& services, SystemManager* pSystem, InventoryItemRef modRef, SpaceEntity* tSE, SpaceEntity* pSE, GenericModule* pMod=nullptr);
     virtual ~Missile()                                  { /* do nothing here */ }
 
     /* class type pointer querys. */
@@ -47,7 +47,7 @@ public:
     /* Dynamic */
     virtual bool IsMissileSE()                          { return true; }
 
-    /* SystemEntity interface */
+    /* SpaceEntity interface */
     virtual void Delete();
     virtual void Process();
     virtual void EncodeDestiny(Buffer& into);
@@ -56,7 +56,7 @@ public:
 
     /* specific functions handled here. */
     uint32 GetLauncherID()                              { return m_fromSE->GetID(); }
-    SystemEntity* GetTargetSE()                         { return m_targetSE; }
+    SpaceEntity* GetTargetSE()                         { return m_targetSE; }
 
     void SetHitTimer(uint32 setTime)                    { m_hitTimer.Start(setTime); }
     void SetSpeed(uint16 speed)                         { m_speed = speed; }
@@ -67,8 +67,8 @@ public:
     uint16 GetSpeed()                                   { return m_speed; }
 
 protected:
-    SystemEntity* m_targetSE;
-    SystemEntity* m_fromSE;
+    SpaceEntity* m_targetSE;
+    SpaceEntity* m_fromSE;
     InventoryItemRef m_modRef;
 
     void HitTarget();

@@ -56,11 +56,11 @@ public:
 
 protected:
     // helper methods for multiple checks
-    void CheckTarget(SystemEntity* pTarget, PyList* droneList, PyDict* errorDict);  // verify valid target
-    void CheckTower(SystemEntity* pTarget, PyList* droneList, PyDict* errorDict);   // control tower checks
-    void CheckFleet(SystemEntity* pTarget, PyList* droneList, PyDict* errorDict);   // fleet checks
-    void CheckMisc(SystemEntity* pTarget, PyList* droneList, PyDict* errorDict);    // delegating control checks
-    void CheckSkills(SystemEntity* pTarget, PyList* droneList, PyDict* errorDict);  // delegating control checks
+    void CheckTarget(SpaceEntity* pTarget, PyList* droneList, PyDict* errorDict);  // verify valid target
+    void CheckTower(SpaceEntity* pTarget, PyList* droneList, PyDict* errorDict);   // control tower checks
+    void CheckFleet(SpaceEntity* pTarget, PyList* droneList, PyDict* errorDict);   // fleet checks
+    void CheckMisc(SpaceEntity* pTarget, PyList* droneList, PyDict* errorDict);    // delegating control checks
+    void CheckSkills(SpaceEntity* pTarget, PyList* droneList, PyDict* errorDict);  // delegating control checks
 
 private:
     Dispatcher *const m_dispatch;

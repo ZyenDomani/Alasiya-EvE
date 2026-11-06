@@ -35,7 +35,7 @@
 #include "inventory/InventoryItem.h"
 #include "ship/ShipDB.h"
 #include "ship/modules/ModuleManager.h"
-#include "system/SystemEntity.h"
+#include "system/SpaceEntity.h"
 
 /**
  * InventoryItem which represents ShipItem.
@@ -290,7 +290,7 @@ private:
 };
 
 /**
- * DynamicSystemEntity which represents ship object in space
+ * DynamicSpaceEntity which represents ship object in space
  */
 class PyServiceMgr;
 class InventoryItem;
@@ -300,7 +300,7 @@ class SystemManager;
 class ServiceDB;
 
 class ShipSE
-: public DynamicSystemEntity
+: public DynamicSpaceEntity
 {
 public:
     ShipSE(InventoryItemRef self, PyServiceMgr& services, SystemManager* pSystem, const FactionData& data);
@@ -312,7 +312,7 @@ public:
     /* class type tests. */
     virtual bool                IsShipSE()              { return true; }
 
-    /* SystemEntity interface */
+    /* SpaceEntity interface */
     virtual void                Process();
     virtual void                EncodeDestiny(Buffer& into);
     virtual void                MakeDamageState(DoDestinyDamageState &into);
@@ -333,29 +333,29 @@ public:
 
     /* virtual functions for npc/drone AI and player reporting */
     virtual void     MissileLaunched(Missile* pMissile) { /* Do nothing here */ }
-    virtual void             ReportDamage(uint8 type=0, SystemEntity* pSourceSE=nullptr)
+    virtual void             ReportDamage(uint8 type=0, SpaceEntity* pSourceSE=nullptr)
                                                         { /* do nothing here */ }
     // tell drones we have a new target
-    virtual void                TargetAdded(SystemEntity* pTargetSE);
+    virtual void                TargetAdded(SpaceEntity* pTargetSE);
     // this is call to inform us of yellowbox
-    virtual void                TargetedAdd(SystemEntity* pSourceSE);
-    virtual void    TargetLost(SystemEntity* pTargetSE) { /* do nothing here */ }
-    virtual void  TargetedLost(SystemEntity* pSourceSE) { /* do nothing here */ }
+    virtual void                TargetedAdd(SpaceEntity* pSourceSE);
+    virtual void    TargetLost(SpaceEntity* pTargetSE) { /* do nothing here */ }
+    virtual void  TargetedLost(SpaceEntity* pSourceSE) { /* do nothing here */ }
     // this is call to inform us of redbox
-    virtual void                ShipTargeted(SystemEntity* pSourceSE);
+    virtual void                ShipTargeted(SpaceEntity* pSourceSE);
     // our assigned ship was killed...wtf we do now?
-    virtual void                ShipKilled(SystemEntity* pSourceSE);
+    virtual void                ShipKilled(SpaceEntity* pSourceSE);
     /*NOTE:  these next two have potential of taking a lot of clock cycles...not sure about implementing them yet. */
     // not sure how to do this one and remain fast...
-    virtual void                ShipAttacked(SystemEntity* pSourceSE);
+    virtual void                ShipAttacked(SpaceEntity* pSourceSE);
     // make sure you check for nullptr here...ships firing missiles can be killed before missile hits
-    virtual void                ShipTakingDamage(SystemEntity* pSourceSE);
+    virtual void                ShipTakingDamage(SpaceEntity* pSourceSE);
 
     /* specific functions handled here. */
     void Dock();
     void Jump(int32 fromGateID, bool showCloak=true);        // this also sets ship cloak
     void Warp();
-    void RemoveTarget(SystemEntity* pSE);
+    void RemoveTarget(SpaceEntity* pSE);
     void SetPassword(std::string pass)                  { m_towerPass = pass; }
     // fleet
     void ClearBoostData();
@@ -388,14 +388,14 @@ public:
     void AbandonDrone(DroneSE* pSE);
     bool LaunchDrone(InventoryItemRef dRef);
     bool ReconnectDrone(DroneSE* pSE);
-    void ScoopDrone(SystemEntity* pSE);                 // this does not delete SE nor remove it from system
+    void ScoopDrone(SpaceEntity* pSE);                 // this does not delete SE nor remove it from system
     // used when drones enter/leave ship's control distance, including launch/scoop
     bool AcquireBandwidth(DroneSE* pSE);
     void ReleaseBandwidth(DroneSE* pSE);
     // to assign drones to same target.  called by drone
-    void FocusFire(DroneSE* pFromSE, SystemEntity* pTargetSE);
+    void FocusFire(DroneSE* pFromSE, SpaceEntity* pTargetSE);
     // for assisting.  offensive module activated on target
-    void ModuleActivated(SystemEntity* pTargetSE);
+    void ModuleActivated(SpaceEntity* pTargetSE);
     // player command
     void SetAutoAttack(bool set=false);
     void AddDroneToMap(DroneSE* pSE);

@@ -39,7 +39,7 @@ public:
     void Initialize();
 
     // you MUST call (your SystemManager)->AddEntity([this returned object]) after this to actually put the entity in space
-    SystemEntity* BuildEntity( SystemManager& sysMgr, const DBSystemDynamicEntity& eData );
+    SpaceEntity* BuildEntity( SystemManager& sysMgr, const DBSystemDynamicEntity& eData );
 
 private:
     // The index is the GroupID, the value is the EntityClass enum.

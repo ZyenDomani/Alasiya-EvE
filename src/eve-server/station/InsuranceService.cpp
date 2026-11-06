@@ -32,7 +32,7 @@
 #include "account/AccountService.h"
 #include "chat/LSCService.h"
 #include "station/InsuranceService.h"
-#include "system/SystemEntity.h"
+#include "system/SpaceEntity.h"
 #include "system/SystemManager.h"
 
 /* TODO:

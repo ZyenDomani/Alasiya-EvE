@@ -63,7 +63,7 @@ class Client;
 class SetState;
 class PyTuple;
 class ContainerSE;
-class SystemEntity;
+class SpaceEntity;
 class SystemManager;
 class Timer;
 class TowerSE;
@@ -80,7 +80,7 @@ public:
     SystemBubble(SystemManager* pSystem, const Vector3d& center, double radius);
     ~SystemBubble() noexcept;
 
-    SystemEntity* const GetEntity(uint32 entityID) const;
+    SpaceEntity* const GetEntity(uint32 entityID) const;
     SystemManager* const GetSystem() const              { return m_system; }
 
     /* for spawn system     -allan 15July15 */
@@ -131,14 +131,14 @@ public:
     void clear();
     void PrintEntityList();
 
-    void Add(SystemEntity* pSE);
-    void Remove(SystemEntity* pSE);
-    void ProcessWander(std::vector< SystemEntity* >& wanderers);
+    void Add(SpaceEntity* pSE);
+    void Remove(SpaceEntity* pSE);
+    void ProcessWander(std::vector< SpaceEntity* >& wanderers);
 
-    void SendAddBalls(SystemEntity* to_who);
-    void SendAddBalls2(SystemEntity* to_who);
-    void RemoveExclusive(SystemEntity* pSE);
-    void AddBallExclusive(SystemEntity* about_who);
+    void SendAddBalls(SpaceEntity* to_who);
+    void SendAddBalls2(SpaceEntity* to_who);
+    void RemoveExclusive(SpaceEntity* pSE);
+    void AddBallExclusive(SpaceEntity* about_who);
 
     //send a set of destiny updates to every client in the bubble.
     void BubblecastDestinyUpdate(std::vector<PyTuple*> &updates, const char* desc) const;
@@ -149,8 +149,8 @@ public:
     //send a destiny event to every client in the bubble.
     void BubblecastDestinyEvent(PyTuple** payload, const char* desc) const;
     void BubblecastSendNotification(const char *notifyType, const char *idType, PyTuple **payload, bool seq=true);
-    //send a destiny update to every client in the bubble EXCLUDING the given SystemEntity 'pSE'
-    void BubblecastDestinyUpdateExclusive(PyTuple** payload, const char* desc, SystemEntity* pSE) const;
+    //send a destiny update to every client in the bubble EXCLUDING the given SpaceEntity 'pSE'
+    void BubblecastDestinyUpdateExclusive(PyTuple** payload, const char* desc, SpaceEntity* pSE) const;
 
     bool InBubble(const Vector3d &pt, bool inWarp=false) const;
     bool IsOverlap(const Vector3d &pt) const;
@@ -161,17 +161,17 @@ public:
     bool HasWarpBubble()                                { return m_hasBubble; }
     void SetWarpBubble(bool set=false)                  { m_hasBubble = set; }
     /* for SetState */
-    void GetEntities(std::map< uint32, SystemEntity* >& into) const;    // this one only sends visible entities
+    void GetEntities(std::map< uint32, SpaceEntity* >& into) const;    // this one only sends visible entities
     /* for ??? */
-    void GetAllEntities(std::map< uint32, SystemEntity* >& into) const; // this one gets all entities regardless of visibility
+    void GetAllEntities(std::map< uint32, SpaceEntity* >& into) const; // this one gets all entities regardless of visibility
     /* for targeting purposes */
     void GetPlayers(std::vector<Client*> &into) const;
     /* for advanced npcai */
     void GetNPCs(std::vector<NPC*> &into) const;
     void GetDrones(std::vector<DroneSE*> &into) const;
     /* for scanning */
-    void GetEntityVec(std::vector<SystemEntity*> &into) const;
-    SystemEntity* GetRandomEntity();
+    void GetEntityVec(std::vector<SpaceEntity*> &into) const;
+    SpaceEntity* GetRandomEntity();
 
     /* for towers/ship abandoning */
     bool HasTower()                                     { return (m_towerSE != nullptr); }
@@ -212,10 +212,10 @@ protected:
     const double m_radiusSq;
 
     // remove all balls in bubble for this SE
-    void RemoveBall(SystemEntity* pSE);
-    void RemoveBalls(SystemEntity* pSE);
+    void RemoveBall(SpaceEntity* pSE);
+    void RemoveBalls(SpaceEntity* pSE);
     // remove this ball from bubble.  update all clients in bubble this SE has left.
-    void RemoveBallExclusive(SystemEntity* pSE);
+    void RemoveBallExclusive(SpaceEntity* pSE);
 
     void MarkBubble(const Vector3d& position, std::string& name, std::string& desc, bool center=false);
 
@@ -241,10 +241,10 @@ private:
     std::map<uint32, NPC*>                              m_npcs;             //we do not own these.
     std::map<uint32, Client*>                           m_players;          // testing with bubble player list (in std::map)
     std::map<uint32, DroneSE*>                          m_drones;           //we do not own these.
-    std::map<uint32, SystemEntity*>                     m_markers;          // bubble marker cans.  we do own these.
-    std::map<uint32, SystemEntity*>                     m_entities;         //we do not own these.
+    std::map<uint32, SpaceEntity*>                     m_markers;          // bubble marker cans.  we do own these.
+    std::map<uint32, SpaceEntity*>                     m_entities;         //we do not own these.
     std::map<uint32, ActiveModule*>                     m_activeModules;    // for sending gfx to new ships in bubble
-    std::map<uint32, SystemEntity*>                     m_dynamicEntities;  //entities which may/may not move. we do not own these.
+    std::map<uint32, SpaceEntity*>                     m_dynamicEntities;  //entities which may/may not move. we do not own these.
 };
 
 #endif  // _EVE_SERVER_SYSTEM_BUBBLE_H_

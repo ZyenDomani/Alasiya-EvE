@@ -15,14 +15,14 @@
 
 #include "inventory/InventoryItem.h"
 #include "pos/PosMgrDB.h"
-#include "system/SystemEntity.h"
+#include "system/SpaceEntity.h"
 
 class PlanetSE;
 class Call_TaxRateValuesDict;
 class Call_UpdateSettings;
 
 class CustomsSE
-: public ObjectSystemEntity
+: public ObjectSpaceEntity
 {
 public:
     CustomsSE(StructureItemRef sRef, PyServiceMgr& services, SystemManager* system, const FactionData& data);
@@ -37,7 +37,7 @@ public:
     virtual bool                IsCOSE()                { return true; }
     //virtual bool                isGlobal()              { return true; }
 
-    /* SystemEntity interface */
+    /* SpaceEntity interface */
     //virtual void                Process();
     virtual void                EncodeDestiny(Buffer& into);
     virtual PyDict*             MakeSlimItem();

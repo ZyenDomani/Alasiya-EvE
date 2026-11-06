@@ -31,7 +31,7 @@
 #include "EVEServerConfig.h"
 #include "StaticDataMgr.h"
 #include "inventory/InventoryItem.h"
-#include "system/SystemEntity.h"
+#include "system/SpaceEntity.h"
 
 /**
  * InventoryItem which represents cargo container.
@@ -90,7 +90,7 @@ public:
     virtual void MakeDamageState(DoDestinyDamageState &into) const;
 
     bool IsEmpty()                                      { return GetMyInventory()->IsEmpty(); }
-    void SetMySE(SystemEntity* pSE)                     { mySE = pSE;}
+    void SetMySE(SpaceEntity* pSE)                     { mySE = pSE;}
 
 protected:
     bool m_isAnchored;
@@ -123,7 +123,7 @@ protected:
     virtual PyRep* GetItem() const                      { return GetItemRow(); }
 
 private:
-    SystemEntity* mySE;
+    SpaceEntity* mySE;
 };
 
 
@@ -136,7 +136,7 @@ class SystemManager;
 class ServiceDB;
 
 class ContainerSE
-: public ItemSystemEntity
+: public ItemSpaceEntity
 {
 public:
     ContainerSE(CargoContainerRef self, PyServiceMgr &services, SystemManager *system, const FactionData& data);
@@ -150,7 +150,7 @@ public:
     /* class type tests. */
     virtual bool IsContainerSE()                        { return true; }
 
-    /* SystemEntity interface */
+    /* SpaceEntity interface */
     virtual void Process();
     virtual void EncodeDestiny(Buffer& into);
     virtual PyDict* MakeSlimItem();
@@ -206,7 +206,7 @@ public:
     PyObject *WreckContainerGetInfo();
 
     bool IsEmpty()                                      { return pInventory->IsEmpty(); }
-    void SetMySE(SystemEntity* pSE)                     { mySE = pSE;}
+    void SetMySE(SpaceEntity* pSE)                     { mySE = pSE;}
     void Salvaged()                                     { m_salvaged = true; }
 
 protected:
@@ -228,17 +228,17 @@ protected:
     static uint32 CreateItemID( ItemData &data );
 
 private:
-    SystemEntity* mySE;
+    SpaceEntity* mySE;
     bool m_salvaged;
 };
 
 /**
- * DynamicSystemEntity which represents wreck object in space
+ * DynamicSpaceEntity which represents wreck object in space
  * Author:  Allan
  */
 
 class WreckSE
-: public DynamicSystemEntity
+: public DynamicSpaceEntity
 {
 public:
     // put factionID in item's CustomInfo field to allow salvage
@@ -251,7 +251,7 @@ public:
     /* class type tests. */
     virtual bool                IsWreckSE()             { return true; }
 
-    /* SystemEntity interface */
+    /* SpaceEntity interface */
     virtual void                Process();
     virtual void                EncodeDestiny(Buffer& into);
     virtual PyDict*             MakeSlimItem();

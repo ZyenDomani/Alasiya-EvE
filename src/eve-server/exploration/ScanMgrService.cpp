@@ -192,7 +192,7 @@ PyResult ScanBound::Handle_RecoverProbes( PyCallArgs& call ) {
         return list;
     }
 
-    SystemEntity* pSE = nullptr;
+    SpaceEntity* pSE = nullptr;
     for (auto &cur : args.ints) {
         pSE = m_client->SystemMgr()->GetSE(cur);
         if (pSE == nullptr)
@@ -218,7 +218,7 @@ PyResult ScanBound::Handle_DestroyProbe( PyCallArgs& call ) {
         return nullptr;
     }
 
-    SystemEntity* pSE(m_client->SystemMgr()->GetSE(arg.arg));
+    SpaceEntity* pSE(m_client->SystemMgr()->GetSE(arg.arg));
     if (pSE != nullptr)
         pSE->Delete();
     SafeDelete(pSE);

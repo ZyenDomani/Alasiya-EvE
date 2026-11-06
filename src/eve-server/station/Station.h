@@ -170,10 +170,10 @@ class PyServiceMgr;
 class SystemManager;
 
 /**
- * StaticSystemEntity which represents Station object in space
+ * StaticSpaceEntity which represents Station object in space
  */
 class StationSE
-: public StaticSystemEntity
+: public StaticSpaceEntity
 {
 public:
     StationSE(StationItemRef station, PyServiceMgr &services, SystemManager* system);

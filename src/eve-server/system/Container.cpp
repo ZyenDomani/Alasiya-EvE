@@ -241,7 +241,7 @@ void CargoContainer::MakeDamageState(DoDestinyDamageState &into) const
  */
 
 ContainerSE::ContainerSE(CargoContainerRef self, PyServiceMgr& services, SystemManager* system, const FactionData& data)
-: ItemSystemEntity(self, services, system),
+: ItemSpaceEntity(self, services, system),
  m_contRef(self),
  m_deleteTimer(0),
  m_global(false)
@@ -284,7 +284,7 @@ ContainerSE::~ContainerSE()
 
 void ContainerSE::Process() {
     /*   Base call to Process Movement  */
-    SystemEntity::Process();
+    SpaceEntity::Process();
     if (m_deleteTimer.Check(false)) {
         m_deleteTimer.Disable();
         sLog.Magenta( "ContainerSE::Process()", "Garbage Collection is removing Cargo Container %u.", m_contRef->itemID() );
@@ -541,7 +541,7 @@ void WreckContainer::RemoveItem(InventoryItemRef iRef)
 //      https://github.com/zhyrohaad/AlasiyaEvE/issues/100
 //      {forum post here, once available}
 WreckSE::WreckSE(WreckContainerRef self, PyServiceMgr &services, SystemManager* system, const FactionData &data)
-: DynamicSystemEntity(self, services, system),
+: DynamicSpaceEntity(self, services, system),
 m_contRef(self),
 m_deleteTimer(sConfig.rates.WorldDecay * 60 * 1000),
 m_launchedByID(0)
@@ -565,7 +565,7 @@ WreckSE::~WreckSE() {
 
 void WreckSE::Process() {
     /*   Base call to Process Movement  */
-    SystemEntity::Process();
+    SpaceEntity::Process();
     if (m_deleteTimer.Check(false)) {
         m_deleteTimer.Disable();
         sLog.Magenta( "WreckSE::Process()", "Garbage Collection is removing Wreck %u.", m_contRef->itemID() );

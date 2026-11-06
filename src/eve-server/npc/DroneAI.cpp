@@ -1257,7 +1257,7 @@ void DroneAIMgr::SetIdle() {
     }
 }
 
-void DroneAIMgr::Target(SystemEntity* pTargetSE) {
+void DroneAIMgr::Target(SpaceEntity* pTargetSE) {
     // check for changing targets first
     if (targSE == pTargetSE) {
         // same target.  do nothing
@@ -1635,26 +1635,26 @@ void DroneAIMgr::FindTarget() {
     // is drone aggressive?
     if (aggressive or shipSE->GetPilot()->AutoAttack()) {
         //  yep, find smallest entity targeting our ship and begin attack
-        std::map<SystemEntity*, TargetedByEntry*> targetby;
+        std::map<SpaceEntity*, TargetedByEntry*> targetby;
         shipSE->TargetMgr()->GetAllTargeters(targetby);
         // sort by size
-        std::map<int32, SystemEntity*>  sizeMap;
-        std::map<SystemEntity *, TargetedByEntry*>::iterator itr = targetby.begin();
+        std::map<int32, SpaceEntity*>  sizeMap;
+        std::map<SpaceEntity *, TargetedByEntry*>::iterator itr = targetby.begin();
         for (; itr != targetby.end(); ++itr)  // if (itr->second->state == TargMgr::State::Locked)
             sizeMap[itr->first->GetRadius()] = itr->first;
 
         // do we have any candidates?
         if (sizeMap.empty()) {
             // nope...what now?  check our ship's targets....
-            std::map<SystemEntity*, TargetEntry*> targets;
+            std::map<SpaceEntity*, TargetEntry*> targets;
             shipSE->TargetMgr()->GetAllTargets(targets);
-            std::map<SystemEntity *, TargetEntry*>::iterator itr2 = targets.begin();
+            std::map<SpaceEntity *, TargetEntry*>::iterator itr2 = targets.begin();
             for (; itr2 != targets.end(); ++itr2)
                 sizeMap[itr2->first->GetRadius()] = itr2->first;
 
             if (sizeMap.empty()) {
                 // well, shit...no targets...lets do it the hard way...
-                std::map<uint32, SystemEntity*> entities;
+                std::map<uint32, SpaceEntity*> entities;
                 mySE->SysBubble()->GetEntities(entities);
                 for (auto &cur : entities) {
                     // get npcs
@@ -1781,7 +1781,7 @@ void DroneAIMgr::Abandon() {
     fTargSE = nullptr;
 }
 
-void DroneAIMgr::ModuleActivated(SystemEntity* pTargetSE) {
+void DroneAIMgr::ModuleActivated(SpaceEntity* pTargetSE) {
     // for assisting, drone will engage any target assigned ship activates an offensive module on
     //   this is our notification
     // are we currently focused on anything?
@@ -1837,7 +1837,7 @@ void DroneAIMgr::ModuleActivated(SystemEntity* pTargetSE) {
     }
 }
 
-void DroneAIMgr::ShipAddedTarget(SystemEntity* pTargetSE) {
+void DroneAIMgr::ShipAddedTarget(SpaceEntity* pTargetSE) {
     // our ship has added a new target...whatever shall we do??
     // see if focus has added this target already
     if (fTargSE == pTargetSE)
@@ -1884,7 +1884,7 @@ void DroneAIMgr::ShipAddedTarget(SystemEntity* pTargetSE) {
     }
 }
 
-void DroneAIMgr::ShipTargeted(SystemEntity* pSourceSE) {
+void DroneAIMgr::ShipTargeted(SpaceEntity* pSourceSE) {
     // our ship has been redboxed
     if (!mySE->GetSelf()->GetAttribute(AttrDroneIsAgressive).get_bool()) {
         // damn, we gotta roll over and play nice...
@@ -1922,7 +1922,7 @@ void DroneAIMgr::MissileLaunched(Missile* pMissile) {
     shipSE->GetPilot()->SendNotifyMsg("Incoming Message: %s", BinString(text).c_str());
 }
 
-void DroneAIMgr::ReportDamage(uint8 type/*0*/, SystemEntity* pSourceSE/*nullptr*/) {
+void DroneAIMgr::ReportDamage(uint8 type/*0*/, SpaceEntity* pSourceSE/*nullptr*/) {
     // TODO:  check mode, state and actions then react
     std::string text = "damaged";
     //01100100 01100001 01101101 01100001 01100111 01100101 01100100
@@ -1933,7 +1933,7 @@ void DroneAIMgr::ReportDamage(uint8 type/*0*/, SystemEntity* pSourceSE/*nullptr*
     // types:  0=invalid, 1=shield loss, 2=armor loss
 }
 
-void DroneAIMgr::Targeted(SystemEntity* pAgressor) {
+void DroneAIMgr::Targeted(SpaceEntity* pAgressor) {
     _log(DRONE__AI_TRACE, "Drone %s(%u): Targeted by %s(%u) while %s & %s.", \
                 mySE->GetName(), mySE->GetID(), pAgressor->GetName(), \
                 pAgressor->GetID(), GetStateName(m_state)), GetActionName(m_action);
@@ -1971,7 +1971,7 @@ bool DroneAIMgr::ValidTarget() {
     return true;
 }
 
-void DroneAIMgr::TargetDestroyed(SystemEntity* pTargetSE) {
+void DroneAIMgr::TargetDestroyed(SpaceEntity* pTargetSE) {
     if (targSE != pTargetSE) {
         // not current target...dont care
         return;
@@ -1981,7 +1981,7 @@ void DroneAIMgr::TargetDestroyed(SystemEntity* pTargetSE) {
     ClearTarget();
 }
 
-void DroneAIMgr::TargetLost(SystemEntity* pTargetSE) {
+void DroneAIMgr::TargetLost(SpaceEntity* pTargetSE) {
     if (targSE != pTargetSE) {
         // not current target...dont care
         return;
@@ -2066,7 +2066,7 @@ void DroneAIMgr::TargetLost(SystemEntity* pTargetSE) {
     }
 }
 
-void DroneAIMgr::FocusFire(DroneSE* pFromSE, SystemEntity* pTargetSE) {
+void DroneAIMgr::FocusFire(DroneSE* pFromSE, SpaceEntity* pTargetSE) {
     // if we are sending this then ignore
     if (pFromSE == mySE)
         return;
@@ -2223,7 +2223,7 @@ uint32 DroneAIMgr::GetTargetID() {
     return 0;
 }
 
-SystemEntity* DroneAIMgr::GetTargetSE() {
+SpaceEntity* DroneAIMgr::GetTargetSE() {
     switch (m_action) {
         case DroneAI::Action::Idle:
         case DroneAI::Action::Invalid:
@@ -2270,48 +2270,48 @@ float DroneAIMgr::GetSpeedFraction() {
     return 1.0f;
 }
 
-bool DroneAIMgr::InProxmityDistance(SystemEntity* pTargetSE) {
+bool DroneAIMgr::InProxmityDistance(SpaceEntity* pTargetSE) {
     Vector3d delta = pTargetSE->GetPosition() - mySE->GetPosition();
     double dist = delta.Length();
     dist -= pTargetSE->GetRadius();
     return (dist < m_proximityDistance);
 }
 
-bool DroneAIMgr::InActionDistance(SystemEntity* pTargetSE) {
+bool DroneAIMgr::InActionDistance(SpaceEntity* pTargetSE) {
     Vector3d delta = pTargetSE->GetPosition() - mySE->GetPosition();
     double dist = delta.Length();
     dist -= pTargetSE->GetRadius();
     return (dist < sConfig.drone.InteractDistace);
 }
 
-bool DroneAIMgr::InOrbitDistance(SystemEntity* pTargetSE) {
+bool DroneAIMgr::InOrbitDistance(SpaceEntity* pTargetSE) {
     Vector3d delta = pTargetSE->GetPosition() - mySE->GetPosition();
     double dist = delta.Length();
     dist -= pTargetSE->GetRadius();
     return (dist < m_orbitDistance);
 }
-bool DroneAIMgr::InFalloffDistance(SystemEntity* pTargetSE) {
+bool DroneAIMgr::InFalloffDistance(SpaceEntity* pTargetSE) {
     Vector3d delta = pTargetSE->GetPosition() - mySE->GetPosition();
     double dist = delta.Length();
     dist -= pTargetSE->GetRadius();
     return (dist < m_falloffDistance);
 }
 
-bool DroneAIMgr::InEngageDistance(SystemEntity* pTargetSE) {
+bool DroneAIMgr::InEngageDistance(SpaceEntity* pTargetSE) {
     Vector3d delta = pTargetSE->GetPosition() - mySE->GetPosition();
     double dist = delta.Length();
     dist -= pTargetSE->GetRadius();
     return (dist < m_engageDistance);
 }
 
-bool DroneAIMgr::InChaseDistance(SystemEntity* pTargetSE) {
+bool DroneAIMgr::InChaseDistance(SpaceEntity* pTargetSE) {
     Vector3d delta = pTargetSE->GetPosition() - mySE->GetPosition();
     double dist = delta.Length();
     dist -= pTargetSE->GetRadius();
     return (dist < m_chaseDistance);
 }
 
-bool DroneAIMgr::InMaxDistance(SystemEntity* pTargetSE) {
+bool DroneAIMgr::InMaxDistance(SpaceEntity* pTargetSE) {
     Vector3d delta = pTargetSE->GetPosition() - mySE->GetPosition();
     double dist = delta.Length();
     dist -= pTargetSE->GetRadius();
@@ -2619,7 +2619,7 @@ void DroneAIMgr::Move(double timeStamp) {
     UpdatePosition(false);
 }
 
-void DroneAIMgr::MoveDrone(SystemEntity* pTargetSE) {
+void DroneAIMgr::MoveDrone(SpaceEntity* pTargetSE) {
     Vector3d head = pTargetSE->GetPosition() - mySE->GetPosition();
     head.Normalize();
     Vector3d pos = pTargetSE->GetPosition();

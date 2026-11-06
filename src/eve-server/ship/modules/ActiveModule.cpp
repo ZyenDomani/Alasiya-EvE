@@ -335,7 +335,7 @@ void ActiveModule::Process() {
     }
 }
 
-void ActiveModule::RemoveTarget(SystemEntity* pSE) {
+void ActiveModule::RemoveTarget(SpaceEntity* pSE) {
     if (m_targetSE == pSE) {
         _log(MODULE__TRACE, "ActiveModule::RemoveTarget called on %s on %s to remove %s", m_modRef->name(), m_shipRef->name(), pSE->GetName());
         Deactivate();

@@ -50,7 +50,7 @@
 #include "system/SystemManager.h"
 
 // fixed variable init order  -allan 7jul26
-DestinyManager::DestinyManager(SystemEntity *self)
+DestinyManager::DestinyManager(SpaceEntity *self)
 : mySE(self), m_targBubble(nullptr), m_ballMode(Destiny::Ball::Mode::STOP), m_hasSentShipUpdates(false),
 m_warpCapacitorNeed(0.000000138), m_alignTime(5.0f), m_shipWarpSpeed(1.0f), m_speedToLeaveWarp(100.0f),
 m_maxSpeed(1.0f), m_stop(true), m_cloaked(false), m_tractored(false), m_tractorPause(false), m_paused(false),
@@ -112,7 +112,7 @@ DestinyManager::~DestinyManager() {
 
 // vector = (to - from)
 
-// this is called once per tic by SystemEntity::Process() via SystemManager::Process()
+// this is called once per tic by SpaceEntity::Process() via SystemManager::Process()
 void DestinyManager::Process() {
     if (m_skipTic)
         return;
@@ -463,7 +463,7 @@ void DestinyManager::CalculateFollowPoint() {
 
 void DestinyManager::CalculateFormationPoint() {
     // for formations
-    SystemEntity* leader = m_targetEntity.second;
+    SpaceEntity* leader = m_targetEntity.second;
 
     /*
      *    // 1. Validate formation arrays
@@ -601,7 +601,7 @@ void DestinyManager::GotoVelocity() {
     }
 }
 
-Vector3d DestinyManager::RotateVectorByEntityOrientation(const Vector3d& localVec, SystemEntity* leader) {
+Vector3d DestinyManager::RotateVectorByEntityOrientation(const Vector3d& localVec, SpaceEntity* leader) {
     // for formations
     Vector3d forward = leader->GetVelocity();
     double speed = forward.Length();
@@ -961,7 +961,7 @@ void DestinyManager::WarpStop(int64 currentShipSpeed) {
 }
 
 //called whenever an entity is going away and can no longer be used as a target
-void DestinyManager::EntityRemoved(SystemEntity *pSE) {
+void DestinyManager::EntityRemoved(SpaceEntity *pSE) {
     if (m_targetEntity.second == pSE) {
         m_targetEntity.first = 0;
         m_targetEntity.second = nullptr;
@@ -991,7 +991,7 @@ bool DestinyManager::ValidTarget() {
     if (__builtin_expect(m_targetEntity.second == nullptr, 0))
         return false;
 
-    SystemEntity* pSE = m_targetEntity.second;
+    SpaceEntity* pSE = m_targetEntity.second;
     if (pSE->IsDead()) {
         EntityRemoved(pSE);
         return false;
@@ -1062,7 +1062,7 @@ void DestinyManager::BeginMovement() {
 
     if (is_log_enabled(DESTINY__MOVE_TRACE)) {
         if (m_targetEntity.second != nullptr) {
-            SystemEntity* pSE = m_targetEntity.second;
+            SpaceEntity* pSE = m_targetEntity.second;
             _log(DESTINY__MOVE_TRACE, "target (%s) position: %0.2f, %0.2f, %0.2f", \
                     pSE->GetName(), pSE->GetPosition().x, pSE->GetPosition().y, pSE->GetPosition().z);
         }
@@ -1075,14 +1075,14 @@ void DestinyManager::BeginMovement() {
  *   Beyonce calls
  */
 
-void DestinyManager::AlignTo(SystemEntity* pSE) {
+void DestinyManager::AlignTo(SpaceEntity* pSE) {
     // should this Stop() once alignment has been achieved?  i'd say yes.  config option?
     // i originally set it like this, but aknor didnt like it, so it was removed
     m_alignTo = true;
     GotoPoint(pSE->GetPosition());
 }
 
-void DestinyManager::ApproachBall(SystemEntity* pSE) {
+void DestinyManager::ApproachBall(SpaceEntity* pSE) {
     // use this for dock and jump where dist > interact dist
     //m_alignTo = true;
     GotoPoint(pSE->GetPosition());
@@ -1131,7 +1131,7 @@ void DestinyManager::GotoPoint(const Vector3d& point) {
     PyDecRef(up);
 }
 
-void DestinyManager::FollowBall(SystemEntity* pSE, int32 distance) {
+void DestinyManager::FollowBall(SpaceEntity* pSE, int32 distance) {
     //called from client as 'CmdFollowBall'
     //  also used by 'Approach'
     m_targetPoint = pSE->GetPosition();
@@ -1160,7 +1160,7 @@ void DestinyManager::FollowBall(SystemEntity* pSE, int32 distance) {
     PyDecRef(up);
 }
 
-void DestinyManager::OrbitBall(SystemEntity *pSE, uint32 distance/*0*/) {
+void DestinyManager::OrbitBall(SpaceEntity *pSE, uint32 distance/*0*/) {
     if (!sConfig.debug.UseOrbit) {
         Stop();
         return;
@@ -1190,7 +1190,7 @@ void DestinyManager::OrbitBall(SystemEntity *pSE, uint32 distance/*0*/) {
 }
 
 // Fleet warps - on live, all ships use the warp profile of the slowest ship, here they warp as normal
-void DestinyManager::WarpTo(const Vector3d& destPoint, int32 distance, bool autoPilot, SystemEntity* pSE/*nullptr*/) {
+void DestinyManager::WarpTo(const Vector3d& destPoint, int32 distance, bool autoPilot, SpaceEntity* pSE/*nullptr*/) {
     /* warp order..
      * pick destination -> align/accel -> aura "warp drive active" -> cap drain -> accel
      *      -> enter warp -> warp -> decel -> leave warp -> coast -> stop
@@ -1491,7 +1491,7 @@ void DestinyManager::SetUndockSpeed() {
 PyResult DestinyManager::AttemptDockOperation() {
     Client* pClient = mySE->GetPilot();
     uint32 stationID = pClient->GetDockStationID();
-    SystemEntity *stationSE = mySE->SystemMgr()->GetSE(stationID);
+    SpaceEntity *stationSE = mySE->SystemMgr()->GetSE(stationID);
 
     if ( stationSE == nullptr) {
         codelog(CLIENT__ERROR, "%s: Station %u not found.", pClient->GetName(), stationID);
@@ -1529,7 +1529,7 @@ void DestinyManager::DockingAccepted() {
     if (pClient == nullptr)
         return;
 
-    SystemEntity *pSE = mySE->SystemMgr()->GetSE(pClient->GetDockStationID());
+    SpaceEntity *pSE = mySE->SystemMgr()->GetSE(pClient->GetDockStationID());
     if (pSE == nullptr)
         return;
 
@@ -1902,7 +1902,7 @@ void DestinyManager::MakeMissile(Missile* pMissile) {
     m_ballMode = Destiny::Ball::Mode::MISSILE;
     m_ticStamp = mySE->SystemMgr()->GetTicCount();
 
-    SystemEntity* pTarget = pMissile->GetTargetSE();
+    SpaceEntity* pTarget = pMissile->GetTargetSE();
     m_targetPoint = pTarget->GetPosition();
     m_targetEntity.first = pTarget->GetID();
     m_targetEntity.second = pTarget;
@@ -1931,7 +1931,7 @@ void DestinyManager::MakeMissile(Missile* pMissile) {
     SendDestinyUpdates(updates); //consumed
 }
 
-void DestinyManager::TractorBeamStart(SystemEntity* pSE, EvilNumber speed) {
+void DestinyManager::TractorBeamStart(SpaceEntity* pSE, EvilNumber speed) {
     m_ballMode = Destiny::Ball::Mode::FOLLOW;
 
     m_stop = false;
@@ -2344,7 +2344,7 @@ void DestinyManager::RemoveAllMarkers() {
 }
 
 void DestinyManager::RemoveShipMarkers() {
-    SystemEntity* pSE = nullptr;
+    SpaceEntity* pSE = nullptr;
     for (auto &cur : m_shipMarkers) {
         pSE = cur.second;
         pSE->Delete();

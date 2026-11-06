@@ -292,7 +292,7 @@ PyResult DungeonService::Handle_EditObjectRadius( PyCallArgs& call )
         return nullptr;
     }
 
-    SystemEntity* pSE(call.client->SystemMgr()->GetEntityByID(itemID));
+    SpaceEntity* pSE(call.client->SystemMgr()->GetEntityByID(itemID));
     if (!pSE->IsDungeonEditSE()) {
         call.client->SendErrorMsg("The selected object is not part of the current dungeon");
         return nullptr;
@@ -321,7 +321,7 @@ PyResult DungeonService::Handle_EditObjectXYZ( PyCallArgs& call )
         return nullptr;
     }
 
-    SystemEntity* pSE = call.client->SystemMgr()->GetEntityByID(itemID);
+    SpaceEntity* pSE = call.client->SystemMgr()->GetEntityByID(itemID);
     if (!pSE->IsDungeonEditSE()) {
         call.client->SendErrorMsg("The selected object is not part of the current dungeon");
         return nullptr;
@@ -355,7 +355,7 @@ PyResult DungeonService::Handle_EditObjectYawPitchRoll( PyCallArgs& call ) {
         return nullptr;
     }
 
-    SystemEntity* pSE = call.client->SystemMgr()->GetEntityByID(itemID);
+    SpaceEntity* pSE = call.client->SystemMgr()->GetEntityByID(itemID);
     if (!pSE->IsDungeonEditSE()) {
         call.client->SendErrorMsg("The selected object is not part of the current dungeon");
         return nullptr;
