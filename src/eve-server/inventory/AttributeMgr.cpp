@@ -46,7 +46,8 @@
 
 
 AttributeMgr::AttributeMgr( InventoryItem& item)
-: mItem(item)
+: mItem(item),
+mDirty(false)
 {
     mAttributes.clear();
 }
@@ -108,7 +109,7 @@ bool AttributeMgr::SaveAttributes() {
 }
 
 bool AttributeMgr::Save() {
-    /** @note
+    /** @note  only saving attribs when changed.  no change = nothing to save
      * we are saving:
      *   ability attribs for characters
      *   level, sp and endtime attribs for skills
@@ -119,6 +120,8 @@ bool AttributeMgr::Save() {
      *  ship damage saved separately
      */
     if (IsStaticItem(mItem.itemID()) or IsTempItem(mItem.itemID()))
+        return true;
+    if (!mDirty)
         return true;
 
     bool save = false;
@@ -213,6 +216,9 @@ bool AttributeMgr::Save() {
 
     if (!attribs.empty())
         ItemDB::SaveAttributes(IsCharacterID(mItem.itemID()), attribs);
+
+    // reset dirty flag after updating db
+    mDirty = false;
     return true;
 }
 
@@ -379,6 +385,10 @@ bool AttributeMgr::Change(uint16 attrID, EvilNumber& old_val, EvilNumber& new_va
         if (pClient->IsDocked())
             return true;
     }  */
+
+    // at this point, it's a valid change
+    mDirty = true;
+
     //eventName, ownerID, itemID, attributeID, time, newValue, oldValue = change
     Notify_OnModuleAttributeChange modChange;
         modChange.ownerID = mItem.ownerID();
@@ -394,10 +404,10 @@ bool AttributeMgr::Change(uint16 attrID, EvilNumber& old_val, EvilNumber& new_va
         modChange.itemKey = new PyInt(mItem.itemID());
     }
 
-        modChange.attributeID = attrID;
-        modChange.time = GetFileTimeNow();
-        modChange.newValue = new_val.GetPyObject();
-        modChange.oldValue = old_val.GetPyObject();
+    modChange.attributeID = attrID;
+    modChange.time = GetFileTimeNow();
+    modChange.newValue = new_val.GetPyObject();
+    modChange.oldValue = old_val.GetPyObject();
         /*  not sure about this one yet, used in cap charge (more?)....oldValue is list for this server rsp
          *
                   [PyTuple 7 items]
@@ -444,6 +454,9 @@ bool AttributeMgr::Add(uint16 attrID, EvilNumber& num) {
     }
     */
 
+    // at this point, it's a valid change
+    mDirty = true;
+
     Notify_OnModuleAttributeChange modChange;
         modChange.ownerID = mItem.ownerID();
     if (IsFittingSlot(mItem.flag()) and (mItem.categoryID() == EVEDB::invCategories::Charge)) {
@@ -457,10 +470,11 @@ bool AttributeMgr::Add(uint16 attrID, EvilNumber& num) {
         modChange.itemKey = new PyInt(mItem.itemID());
     }
 
-        modChange.attributeID = attrID;
-        modChange.time = GetFileTimeNow();
-        modChange.newValue = num.GetPyObject();
-        modChange.oldValue = PyStatic.NewNone();
+    modChange.attributeID = attrID;
+    modChange.time = GetFileTimeNow();
+    modChange.newValue = num.GetPyObject();
+    modChange.oldValue = PyStatic.NewNone();
+
     return SendChanges(modChange.Encode());
 }
 
@@ -484,7 +498,7 @@ bool AttributeMgr::SendChanges(PyTuple* attrChange) {
     if (IsCorpID(mItem.ownerID()))
         return true;
 
-    Client* pClient(nullptr);
+    Client* pClient = nullptr;
     if (IsCharacterID(mItem.itemID())) {
         pClient = sEntityMgr.FindClientByCharID(mItem.itemID());
     } else {
@@ -497,8 +511,10 @@ bool AttributeMgr::SendChanges(PyTuple* attrChange) {
     }
 
     // avoid flooding the client on login
-    if (pClient->IsLogin())
+    if (pClient->IsLogin()) {
+        mDirty = false;
         return true;
+    }
 
     if (is_log_enabled(ATTRIBUTE__CHANGE)) {
         _log(ATTRIBUTE__CHANGE, "Sending Attribute changes for %s(%u)", mItem.name(), mItem.itemID());
@@ -507,7 +523,8 @@ bool AttributeMgr::SendChanges(PyTuple* attrChange) {
 
     pClient->QueueDestinyEvent(&attrChange);
 
-    //Save();
+    if (sConfig.world.saveOnUpdate)
+        Save();
 
     return true;
 }
@@ -523,8 +540,11 @@ void AttributeMgr::CopyAttributes(std::map< uint16, EvilNumber >& attrMap)
         attrMap[cur.first] =  cur.second;
 }
 
-void AttributeMgr::SaveShipState()
-{
+void AttributeMgr::SaveShipState() {
+    // anything to update?
+    if (!mDirty)
+        return;
+
     // do we need to save others for persistence here?
     std::ostringstream Inserts;
     // start the insert into command.
@@ -654,4 +674,8 @@ AttrMapItr AttributeMgr::begin() {
 
 AttrMapItr AttributeMgr::end() {
     return mAttributes.end();
+}
+
+bool AttributeMgr::isPersistant(int16 attrID) {
+    return true;
 }

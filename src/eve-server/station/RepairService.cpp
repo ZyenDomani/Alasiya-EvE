@@ -136,12 +136,12 @@ PyResult RepairSvcBound::Handle_RepairItems(PyCallArgs &call) {
      *  - this needs to be checked against total repair amount, and use fraction to reduce damage for all items in list
      */
 
-    InventoryItemRef iRef(nullptr);
-    double cost(0), total = 0;
+    InventoryItemRef iRef;
+    double cost = 0.0, total = 0.0;
     uint32 damage = 0;
     std::vector<InventoryItemRef> itemRefVec;
     PyList::const_iterator itr = args.itemIDs->begin(), end = args.itemIDs->end();
-    for (; itr != end; itr++) {
+    for (; itr != end; ++itr) {
         iRef = sItemFactory.GetItemRef(PyRep::IntegerValueU32(*itr));
         if (iRef.get() == nullptr)
             continue;
@@ -160,7 +160,7 @@ PyResult RepairSvcBound::Handle_RepairItems(PyCallArgs &call) {
         total += damage * cost;
     }
 
-    float fraction = 1.0;
+    float fraction = 1.0f;
     if (args.iskAmount < total)
         fraction = total / args.iskAmount;
 
@@ -179,12 +179,12 @@ PyResult RepairSvcBound::Handle_RepairItems(PyCallArgs &call) {
      * {'messageKey': 'RepairNoMoneyForRepair', 'dataID': 17882601, 'suppressable': False, 'bodyID': 259197, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 259196, 'messageID': 1493}
      */
 
-    if (fraction > 1.0)
-        fraction = 1;
+    if (fraction > 1.0f)
+        fraction = 1.0f;
     EvilNumber toRepair = EvilZero, curDamage = EvilZero;
     for (auto &cur : itemRefVec) {
         if (cur->IsShipItem()) {
-            if (fraction == 1) {
+            if (fraction == 1.0f) {
                 cur->SetAttribute(AttrDamage, EvilZero);
                 cur->SetAttribute(AttrArmorDamage, EvilZero);
                 continue;
@@ -208,7 +208,7 @@ PyResult RepairSvcBound::Handle_RepairItems(PyCallArgs &call) {
                 cur->SetAttribute(AttrDamage, toRepair);
             }
         } else {
-            if (fraction == 1) {
+            if (fraction == 1.0f) {
                 cur->SetAttribute(AttrDamage, EvilZero);
                 continue;
             }
@@ -244,7 +244,7 @@ PyResult RepairSvcBound::Handle_GetDamageReports(PyCallArgs &call) {
     Client* pClient = call.client;
     StationItemRef sRef = pClient->SystemMgr()->GetStationFromInventory(m_locationID);
     Inventory* pInv = sRef->GetMyInventory();
-    float standing(sStandingMgr.GetEffectiveStanding(sRef->ownerID(), pClient->GetChar().get()));
+    float standing = (sStandingMgr.GetEffectiveStanding(sRef->ownerID(), pClient->GetChar().get()));
 
     for (auto &cur : args.ints) {
         RepairListRsp rlr;
@@ -333,9 +333,9 @@ PyResult RepairService::Handle_UnasembleItems(PyCallArgs &call) {
     }
     args.Dump(PHYSICS__INFO);
 
-    PyList *pList(nullptr);
-    PyTuple *tuple(nullptr);
-    InventoryItemRef iRef(nullptr);
+    PyList *pList = nullptr;
+    PyTuple *tuple = nullptr;
+    InventoryItemRef iRef;
     uint32 itemID = 0; //,locationID = 0,  itemLoc = 0;
 
     if (args.list->size() > 0)

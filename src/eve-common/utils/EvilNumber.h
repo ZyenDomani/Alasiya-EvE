@@ -79,6 +79,7 @@ public:
     /************************************************************************/
     /* EvilNumber manipulation operator handlers                            */
     /************************************************************************/
+    //__attribute__((deprecated("Legacy Usage")))
     EvilNumber operator*(const EvilNumber& val)
     {    return _Multiply(*this, val);    }
 
@@ -339,6 +340,7 @@ public:
      * @param[in] val
      * @return
      */
+    /*
     static EvilNumber sin( const EvilNumber & val );
     static EvilNumber cos( const EvilNumber & val );
     static EvilNumber tan( const EvilNumber & val );
@@ -350,7 +352,7 @@ public:
     static EvilNumber log( const EvilNumber & val );
     static EvilNumber log10( const EvilNumber & val );
     static EvilNumber exp( const EvilNumber & val );
-
+*/
     /************************************************************************/
     /* End of EvilNumber Mathematical functions                             */
     /************************************************************************/
@@ -482,11 +484,13 @@ extern EvilNumber EvilZero;
 extern EvilNumber EvilZerof;
 extern EvilNumber EvilOne;
 extern EvilNumber EvilNegOne;
+/*
 extern const EvilNumber EvilTime_Second;
 extern const EvilNumber EvilTime_Minute;
 extern const EvilNumber EvilTime_Hour;
 extern const EvilNumber EvilTime_Day;
 extern const EvilNumber EvilTime_Month;
 extern const EvilNumber EvilTime_Year;
+*/
 
 #endif // EvilNumber_h__

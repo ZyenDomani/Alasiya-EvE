@@ -84,6 +84,8 @@ public:
     AttrMapItr end();
 
 protected:
+    bool isPersistant(int16 attrID);
+    
     /**
      * @brief internal function to handle the change.
      *
@@ -119,6 +121,10 @@ protected:
     InventoryItem& mItem;
 
     AttrMap mAttributes;
+
+private:
+    bool mDirty;
+
 };
 
 #endif /* __EVE_ATTRIBUTE_MGR__H__INCL__ */

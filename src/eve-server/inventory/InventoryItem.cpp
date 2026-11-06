@@ -1091,6 +1091,7 @@ void InventoryItem::SaveItem()
     ItemDB::SaveItem(m_itemID, data);
     // item attributes are saved in ItemFactory.cpp:96  (save loop on shutdown for loaded items)
     // make call here for items saved after *some* change
+    //if (!sConsole.IsShutdown())
     pAttributeMgr->Save();
 }
 

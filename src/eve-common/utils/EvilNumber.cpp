@@ -33,12 +33,13 @@ EvilNumber EvilZero = EvilNumber();
 EvilNumber EvilZerof = EvilNumber(0.0f);
 EvilNumber EvilOne = EvilNumber(1);
 EvilNumber EvilNegOne = EvilNumber(-1);
+/*
 const EvilNumber EvilTime_Second = EvE::Time::Second;
 const EvilNumber EvilTime_Minute = EvilTime_Second * 60;
 const EvilNumber EvilTime_Hour = EvilTime_Minute * 60;
 const EvilNumber EvilTime_Day = EvilTime_Hour * 24;
 const EvilNumber EvilTime_Month = EvilTime_Day * 30;
-const EvilNumber EvilTime_Year = EvilTime_Month * 12 + 5;
+const EvilNumber EvilTime_Year = EvilTime_Month * 12 + 5;*/
 
 
 // CONSTRUCTORS:
@@ -200,7 +201,7 @@ double EvilNumber::get_double()
 }
 
 // public math functions
-
+/*
 EvilNumber EvilNumber::sin( const EvilNumber & val )
 {
     EvilNumber result = EvilNumber();
@@ -351,7 +352,7 @@ EvilNumber EvilNumber::exp( const EvilNumber & val )
     result.mType = evil_number_float;
     return result;
 }
-
+*/
 
 // PRIVATE FUNCTIONS:
 
