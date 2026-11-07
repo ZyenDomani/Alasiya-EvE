@@ -24,8 +24,7 @@
     Rewrite:    Allan
 */
 
-#ifndef __EVE_ATTRIBUTE_MGR__H__INCL__
-#define __EVE_ATTRIBUTE_MGR__H__INCL__
+#pragma once
 
 #include "./eve-common.h"
 
@@ -41,7 +40,19 @@ class InventoryItem;
 class AttributeMgr
 {
 public:
+    // default c'tor
+    AttributeMgr() =delete;
+    // main c'tor
     AttributeMgr(InventoryItem& item);
+    // copy c'tor
+    AttributeMgr(const AttributeMgr& oth) =delete;
+    // move c'tor
+    AttributeMgr(AttributeMgr&& oth) noexcept =default;
+    // copy assignment
+    AttributeMgr& operator=(const AttributeMgr& oth) =delete;
+    // move assignment
+    AttributeMgr& operator=(AttributeMgr&& oth) =default;
+    // d'tor
     ~AttributeMgr() noexcept;
 
     void SetAttribute(uint16 attrID, EvilNumber& num, bool notify=true);
@@ -84,8 +95,8 @@ public:
     AttrMapItr end();
 
 protected:
-    bool isPersistant(int16 attrID);
-    
+    bool isPersistant(int16 attrID) const;
+
     /**
      * @brief internal function to handle the change.
      *
@@ -127,7 +138,6 @@ private:
 
 };
 
-#endif /* __EVE_ATTRIBUTE_MGR__H__INCL__ */
 
 /*      self.electronicAttributes = {const.attributeScanGravimetricStrengthBonus: const.attributeScanGravimetricStrength,
          const.attributeScanLadarStrengthBonus: const.attributeScanLadarStrength,

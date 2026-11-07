@@ -2234,34 +2234,34 @@ bool ShipItem::ValidateBoardShip(CharacterRef character) {
     EvilNumber skillTypeID(EvilZero);
 
     if (HasAttribute(AttrRequiredSkill1, skillTypeID)) {
-        if (character->HasSkillTrainedToLevel( skillTypeID.get_uint32(), GetAttribute(AttrRequiredSkill1Level).get_uint32()))
+        if (character->HasSkillTrainedToLevel( skillTypeID.get_int16(), GetAttribute(AttrRequiredSkill1Level).get_int8()))
             result = true;
         if (HasAttribute(AttrRequiredSkill2, skillTypeID)) {
-            if (character->HasSkillTrainedToLevel( skillTypeID.get_uint32(), GetAttribute(AttrRequiredSkill2Level).get_uint32())) {
+            if (character->HasSkillTrainedToLevel( skillTypeID.get_int16(), GetAttribute(AttrRequiredSkill2Level).get_int8())) {
                 result = true;
             } else {
                 return false;
             }
             if (HasAttribute(AttrRequiredSkill3, skillTypeID)) {
-                if (character->HasSkillTrainedToLevel( skillTypeID.get_uint32(), GetAttribute(AttrRequiredSkill3Level).get_uint32())) {
+                if (character->HasSkillTrainedToLevel( skillTypeID.get_int16(), GetAttribute(AttrRequiredSkill3Level).get_int8())) {
                     result = true;
                 } else {
                     return false;
                 }
                 if (HasAttribute(AttrRequiredSkill4, skillTypeID)) {
-                    if (character->HasSkillTrainedToLevel( skillTypeID.get_uint32(), GetAttribute(AttrRequiredSkill4Level).get_uint32())) {
+                    if (character->HasSkillTrainedToLevel( skillTypeID.get_int16(), GetAttribute(AttrRequiredSkill4Level).get_int8())) {
                         result = true;
                     } else {
                         return false;
                     }
                     if (HasAttribute(AttrRequiredSkill5, skillTypeID)) {
-                        if (character->HasSkillTrainedToLevel( skillTypeID.get_uint32(), GetAttribute(AttrRequiredSkill5Level).get_uint32())) {
+                        if (character->HasSkillTrainedToLevel( skillTypeID.get_int16(), GetAttribute(AttrRequiredSkill5Level).get_int8())) {
                             result = true;
                         } else {
                             return false;
                         }
                         if (HasAttribute(AttrRequiredSkill6, skillTypeID)) {
-                            if (character->HasSkillTrainedToLevel( skillTypeID.get_uint32(), GetAttribute(AttrRequiredSkill6Level).get_uint32())) {
+                            if (character->HasSkillTrainedToLevel( skillTypeID.get_int16(), GetAttribute(AttrRequiredSkill6Level).get_int8())) {
                                 result = true;
                             } else {
                                 return false;

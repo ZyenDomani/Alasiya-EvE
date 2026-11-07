@@ -157,7 +157,7 @@ public:
 
     // skills
     bool            HasSkill(uint16 skillTypeID) const;
-    bool            HasSkillTrainedToLevel(uint16 skillTypeID, uint8 skillLevel) const;
+    bool            HasSkillTrainedToLevel(uint16 skillTypeID, int8 skillLevel) const;
     SkillRef        GetCharSkillRef(uint16 skillTypeID) const;
     int8            GetSkillLevel(uint16 skillTypeID, bool zeroForNotInjected = true) const;
     PyRep*          GetRAMSkills();

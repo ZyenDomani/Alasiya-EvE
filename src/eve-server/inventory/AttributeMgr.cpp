@@ -119,11 +119,13 @@ bool AttributeMgr::Save() {
      *
      *  ship damage saved separately
      */
-    if (IsStaticItem(mItem.itemID()) or IsTempItem(mItem.itemID()))
+    uint32 itemID = mItem.itemID();
+    if (IsStaticItem(itemID) or IsTempItem(itemID))
         return true;
     if (!mDirty)
         return true;
-
+/**  old...keep till new proves itself.
+ *
     bool save = false;
     std::vector<Inv::AttrData> attribs;
     AttrMapItr itr = mAttributes.begin(), end = mAttributes.end();
@@ -213,9 +215,110 @@ bool AttributeMgr::Save() {
             }
         }
     }
-
     if (!attribs.empty())
         ItemDB::SaveAttributes(IsCharacterID(mItem.itemID()), attribs);
+
+*/
+
+    std::vector<Inv::AttrData> attribs;
+    const bool isChar = IsCharacterID(itemID);
+
+    auto pushAttr = [&](uint16 attrID, EvilNumber& val) {
+        attribs.emplace_back();
+        Inv::AttrData& data = attribs.back();
+        data.itemID = itemID;
+        data.attrID = attrID;
+        if (val.isInt()) {
+            data.decimal = false;
+            data.valueInt = val.get_long();
+        } else {
+            data.decimal = true;
+            data.valueFloat = val.get_double();
+        }
+    };
+
+    if (isChar) {
+        attribs.reserve(15);
+        for (auto& kv : mAttributes) {
+            switch (kv.first) {
+                case AttrCharisma:
+                case AttrIntelligence:
+                case AttrMemory:
+                case AttrPerception:
+                case AttrWillpower:
+                case AttrCustomCharismaBonus:
+                case AttrCustomWillpowerBonus:
+                case AttrCustomPerceptionBonus:
+                case AttrCustomMemoryBonus:
+                case AttrCustomIntelligenceBonus:
+                case AttrCharismaBonus:
+                case AttrIntelligenceBonus:
+                case AttrMemoryBonus:
+                case AttrPerceptionBonus:
+                case AttrWillpowerBonus: {
+                    if (kv.second == EvilZero)
+                        continue;
+                    attribs.emplace_back();
+                    Inv::AttrData& data = attribs.back();
+                    data.itemID = itemID;
+                    data.attrID = kv.first;
+                    data.decimal = false;
+                    data.valueInt = kv.second.get_long();
+                    break;
+                }
+            }
+        }
+    } else {
+        switch (mItem.categoryID()) {
+            case EVEDB::invCategories::Asteroid:
+            case EVEDB::invCategories::Blueprint:
+                return false;
+            case EVEDB::invCategories::Ship:
+                return true;
+
+            case EVEDB::invCategories::Skill: {
+                attribs.reserve(2);
+                auto it = mAttributes.find(AttrSkillPoints);
+                if (it != mAttributes.end()) pushAttr(it->first, it->second);
+                it = mAttributes.find(AttrSkillLevel);
+                if (it != mAttributes.end()) pushAttr(it->first, it->second);
+                break;
+            }
+
+            case EVEDB::invCategories::Celestial:
+            case EVEDB::invCategories::Structure:
+            case EVEDB::invCategories::StructureUpgrade:
+            case EVEDB::invCategories::SovereigntyStructure:
+            case EVEDB::invCategories::Orbitals:
+            case EVEDB::invCategories::Deployable: {
+                attribs.reserve(mAttributes.size());
+                for (auto& kv : mAttributes) {
+                    pushAttr(kv.first, kv.second);
+                }
+                break;
+            }
+
+            case EVEDB::invCategories::Module: {
+                attribs.reserve(2);
+                auto it = mAttributes.find(AttrOnline);
+                if (it != mAttributes.end()) pushAttr(it->first, it->second);
+                it = mAttributes.find(AttrDamage);
+                if (it != mAttributes.end()) pushAttr(it->first, it->second);
+                break;
+            }
+
+            case EVEDB::invCategories::Charge:
+            case EVEDB::invCategories::Drone:
+            case EVEDB::invCategories::Subsystem: {
+                auto it = mAttributes.find(AttrDamage);
+                if (it != mAttributes.end()) pushAttr(it->first, it->second);
+                break;
+            }
+        }
+    }
+
+    if (!attribs.empty())
+        ItemDB::SaveAttributes(isChar, attribs);
 
     // reset dirty flag after updating db
     mDirty = false;
@@ -387,7 +490,8 @@ bool AttributeMgr::Change(uint16 attrID, EvilNumber& old_val, EvilNumber& new_va
     }  */
 
     // at this point, it's a valid change
-    mDirty = true;
+    if (isPersistant(attrID))
+        mDirty = true;
 
     //eventName, ownerID, itemID, attributeID, time, newValue, oldValue = change
     Notify_OnModuleAttributeChange modChange;
@@ -455,7 +559,8 @@ bool AttributeMgr::Add(uint16 attrID, EvilNumber& num) {
     */
 
     // at this point, it's a valid change
-    mDirty = true;
+    if (isPersistant(attrID))
+        mDirty = true;
 
     Notify_OnModuleAttributeChange modChange;
         modChange.ownerID = mItem.ownerID();
@@ -676,6 +781,30 @@ AttrMapItr AttributeMgr::end() {
     return mAttributes.end();
 }
 
-bool AttributeMgr::isPersistant(int16 attrID) {
-    return true;
+bool AttributeMgr::isPersistant(int16 attrID) const {
+    if (IsCharacterID(mItem.itemID())) {
+        return (attrID >= AttrCharisma && attrID <= AttrWillpower) ||
+        (attrID >= AttrCharismaBonus && attrID <= AttrWillpowerBonus) ||
+        (attrID >= AttrCustomCharismaBonus && attrID <= AttrCustomWillpowerBonus);
+    }
+
+    switch (mItem.categoryID()) {
+        case EVEDB::invCategories::Skill:
+            return (attrID == AttrSkillPoints || attrID == AttrSkillLevel);
+        case EVEDB::invCategories::Module:
+            return (attrID == AttrOnline || attrID == AttrDamage);
+        case EVEDB::invCategories::Charge:
+        case EVEDB::invCategories::Drone:
+        case EVEDB::invCategories::Subsystem:
+            return (attrID == AttrDamage);
+        case EVEDB::invCategories::Celestial:
+        case EVEDB::invCategories::Structure:
+        case EVEDB::invCategories::StructureUpgrade:
+        case EVEDB::invCategories::SovereigntyStructure:
+        case EVEDB::invCategories::Orbitals:
+        case EVEDB::invCategories::Deployable:
+            return true;
+        default:
+            return false;
+    }
 }

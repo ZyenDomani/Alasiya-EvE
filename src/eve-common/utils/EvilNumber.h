@@ -22,17 +22,25 @@
     ------------------------------------------------------------------------------------
     Author:        Captnoord, Aknor Jaden
     Updates:    Allan
+    Major Rewrite to remove all sketchy/stupid code (finally)
+        -Allan  6Nov26
 */
 
-#ifndef EvilNumber_h__
-#define EvilNumber_h__
+#pragma once
 
 #define MAX_EVIL_INTEGER    0x7FFFFFFFFFFFFFFFLL      // 64-bit signed integer
+
+#include <string>
+#include <cmath>
 
 #include "eve-compat.h"
 
 
-// this file should have all stuff regarding attribute caching..
+extern EvilNumber EvilZero;
+extern EvilNumber EvilZerof;
+extern EvilNumber EvilOne;
+extern EvilNumber EvilNegOne;
+
 enum EVIL_NUMBER_TYPE
 {
     evil_number_nan = 0,
@@ -64,7 +72,9 @@ private:
     EVIL_NUMBER_TYPE mType;
 
 public:
+    // default c'tor
     EvilNumber();
+    // main c'tors
     EvilNumber(int8 val);
     EvilNumber(uint8 val);
     EvilNumber(int16 val);
@@ -74,423 +84,265 @@ public:
     EvilNumber(int64 val);
     EvilNumber(float val);
     EvilNumber(double val);
+    // copy c'tor
+    EvilNumber(const EvilNumber& oth) =default;
+    // move c'tor
+    EvilNumber(EvilNumber&& oth) =default;
+    // copy assignment
+    EvilNumber& operator=(const EvilNumber& oth) =default;
+    // move assignment
+    EvilNumber& operator=(EvilNumber&& oth) =default;
+    // d'tor
+    ~EvilNumber() =default;
 
+    // Pre-increment (++x)
+    EvilNumber& operator++() {
+        if (mType == evil_number_int) ++iVal;
+        else if (mType == evil_number_float) ++fVal;
+        return *this;
+    }
 
-    /************************************************************************/
-    /* EvilNumber manipulation operator handlers                            */
-    /************************************************************************/
-    //__attribute__((deprecated("Legacy Usage")))
-    EvilNumber operator*(const EvilNumber& val)
-    {    return _Multiply(*this, val);    }
-
-    EvilNumber operator*=(const EvilNumber& val)
-    {    return _SelfMultiply(val);      }
-
-    EvilNumber operator/(const EvilNumber& val)
-    {    return _Divide(*this, val);     }
-
-    EvilNumber operator/=(const EvilNumber& val)
-    {    return _SelfDivide(val);        }
-
-    EvilNumber operator+(const EvilNumber& val)
-    {    return _Add(*this, val);        }
-
-    EvilNumber operator+=(const EvilNumber& val)
-    {    return _SelfAdd(val);          }
-
-    EvilNumber operator-(const EvilNumber& val)
-    {    return _Subtract(*this, val);   }
-
-    EvilNumber operator-()
-    {    return _Multiply(EvilNumber(-1.0), *this);   }
-
-    EvilNumber operator-=(const EvilNumber& val)
-    {    return _SelfSubtract(val);     }
-
-    EvilNumber operator%(const EvilNumber& val)
-    {    return _Modulus(*this, val);    }
-
-    EvilNumber operator%=(const EvilNumber& val)
-    {    return _SelfModulus(val);      }
-
-    EvilNumber operator++()
-    {    return _SelfIncrement();       }
-
-    EvilNumber operator++(int)
-    {
+    // Pre-decrement (--x)
+    EvilNumber& operator--() {
+        if (mType == evil_number_int) --iVal;
+        else if (mType == evil_number_float) --fVal;
+        return *this;
+    }
+    // Post-increment (x++)
+    EvilNumber operator++(int) {
         EvilNumber temp = *this;
-        _SelfIncrement();
+        ++(*this);
         return temp;
     }
 
-    EvilNumber operator--()
-    {    return _SelfDecrement();       }
-
-    EvilNumber operator--(int)
-    {
+    // Post-decrement (x--)
+    EvilNumber operator--(int) {
         EvilNumber temp = *this;
-        _SelfDecrement();
+        --(*this);
         return temp;
     }
-
-    /* this causes errors when enabled
-     *  there are comparisons using (ENum + (float) > ENum) [mainly in ship cap/hp]
-     * this causes a return of float then tries to use '>' for which the inputs are on wrong sides
-     * will need offending code rewrote to use this system
-     * may not be worth the effort, as things are working as-is
-     */
-    /**
-     * @brief Code generation macro to create basic binary math operator overload using supplied operator and type being compared to EvilNumber
-     *
-     * @param[in] a
-     * @param[in] b
-     * @return operator overload function for operator 'a'  to a value 'val' of type 'b'
-     */
-    /*
-    #define MATH_OPERATOR(a, b) \
-        b operator a ( b val) \
-        { \
-            if (this->mType == evil_number_int) \
-                return this->iVal a static_cast<int64>(val); \
-            else \
-                return this->fVal a static_cast<double>(val); \
+    
+    EvilNumber& operator+=(const EvilNumber& val) {
+        if (mType == evil_number_float) {
+            fVal += (val.mType == evil_number_float) ? val.fVal : static_cast<double>(val.iVal);
+        } else if (mType == evil_number_int && val.mType == evil_number_int) {
+            iVal += val.iVal;
+        } else {
+            fVal = static_cast<double>(iVal) + val.fVal;
+            mType = evil_number_float;
         }
-*/
-    /**
-     * @brief Code generation macro to create all basic binary math operator overload functions for a specified type
-     *
-     * @param[in] a
-     * @return all basic binary math operator overload functions for the specified type
-     */
-    /*
-    #define MATH_OPERATORS_FOR( type ) \
-        MATH_OPERATOR( +, type ) \
-        MATH_OPERATOR( -, type ) \
-        MATH_OPERATOR( *, type ) \
-        MATH_OPERATOR( /, type )
-    //    MATH_OPERATOR( %, type )
-*/
-    /** use a code generating macro to generate basic binary math operator handlers
-     */
-/*
-	MATH_OPERATORS_FOR( const int8)
-    MATH_OPERATORS_FOR( const uint8)
-    MATH_OPERATORS_FOR( const int16)
-    MATH_OPERATORS_FOR( const uint16)
-    MATH_OPERATORS_FOR( const int32)
-    MATH_OPERATORS_FOR( const uint32)
-    MATH_OPERATORS_FOR( const int64)
-    MATH_OPERATORS_FOR( const float)
-    MATH_OPERATORS_FOR( const double)
-*/
-    /************************************************************************/
-    /* End of EvilNumber manipulation operator handlers                     */
-    /************************************************************************/
+        return *this;
+    }
 
-
-    /************************************************************************/
-    /* EvilNumber logic operator handlers                                   */
-    /************************************************************************/
-
-    /**
-     * @brief Code generation macro to create comparison operator overload using supplied operator and type being compared to EvilNumber
-     *
-     * @param[in] a
-     * @param[in] b
-     * @return operator overload function for operator 'a' comparing to a value 'val' of type 'b'
-     */
-    #define LOGIC_OPERATOR(a, b) \
-        bool operator a (b val) \
-        { \
-            if (this->mType == evil_number_int) { \
-                return this->iVal a static_cast<int64>(val); \
-            } else if (this->mType == evil_number_float) { \
-                return this->fVal a static_cast<double>(val); \
-            } else { \
-                assert(false); \
-                return false; \
-            } \
+    EvilNumber& operator-=(const EvilNumber& val) {
+        if (mType == evil_number_float) {
+            fVal -= (val.mType == evil_number_float) ? val.fVal : static_cast<double>(val.iVal);
+        } else if (mType == evil_number_int && val.mType == evil_number_int) {
+            iVal -= val.iVal;
+        } else {
+            fVal = static_cast<double>(iVal) - val.fVal;
+            mType = evil_number_float;
         }
-
-    /**
-     * @brief Code generation macro to create all comparison operator overload functions for a specified type
-     *
-     * @param[in] a
-     * @return all comparison operator overload functions for the specified type
-     */
-    #define LOGIC_OPERATORS_FOR( type ) \
-        LOGIC_OPERATOR( <, type ) \
-        LOGIC_OPERATOR( <=, type ) \
-        LOGIC_OPERATOR( >, type ) \
-        LOGIC_OPERATOR( >=, type ) \
-        LOGIC_OPERATOR( ==, type ) \
-        LOGIC_OPERATOR( !=, type )
-
-    /* using a code generating macro to generate logic operator handlers
-     * @note expand these if needed.
-     */
-    LOGIC_OPERATORS_FOR( const int8)
-    LOGIC_OPERATORS_FOR( const uint8)
-    LOGIC_OPERATORS_FOR( const int16)
-    LOGIC_OPERATORS_FOR( const uint16)
-    LOGIC_OPERATORS_FOR( const int32)
-    LOGIC_OPERATORS_FOR( const uint32)
-    LOGIC_OPERATORS_FOR( const int64)
-    LOGIC_OPERATORS_FOR( const float)
-    LOGIC_OPERATORS_FOR( const double)
-
-
-    /**
-     * @brief '==' operator overload
-     *
-     * @param[in] val
-     * @return will return true when this and val are equal
-     * @note can I create 2 floats that would be equal when doing normal float compare and not equal when doing integer compare.
-     */
-    bool operator==(const EvilNumber& val)
-    {
-        if (this->mType == evil_number_int && val.mType == evil_number_int) {
-            return this->iVal == val.iVal;
-	} else if (this->mType == evil_number_float && val.mType == evil_number_float) {
-            return this->fVal == val.fVal;
-	} else if (this->mType == evil_number_float) {
-            return this->fVal == double(val.iVal);
-	} else {
-            return double(this->iVal) == val.fVal;
-	}
+        return *this;
     }
 
-    // doesnt work when compared to 0 (num != 0)
-    bool operator!=(const EvilNumber& val)
-    {
-        if (this->mType == evil_number_int && val.mType == evil_number_int) {
-            return this->iVal != val.iVal;
-	} else if (this->mType == evil_number_float && val.mType == evil_number_float) {
-            return this->fVal != val.fVal;
-	} else if (this->mType == evil_number_float) {
-            return this->fVal != double(val.iVal);
-	} else {
-            return double(this->iVal) != val.fVal;
-	}
+    EvilNumber& operator*=(const EvilNumber& val) {
+        if (mType == evil_number_float) {
+            fVal *= (val.mType == evil_number_float) ? val.fVal : static_cast<double>(val.iVal);
+        } else if (mType == evil_number_int && val.mType == evil_number_int) {
+            iVal *= val.iVal;
+        } else {
+            fVal = static_cast<double>(iVal) * val.fVal;
+            mType = evil_number_float;
+        }
+        return *this;
     }
 
-    bool operator<(const EvilNumber& val)
-    {
-        if (this->mType == evil_number_int && val.mType == evil_number_int) {
-            return this->iVal < val.iVal;
-	} else if (this->mType == evil_number_float && val.mType == evil_number_float) {
-            return this->fVal < val.fVal;
-	} else if (this->mType == evil_number_float) {
-            return this->fVal < double(val.iVal);
-	} else {
-            return double(this->iVal) < val.fVal;
-	}
+    EvilNumber& operator/=(const EvilNumber& val) {
+        double denominator = (val.mType == evil_number_float) ? val.fVal : static_cast<double>(val.iVal);
+        if (mType == evil_number_float) {
+            fVal /= denominator;
+        } else {
+            fVal = static_cast<double>(iVal) / denominator;
+            mType = evil_number_float;
+        }
+        return *this;
     }
 
-    bool operator>(const EvilNumber& val)
-    {
-        if (this->mType == evil_number_int && val.mType == evil_number_int) {
-            return this->iVal > val.iVal;
-	} else if (this->mType == evil_number_float && val.mType == evil_number_float) {
-            return this->fVal > val.fVal;
-	} else if (this->mType == evil_number_float) {
-            return this->fVal > double(val.iVal);
-	} else {
-            return double(this->iVal) > val.fVal;
-	}
+    EvilNumber& operator%=(const EvilNumber& val) {
+        int64 left = (mType == evil_number_float) ? static_cast<int64>(fVal) : iVal;
+        int64 right = (val.mType == evil_number_float) ? static_cast<int64>(val.fVal) : val.iVal;
+        iVal = left % right;
+        mType = evil_number_int;
+        return *this;
     }
 
-    bool operator<=(const EvilNumber& val)
-    {
-        if (this->mType == evil_number_int && val.mType == evil_number_int) {
-            return this->iVal <= val.iVal;
-	} else if (this->mType == evil_number_float && val.mType == evil_number_float) {
-            return this->fVal <= val.fVal;
-	} else if (this->mType == evil_number_float) {
-            return this->fVal <= double(val.iVal);
-	} else {
-            return double(this->iVal) <= val.fVal;
-	}
-    }
-
-    bool operator>=(const EvilNumber& val)
-    {
-        if (this->mType == evil_number_int && val.mType == evil_number_int) {
-            return this->iVal >= val.iVal;
-	} else if (this->mType == evil_number_float && val.mType == evil_number_float) {
-            return this->fVal >= val.fVal;
-	} else if (this->mType == evil_number_float) {
-            return this->fVal >= double(val.iVal);
-	} else {
-            return double(this->iVal) >= val.fVal;
-	}
-    }
-
-    /************************************************************************/
-    /* End of EvilNumber logic operator handlers                            */
-    /************************************************************************/
-
-
-    /************************************************************************/
-    /* EvilNumber Mathematical functions                                    */
-    /************************************************************************/
-    /**
-     * @brief ??
-     *
-     * @param[in] val
-     * @return
-     */
-    /*
-    static EvilNumber sin( const EvilNumber & val );
-    static EvilNumber cos( const EvilNumber & val );
-    static EvilNumber tan( const EvilNumber & val );
-    static EvilNumber asin( const EvilNumber & val );
-    static EvilNumber acos( const EvilNumber & val );
-    static EvilNumber atan( const EvilNumber & val );
-    static EvilNumber sqrt( const EvilNumber & val );
-    static EvilNumber pow( const EvilNumber & val1, const EvilNumber & val2 );
-    static EvilNumber log( const EvilNumber & val );
-    static EvilNumber log10( const EvilNumber & val );
-    static EvilNumber exp( const EvilNumber & val );
-*/
-    /************************************************************************/
-    /* End of EvilNumber Mathematical functions                             */
-    /************************************************************************/
-
-
-    /**
-     * @brief converts the EvilNumber value into a string
-     *
-     * @return the text representative of the value.
-     */
-    std::string to_str()
-    {
-        char buff[32]; // max uint32 will result in a 10 char string, a float will result in a ? char string.
-        if (mType == evil_number_int) {
-            snprintf(buff, 32, "%li", iVal);
-	} else if (mType == evil_number_float) {
-            snprintf(buff, 32, "%f", fVal);
-	} else {
-            assert(false); // bleh crash..
-	}
-        return std::string(buff);
-    }
-
-    /**
-     * @brief converts the EvilNumber into a python object.
-     *
-     * @return the python object of the EvilNumber.
-     */
+    // convert the EvilNumber into a python object.
     PyRep* GetPyObject();
 
-    EVIL_NUMBER_TYPE get_type()                         { return mType; }
+    EVIL_NUMBER_TYPE get_type() const                   { return mType; }
 
-    bool isInt()                                        { return ( mType == evil_number_int ); }
-    bool isFloat()                                      { return ( mType == evil_number_float ); }
-    bool isNaN();
-    bool isInf();
+    bool isInt() const                                  { return ( mType == evil_number_int ); }
+    bool isFloat() const                                { return ( mType == evil_number_float ); }
+    bool isNaN() const;
+    bool isInf() const;
 
-    bool get_bool();
-    int32 get_int();   // be careful with using this one...no overflow checks
-    int64 get_long();
-    uint32 get_uint32();    // be careful with using this one...no overflow checks
-    float get_float();
-    double get_double();
+    bool get_bool() const;
+    int8 get_int8() const;
+    int16 get_int16() const;
+    int32 get_int() const;
+    int64 get_long() const;
+    uint32 get_uint32() const;
+    float get_float() const;
+    double get_double() const;
 
-protected:
-    /**
-     * @brief check if its possible a integer and do the conversion
-     *
-     * checking every calculation for float/int conversion can be a drain on
-     * performance. But integer math is faster than floating point math.
-     */
-    void CheckIntegrity();
+    // Unary minus remains a normal member function
+    EvilNumber operator-() const {
+        EvilNumber result = *this;
+        if (result.mType == evil_number_float) result.fVal = -result.fVal;
+        else if (result.mType == evil_number_int) result.iVal = -result.iVal;
+        return result;
+    }
 
-    /**
-     * @brief multiply this with @a
-     *
-     * Multiply this with @a.
-     *
-     * @param[in] val the value we are multiplying with.
-     */
-    EvilNumber _Multiply(const EvilNumber & val1, const EvilNumber & val2);
-    EvilNumber _SelfMultiply(const EvilNumber & val);
+    friend inline bool operator<(const EvilNumber& lhs, const EvilNumber& rhs) {
+        if (lhs.mType == evil_number_int && rhs.mType == evil_number_int) return lhs.iVal < rhs.iVal;
+        double lVal = (lhs.mType == evil_number_float) ? lhs.fVal : static_cast<double>(lhs.iVal);
+        double rVal = (rhs.mType == evil_number_float) ? rhs.fVal : static_cast<double>(rhs.iVal);
+        return lVal < rVal;
+    }
 
-    /**
-     * @brief divide this with @a
-     *
-     * Divide this with @a.
-     *
-     * @param[in] val the value we are dividing by.
-     * @todo handle "int(2) / int(4) = float(0.5)" in a fast enough way
-     */
-    EvilNumber _Divide(const EvilNumber & val1, const EvilNumber & val2);
-    EvilNumber _SelfDivide(const EvilNumber & val);
+    friend inline bool operator<=(const EvilNumber& lhs, const EvilNumber& rhs) {
+        if (lhs.mType == evil_number_int && rhs.mType == evil_number_int) return lhs.iVal <= rhs.iVal;
+        double lVal = (lhs.mType == evil_number_float) ? lhs.fVal : static_cast<double>(lhs.iVal);
+        double rVal = (rhs.mType == evil_number_float) ? rhs.fVal : static_cast<double>(rhs.iVal);
+        return lVal <= rVal;
+    }
 
-    /**
-     * @brief add this with @a
-     *
-     * Add this with @a.
-     *
-     * @param[in] val the value we are adding by.
-     */
-    EvilNumber _Add(const EvilNumber & val1, const EvilNumber & val2);
-    EvilNumber _SelfAdd(const EvilNumber & val);
+    friend inline bool operator>(const EvilNumber& lhs, const EvilNumber& rhs) {
+        if (lhs.mType == evil_number_int && rhs.mType == evil_number_int) return lhs.iVal > rhs.iVal;
+        double lVal = (lhs.mType == evil_number_float) ? lhs.fVal : static_cast<double>(lhs.iVal);
+        double rVal = (rhs.mType == evil_number_float) ? rhs.fVal : static_cast<double>(rhs.iVal);
+        return lVal > rVal;
+    }
 
-    /**
-     * @brief subtract this with @a
-     *
-     * Subtract this with @a.
-     *
-     * @param[in] val the value we are subtracting by.
-     */
-    EvilNumber _Subtract(const EvilNumber & val1, const EvilNumber & val2);
-    EvilNumber _SelfSubtract(const EvilNumber & val);
+    friend inline bool operator>=(const EvilNumber& lhs, const EvilNumber& rhs) {
+        if (lhs.mType == evil_number_int && rhs.mType == evil_number_int) return lhs.iVal >= rhs.iVal;
+        double lVal = (lhs.mType == evil_number_float) ? lhs.fVal : static_cast<double>(lhs.iVal);
+        double rVal = (rhs.mType == evil_number_float) ? rhs.fVal : static_cast<double>(rhs.iVal);
+        return lVal >= rVal;
+    }
 
-    /**
-     * @brief modulus this with @a
-     *
-     * this modulus @a.
-     *
-     * @param[in] val the value we are using as the rvalue in the modulus.
-     */
-    EvilNumber _Modulus(const EvilNumber & val1, const EvilNumber & val2);
-    EvilNumber _SelfModulus(const EvilNumber & val);
+    friend inline bool operator==(const EvilNumber& lhs, const EvilNumber& rhs) {
+        if (lhs.mType == evil_number_int && rhs.mType == evil_number_int) return lhs.iVal == rhs.iVal;
+        double lVal = (lhs.mType == evil_number_float) ? lhs.fVal : static_cast<double>(lhs.iVal);
+        double rVal = (rhs.mType == evil_number_float) ? rhs.fVal : static_cast<double>(rhs.iVal);
+        return lVal == rVal;
+    }
 
-    /**
-     * @brief increment by 1
-     *
-     * increment by 1
-     */
-    EvilNumber _SelfIncrement();
+    friend inline bool operator!=(const EvilNumber& lhs, const EvilNumber& rhs) {
+        return !(lhs == rhs);
+    }
 
-    /**
-     * @brief decrement by 1
-     *
-     * decrement by 1
-     */
-    EvilNumber _SelfDecrement();
+    // CHANGE: Make these friend non-member functions inside the class block
+    friend inline EvilNumber operator+(EvilNumber lhs, const EvilNumber& rhs) {
+        lhs += rhs;
+        return lhs;
+    }
+
+    friend inline EvilNumber operator-(EvilNumber lhs, const EvilNumber& rhs) {
+        lhs -= rhs;
+        return lhs;
+    }
+
+    friend inline EvilNumber operator*(EvilNumber lhs, const EvilNumber& rhs) {
+        lhs *= rhs;
+        return lhs;
+    }
+
+    friend inline EvilNumber operator/(EvilNumber lhs, const EvilNumber& rhs) {
+        lhs /= rhs;
+        return lhs;
+    }
+
+    friend inline EvilNumber operator%(EvilNumber lhs, const EvilNumber& rhs) {
+        lhs %= rhs;
+        return lhs;
+    }
+
+    std::string to_str() {
+        if (mType == evil_number_int) {
+            return std::to_string(iVal);
+        } else if (mType == evil_number_float) {
+            return std::to_string(fVal);
+        }
+        assert(false);
+        return "0"; // Safe fallback if NDEBUG is defined in release builds
+    }
+
 };
 
-//////////////////////////////////////////////////////////////////////////
-// global operators
-EvilNumber operator+(const EvilNumber& val, const EvilNumber& val2);
-EvilNumber operator-(const EvilNumber& val, const EvilNumber& val2);
-EvilNumber operator*(const EvilNumber& val, const EvilNumber& val2);
-EvilNumber operator/(const EvilNumber& val, const EvilNumber& val2);
-EvilNumber operator%(const EvilNumber& val, const EvilNumber& val2);
+inline bool EvilNumber::isNaN() const {
+    if ( mType == evil_number_nan )
+        return true;
+    if ( mType == evil_number_int )
+        return false;
+    return std::isnan(fVal);
+}
 
-extern EvilNumber EvilZero;
-extern EvilNumber EvilZerof;
-extern EvilNumber EvilOne;
-extern EvilNumber EvilNegOne;
-/*
-extern const EvilNumber EvilTime_Second;
-extern const EvilNumber EvilTime_Minute;
-extern const EvilNumber EvilTime_Hour;
-extern const EvilNumber EvilTime_Day;
-extern const EvilNumber EvilTime_Month;
-extern const EvilNumber EvilTime_Year;
-*/
+inline bool EvilNumber::isInf() const {
+    if ( mType == evil_number_nan )
+        return true;
+    if ( mType == evil_number_int )
+        return false;
+    return std::isinf(fVal);
+}
 
-#endif // EvilNumber_h__
+inline bool EvilNumber::get_bool() const {
+    if (mType == evil_number_float)
+        return (fVal != 0.0);
+    if (mType == evil_number_int)
+        return (iVal != 0);
+    return false;
+}
+
+inline int64 EvilNumber::get_long() const {
+    if (mType == evil_number_float)
+        return static_cast<int64>(std::floor(fVal));
+    return iVal;
+}
+
+inline int8 EvilNumber::get_int8() const {
+    if (mType == evil_number_float)
+        return static_cast<int8>(std::floor(fVal));
+    return static_cast<int8>(iVal);
+}
+
+inline int16 EvilNumber::get_int16() const {
+    if (mType == evil_number_float)
+        return static_cast<int16>(std::floor(fVal));
+    return static_cast<int16>(iVal);
+}
+
+inline int32 EvilNumber::get_int() const {
+    if (mType == evil_number_float)
+        return static_cast<int32>(std::floor(fVal));
+    return static_cast<int32>(iVal);
+}
+
+inline uint32 EvilNumber::get_uint32() const {
+    if (mType == evil_number_float)
+        return static_cast<uint32>(std::floor(fVal));
+    return static_cast<uint32>(iVal);
+}
+
+inline float EvilNumber::get_float() const {
+    if (mType == evil_number_int)
+        return static_cast<float>(iVal);
+    return static_cast<float>(fVal);
+}
+
+inline double EvilNumber::get_double() const {
+    if (mType == evil_number_int)
+        return static_cast<double>(iVal);
+    return fVal;
+}

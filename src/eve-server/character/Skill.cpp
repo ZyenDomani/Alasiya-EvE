@@ -71,7 +71,7 @@ bool Skill::IsTraining() {
 }
 
 uint8 Skill::GetLevelForSP(uint32 currentSP) {
-    return EvEMath::Skill::LevelForPoints(currentSP, GetAttribute(AttrSkillTimeConstant).get_uint32());
+    return EvEMath::Skill::LevelForPoints(currentSP, GetAttribute(AttrSkillTimeConstant).get_int8());
 }
 
 uint32 Skill::GetSPForLevel(uint8 level) {
@@ -90,7 +90,7 @@ uint32 Skill::GetCurrentSP(Character* ch, int64 startTime/*0*/)
     if (startTime > GetFileTimeNow())
         return currentSP;
 
-    uint8 level = GetAttribute(AttrSkillLevel).get_uint32() + 1;
+    int8 level = GetAttribute(AttrSkillLevel).get_int8() + 1;
     if (level > EvESkill::MAXSKILLLEVEL)
         level = EvESkill::MAXSKILLLEVEL;
 
@@ -111,7 +111,7 @@ uint32 Skill::GetCurrentSP(Character* ch, int64 startTime/*0*/)
 
 uint32 Skill::GetRemainingSP(Character* ch, int64 curTime/*0*/)
 {
-    uint8 level = GetAttribute(AttrSkillLevel).get_uint32() + 1;
+    int8 level = GetAttribute(AttrSkillLevel).get_int8() + 1;
     if (level > EvESkill::MAXSKILLLEVEL)
         return 0;
 
@@ -131,7 +131,7 @@ uint32 Skill::GetRemainingSP(Character* ch, int64 curTime/*0*/)
 
 uint32 Skill::GetTrainingTime(Character* ch, int64 startTime/*0*/)
 {
-    uint8 level = GetAttribute(AttrSkillLevel).get_uint32() + 1;
+    int8 level = GetAttribute(AttrSkillLevel).get_int8() + 1;
     if (level > EvESkill::MAXSKILLLEVEL)
         return 0;
 
@@ -174,7 +174,7 @@ void Skill::VerifySP() {
     if (GetAttribute(AttrSkillPoints) == EvilZero)
         return;
 
-    uint8 level = (GetAttribute(AttrSkillLevel).get_uint32() + 1);
+    int8 level = (GetAttribute(AttrSkillLevel).get_int8() + 1);
     if (level > EvESkill::MAXSKILLLEVEL) {
         level = EvESkill::MAXSKILLLEVEL;
         SetAttribute(AttrSkillLevel, level, false);
@@ -209,19 +209,19 @@ void Skill::VerifySP() {
 bool Skill::SkillPrereqsComplete(Character &ch) {
     EvilNumber skillID = EvilZero;
     if (HasAttribute(AttrRequiredSkill1, skillID)) //Primary Skill
-        if (GetAttribute(AttrRequiredSkill1Level) > ch.GetSkillLevel(skillID.get_uint32()))
+        if (GetAttribute(AttrRequiredSkill1Level).get_int8() > ch.GetSkillLevel(skillID.get_uint32()))
             return false;
 
     if (HasAttribute(AttrRequiredSkill2, skillID)) //Secondary Skill
-        if (GetAttribute(AttrRequiredSkill2Level) > ch.GetSkillLevel(skillID.get_uint32()))
+        if (GetAttribute(AttrRequiredSkill2Level).get_int8() > ch.GetSkillLevel(skillID.get_uint32()))
             return false;
 
     if (HasAttribute(AttrRequiredSkill3, skillID)) //Tertiary Skill
-        if (GetAttribute(AttrRequiredSkill3Level) > ch.GetSkillLevel(skillID.get_uint32()))
+        if (GetAttribute(AttrRequiredSkill3Level).get_int8() > ch.GetSkillLevel(skillID.get_uint32()))
             return false;
 
     if (HasAttribute(AttrRequiredSkill4, skillID)) //Quarternary Skill
-        if (GetAttribute(AttrRequiredSkill4Level) > ch.GetSkillLevel(skillID.get_uint32()))
+        if (GetAttribute(AttrRequiredSkill4Level).get_int8() > ch.GetSkillLevel(skillID.get_uint32()))
             return false;
 
     return true;
@@ -230,27 +230,27 @@ bool Skill::SkillPrereqsComplete(Character &ch) {
 bool Skill::FitModuleSkillCheck(InventoryItemRef iRef, CharacterRef cRef) {
     EvilNumber skillID = EvilZero;
     if (iRef->HasAttribute(AttrRequiredSkill1, skillID)) //Primary Skill
-        if ( iRef->GetAttribute(AttrRequiredSkill1Level) > cRef->GetSkillLevel(skillID.get_uint32()))
+        if ( iRef->GetAttribute(AttrRequiredSkill1Level).get_int8() > cRef->GetSkillLevel(skillID.get_uint32()))
             return false;
 
     if (iRef->HasAttribute(AttrRequiredSkill2, skillID)) //Secondary Skill
-        if ( iRef->GetAttribute(AttrRequiredSkill2Level) > cRef->GetSkillLevel(skillID.get_uint32()))
+        if ( iRef->GetAttribute(AttrRequiredSkill2Level).get_int8() > cRef->GetSkillLevel(skillID.get_uint32()))
             return false;
 
     if (iRef->HasAttribute(AttrRequiredSkill3, skillID)) //Tertiary Skill
-        if ( iRef->GetAttribute(AttrRequiredSkill3Level) > cRef->GetSkillLevel(skillID.get_uint32()))
+        if ( iRef->GetAttribute(AttrRequiredSkill3Level).get_int8() > cRef->GetSkillLevel(skillID.get_uint32()))
             return false;
 
     if (iRef->HasAttribute(AttrRequiredSkill4, skillID)) //Quarternary Skill
-        if ( iRef->GetAttribute(AttrRequiredSkill4Level) > cRef->GetSkillLevel(skillID.get_uint32()))
+        if ( iRef->GetAttribute(AttrRequiredSkill4Level).get_int8() > cRef->GetSkillLevel(skillID.get_uint32()))
             return false;
 
     if (iRef->HasAttribute(AttrRequiredSkill5, skillID)) //Quinary Skill
-        if ( iRef->GetAttribute(AttrRequiredSkill5Level) > cRef->GetSkillLevel(skillID.get_uint32()))
+        if ( iRef->GetAttribute(AttrRequiredSkill5Level).get_int8() > cRef->GetSkillLevel(skillID.get_uint32()))
             return false;
 
     if (iRef->HasAttribute(AttrRequiredSkill6, skillID)) //Senary Skill
-        if ( iRef->GetAttribute(AttrRequiredSkill6Level) > cRef->GetSkillLevel(skillID.get_uint32()))
+        if ( iRef->GetAttribute(AttrRequiredSkill6Level).get_int8() > cRef->GetSkillLevel(skillID.get_uint32()))
             return false;
 
     return true;

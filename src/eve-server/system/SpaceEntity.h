@@ -24,8 +24,7 @@
     Rewrite:    Allan
 */
 
-#ifndef _EVE_SERVER_SYSTEM_ENTITY_H_
-#define _EVE_SERVER_SYSTEM_ENTITY_H_
+#pragma once
 
 #include "../../eve-common/EVE_Dungeon.h"
 
@@ -277,7 +276,7 @@ public:
     /* generic functions handled here, but set elsewhere */
     bool                        IsDead()                { return m_killed; }
     void                        SetDead()               { m_killed = true; }
-    
+
     // this is virtual to allow drones to override it (they dont have DestinyMgr)
     virtual const Vector3d&      GetVelocity()           { return (m_destiny != nullptr ? m_destiny->GetVelocity() : NULL_ORIGIN); }
 
@@ -757,6 +756,3 @@ private:
     bool m_invul;
     bool m_frozen;
 };
-
-
-#endif  // _EVE_SERVER_SYSTEM_ENTITY_H_

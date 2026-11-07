@@ -628,23 +628,22 @@ SkillRef Character::GetCharSkillRef(uint16 skillTypeID) const
     return SkillRef::StaticCast(skill);
 }
 
-//TODO:  is this used?  skill level isnt saved correctly
 int8 Character::GetSkillLevel(uint16 skillTypeID, bool zeroForNotInjected /*true*/) const {
     SkillRef requiredSkill = GetCharSkillRef(skillTypeID);
     // First, check for existence of skill trained or in training:
     if (requiredSkill.get() == nullptr)
         return (zeroForNotInjected ? 0 : -1);
 
-    return (int8)requiredSkill->GetAttribute(AttrSkillLevel).get_int() ;
+    return requiredSkill->GetAttribute(AttrSkillLevel).get_int8();
 }
 
-bool Character::HasSkillTrainedToLevel(uint16 skillTypeID, uint8 skillLevel) const {
+bool Character::HasSkillTrainedToLevel(uint16 skillTypeID, int8 skillLevel) const {
     SkillRef requiredSkill = GetCharSkillRef(skillTypeID);
     // First, check for existence of skill
     if (requiredSkill.get() == nullptr)
         return false;
     // Second, check for required minimum level of skill, note it must already be trained to this level:
-    if (requiredSkill->GetAttribute(AttrSkillLevel) < skillLevel)
+    if (GetSkillLevel(skillTypeID) < skillLevel)
         return false;
     return true;
 }

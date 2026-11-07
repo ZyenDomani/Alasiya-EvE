@@ -16,7 +16,7 @@ class EvilNumber;
 
 namespace EvESkill {
     // skill constants
-    const uint8 MAXSKILLLEVEL = 5;
+    const int8 MAXSKILLLEVEL = 5;
     const uint8 skillPointMultiplier = 250;
     const double DIVCONSTANT = std::log(2) * 2.5;
 }

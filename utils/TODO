@@ -85,6 +85,9 @@ finish rule of 5 for all classes
   - use systementity.h or PyRep.h or xmlpGen* as template
   - adding to classes while updating
 
+rename evilnumber class
+run thru all 1007 GetAttribute() calls and update to proper type (.get_xxx)
+
 any client message errors like  [no messageID: xxxxxx]
 needs the call sent as text, not as integer  i.e. send message as follows:
 PyString("UI/Agents/DefaultMessages/NoMission1")
@@ -154,6 +157,7 @@ AttrDroneMaxVelocityBonus  dunno what this is but 7 types have it
 
 RAM code - implement invention, re    -priority level: low
     - (reproc) update GetRecoverables to use sDataMgr...currently hitting db on every call...
+    - (reproc) tries to use all ore/items; hits 'need more items' msg, which is missing data (portion)
     - invention and re will need lots of work
     - data interface dont show on install job tab (dunno why)
     - bpc may be a bit off (not sure why yet)
