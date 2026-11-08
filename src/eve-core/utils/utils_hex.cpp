@@ -23,68 +23,92 @@
     Author:     Zhur
 */
 
+
 #include "eve-core.h"
+
+#include <sstream>
+#include <iomanip>
+#include <cstring>
 
 #include "log/logsys.h"
 #include "utils/utils_string.h"
+#include "utils_hex.h"
+
 
 const uint32 HEX_DUMP_PREVIEW_LIMIT = 1024;
 
-void build_hex_line( const uint8* buffer, size_t length, size_t offset, char* ret, unsigned int padding )
+std::string build_hex_line( const uint8* buffer, size_t length, size_t offset, unsigned int padding )
 {
-    ret += snprintf( ret, length, "%0*zX:", padding, offset );
+    if ( buffer == nullptr || offset >= length ) {
+        return "";
+    }
+
+    std::ostringstream ss;
+
+    // 1. Format the address offset (e.g., 00A0:)
+    ss << std::hex << std::uppercase << std::setfill('0') << std::setw(padding) << offset << ":";
 
     char printable[17];
+    std::memset(printable, 0, sizeof(printable));
 
-    for( size_t i = 0; i < 16; ++i ) {
-        if ( i == 8 )
-            ret += snprintf( ret, length, " -" );
+    // 2. Process the 16-byte hex window chunk
+    for ( size_t i = 0; i < 16; ++i ) {
+        if ( i == 8 ) {
+            ss << " -";
+        }
 
-        if ( ( i + offset ) < length ) {
-            uint8 c = *(const uint8*)( buffer + offset + i );
-
-            ret += snprintf( ret, length, " %02X", c );
-            printable[i] = ( IsPrintable( c ) ? (char)c : '.' );
+        const size_t current_offset = offset + i;
+        if ( current_offset < length ) {
+            const uint8 c = buffer[current_offset];
+            ss << " " << std::setfill('0') << std::setw(2) << static_cast<int>(c);
+            printable[i] = ( IsPrintable( static_cast<char>(c) ) ? static_cast<char>(c) : '.' );
         } else {
-            ret += snprintf( ret, length, "   " );
-            printable[i] = 0;
+            ss << "   ";
+            printable[i] = ' '; // Pad out empty space visual grids cleanly
         }
     }
 
-    snprintf( ret, length, "  | %.16s", printable );
+    // 3. Format the final ASCII visualization bracket
+    ss << "  | " << printable;
+    return ss.str();
 }
 
 void pfxHexDump( const char* pfx, FILE* into, const uint8* data, size_t length )
 {
-    char buffer[80];
+    if ( into == nullptr || data == nullptr ) {
+        return;
+    }
 
-    for( uint32 offset = 0; offset < length; offset += 16 ) {
-        build_hex_line( data, length, offset, buffer, 4 );
-
-        fprintf( into, "%s%s\n", pfx, buffer );
+    for ( size_t offset = 0; offset < length; offset += 16 ) {
+        std::string line = build_hex_line( data, length, offset, 4 );
+        std::fprintf( into, "%s%s\n", pfx, line.c_str() );
     }
 }
 
 void pfxHexDump( const char* pfx, LogType type, const uint8* data, size_t length )
 {
-    char buffer[80];
+    if ( data == nullptr ) {
+        return;
+    }
 
-    for( uint32 offset = 0; offset < length; offset += 16 ) {
-        build_hex_line( data, length, offset, buffer, 4 );
-
-        _log( type, "%s%s", pfx, buffer );
+    for ( size_t offset = 0; offset < length; offset += 16 ) {
+        std::string line = build_hex_line( data, length, offset, 4 );
+        _log( type, "%s%s", pfx, line.c_str() );
     }
 }
 
 void pfxHexDumpPreview( const char* pfx, FILE* into, const uint8* data, size_t length )
 {
-    if (length > HEX_DUMP_PREVIEW_LIMIT) {
-        pfxHexDump( pfx, into, data, HEX_DUMP_PREVIEW_LIMIT - 32 );
-        fprintf( into, "%s ... truncated ...\n", pfx );
+    if ( into == nullptr || data == nullptr ) {
+        return;
+    }
 
-        char buffer[HEX_DUMP_PREVIEW_LIMIT];
-        build_hex_line( data, length, length - 16, buffer, 4 );
-        fprintf( into, "%s%s\n", pfx, buffer );
+    if ( length > HEX_DUMP_PREVIEW_LIMIT ) {
+        pfxHexDump( pfx, into, data, HEX_DUMP_PREVIEW_LIMIT - 32 );
+        std::fprintf( into, "%s ... truncated ...\n", pfx );
+
+        std::string trailing_line = build_hex_line( data, length, length - 16, 4 );
+        std::fprintf( into, "%s%s\n", pfx, trailing_line.c_str() );
     } else {
         pfxHexDump( pfx, into, data, length );
     }
@@ -92,13 +116,16 @@ void pfxHexDumpPreview( const char* pfx, FILE* into, const uint8* data, size_t l
 
 void pfxHexDumpPreview( const char* pfx, LogType type, const uint8* data, size_t length )
 {
-    if (length > HEX_DUMP_PREVIEW_LIMIT) {
+    if ( data == nullptr ) {
+        return;
+    }
+
+    if ( length > HEX_DUMP_PREVIEW_LIMIT ) {
         pfxHexDump( pfx, type, data, HEX_DUMP_PREVIEW_LIMIT - 32 );
         _log( type, "%s ... truncated ...", pfx );
 
-        char buffer[HEX_DUMP_PREVIEW_LIMIT];
-        build_hex_line( data, length, length - 16, buffer, 4 );
-        _log( type, "%s%s", pfx, buffer );
+        std::string trailing_line = build_hex_line( data, length, length - 16, 4 );
+        _log( type, "%s%s", pfx, trailing_line.c_str() );
     } else {
         pfxHexDump( pfx, type, data, length );
     }

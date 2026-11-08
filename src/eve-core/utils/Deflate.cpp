@@ -21,48 +21,62 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
+    Update:     Allan
 */
 
 #include <zlib.h>
 
 #include "eve-core.h"
-
 #include "utils/Deflate.h"
+#include "utils/Buffer.h"
 
-const uint8 DeflateHeaderByte = 0x78; //'x'
+
+const uint8 DeflateHeaderByte = 0x78; // 'x'
 
 bool IsDeflated( const Buffer& data )
 {
+    if ( data.size() == 0 ) {
+        return false;
+    }
     return ( DeflateHeaderByte == data[0] );
 }
 
 bool DeflateData( Buffer& data )
 {
     Buffer dataDeflated;
-    if ( !DeflateData( data, dataDeflated ) )
+    if ( !DeflateData( data, dataDeflated ) ) {
         return false;
+    }
 
-    data = dataDeflated;
+    data = std::move(dataDeflated); // Use C++11 move semantics to skip internal array copies!
     return true;
 }
 
 bool DeflateData( const Buffer& input, Buffer& output )
 {
-    const Buffer::iterator<uint8> out = output.end<uint8>();
-
-    size_t outputSize = compressBound( input.size() );
-    output.ResizeAt( out, outputSize );
-
-    int res = compress( &*out, (uLongf*)&outputSize, &input[0], input.size() );
-
-    if ( Z_OK == res )
-    {
-        output.ResizeAt( out, outputSize );
-        return true;
+    if ( input.size() == 0 ) {
+        output.Resize<uint8>(0);
+        return false;
     }
-    else
-    {
-        output.ResizeAt( out, 0 );
+
+    const size_t old_output_offset = output.size();
+    uLongf outputSize = compressBound( input.size() );
+
+    // Scale the destination raw byte footprint directly without iterator indirection
+    output.Resize<uint8>( old_output_offset + outputSize );
+
+    int res = compress(
+    output.get_raw_ptr() + old_output_offset,
+                       &outputSize,
+                        input.get_raw_ptr(),
+                       input.size()
+    );
+
+    if ( Z_OK == res ) {
+        output.Resize<uint8>( old_output_offset + outputSize );
+        return true;
+    } else {
+        output.Resize<uint8>( old_output_offset );
         return false;
     }
 }
@@ -70,37 +84,48 @@ bool DeflateData( const Buffer& input, Buffer& output )
 bool InflateData( Buffer& data )
 {
     Buffer dataInflated;
-    if ( !InflateData( data, dataInflated ) )
+    if ( !InflateData( data, dataInflated ) ) {
         return false;
+    }
 
-    data = dataInflated;
+    data = std::move(dataInflated); // Modern fast reference swap
     return true;
 }
 
 bool InflateData( const Buffer& input, Buffer& output )
 {
-    const Buffer::iterator<uint8> out = output.end<uint8>();
-
-    size_t outputSize = 0;
-    size_t sizeMultiplier = 0;
-
-    int res = 0;
-    do
-    {
-        outputSize = ( input.size() << ++sizeMultiplier );
-        output.ResizeAt( out, outputSize );
-
-        res = uncompress( &*out, (uLongf*)&outputSize, &input[0], input.size() );
-    } while( Z_BUF_ERROR == res );
-
-    if ( Z_OK == res )
-    {
-        output.ResizeAt( out, outputSize );
-        return true;
+    if ( input.size() == 0 ) {
+        output.Resize<uint8>(0);
+        return false;
     }
-    else
-    {
-        output.ResizeAt( out, 0 );
+
+    const size_t old_output_offset = output.size();
+
+    // Start with a safe estimate: typical zlib compression ratio averages 4x expand
+    uLongf outputSize = input.size() * 4;
+    int res = Z_BUF_ERROR;
+
+    // Streamlined allocation strategy preventing memory fragmentation overruns
+    for ( size_t attempts = 1; attempts <= 5 && res == Z_BUF_ERROR; ++attempts ) {
+        output.Resize<uint8>( old_output_offset + outputSize );
+
+        res = uncompress(
+        output.get_raw_ptr() + old_output_offset,
+                         &outputSize,
+                          input.get_raw_ptr(),
+                         input.size()
+        );
+
+        if ( res == Z_BUF_ERROR ) {
+            outputSize *= 2; // Step up allocation linearly if destination room was insufficient
+        }
+    }
+
+    if ( Z_OK == res ) {
+        output.Resize<uint8>( old_output_offset + outputSize );
+        return true;
+    } else {
+        output.Resize<uint8>( old_output_offset );
         return false;
     }
 }

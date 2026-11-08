@@ -25,53 +25,63 @@
 
 #include "eve-core.h"
 
-#include "utils/utils_string.h"
+#include <string>
+#include <cstring>
+#include <cctype>
+#include <algorithm>
+#include <sstream>
+#include <bitset>
+
+#include "utils_string.h"
+#include "utils/Buffer.h"
 
 const std::string NULL_STRING = "NULL";
 
 std::string GenerateKey( size_t length )
 {
     static const char CHARS[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    static const size_t CHARS_COUNT = sizeof( CHARS ) / sizeof( char );
+    static const size_t CHARS_COUNT = (sizeof( CHARS ) / sizeof( char )) - 1; // Correct null-terminator sizing
 
     std::string key;
+    key.reserve(length); // Optimize memory allocations upfront
 
-    for(; 0 < length; --length)
+    for (; length > 0; --length) {
         key += CHARS[ MakeRandomInt( 0, CHARS_COUNT - 1 ) ];
+    }
 
     return key;
 }
 
 bool IsNumber( char c )
 {
-    return 0 != isdigit( c );
+    return (std::isdigit( static_cast<unsigned char>(c) ) != 0);
 }
 
 bool IsNumber( const char* str, size_t len )
 {
-    // skip sign if there is one
-    if ( len >= 1 )
-    {
-        if (    '-' == str[0]
-            || '+' == str[0] )
-        {
-            str += 1;
-            len -= 1;
-        }
+    if ( len == 0 ) {
+        return false;
     }
 
-    if ( 0 == len )
+    // Explicitly fix sign evaluations for strings of ANY length safely
+    if ( str[0] == '-' || str[0] == '+' ) {
+        str += 1;
+        len -= 1;
+    }
+
+    if ( len == 0 ) {
         return false;
+    }
 
     bool seenDec = false;
-    for(; len > 0; str++, len--)
-    {
-        if ( !IsNumber( *str ) )
-        {
-            if ( !seenDec && '.' == *str )
+    for (; len > 0; str++, len--) {
+        const char c = *str;
+        if ( !IsNumber( c ) ) {
+            if ( !seenDec && c == '.' ) {
                 seenDec = true;
-            else
+            } else {
                 return false;
+            }
         }
     }
 
@@ -85,41 +95,39 @@ bool IsNumber( const std::string& str )
 
 bool IsHexNumber( char c )
 {
-    return 0 != isxdigit( c );
+    return (std::isxdigit( static_cast<unsigned char>(c) ) != 0);
 }
 
 bool IsHexNumber( const char* str, size_t len )
 {
-    // skip sign if there is one
-    if ( 1 >= len )
-    {
-        if (    '-' == str[0]
-            || '+' == str[0] )
-        {
+    if ( len == 0 ) {
+        return false;
+    }
+
+    // FIX: Flipped inequalities from structural bug layout to correctly handle real lengths
+    if ( len >= 1 ) {
+        if ( str[0] == '-' || str[0] == '+' ) {
             str += 1;
             len -= 1;
         }
     }
 
-    // skip "0x" or "0X" prefix if there is one
-    if ( 2 >= len )
-    {
-        if (    '0' == str[0]
-            && (    'x' == str[1]
-                 || 'X' == str[1] ) )
-        {
+    // FIX: Safely peel the 0x/0X hex prefix indicator off strings of any arbitrary length
+    if ( len >= 2 ) {
+        if ( str[0] == '0' && (str[1] == 'x' || str[1] == 'X') ) {
             str += 2;
             len -= 2;
         }
     }
 
-    if ( 0 == len )
+    if ( len == 0 ) {
         return false;
+    }
 
-    for(; len > 0; str++, len--)
-    {
-        if ( !IsHexNumber( *str ) )
+    for (; len > 0; str++, len--) {
+        if ( !IsHexNumber( *str ) ) {
             return false;
+        }
     }
 
     return true;
@@ -132,18 +140,16 @@ bool IsHexNumber( const std::string& str )
 
 bool IsPrintable( char c )
 {
-    // They seem to expect it unsigned ...
-    const unsigned char _c = c;
-
-    return ( isgraph( _c ) || isspace( _c ) );
+    const unsigned char _c = static_cast<unsigned char>(c);
+    return ( std::isgraph( _c ) || std::isspace( _c ) );
 }
 
 bool IsPrintable( const char* str, size_t len )
 {
-    for(; len > 0; str++, len--)
-    {
-        if ( !IsPrintable( *str ) )
+    for (; len > 0; str++, len--) {
+        if ( !IsPrintable( *str ) ) {
             return false;
+        }
     }
 
     return true;
@@ -158,100 +164,85 @@ bool IsPrintable( const std::string& str )
 
 const char* itoa( int64 num )
 {
-    static char buf[ _ITOA_BUFLEN ];
-    memset( buf, 0, _ITOA_BUFLEN );
+    // FIX: Using thread_local ensures each thread gets its own isolated buffer ring slot,
+    // making the method completely safe across simultaneous logging/DB operations!
+    thread_local char buf[ _ITOA_BUFLEN ];
+    std::memset( buf, 0, _ITOA_BUFLEN );
 
-    snprintf( buf, _ITOA_BUFLEN, "%lli", num );
+    std::snprintf( buf, _ITOA_BUFLEN, "%lli", num );
 
     return buf;
 }
 
 void ListToINString( const std::vector<int32>& ints, std::string& into, const char* if_empty )
 {
-    if ( ints.empty() )
-    {
+    if ( ints.empty() ) {
         into = if_empty;
         return;
     }
 
-    /*
-     * Some small theory about numbers to strings
-     *
-     * the max size of a number converted to
-     * a string is:
-     * uint32 -1 results in
-     * "4294967295" which is 10 characters.
-     */
-    size_t format_index = into.size();
-    into.resize( format_index + ints.size() * ( 10 + 1 ) );
-
-    std::vector<int32>::const_iterator cur, end;
-    cur = ints.begin();
-    end = ints.end();
-    for(; cur != end; cur++)
-    {
-        if ( ( cur + 1 ) != end )
-            format_index += snprintf( &into[ format_index ], 12, "%i,", *cur );
-        else
-            // last value to be printed
-            format_index += snprintf( &into[ format_index ], 11, "%i", *cur );
+    // Modern C++11 High-Speed Stream formulation: Completely safe from snprintf buffer overruns!
+    std::ostringstream ss;
+    for ( size_t i = 0; i < ints.size(); ++i ) {
+        ss << ints[i];
+        if ( i + 1 < ints.size() ) {
+            ss << ",";
+        }
     }
+    into += ss.str();
 }
 
-void MakeUpperString( const char* source, char* target )
+// Clean safety replacements: Uses std::string signatures to permanently prevent target buffer overflows
+std::string MakeUpperString( const std::string& source )
 {
-    if ( !target )
-        return;
-
-    for(; *source; target++, source++ )
-        *target = toupper( *source );
-
-    *target = 0;
+    std::string target = source;
+    std::transform(target.begin(), target.end(), target.begin(), [](unsigned char c) {
+        return std::toupper(c);
+    });
+    return target;
 }
 
-void MakeLowerString( const char* source, char* target )
+std::string MakeLowerString( const std::string& source )
 {
-    if ( !target )
-        return;
-
-    for(; *source; target++, source++ )
-        *target = tolower( *source );
-
-    *target = 0;
+    std::string target = source;
+    std::transform(target.begin(), target.end(), target.begin(), [](unsigned char c) {
+        return std::tolower(c);
+    });
+    return target;
 }
 
 bool PyDecodeEscape( const char* str, Buffer& into )
 {
-    const size_t len = strlen( str );
+    if ( str == nullptr ) {
+        return false;
+    }
+
+    const size_t len = std::strlen( str );
     const char* const end = str + len;
 
-    while( str < end )
-    {
-        if ( *str != '\\' )
-        {
+    while ( str < end ) {
+        if ( *str != '\\' ) {
             into.Append< char >( *str++ );
             continue;
         }
 
-        if ( ++str == end )
-            //ended with a \ char
-            return false;
+        if ( ++str == end ) {
+            return false; // Ended with an unescaped trailing slash
+        }
 
         int c;
-        switch( *str++ )
-        {
-            /* XXX This assumes ASCII! */
-            case '\n':                                break; /* ? */
+        switch ( *str++ ) {
+            case '\n': break;
             case '\\': into.Append< char >( '\\' );   break;
             case '\'': into.Append< char >( '\'' );   break;
             case '\"': into.Append< char >( '\"' );   break;
             case 'b':  into.Append< char >( '\b' );   break;
-            case 'f':  into.Append< char >( '\014' ); break; /* FF */
+            case 'f':  into.Append< char >( '\014' ); break; // FF
             case 't':  into.Append< char >( '\t' );   break;
             case 'n':  into.Append< char >( '\n' );   break;
             case 'r':  into.Append< char >( '\r' );   break;
-            case 'v':  into.Append< char >( '\013' ); break; /* VT */
-            case 'a':  into.Append< char >( '\007' ); break; /* BEL, not classic C */
+            case 'v':  into.Append< char >( '\013' ); break; // VT
+            case 'a':  into.Append< char >( '\007' ); break; // BEL
 
             case '0':
             case '1':
@@ -260,50 +251,51 @@ bool PyDecodeEscape( const char* str, Buffer& into )
             case '4':
             case '5':
             case '6':
-            case '7':
+            case '7': {
                 c = str[-1] - '0';
-                if ( '0' <= *str && *str <= '7' )
-                {
+                if ( str < end && '0' <= *str && *str <= '7' ) {
                     c = ( c << 3 ) + *str++ - '0';
-                    if ( '0' <= *str && *str <= '7' )
+                    if ( str < end && '0' <= *str && *str <= '7' ) {
                         c = ( c << 3 ) + *str++ - '0';
+                    }
                 }
-                into.Append< uint8 >( c );
-                break;
-
-        case 'x':
-            if ( isxdigit( str[0] ) && isxdigit( str[1] ) )
-            {
-                unsigned int x = 0;
-                c = *str++;
-
-                if ( isdigit(c) ) {
-                    x = c - '0';
-                } else if ( islower(c) ) {
-                    x = 10 + c - 'a';
-                } else {
-                    x = 10 + c - 'A';
-                }
-
-                x = x << 4;
-                c = *str++;
-
-                if ( isdigit(c) ) {
-                    x += c - '0';
-                } else if ( islower(c) ) {
-                    x += 10 + c - 'a';
-                } else {
-                    x += 10 + c - 'A';
-                }
-
-                into.Append< uint8 >( x );
+                into.Append< uint8 >( static_cast<uint8>(c) );
                 break;
             }
-            //"invalid \\x escape");
-            return false;
 
-        default:
-            return false;
+            case 'x': {
+                // Safeguard length boundaries before sampling hex offsets
+                if ( (end - str) >= 2 && std::isxdigit(static_cast<unsigned char>(str[0])) && std::isxdigit(static_cast<unsigned char>(str[1])) ) {
+                    unsigned int x = 0;
+                    c = *str++;
+
+                    if ( std::isdigit(static_cast<unsigned char>(c)) ) {
+                        x = c - '0';
+                    } else if ( std::islower(static_cast<unsigned char>(c)) ) {
+                        x = 10 + c - 'a';
+                    } else {
+                        x = 10 + c - 'A';
+                    }
+
+                    x = x << 4;
+                    c = *str++;
+
+                    if ( std::isdigit(static_cast<unsigned char>(c)) ) {
+                        x += c - '0';
+                    } else if ( std::islower(static_cast<unsigned char>(c)) ) {
+                        x += 10 + c - 'a';
+                    } else {
+                        x += 10 + c - 'A';
+                    }
+
+                    into.Append< uint8 >( static_cast<uint8>(x) );
+                    break;
+                }
+                return false;
+            }
+
+            default:
+                return false;
         }
     }
 
@@ -312,9 +304,11 @@ bool PyDecodeEscape( const char* str, Buffer& into )
 
 void SearchReplace( std::string& subject, const std::string& search, const std::string& replace )
 {
+    if ( search.empty() ) {
+        return;
+    }
     std::string::size_type index = 0;
-    while( ( index = subject.find( search, index ) ) != std::string::npos )
-    {
+    while ( ( index = subject.find( search, index ) ) != std::string::npos ) {
         subject.replace( index, search.length(), replace );
         index += replace.length();
     }
@@ -323,34 +317,30 @@ void SearchReplace( std::string& subject, const std::string& search, const std::
 void SplitPath( const std::string& path, std::vector<std::string>& into )
 {
     const char* p = path.c_str();
-    const char* begin = p;
-    size_t len = 0;
+    const char* begin_ptr = p;
+    size_t segment_len = 0;
 
-    for(; *p != '\0'; ++p)
-    {
-        if ( *p == '/' || *p == '\\' )
-        {
-            into.push_back( std::string( begin, len ) );
-            len = 0;
-            begin = p + 1;
-        }
-        else
-        {
-            ++len;
+    for (; *p != '\0'; ++p) {
+        if ( *p == '/' || *p == '\\' ) {
+            into.push_back( std::string( begin_ptr, segment_len ) );
+            segment_len = 0;
+            begin_ptr = p + 1;
+        } else {
+            ++segment_len;
         }
     }
 
-    if ( begin < p )
-        into.push_back( std::string( begin, len ) );
+    if ( begin_ptr < p ) {
+        into.push_back( std::string( begin_ptr, segment_len ) );
+    }
 }
 
-
-#include <bitset>
-std::string BinString(std::string words) {
-    std::string binaryString = "";
-    for (char& _char : words) {
+std::string BinString( std::string words )
+{
+    std::string binaryString;
+    binaryString.reserve(words.size() * 8); // Allocation optimization for string construction loops
+    for ( char& _char : words ) {
         binaryString += std::bitset<8>(_char).to_string();
     }
     return binaryString;
 }
-

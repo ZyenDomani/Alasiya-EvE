@@ -21,155 +21,126 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:     eve-moo
+    Update:     Allan
  */
+
+#include <string>
+#include <cstdint>
 
 #include "utfUtils.h"
 
+
 /**
  * Convert a 32 bit character code to a UTF8 string
- * @param code The UTF32 character.
- * @return The UTF8 string. Returns an empty string on failure.
+ * Enforced standard RFC 3629 max 4-byte tracking constraints
  */
 std::string codeToUTF8(char32_t code)
 {
     std::string out;
-    if (code < 0x80)
-    {
-        out += (char) code;
+    if (code < 0x80) {
+        out += static_cast<char>(code);
         return out;
     }
-    if (code < 0x800)
-    {
-        out += (char) (0xC0 + ((code >> 6) & 0x1f));
-        out += (char) (0x80 + (code & 0x3f));
+    if (code < 0x800) {
+        out += static_cast<char>(0xC0 + ((code >> 6) & 0x1F));
+        out += static_cast<char>(0x80 + (code & 0x3F));
         return out;
     }
-    if (code < 0x10000)
-    {
-        out += (char) (0xE0 + ((code >> 12) & 0x1f));
-        out += (char) (0x80 + ((code >> 6) & 0x3f));
-        out += (char) (0x80 + (code & 0x3f));
+    if (code < 0x10000) {
+        out += static_cast<char>(0xE0 + ((code >> 12) & 0x0F));
+        out += static_cast<char>(0x80 + ((code >> 6) & 0x3F));
+        out += static_cast<char>(0x80 + (code & 0x3F));
         return out;
     }
-    if (code < 0x200000)
-    {
-        out += (char) (0xF0 + ((code >> 18) & 0x1f));
-        out += (char) (0x80 + ((code >> 12) & 0x3f));
-        out += (char) (0x80 + ((code >> 6) & 0x3f));
-        out += (char) (0x80 + (code & 0x3f));
+    if (code < 0x110000) {
+        out += static_cast<char>(0xF0 + ((code >> 18) & 0x07));
+        out += static_cast<char>(0x80 + ((code >> 12) & 0x3F));
+        out += static_cast<char>(0x80 + ((code >> 6) & 0x3F));
+        out += static_cast<char>(0x80 + (code & 0x3F));
         return out;
     }
-    if (code < 0x4000000)
-    {
-        out += (char) (0xF8 + ((code >> 24) & 0x1f));
-        out += (char) (0x80 + ((code >> 18) & 0x3f));
-        out += (char) (0x80 + ((code >> 12) & 0x3f));
-        out += (char) (0x80 + ((code >> 6) & 0x3f));
-        out += (char) (0x80 + (code & 0x3f));
-        return out;
-    }
-    out += (char) (0xFC + ((code >> 30) & 0x1f));
-    out += (char) (0x80 + ((code >> 24) & 0x3f));
-    out += (char) (0x80 + ((code >> 18) & 0x3f));
-    out += (char) (0x80 + ((code >> 12) & 0x3f));
-    out += (char) (0x80 + ((code >> 6) & 0x3f));
-    out += (char) (0x80 + (code & 0x3f));
-    return out;
+    return ""; // Invalid Unicode code point past RFC limits
 }
 
-/**
- * Convert a 32 bit character code to a UTF16 string
- * @param code The UTF32 character.
- * @return The UTF16 string. Returns an empty string on failure.
- */
 std::u16string codeToUTF16(char32_t code)
 {
     std::u16string out;
-    if (code < 0x010000)
-    {
-        out += (char16_t) code;
+    if (code < 0x010000) {
+        out += static_cast<char16_t>(code);
         return out;
+    }
+    if (code > 0x10FFFF) {
+        return u"";
     }
     char32_t ch = code - 0x010000;
     char32_t cl = ch & 0x03FF;
     ch >>= 10;
-    out += (0xD800 + ch);
-    out += (0xDC00 + cl);
+    out += static_cast<char16_t>(0xD800 + ch);
+    out += static_cast<char16_t>(0xDC00 + cl);
     return out;
 }
 
 class UTFCodeParser
 {
 public:
+    UTFCodeParser() = default;
+    ~UTFCodeParser() = default;
 
-    UTFCodeParser() { };
+    UTFCodeParser(const UTFCodeParser& orig) = delete;
+    UTFCodeParser& operator=(const UTFCodeParser& orig) = delete;
 
-    UTFCodeParser(const UTFCodeParser& orig) { };
-
-    virtual ~UTFCodeParser() { };
-
-    /**
-     * Add a UTF8 character to the code.
-     * @param c The UTF8 character.
-     * @return number of additional characters needed. 0 = complete, -1 on Error,
-     */
     int addChar(char c)
     {
-        if (byte == 0)
-        {
-            // First byte of sequence.
-            if ((c & 0x80) == 0)
-            {
-                // Single byte code.
-                code = c;
+        uint8_t uc = static_cast<uint8_t>(c);
+        if (byte == 0) {
+            if ((uc & 0x80) == 0) {
+                code = uc;
                 return byte;
             }
-            // Find number of bytes in code.
-            while (c & 0x80)
-            {
-                c <<= 1;
+
+            // FIX: Track leading bits securely to prevent infinite shift boundaries
+            uint8_t mask = 0x80;
+            while ((uc & mask) != 0) {
                 byte++;
+                mask >>= 1;
+                if (byte > 4) { // Secure ceiling protection
+                    code = 0;
+                    byte = 0;
+                    return -1;
+                }
             }
-            code = c >> byte;
-            byte--;
-            if (byte == 0)
-            {
-                // Error: in middle of character.
+
+            if (byte < 2) {
                 code = 0;
+                byte = 0;
                 return -1;
             }
+
+            code = uc & (mask - 1);
+            byte--;
             return byte;
         }
-        // Continuing character.
-        if ((c & 0xC0) != 0x80)
-        {
-            // Error: continuation code expected and not found.
+
+        if ((uc & 0xC0) != 0x80) {
             code = 0;
+            byte = 0;
             return -1;
         }
+
         byte--;
         code <<= 6;
-        code += c & 0x3f;
+        code += (uc & 0x3F);
         return byte;
     }
 
-    /**
-     * Add a UTF16 character to the code.
-     * @param c The UTF16 character.
-     * @return number of additional characters needed. 0 = complete, -1 on Error,
-     */
     int addChar(char16_t c)
     {
-        if (byte == 0)
-        {
-            if (c < 0xD800 || c >= 0xE000)
-            {
+        if (byte == 0) {
+            if (c < 0xD800 || c >= 0xE000) {
                 code = c;
                 return byte;
             }
-            if (c >= 0xDC00)
-            {
-                // Error! This is a continuation character.
+            if (c >= 0xDC00) {
                 code = 0;
                 return -1;
             }
@@ -177,33 +148,23 @@ public:
             code = c & 0x3FF;
             return byte;
         }
-        if (c < 0xDC00 || c >= 0xE000)
-        {
-            // Error: Expected continuation character not found.
-            if (c < 0xD800)
-            {
-                // Assume, good code following bad character.
+        if (c < 0xDC00 || c >= 0xE000) {
+            if (c < 0xD800) {
                 code = c;
                 byte = 0;
                 return 0;
             }
-            // Assume, good start code following bad character.
             byte = 1;
             code = c & 0x3FF;
             return byte;
         }
         byte--;
         code <<= 10;
-        code += c & 0x3FF;
+        code += (c & 0x3FF);
         code += 0x010000;
         return byte;
     }
 
-    /**
-     * Add a UTF32 character to the code.
-     * @param c The UTF32 character.
-     * @return number of additional characters needed. 0 = complete, -1 on Error,
-     */
     int addChar(char32_t c)
     {
         code = c;
@@ -211,40 +172,25 @@ public:
         return byte;
     }
 
-    /**
-     * Get the current code as a UTF8 character string.
-     * @return The UTF8 representation of the code of an empty string if the code is not valid.
-     */
     std::string getUTF8()
     {
-        if (byte == 0)
-        {
+        if (byte == 0) {
             return codeToUTF8(code);
         }
         return "";
     }
 
-    /**
-     * Get the current code as a UTF16 character string.
-     * @return The UTF16 representation of the code of an empty string if the code is not valid.
-     */
     std::u16string getUTF16()
     {
-        if (byte == 0)
-        {
+        if (byte == 0) {
             return codeToUTF16(code);
         }
         return u"";
     }
 
-    /**
-     * Get the current code as a UTF32 character string.
-     * @return The UTF32 representation of the code of an empty string if the code is not valid.
-     */
     std::u32string getUTF32()
     {
-        if (byte == 0)
-        {
+        if (byte == 0) {
             std::u32string out;
             out += code;
             return out;
@@ -252,79 +198,49 @@ public:
         return U"";
     }
 
-    /**
-     * Reset the state.
-     */
     void reset()
     {
         code = 0;
         byte = 0;
     }
 
-    /**
-     * Get the current character code value.
-     * @return 
-     */
-    char32_t getCode()
-    {
-        return code;
-    }
-
-    /**
-     * Is this current state a valid code?
-     * @return True if code is valid.
-     */
-    bool valid()
-    {
-        return byte == 0;
-    }
+    char32_t getCode() const { return code; }
+    bool valid() const { return (byte == 0); }
 
 private:
     char32_t code = 0;
     int byte = 0;
-
 };
 
-
-std::u16string utf8to16(std::string &str)
+// FIX: Corrected iteration parameters to align exact string element widths
+std::u16string utf8to16(const std::string &str)
 {
     std::u16string out;
-    UTFCodeParser code;
-    for (char16_t c : str)
-    {
-        int res = code.addChar(c);
-        if (res == -1)
-        {
-            // There was an error.
+    UTFCodeParser code_parser;
+    for (char c : str) { // Changed char16_t back to correct char layout
+        int res = code_parser.addChar(c);
+        if (res == -1) {
             return u"";
         }
-        if (res == 0)
-        {
-            out += code.getUTF16();
+        if (res == 0) {
+            out += code_parser.getUTF16();
         }
     }
     return out;
 }
 
-std::string utf16to8(std::u16string &str)
+std::string utf16to8(const std::u16string &str)
 {
     std::string out;
-    UTFCodeParser code;
-    for (char c : str)
-    {
-        int res = code.addChar(c);
-        if (res == -1)
-        {
-            // There was an error.
+    UTFCodeParser code_parser;
+    for (char16_t c : str) { // Changed char back to correct char16_t layout
+        int res = code_parser.addChar(c);
+        if (res == -1) {
             return "";
         }
-        if (res == 0)
-        {
-            out += code.getUTF8();
+        if (res == 0) {
+            out += code_parser.getUTF8();
         }
     }
     return out;
 }
-
-
-

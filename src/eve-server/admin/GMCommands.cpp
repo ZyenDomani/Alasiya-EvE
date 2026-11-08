@@ -512,7 +512,7 @@ PyResult Command_fit(Client* who, CommandDB* db, PyServiceMgr* services, const S
 
     typeID = atoi(args.arg(2).c_str());
     if (args.argCount() >= 4) {
-        std::string::size_type n = args.arg(3).find("flag=");
+        std::string::size_t n = args.arg(3).find("flag=");
         if (n != std::string::npos) {
             flag = (EVEItemFlags)atoi(args.arg(3).substr(5).c_str());
         }

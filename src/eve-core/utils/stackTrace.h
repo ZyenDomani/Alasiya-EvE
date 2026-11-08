@@ -181,7 +181,7 @@ static void findAddressInSection(bfd *abfd, asection *section, void *data)
 {
     AddressInfo   *addressInfo = (AddressInfo*)data;
     bfd_vma       vma;
-    bfd_size_type size;
+    bfd_size_t size;
 
     assert(addressInfo != NULL);
 

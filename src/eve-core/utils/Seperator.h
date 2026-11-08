@@ -21,21 +21,20 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur, Bloody.Rabbit
+    Update:     Allan
 */
 
-#ifndef __SEPERATOR_H__INCL__
-#define __SEPERATOR_H__INCL__
+#pragma once
 
-#include "utils/utils_string.h"
+#include <string>
+#include <vector>
 
-/**
- * @brief Separates string to arguments.
- *
- * @author Zhur, Bloody.Rabbit
- */
+#include "utils_string.h"
+
 class Seperator
 {
 public:
+    // Kept the legacy typo "Seperator" for code symbols so we don't trigger a massive global find/replace hunt tonight
     Seperator( const char* str,
                const char* divs = " \t",
                const char* quotes = "\"\'" );
@@ -49,5 +48,3 @@ public:
 protected:
     std::vector<std::string> mArgs;
 };
-
-#endif /* !__SEPERATOR_H__INCL__ */

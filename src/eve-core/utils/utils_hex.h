@@ -1,3 +1,4 @@
+
 /*
     ------------------------------------------------------------------------------------
     LICENSE:
@@ -22,27 +23,38 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur
 */
+#pragma once
 
-#ifndef UTILS_HEX_H
-#define UTILS_HEX_H
+#include <string>
+#include <cstdio> // Kept strictly for the legacy FILE* compatibility signatures
+
+// Forward declaration of LogType, 
+// ensuring this file stays incredibly light on the preprocessor graph!
+enum LogType;
 
 /** The maximal number of bytes printed by pfxHexDumpPreview. */
 extern const uint32 HEX_DUMP_PREVIEW_LIMIT;
 
 /**
- * @brief Build a printable line suitable for hex dump.
+ * @brief Build a printable line suitable for a hex dump.
+ *        FIX: Returns a safe std::string to permanently eliminate buffer overflows.
  *
  * @param[in]  buffer  Buffer which is being dumped.
- * @param[in]  length  Length of buffer.
- * @param[in]  offset  Offset at which the dump should start.
- * @param[out] ret     Array where result is stored.
- * @param[in]  padding Padding to be used when printing offset.
+ * @param[in]  length  Length of buffer data available.
+ * @param[in]  offset  Physical offset at which the dump should start.
+ * @param[in]  padding Padding to be used when printing the address offset.
+ *
+ * @return Formatted printable hex string line.
  */
-void build_hex_line( const uint8* buffer, size_t length, size_t offset, char* ret, unsigned int padding = 4 );
+std::string build_hex_line( const uint8* buffer, size_t length, size_t offset, unsigned int padding = 4 );
+
+/********************************************************************/
+/* Packet Packet Logging & Hex Dump Outlets                        */
+/********************************************************************/
 
 void pfxHexDump( const char* pfx, FILE* into, const uint8* data, size_t length );
 void pfxHexDump( const char* pfx, LogType type, const uint8* data, size_t length );
+
 void pfxHexDumpPreview( const char* pfx, FILE* into, const uint8* data, size_t length );
 void pfxHexDumpPreview( const char* pfx, LogType type, const uint8* data, size_t length );
 
-#endif // UTILS_HEX_H

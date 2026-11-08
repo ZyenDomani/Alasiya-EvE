@@ -143,7 +143,6 @@
 // memory
 #include "memory/SafeMem.h"
 // utils
-#include "utils/FastInt.h"
 
 
 #endif /* !__EVE_CORE_H__INCL__ */

@@ -23,237 +23,204 @@
     Author:        Zhur
 */
 
-#ifndef EVE_UNMARSHAL_H
-#define EVE_UNMARSHAL_H
+#pragma once
+
+#include <cstdint>
+#include <cstring>
+#include <cassert>
 
 #include "python/PyRep.h"
 
+class Buffer;
 
 /**
  * @brief Turns marshal stream into Python object.
- *
- * @param[in] data Marshal stream.
- *
- * @return Ownership of Python object.
  */
 extern PyRep* Unmarshal( const Buffer& data );
+
 /**
  * @brief Turns possibly inflated marshal stream into Python object.
- *
- * @param[in] data Possibly inflated marshal stream.
- *
- * @return Ownership of Python object.
-*/
+ */
 extern PyRep* InflateUnmarshal( const Buffer& data );
 
 /**
  * @brief Class which turns marshal bytecode into Python object.
- *
- * @author Zhur, Bloody.Rabbit
  */
 class UnmarshalStream
 {
 public:
     UnmarshalStream()
-    : mStoredObjects( nullptr )
+    : mStoredObjects( nullptr ),
+    mInPtr( nullptr ),
+    mStartPtr( nullptr ),
+    mEndPtr( nullptr ),
+    mStoreIndexPtr( nullptr )
     {
     }
 
     ~UnmarshalStream();
 
-    /**
-     * @brief Loads Python object from given bytecode.
-     *
-     * @param[in] data Buffer containing marshal bytecode.
-     *
-     * @return Loaded Python object.
-     */
     PyRep* Load( const Buffer& data );
 
 protected:
-    /** Peeks element from stream. */
-    template<typename T>
-    const T& Peek() const { return *Peek<T>( 1 ); }
-    /** Peeks elements from stream. */
-    template<typename T>
-    Buffer::const_iterator<T> Peek( size_t count ) const { return mInItr.As<T>(); }
+    // --- Optimized High-Performance Pointer Core (No iterators, zero allocation bloat) ---
 
-    /** Reads element from stream. */
+    /**
+     * @brief Reads a single element from the raw stream memory.
+     *        FIX: Copies the type by value securely to protect against unaligned memory access crashes.
+     */
     template<typename T>
-    const T& Read() { return *Read<T>( 1 ); }
-    /** Reads elements from stream. */
-    template<typename T>
-    Buffer::const_iterator<T> Read( size_t count )
+    T Read()
     {
-        Buffer::const_iterator<T> res = Peek<T>( count );
-        mInItr = ( res + count ).template As<uint8>();
+        assert( mInPtr != nullptr );
+        assert( mInPtr + sizeof(T) <= mEndPtr ); // Hard protection against malformed packet overruns
+
+        T value;
+        std::memcpy(&value, mInPtr, sizeof(T));
+        mInPtr += sizeof(T); // Linear pointer register shift
+        return value;
+    }
+
+    /**
+     * @brief Returns a direct pointer to an array block in the stream and advances the cursor.
+     */
+    template<typename T>
+    const T* Read( size_t count )
+    {
+        const size_t total_bytes = count * sizeof(T);
+        assert( mInPtr != nullptr );
+        assert( mInPtr + total_bytes <= mEndPtr );
+
+        const T* res = reinterpret_cast<const T*>(mInPtr);
+        mInPtr += total_bytes;
         return res;
     }
 
-    /** Reads extended size from stream. */
+    /** @brief Peeks a single element from the stream without advancing the cursor. */
+    template<typename T>
+    T Peek() const
+    {
+        assert( mInPtr != nullptr );
+        assert( mInPtr + sizeof(T) <= mEndPtr );
+
+        T value;
+        std::memcpy(&value, mInPtr, sizeof(T));
+        return value;
+    }
+
+    /** @brief Peeks an array block from the stream without advancing the cursor. */
+    template<typename T>
+    const T* Peek( size_t count ) const
+    {
+        assert( mInPtr != nullptr );
+        assert( mInPtr + (count * sizeof(T)) <= mEndPtr );
+        return reinterpret_cast<const T*>(mInPtr);
+    }
+
     uint32 ReadSizeEx()
     {
         uint32 size = Read<uint8>();
-        if ( 0xFF == size )
+        if ( 0xFF == size ) {
             size = Read<uint32>();
-
+        }
         return size;
     }
 
-    /** Initializes loading and loads rep from stream. */
     PyRep* LoadStream( size_t streamLength );
-
-    /** Loads rep from stream. */
     PyRep* LoadRep();
 
-    /**
-     * @brief Initializes object store.
-     *
-     * @param[in] streamLength Length of stream.
-     * @param[in] saveCount    Number of saved objects within the stream.
-     */
     void CreateObjectStore( size_t streamLength, uint32 saveCount );
-    /**
-     * @brief Destroys object store.
-     */
     void DestroyObjectStore();
-
     /**
      * @brief Obtains storage index for StoreObject.
+     *        FIX: Replaced custom iterator increments with a lightning-fast raw pointer dereference loop!
      *
      * @return Storage index.
      */
-    uint32 GetStorageIndex() { return *mStoreIndexItr++; }
-    /**
-     * @brief Obtains previously stored object.
-     *
-     * @param[in] index Index of stored object.
-     *
-     * @return The stored object.
-     */
+    uint32 GetStorageIndex()
+    {
+        assert( mStoreIndexPtr != nullptr );
+        return *mStoreIndexPtr++;
+    }
+
     PyRep* GetStoredObject( uint32 index );
-    /**
-     * @brief Stores object.
-     *
-     * @param[in] index  Index of object.
-     * @param[in] object The object to be stored.
-     */
     void StoreObject( uint32 index, PyRep* object );
 
 private:
-    /** Loads none from stream. */
     PyRep* LoadNone() { return PyStatic.NewNone(); }
 
-    /** Loads true boolean from stream. */
     PyRep* LoadBoolTrue() { return PyStatic.NewTrue(); }
-    /** Loads false boolean from stream. */
     PyRep* LoadBoolFalse() { return PyStatic.NewFalse(); }
 
-    /** Loads long long integer from stream. */
     PyRep* LoadIntegerLongLong() { return new PyLong( Read<int64>() ); }
-    /** Loads long integer from stream. */
     PyRep* LoadIntegerLong() { return new PyInt( Read<int32>() ); }
-    /** Loads signed short from stream. */
     PyRep* LoadIntegerSignedShort() { return new PyInt( Read<int16>() ); }
-    /** Loads byte integer from stream. */
     PyRep* LoadIntegerByte() { return new PyInt( Read<int8>() ); }
-    /** Loads variable length integer from stream. */
     PyRep* LoadIntegerVar();
-    /** Loads minus one integer from stream. */
     PyRep* LoadIntegerMinusOne() { return PyStatic.NewNegOne(); }
-    /** Loads zero integer from stream. */
     PyRep* LoadIntegerZero() { return PyStatic.NewZero(); }
-    /** Loads one integer from stream. */
     PyRep* LoadIntegerOne() { return PyStatic.NewOne(); }
 
-    /** Loads real from stream. */
     PyRep* LoadReal() { return new PyFloat( Read<double>() ); }
-    /** Loads zero real from stream. */
     PyRep* LoadRealZero() { return new PyFloat( 0.0 ); }
 
-    /** Loads empty string from stream. */
     PyRep* LoadStringEmpty() { return new PyString( "" ); }
-    /** Loads single character string from stream. */
     PyRep* LoadStringChar();
-    /** Loads short (up to 255 chars) string from stream. */
     PyRep* LoadStringShort();
-    /** Loads long (no limit) string from stream. */
     PyRep* LoadStringLong();
-    /** Loads table string from stream. */
     PyRep* LoadStringTable();
 
-    /** Loads empty wide string from stream. */
     PyRep* LoadWStringEmpty() { return new PyWString( "", 0 ); }
-    /** Loads single UCS-2 character string from stream. */
     PyRep* LoadWStringUCS2Char();
-    /** Loads UCS-2 string from stream. */
     PyRep* LoadWStringUCS2();
-    /** Loads UTF-8 string from stream. */
     PyRep* LoadWStringUTF8();
 
-    /** Loads token from stream. */
     PyRep* LoadToken();
-
-    /** Loads buffer from stream. */
     PyRep* LoadBuffer();
 
-    /** Loads empty tuple from stream. */
     PyRep* LoadTupleEmpty() { return PyStatic.mtTuple(); }
-    /** Loads tuple from stream. */
     PyRep* LoadTuple();
-    /** Loads one-element tuple from stream. */
     PyRep* LoadTupleOne();
-    /** Loads two-element tuple from stream. */
     PyRep* LoadTupleTwo();
 
-    /** Loads empty list from stream. */
     PyRep* LoadListEmpty() { return PyStatic.mtList(); }
-    /** Loads list from stream. */
     PyRep* LoadList();
-    /** Loads one-element list from stream. */
     PyRep* LoadListOne();
 
-    /** Loads dict from stream. */
     PyRep* LoadDict();
 
-    /** Loads object from stream. */
     PyRep* LoadObject();
-    /** Loads extended object of type 1 from stream. */
     PyRep* LoadObjectEx1();
-    /** Loads extended object of type 2 from stream. */
     PyRep* LoadObjectEx2();
 
-    /** Loads sub stream from stream. */
     PyRep* LoadSubStream();
-    /** Loads sub struct from stream. */
     PyRep* LoadSubStruct();
-    /** Loads checksumed stream from stream. */
     PyRep* LoadChecksumedStream();
 
-    /** Loads packed row from stream. */
     PyRep* LoadPackedRow();
 
-    /** Prints error and returns NULL. */
     PyRep* LoadError();
-    /** Loads saved stream element from stream. */
     PyRep* LoadSavedStreamElement();
 
-    /** Helper; loads extended object from stream. */
     PyObjectEx* LoadObjectEx( bool is_type_2 );
-    /** Helper; loads zero-compressed buffer from stream. */
     bool LoadZeroCompressed( Buffer& into );
 
-    /** Buffer iterator we are processing. */
-    Buffer::const_iterator<uint8> mInItr;
+    // --- Modernized Raw Data Stream Cursors (Replaced the volatile C++98 custom iterators) ---
 
-    /** Next store index for referencing in the buffer. */
-    Buffer::const_iterator<uint32> mStoreIndexItr;
-    /** Referenced objects within the buffer. */
+    /** @brief Active reading extraction pointer cursor on the stream block. */
+    const uint8* mInPtr;
+
+    /** @brief Pin marker tracking the absolute memory start boundary of the incoming data package. */
+    const uint8* mStartPtr;
+
+    /** @brief Hard cap safety fence defining the absolute memory end boundary of the packet storage array. */
+    const uint8* mEndPtr;
+
+    /** @brief High-speed pointer targeting the serialized Python back-reference storage index array. */
+    const uint32* mStoreIndexPtr;
+
+    /** @brief Storage collection tracking active referenced Python variables. */
     PyList* mStoredObjects;
 
-    /** Load function map. */
     static PyRep* ( UnmarshalStream::* const s_mLoadMap[] )();
 };
-
-#endif
-

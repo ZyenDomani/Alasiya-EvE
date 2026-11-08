@@ -33,12 +33,12 @@
  * @param str The UTF8 string.
  * @return The UTF16 string. Returns an empty string on failure.
  */
-std::u16string utf8to16(std::string &str);
+std::u16string utf8to16(const std::string &str);
 /**
  * Convert a UTF16 string to a UTF8 string
  * @param str The UTF16 string.
  * @return The UTF8 string. Returns an empty string on failure.
  */
-std::string utf16to8(std::u16string &str);
+std::string utf16to8(const std::u16string &str);
 
 #endif	/* UTFUTILS_H */

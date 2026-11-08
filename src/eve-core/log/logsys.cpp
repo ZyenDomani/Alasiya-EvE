@@ -25,9 +25,15 @@
 
 #include "eve-core.h"
 
+#include <string>
+#include <cstring>
+#include <cstdarg>
+#include <vector>
+
 #include "log/logsys.h"
 #include "utils/utils_hex.h"
 #include "threading/Mutex.h"
+
 
 Mutex mLogSys;
 
@@ -38,9 +44,6 @@ const char *log_category_names[NUMBER_OF_LOG_CATEGORIES] = {
     #include "log/logtypes.h"
 };
 
-// there seems to be a max of 474 items for NUMBER_OF_LOG_TYPES ...not sure how/where
-
-//this array is private to this file, only a const version of it is exposed
 #define LOG_TYPE(category, type, enabled, str) { enabled, LOG_ ##category, #category "__" #type, str },
 static LogTypeStatus real_log_type_info[NUMBER_OF_LOG_TYPES+1] ={
     #include "log/logtypes.h"
@@ -50,83 +53,97 @@ static LogTypeStatus real_log_type_info[NUMBER_OF_LOG_TYPES+1] ={
 
 const LogTypeStatus *log_type_info = real_log_type_info;
 
-void log_hex(LogType type, const void *data, unsigned long length, unsigned char padding) {
-    char buffer[length];
-    for(uint32 offset=0; offset < length; offset += 16) {
-        build_hex_line((const uint8 *)data,length,offset,buffer,padding);
-        log_message(type, "%s", buffer);    //%s is to prevent % escapes in the ascii
+// FIX: Completely synchronized with our safe build_hex_line rewrite, wiping out the VLA hazards!
+void log_hex(LogType type, const void *data, unsigned long length, unsigned char padding)
+{
+    if (data == nullptr || length == 0) {
+        return;
+    }
+
+    for (uint32 offset = 0; offset < length; offset += 16) {
+        std::string hex_line = build_hex_line(reinterpret_cast<const uint8*>(data), length, offset, padding);
+        if (!hex_line.empty()) {
+            log_message(type, "%s", hex_line.c_str()); // %s protects against % escape tokens in string streams
+        }
     }
 }
 
-void log_phex(LogType type, const void *data, unsigned long length, unsigned char padding) {
+void log_phex(LogType type, const void *data, unsigned long length, unsigned char padding)
+{
+    if (data == nullptr || length == 0) {
+        return;
+    }
+
     if (length <= 1024) {
         log_hex(type, data, length, padding);
     } else {
-        char buffer[length];
         log_hex(type, data, length, padding);
         log_message(type, " ... truncated ...");
-        build_hex_line((const uint8 *)data,length,length-16,buffer,padding);
-        log_message(type, "%s", buffer);
+
+        std::string trailing_line = build_hex_line(reinterpret_cast<const uint8*>(data), length, length - 16, padding);
+        if (!trailing_line.empty()) {
+            log_message(type, "%s", trailing_line.c_str());
+        }
     }
 }
 
-void log_message(LogType type, const char *fmt, ...) {
+void log_message(LogType type, const char *fmt, ...)
+{
     va_list args;
     va_start(args, fmt);
     log_messageVA(type, 0, fmt, args);
     va_end(args);
 }
 
-void log_messageVA(LogType type, const char *fmt, va_list args) {
+void log_messageVA(LogType type, const char *fmt, va_list args)
+{
     log_messageVA(type, 0, fmt, args);
 }
 
-extern void log_messageVA( LogType type, uint32 iden, const char *fmt, va_list args) {
-    /* allocate enough room for a med message  (changed from 4k to 2k) */
-    size_t log_msg_size = 0x800;
-    size_t log_msg_index = 0;
-    char* log_msg = (char*)malloc(log_msg_size);
+extern void log_messageVA( LogType type, uint32 iden, const char *fmt, va_list args)
+{
+    /* Use local stack array to prevent heap allocation chokes on frequent text writes */
+    char formatted_msg[4096];
+    std::memset(formatted_msg, 0, sizeof(formatted_msg));
 
-    /* handle the time part.. cross platform */
     tm t;
+    std::memset(&t, 0, sizeof(t));
     time_t tTime;
     time(&tTime);
-    localtime_r( &tTime, &t );
-    int va_size = snprintf(&log_msg[log_msg_index], log_msg_size, "%02u:%02u:%02u [%s] ", t.tm_hour, t.tm_min, t.tm_sec, log_type_info[type].display_name );
+    ::localtime_r(&tTime, &t);
 
-    /* store the resulting size */
-    log_msg_size -= va_size;
-    log_msg_index += va_size;
+    size_t current_index = 0;
+    size_t remaining_size = sizeof(formatted_msg);
 
-    /* add the required spaces */
-    for (uint32 i = 0; i < iden; i++)
-        log_msg[log_msg_index++] = ' ';
+    int written = std::snprintf(&formatted_msg[current_index], remaining_size, "%02u:%02u:%02u [%s] ",
+                                t.tm_hour, t.tm_min, t.tm_sec, log_type_info[type].display_name);
 
-    /* make sure the resulting size is corrected */
-    log_msg_size -= iden;
+    current_index += written;
+    remaining_size -= written;
 
-    /* put in the rest of the va stuff */
-    va_size = vsnprintf(&log_msg[log_msg_index], log_msg_size, fmt, args);
-    log_msg_index += va_size;
+    /* Securely insert leading indentation spacing thresholds */
+    for (uint32 i = 0; i < iden && remaining_size > 2; i++) {
+        formatted_msg[current_index++] = ' ';
+        remaining_size--;
+    }
 
-    /* make sure that there is a new line at the end */
-    log_msg[log_msg_index++] = '\n';
-    log_msg[log_msg_index++] = '\0';
+    written = std::vsnprintf(&formatted_msg[current_index], remaining_size - 2, fmt, args);
+    current_index += written;
+
+    /* Enforce strict terminal boundaries */
+    formatted_msg[current_index++] = '\n';
+    formatted_msg[current_index] = '\0';
 
     MutexLock lock(mLogSys);
 
-    fputs(log_msg, stdout);
+    std::fputs(formatted_msg, stdout);
 
-    //print into the logfile (if any)
     if (logsys_log_file != nullptr) {
-        //fprintf(logsys_log_file, "%s\n", message.c_str());
-        fputs(log_msg, logsys_log_file);
-        //keep the logfile updated
-        fflush(logsys_log_file);
+        std::fputs(formatted_msg, logsys_log_file);
+        std::fflush(logsys_log_file);
     }
 
     lock.Unlock();
-    free(log_msg);
 }
 
 void log_enable( LogType t ) {
@@ -141,84 +158,98 @@ void log_toggle( LogType t ) {
     real_log_type_info[t].enabled = !real_log_type_info[t].enabled;
 }
 
-bool log_open_logfile( const char* filename ) {
+bool log_open_logfile( const char* filename )
+{
     MutexLock lock(mLogSys);
-    if (logsys_log_file)
-        if (!log_close_logfile())
+    if (logsys_log_file != nullptr) {
+        if (!log_close_logfile()) {
             return false;
+        }
+    }
 
-    logsys_log_file = fopen(filename, "w");
-    return ( nullptr != logsys_log_file);
+    logsys_log_file = std::fopen(filename, "w");
+    return (nullptr != logsys_log_file);
 }
 
-bool log_close_logfile() {
+bool log_close_logfile()
+{
     MutexLock lock(mLogSys);
-    if (!logsys_log_file)
+    if (!logsys_log_file) {
         return true;
-    return ( 0 == fclose( logsys_log_file ) );
+    }
+    return (0 == std::fclose(logsys_log_file));
 }
 
-bool load_log_settings(const char *filename) {
-    //this is a terrible algorithm, but im lazy today
-    FILE *f = fopen(filename, "r");
-    if (f == nullptr)
+bool load_log_settings(const char *filename)
+{
+    FILE *f = std::fopen(filename, "r");
+    if (f == nullptr) {
         return false;
-    char linebuf[512], type_name[256], value[256];
-    uint16 i = 0, r = 0, k = 0;
-    bool enabled = false;
-    while (!feof(f)) {
-        ++i;
-        if (fgets(linebuf, 512, f) == nullptr)
-            continue;
-        if (sscanf(linebuf, "%[^=]=%[^\r\n]\n", type_name, value) != 2)
-            continue;
-        if (type_name[0] == '\0' || type_name[0] == '#')
-            continue;
+    }
 
-        //first make sure we understand the value
-        if (!strcasecmp(value, "on") || !strcasecmp(value, "yes") || !strcasecmp(value, "enabled") || !strcmp(value, "1")) {
+    char linebuf[512], type_name[256], value[256];
+    uint16 line_count = 0;
+    bool enabled = false;
+
+    while (std::fgets(linebuf, sizeof(linebuf), f) != nullptr) {
+        ++line_count;
+        if (std::sscanf(linebuf, "%[^=]=%[^\r\n]\n", type_name, value) != 2) {
+            continue;
+        }
+        if (type_name[0] == '\0' || type_name[0] == '#') {
+            continue;
+        }
+
+        if (!strcasecmp(value, "on") || !strcasecmp(value, "yes") || !strcasecmp(value, "enabled") || !std::strcmp(value, "1")) {
             enabled = true;
-        } else if (!strcasecmp(value, "off") || !strcasecmp(value, "no") || !strcasecmp(value, "disabled") || !strcmp(value, "0")) {
+        } else if (!strcasecmp(value, "off") || !strcasecmp(value, "no") || !strcasecmp(value, "disabled") || !std::strcmp(value, "0")) {
             enabled = false;
         } else {
-            printf("Unable to parse value '%s' from %s around line %u. Skipping.\n", value, filename, i);
+            std::printf("Unable to parse value '%s' from %s around line %u. Skipping.\n", value, filename, line_count);
             continue;
         }
 
-        //first see if it is a category name
-        for(r = 0; r < NUMBER_OF_LOG_CATEGORIES; r++) {
-            if (!strcasecmp(log_category_names[r], type_name))
+        uint16 category_match = NUMBER_OF_LOG_CATEGORIES;
+        for (uint16 r = 0; r < NUMBER_OF_LOG_CATEGORIES; r++) {
+            if (!strcasecmp(log_category_names[r], type_name)) {
+                category_match = r;
                 break;
+            }
         }
-        if (r != NUMBER_OF_LOG_CATEGORIES) {
-            //matched a category.
-            for(k = 0; k < NUMBER_OF_LOG_TYPES; k++) {
-                if (log_type_info[k].category != r)
-                    continue;   //does not match this category.
-                    if (enabled)
+
+        if (category_match != NUMBER_OF_LOG_CATEGORIES) {
+            for (uint16 k = 0; k < NUMBER_OF_LOG_TYPES; k++) {
+                if (log_type_info[k].category == category_match) {
+                    if (enabled) {
                         log_enable(LogType(k));
-                    else
+                    } else {
                         log_disable(LogType(k));
+                    }
+                }
             }
             continue;
         }
 
-        for(r = 0; r < NUMBER_OF_LOG_TYPES; r++) {
-            if (!strcasecmp(log_type_info[r].name, type_name))
+        uint16 type_match = NUMBER_OF_LOG_TYPES;
+        for (uint16 r = 0; r < NUMBER_OF_LOG_TYPES; r++) {
+            if (!strcasecmp(log_type_info[r].name, type_name)) {
+                type_match = r;
                 break;
+            }
         }
-        if (r == NUMBER_OF_LOG_TYPES) {
-            printf("Unable to locate log type %s from file %s around line %u. Skipping.\n", type_name, filename, i);
+
+        if (type_match == NUMBER_OF_LOG_TYPES) {
+            std::printf("Unable to locate log type %s from file %s around line %u. Skipping.\n", type_name, filename, line_count);
             continue;
         }
 
-        //got it all figured out, do something now...
         if (enabled) {
-            log_enable(LogType(r));
+            log_enable(LogType(type_match));
         } else {
-            log_disable(LogType(r));
+            log_disable(LogType(type_match));
         }
     }
-    fclose(f);
+
+    std::fclose(f);
     return true;
 }

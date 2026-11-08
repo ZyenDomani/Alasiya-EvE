@@ -24,9 +24,12 @@
     Updates:    Allan
 */
 
-// #include "date.h"
 
 #include "utils/utils_time.h"
+#include <ctime>
+#include <cmath>
+#include <sstream>
+#include <iomanip>
 
 // Number of days in month in normal year
 static const int daysOfMonth[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
@@ -35,135 +38,150 @@ static const int64 SECS_BETWEEN_EPOCHS = 11644473600LL;
 static const int64 SECS_TO_100NS = 10000000L; // 10^7
 
 const int64 Win32Time_Second = SECS_TO_100NS;
-const int64 Win32Time_Minute = Win32Time_Second*60;
-const int64 Win32Time_Hour = Win32Time_Minute*60;
+const int64 Win32Time_Minute = Win32Time_Second * 60;
+const int64 Win32Time_Hour = Win32Time_Minute * 60;
 
-std::string Win32TimeToString(int64 win32t) {
+std::string Win32TimeToString(int64 win32t)
+{
     std::time_t unix_time;
     uint32 nsec = 0;
     Win32TimeToUnixTime(win32t, unix_time, nsec);
 
+    struct tm local_tm;
+    std::memset(&local_tm, 0, sizeof(local_tm));
+    // FIX: Using thread-safe localtime_r to prevent cross-thread logging corruption
+    ::localtime_r(&unix_time, &local_tm);
+
     char buf[256];
-    std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", std::localtime(&unix_time));
+    std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", &local_tm);
 
     return buf;
 }
 
-void Win32TimeToUnixTime( int64 win32t, time_t &unix_time, uint32 &nsec ) {
+void Win32TimeToUnixTime( int64 win32t, time_t &unix_time, uint32 &nsec )
+{
     win32t -= (FILETIME_EPOCH_OFFSET);
     nsec = (win32t % SECS_TO_100NS) * 100;
     win32t /= SECS_TO_100NS;
-    unix_time = win32t;
+    unix_time = static_cast<time_t>(win32t);
 }
 
-int32 GetElapsedHours(int64 time)  // -allan
+int32 GetElapsedHours(int64 time)
 {
-    double hours = GetFileTimeNow() -time;
+    double hours = static_cast<double>(GetFileTimeNow() - time);
     hours /= SECS_TO_100NS;
     hours -= SECS_BETWEEN_EPOCHS;
-    hours /= 3600;
-    return (int32)hours;
+    hours /= 3600.0;
+    return static_cast<int32>(hours);
 }
 
-// Get current date/time, format is YYYY-MM-DD.HH:mm:ss
-const std::string currentDateTime() {
-    time_t     now = std::time(0);
-    struct tm  tstruct;
-    char       buf[80];
-    tstruct = *std::localtime(&now);
-    // Visit http://en.cppreference.com/w/cpp/chrono/c/strftime
-    // for more information about date/time format
+const std::string currentDateTime()
+{
+    time_t now = std::time(nullptr);
+    struct tm tstruct;
+    std::memset(&tstruct, 0, sizeof(tstruct));
+
+    // FIX: Thread-safe runtime conversion
+    ::localtime_r(&now, &tstruct);
+
+    char buf[80];
     std::strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
 
     return buf;
 }
 
+// FIX: Completely reconstructed string format handlers to eliminate the invalid sprintf returns
 std::string GetUTimeTillNow(double fromTime)
 {
     double elapsed = GetTimeUSeconds() - fromTime;
-    if (elapsed > 999999)
-        return sprintf("%0.4fs", elapsed / 1000000);
-    else if (elapsed > 999)
-        return sprintf("%0.4fms", elapsed / 1000);
-    else
-        return sprintf("%0.4fus", elapsed);
+    char buf[64];
+    std::memset(buf, 0, sizeof(buf));
+
+    if (elapsed > 999999.0) {
+        std::snprintf(buf, sizeof(buf), "%0.4fs", elapsed / 1000000.0);
+    } else if (elapsed > 999.0) {
+        std::snprintf(buf, sizeof(buf), "%0.4fms", elapsed / 1000.0);
+    } else {
+        std::snprintf(buf, sizeof(buf), "%0.4fus", elapsed);
+    }
+    return buf;
 }
 
 std::string GetMTimeTillNow(double fromTime)
 {
     double elapsed = GetTimeMSeconds() - fromTime;
-    if (elapsed > 999)
-        return sprintf("%0.4fs", elapsed / 1000);
-    else
-        return sprintf("%0.4fms", elapsed);
+    char buf[64];
+    std::memset(buf, 0, sizeof(buf));
+
+    if (elapsed > 999.0) {
+        std::snprintf(buf, sizeof(buf), "%0.4fs", elapsed / 1000.0);
+    } else {
+        std::snprintf(buf, sizeof(buf), "%0.4fms", elapsed);
+    }
+    return buf;
 }
 
-EvE::TimeParts GetTimeParts(int64 filetime/*0*/)
+EvE::TimeParts GetTimeParts(int64 filetime)
 {
     // time sent as (windows)FILETIME; convert to unix time
-    long time = (filetime / EvE::Time::Second);// to Seconds
-    time -= SECS_BETWEEN_EPOCHS;    // epoc offset
+    int64 time = (filetime / EvE::Time::Second); // Upgrade to explicit int64 to preserve bit depths
+    time -= SECS_BETWEEN_EPOCHS;
 
-    // Calculate total days
-    uint16 day = (time / 86400) +1;
-    uint16 seconds = std::fmod(time, 86400);
+    // FIX: Using fast integer math (%) instead of double-precision fmod call overhead
+    uint16 day = static_cast<uint16>((time / 86400) + 1);
+    uint32 seconds = static_cast<uint32>(time % 86400);
 
-    // year loop
     uint16 year = 1970;
     while (day >= 365) {
-        if ((year % 400 == 0)
-        or ((year % 4 == 0) and (year % 100 != 0))) {
-            day -= 366;
+        if ((year % 400 == 0) || ((year % 4 == 0) && (year % 100 != 0))) {
+            if (day >= 366) {
+                day -= 366;
+                ++year;
+            } else {
+                break;
+            }
         } else {
             day -= 365;
+            ++year;
         }
-        ++year;
     }
 
-    bool flag = false;
-    if ((year % 400 == 0)
-    or ((year % 4 == 0) and (year % 100 != 0)))
-        flag = true;
+    bool isLeap = ((year % 400 == 0) || ((year % 4 == 0) && (year % 100 != 0)));
 
-    // Calculating MONTH and DATE
-    uint8 month(0), index = 0;
-    if (flag) {
-        while (true) {
-            if (index == 1) {
-                if (day - 29 < 0)
-                    break;
-                ++month;
-                day -= 29;
-            } else {
-                if (day - daysOfMonth[index] < 0)
-                    break;
-                ++month;
-                day -= daysOfMonth[index];
+    uint8 month = 0;
+    uint8 index = 0;
+
+    if (isLeap) {
+        while (index < 12) {
+            int daysInMonth = (index == 1) ? 29 : daysOfMonth[index];
+            if (day - daysInMonth < 0) {
+                break;
             }
+            ++month;
+            day -= daysInMonth;
             ++index;
         }
     } else {
-        while (true) {
-            if (day - daysOfMonth[index] < 0)
+        while (index < 12) {
+            if (day - daysOfMonth[index] < 0) {
                 break;
-            day -= daysOfMonth[index];
+            }
             ++month;
+            day -= daysOfMonth[index];
             ++index;
         }
     }
 
-    // Current Month
     if (day > 0) {
         ++month;
     } else {
-        if (month == 2 && flag)
+        if (month == 2 && isLeap) {
             day = 29;
-        else {
-            day = daysOfMonth[month - 1];
+        } else {
+            day = static_cast<uint16>(daysOfMonth[month - 1]);
         }
     }
 
-    // use boost to get day of week and week of year
     boost::gregorian::date d(year, month, day);
 
     EvE::TimeParts data = EvE::TimeParts();
@@ -174,9 +192,9 @@ EvE::TimeParts GetTimeParts(int64 filetime/*0*/)
     data.wd     = d.day_of_week();
     data.dy     = d.day_of_year();
     data.hour   = seconds / 3600;
-    data.min    = std::fmod(seconds, 3600) / 60;
-    data.sec    = std::fmod(std::fmod(seconds, 3600), 60);
-    data.ms     = std::fmod(time, 1000);
+    data.min    = (seconds % 3600) / 60;
+    data.sec    = (seconds % 3600) % 60;
+    data.ms     = static_cast<uint16>(time % 1000);
 
     return data;
 }

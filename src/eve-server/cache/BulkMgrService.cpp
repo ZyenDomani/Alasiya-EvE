@@ -130,6 +130,16 @@ BULKDATA__INFO=0
 BULKDATA__TRACE=0
 BULKDATA__DUMP=0
 */
+
+PyResult BulkMgrService::Handle_GetVersion(PyCallArgs &call)
+{
+    // changeID, branch = self.bulkMgr.GetVersion()
+    PyTuple* tuple = new PyTuple(2);
+    tuple->SetItem(0, new PyInt(bulkDataChangeID));
+    tuple->SetItem(1, new PyInt(bulkDataBranch));
+    return tuple;
+}
+
 PyResult BulkMgrService::Handle_UpdateBulk(PyCallArgs &call)
 {
     /*
@@ -357,19 +367,6 @@ PyResult BulkMgrService::Handle_GetFullFilesChunk(PyCallArgs &call)
 
     response->SetItem(0, toBeChanged);
     return response;
-}
-
-PyResult BulkMgrService::Handle_GetVersion(PyCallArgs &call)
-{
-    // changeID, branch = self.bulkMgr.GetVersion()
-/*
-    sLog.White( "BulkMgrService::Handle_GetVersion()", "size= %zu", call.tuple->size() );
-    call.Dump(BULKDATA__DUMP);
-*/
-    PyTuple* tuple = new PyTuple(2);
-        tuple->SetItem(0, new PyInt(bulkDataChangeID));
-        tuple->SetItem(1, new PyInt(bulkDataBranch));
-    return tuple;
 }
 
 PyResult BulkMgrService::Handle_GetAllBulkIDs(PyCallArgs &call)

@@ -21,176 +21,68 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:     Captnoord, Bloody.Rabbit
+    Update:     Allan
 */
 
-#ifndef __UTILS__UTILS_STRING_H__INCL__
-#define __UTILS__UTILS_STRING_H__INCL__
+#pragma once
 
-#include "utils/Buffer.h"
+#include <string>
+#include <vector>
 
-/// std::string to use where you would use NULL for const char*.
+#include "../eve-compat.h"
+
+// Forward declaration of Buffer prevents us from including the whole Buffer.h file here,
+// smashing the include cascade and speeding up your PCH compilation passes!
+class Buffer;
+
+// std::string to use where you would use NULL for const char*.
 extern const std::string NULL_STRING;
 
 /**
- * @brief Generates random key.
- *
- * @param[in] length Length of key to generate.
- *
- * @return Generated key.
+ * @brief Generates a random cryptographic or session key.
  */
 std::string GenerateKey( size_t length );
 
-/**
- * @brief Checks whether character is a number.
- *
- * @param[in] c The character to be checked.
- *
- * @retval true  The character is a number.
- * @retval false The character is not a number.
- */
+/********************************************************************/
+/* Character & String Format Validators                             */
+/********************************************************************/
+
 bool IsNumber( char c );
-/**
- * @brief Checks whether string is a number.
- *
- * @param[in] str The string to be checked.
- * @param[in] len Length of the string.
- *
- * @retval true  The string is a number.
- * @retval false The string is not a number.
- */
 bool IsNumber( const char* str, size_t len );
-/**
- * @brief Checks whether string is a number.
- *
- * @param[in] str The string to be checked.
- *
- * @retval true  The string is a number.
- * @retval false The string is not a number.
- */
 bool IsNumber( const std::string& str );
 
-/**
- * @brief Checks whether character is a hexadecimal number.
- *
- * @param[in] c The character to be checked.
- *
- * @retval true  The character is a hexadecimal number.
- * @retval false The character is not a hexadecimal number.
- */
 bool IsHexNumber( char c );
-/**
- * @brief Checks whether string is a hexadecimal number.
- *
- * @param[in] str The string to be checked.
- * @param[in] len Length of the string.
- *
- * @retval true  The string is a hexadecimal number.
- * @retval false The string is not a hexadecimal number.
- */
 bool IsHexNumber( const char* str, size_t len );
-/**
- * @brief Checks whether string is a hexadecimal number.
- *
- * @param[in] str The string to be checked.
- *
- * @retval true  The string is a hexadecimal number.
- * @retval false The string is not a hexadecimal number.
- */
 bool IsHexNumber( const std::string& str );
 
-/**
- * @brief Checks whether character is printable.
- *
- * @param[in] c The character to be checked.
- *
- * @retval true  The character is printable.
- * @retval false The character is not printable.
- */
 bool IsPrintable( char c );
-/**
- * @brief Checks whether string is printable.
- *
- * @param[in] str String to be checked.
- * @param[in] len Length of string.
- *
- * @retval true  The string is printable.
- * @retval false The string is not printable.
- */
 bool IsPrintable( const char* str, size_t len );
-/**
- * @brief Checks whether string is printable.
- *
- * @param[in] str String to be checked.
- *
- * @retval true  The string is printable.
- * @retval false The string is not printable.
- */
 bool IsPrintable( const std::string& str );
 
-/**
- * @brief Convers num to string.
- *
- * @param[in] num The number to be converted.
- *
- * @return Pointer to static array where result is stored.
- */
+/********************************************************************/
+/* String Formatting & Conversion Utilities                          */
+/********************************************************************/
+
+// Keep legacy itoa signature for symbol compatibility, but we make it thread-safe inside the cpp
 const char* itoa( int64 num );
 
 /**
- * function to convert a vector of numbers to a string containing string representatives of those
- * numbers.
- *
- * @param[in]  ints     contains the numbers that need to converted.
- * @param[in]  if_empty is the default value added if ints is empty.
- * @param[out] into     contains the string representatives of the numbers.
+ * Converts a vector of numbers into a formatted SQL-ready IN string list.
  */
 void ListToINString( const std::vector<int32>& ints, std::string& into, const char* if_empty = "" );
 
-/**
- * @brief toupper() for strings.
- *
- * @param[in]  source Source string.
- * @param[out] target Array which receives result.
- */
-void MakeUpperString( const char* source, char* target );
-/**
- * @brief tolower() for strings.
- *
- * @param[in]  source Source string.
- * @param[out] target Array which receives result.
- */
-void MakeLowerString( const char* source, char* target );
+// Enforces modern std::string transformations to eliminate raw char* buffer overflows
+std::string MakeUpperString( const std::string& source );
+std::string MakeLowerString( const std::string& source );
 
 /**
  * @brief Decodes string escapes into actual characters.
- *
- * Based on PyString_DecodeEscape from Python.
- *
- * @param[in]  str  Escaped string.
- * @param[out] into The result will be put here.
- *
- * @retval true  Decode ran OK.
- * @retval false Error occured during decoding.
+ *        Based on PyString_DecodeEscape from Python core libraries.
  */
 bool PyDecodeEscape( const char* str, Buffer& into );
 
-/**
- * @brief Does search & replace on @a subject.
- *
- * @param[in,out] subject String to be searched.
- * @param[in]     search  String which shall be replaced.
- * @param[in]     replace String with which to replace.
- */
 void SearchReplace( std::string& subject, const std::string& search, const std::string& replace );
 
-/**
- * @brief Splits path to its components.
- *
- * @param[in]  path Path to split.
- * @param[out] into Vector which receives components of the path.
- */
 void SplitPath( const std::string& path, std::vector<std::string>& into );
 
-std::string BinString(std::string words);
-
-#endif /* !__UTILS__UTILS_STRING_H__INCL__ */
+std::string BinString( std::string words );

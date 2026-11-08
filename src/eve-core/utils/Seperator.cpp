@@ -21,56 +21,58 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur, Bloody.Rabbit
+    Update:     Allan
 */
 
-#include "eve-core.h"
+#include <cstring>
 
-#include "log/LogNew.h"
-#include "utils/Seperator.h"
+#include "Seperator.h"
 
-/************************************************************************/
-/* Seperator                                                            */
-/************************************************************************/
 Seperator::Seperator( const char* str, const char* divs, const char* quotes )
 {
-    bool inQuote = false, isDiv = false, isQuote = false;
-    std::string* cur(nullptr);
+    if (str == nullptr || *str == '\0') {
+        return;
+    }
 
-    for (size_t len = strlen( str ); len > 0; str++, len-- ) {
+    bool inQuote = false;
+    std::string currentArg;
+    bool hasToken = false;
+
+    // Linear single-pass scan through the string until the null-terminator
+    for (; *str != '\0'; ++str) {
         const char c = *str;
-        isDiv = (strchr(divs, c) != NULL);
-        isQuote = (strchr( quotes, c) != NULL);
 
-        if (!inQuote) {
-            if (NULL == cur) {
-                if (!isDiv) {
-                    mArgs.push_back( "" );
-                    cur = &mArgs.back();
+        // Fast direct lookup replacements for strchr
+        const bool isDiv = (std::strchr(divs, c) != nullptr);
+        const bool isQuote = (std::strchr(quotes, c) != nullptr);
 
-                    if (isQuote)
-                        inQuote = true;
-                    else
-                        cur->push_back( c );
-                }
+        if (inQuote) {
+            if (isQuote) {
+                // Closing quote found, close the active token state
+                inQuote = false;
             } else {
-                if (isDiv)
-                    cur = NULL;
-                else
-                    cur->push_back( c );
+                currentArg.push_back(c);
             }
         } else {
-            if (NULL != cur) {
-                if (isQuote)
-                    cur = NULL;
-                else
-                    cur->push_back( c );
+            if (isQuote) {
+                inQuote = true;
+                hasToken = true; // Quotes implicitly start a token boundary
+            } else if (isDiv) {
+                if (hasToken) {
+                    // Delimiter hit outside of quotes ends the current argument block
+                    mArgs.push_back(std::move(currentArg)); // Leverage C++11 move semantics!
+                    currentArg.clear();
+                    hasToken = false;
+                }
             } else {
-                if (isDiv)
-                    inQuote = false;
-                else
-                    sLog.Error( "Seperator", "Invalid input." );
+                currentArg.push_back(c);
+                hasToken = true;
             }
         }
     }
-}
 
+    // Flush any trailing token left sitting in the buffer after the loop terminates
+    if (hasToken) {
+        mArgs.push_back(std::move(currentArg));
+    }
+}

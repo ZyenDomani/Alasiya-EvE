@@ -21,66 +21,119 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:     Bloody.Rabbit
+    Update:     Allan
 */
 
-#include "eve-core.h"
+#include <cstring>
+#include <cstdlib>
+#include <cctype>
 
+#include "eve-core.h"
 #include "utils/str2conv.h"
+
 
 template<>
 bool str2< bool >( const char* str )
 {
-    if ( !::strcasecmp( str, "true" ) )
-        return true;
-    else if ( !::strcasecmp( str, "false" ) )
+    // 1. Strict boundary guard: Protect against missing or null XML attribute nodes
+    if ( str == nullptr || *str == '\0' ) {
         return false;
-    else if ( !::strcasecmp( str, "yes" ) )
-        return true;
-    else if ( !::strcasecmp( str, "no" ) )
-        return false;
-    else if ( !::strcasecmp( str, "y" ) )
-        return true;
-    else if ( !::strcasecmp( str, "n" ) )
-        return false;
-    else if ( !::strcasecmp( str, "on" ) )
-        return true;
-    else if ( !::strcasecmp( str, "off" ) )
-        return false;
-    else if ( !::strcasecmp( str, "enable" ) )
-        return true;
-    else if ( !::strcasecmp( str, "disable" ) )
-        return false;
-    else if ( !::strcasecmp( str, "enabled" ) )
-        return true;
-    else if ( !::strcasecmp( str, "disabled" ) )
-        return false;
-    else if ( str2< int >( str ) )
-        return true;
-    else
-        return false;
-}
-
-#define STR2( type, fmt )                       \
-    template<>                                  \
-    type str2< type >( const char* str )        \
-    {                                           \
-        type v = 0;                             \
-        ::sscanf( str, "%" fmt, &v );           \
-        return v;                               \
     }
 
-STR2( int8,  SCNd8 )
-STR2( int16, SCNd16 )
-STR2( int32, SCNd32 )
-STR2( int64, SCNd64 )
+    if ( ::strcasecmp( str, "true" ) == 0 ) {
+        return true;
+    } else if ( ::strcasecmp( str, "false" ) == 0 ) {
+        return false;
+    } else if ( ::strcasecmp( str, "yes" ) == 0 ) {
+        return true;
+    } else if ( ::strcasecmp( str, "no" ) == 0 ) {
+        return false;
+    } else if ( ::strcasecmp( str, "y" ) == 0 ) {
+        return true;
+    } else if ( ::strcasecmp( str, "n" ) == 0 ) {
+        return false;
+    } else if ( ::strcasecmp( str, "on" ) == 0 ) {
+        return true;
+    } else if ( ::strcasecmp( str, "off" ) == 0 ) {
+        return false;
+    } else if ( ::strcasecmp( str, "enable" ) == 0 ) {
+        return true;
+    } else if ( ::strcasecmp( str, "disable" ) == 0 ) {
+        return false;
+    } else if ( ::strcasecmp( str, "enabled" ) == 0 ) {
+        return true;
+    } else if ( ::strcasecmp( str, "disabled" ) == 0 ) {
+        return false;
+    }
 
-STR2( uint8,  SCNu8 )
-STR2( uint16, SCNu16 )
-STR2( uint32, SCNu32 )
-//STR2( uint64, SCNu64 )
+    // FIX: Safely parse standard integers (like "1" or "0") and verify the actual non-zero value
+    char* endptr = nullptr;
+    long val = std::strtol( str, &endptr, 10 );
+    if ( endptr != str ) {
+        return ( val != 0 );
+    }
 
-STR2( float, "f" )
-STR2( double, "lf" )
-STR2( long double, "Lf" )
+    return false;
+}
 
-#undef STR2
+// --- Streamlined C++11 Specializations (Replacing sscanf with high-performance C++ standard parsers) ---
+
+template<>
+int8 str2< int8 >( const char* str ) {
+    if ( str == nullptr ) { return 0; }
+    return static_cast<int8>( std::strtol( str, nullptr, 10 ) );
+}
+
+template<>
+int16 str2< int16 >( const char* str ) {
+    if ( str == nullptr ) { return 0; }
+    return static_cast<int16>( std::strtol( str, nullptr, 10 ) );
+}
+
+template<>
+int32 str2< int32 >( const char* str ) {
+    if ( str == nullptr ) { return 0; }
+    return static_cast<int32>( std::strtol( str, nullptr, 10 ) );
+}
+
+template<>
+int64 str2< int64 >( const char* str ) {
+    if ( str == nullptr ) { return 0; }
+    return static_cast<int64>( std::strtoll( str, nullptr, 10 ) );
+}
+
+template<>
+uint8 str2< uint8 >( const char* str ) {
+    if ( str == nullptr ) { return 0; }
+    return static_cast<uint8>( std::strtoul( str, nullptr, 10 ) );
+}
+
+template<>
+uint16 str2< uint16 >( const char* str ) {
+    if ( str == nullptr ) { return 0; }
+    return static_cast<uint16>( std::strtoul( str, nullptr, 10 ) );
+}
+
+template<>
+uint32 str2< uint32 >( const char* str ) {
+    if ( str == nullptr ) { return 0; }
+    return static_cast<uint32>( std::strtoul( str, nullptr, 10 ) );
+}
+
+template<>
+float str2< float >( const char* str ) {
+    if ( str == nullptr ) { return 0.0f; }
+    return std::strtof( str, nullptr );
+}
+
+template<>
+double str2< double >( const char* str ) {
+    if ( str == nullptr ) { return 0.0; }
+    return std::strtod( str, nullptr );
+}
+
+template<>
+long double str2< long double >( const char* str ) {
+    if ( str == nullptr ) { return 0.0L; }
+    return std::strtold( str, nullptr );
+}

@@ -226,128 +226,149 @@ void DBcore::ping() {
     }
 }
 
-//query which returns a result (error is stored in the result if it occurs)
-bool DBcore::RunQuery(DBQueryResult &into, const char *query_fmt, ...) {
-    char query[1096];
-    va_list vlist;
-    va_start(vlist, query_fmt);
-    int querylen = std::vsnprintf(query, 1096, query_fmt, vlist);
-    va_end(vlist);
+// FIX: Swapped out the dangerous 1096-byte stack limits for dynamic heap allocations
+bool DBcore::RunQuery(DBQueryResult &into, const char *query_fmt, ...)
+{
+    va_list args;
+    va_start(args, query_fmt);
+    char* query = nullptr;
+    int querylen = ::vasprintf(&query, query_fmt, args);
+    va_end(args);
 
-    if (!DoQuery_locked(into.error, query, querylen))
+    if (querylen < 0 || query == nullptr) {
+        into.error.SetError(0xFFFF, "DBcore::RunQuery: String Format Failure");
         return false;
+    }
+
+    if (!DoQuery_locked(into.error, query, querylen)) {
+        ::free(query);
+        return false;
+    }
 
     uint col_count = mysql_field_count(mysql);
     if (col_count == 0) {
         into.error.SetError(0xFFFF, "DBcore::RunQuery: No Result");
         codelog(DATABASE__ERROR, "DBCore::RunQuery: %s failed because it did not return a result", query);
         EvE::traceStack();
+        ::free(query);
         return false;
     }
 
     into.SetResult(mysql_store_result(mysql), col_count);
+    ::free(query);
     return true;
 }
 
-//query which returns only error status
-bool DBcore::RunQuery(DBerror &err, const char *query_fmt, ...) {
+bool DBcore::RunQuery(DBerror &err, const char *query_fmt, ...)
+{
     va_list args;
     va_start(args, query_fmt);
-    char* query(nullptr);
-    int querylen = vasprintf(&query, query_fmt, args);
+    char* query = nullptr;
+    int querylen = ::vasprintf(&query, query_fmt, args);
     va_end(args);
 
-    if (!DoQuery_locked(err, query, querylen)) {
-        free(query);
+    if (querylen < 0 || query == nullptr) {
+        err.SetError(0xFFFF, "DBcore::RunQuery: String Format Failure");
         return false;
     }
 
-    free(query);
-    return true;
-}
-
-//query which returns affected rows:  (not used)
-bool DBcore::RunQuery(DBerror &err, uint32 &affected_rows, const char *query_fmt, ...) {
-    va_list args;
-    va_start(args, query_fmt);
-    char* query(nullptr);
-    int querylen = vasprintf(&query, query_fmt, args);
-    va_end(args);
-
     if (!DoQuery_locked(err, query, querylen)) {
-        free(query);
+        ::free(query);
         return false;
     }
-    free(query);
-    affected_rows = (uint32)mysql_affected_rows(mysql);
+
+    ::free(query);
     return true;
 }
 
-//query which returns last insert ID:
-bool DBcore::RunQueryLID(DBerror &err, uint32 &last_insert_id, const char *query_fmt, ...) {
+bool DBcore::RunQuery(DBerror &err, uint32 &affected_rows, const char *query_fmt, ...)
+{
     va_list args;
     va_start(args, query_fmt);
-    char* query(nullptr);
-    int querylen = vasprintf(&query, query_fmt, args);
+    char* query = nullptr;
+    int querylen = ::vasprintf(&query, query_fmt, args);
     va_end(args);
 
-    if (!DoQuery_locked(err, query, querylen)) {
-        free(query);
+    if (querylen < 0 || query == nullptr) {
+        err.SetError(0xFFFF, "DBcore::RunQuery: String Format Failure");
         return false;
     }
-    free(query);
-    last_insert_id = (uint32)mysql_insert_id(mysql);
+
+    if (!DoQuery_locked(err, query, querylen)) {
+        ::free(query);
+        return false;
+    }
+
+    ::free(query);
+    affected_rows = static_cast<uint32>(mysql_affected_rows(mysql));
     return true;
 }
 
-bool DBcore::DoQuery_locked(DBerror &err, const char *query, int querylen, bool retry/*true*/) {
+bool DBcore::RunQueryLID(DBerror &err, uint32 &last_insert_id, const char *query_fmt, ...)
+{
+    va_list args;
+    va_start(args, query_fmt);
+    char* query = nullptr;
+    int querylen = ::vasprintf(&query, query_fmt, args);
+    va_end(args);
+
+    if (querylen < 0 || query == nullptr) {
+        err.SetError(0xFFFF, "DBcore::RunQuery: String Format Failure");
+        return false;
+    }
+
+    if (!DoQuery_locked(err, query, querylen)) {
+        ::free(query);
+        return false;
+    }
+
+    ::free(query);
+    last_insert_id = static_cast<uint32>(mysql_insert_id(mysql));
+    return true;
+}
+
+// FIX: Converted the dangerous infinite stack-recursion loop into a safe, flat iterative attempt sequence
+bool DBcore::DoQuery_locked(DBerror &err, const char *query, int querylen, bool retry)
+{
     double profileStartTime = GetTimeUSeconds();
-/*
-    if (mysql == nullptr) {
-        pStatus = Error;
-        codelog(DATABASE__ERROR, "DBCore - mysql = null");
-        if (!Reconnect())
-            return false;
-    }
+    const size_t max_attempts = retry ? 2 : 1;
 
-    if (pStatus != Connected) {
-        codelog(DATABASE__ERROR, "DBCore - Status != Connected");
-        _log(DATABASE__MESSAGE, "DBCore error detected.  Look for error msgs in logs prior to this point.");
-        if (!Reconnect())
-            return false;
-    }
-*/
-    if (is_log_enabled(DATABASE__QUERIES))
+    if (is_log_enabled(DATABASE__QUERIES)) {
         _log(DATABASE__QUERIES, "DBcore Query - %s", query);
+    }
 
-    if (mysql_real_query(mysql, query, querylen)) {
-        uint num = mysql_errno(mysql);
-        if (num > 0)
-            pStatus = Error;
-
-        // there are many correctable errors to check for
-        if ((num == CR_SERVER_LOST) or (num == CR_SERVER_GONE_ERROR)) {
-            _log(DATABASE__ERROR, "DBCore error - server lost or gone.");
-            if (!Reconnect())
-                return false;
+    for (size_t attempt = 0; attempt < max_attempts; ++attempt) {
+        if (mysql_real_query(mysql, query, querylen) == 0) {
+            err.ClearError();
+            if (pProfile) {
+                sProfiler.AddTime(9, GetTimeUSeconds() - profileStartTime);
+            }
+            return true;
         }
 
-        if ((pStatus == Connected) and retry)
-            return DoQuery_locked(err, query, querylen, retry);
+        uint num = mysql_errno(mysql);
+        if (num > 0) {
+            pStatus = Error;
+        }
 
+        if ((num == CR_SERVER_LOST) || (num == CR_SERVER_GONE_ERROR)) {
+            _log(DATABASE__ERROR, "DBCore error - server lost or gone. Attempting reconnect...");
+            if (!Reconnect()) {
+                err.SetError(num, mysql_error(mysql));
+                return false;
+            }
+            // Reconnect passed, the loop will move forward to take the second attempt safely
+            continue;
+        }
+
+        // If it's a hard syntax or constraint error, break early instead of retrying
         err.SetError(num, mysql_error(mysql));
-        codelog(DATABASE__ERROR, "DBCore Query - #%u in '%s': %s", err.GetErrNo(), query, err.c_str());
-        return false;
+        break;
     }
 
-    err.ClearError();
-
-    if (pProfile)
-        sProfiler.AddTime(9, GetTimeUSeconds() - profileStartTime);
-
-    return true;
+    codelog(DATABASE__ERROR, "DBCore Query - #%u in '%s': %s", err.GetErrNo(), query, err.c_str());
+    return false;
 }
-
 
 int32 DBcore::DoEscapeString(char* tobuf, const char* frombuf, int32 fromlen) {
     return mysql_real_escape_string(mysql, tobuf, frombuf, fromlen);
@@ -505,25 +526,30 @@ DBQueryResult::~DBQueryResult() {
         mysql_free_result(mResult);
 }
 
-void DBQueryResult::Reset() {
+void DBQueryResult::Reset()
+{
     mColumnCount = 0;
     SafeDeleteArray(mFields);
 
-    if (mResult != nullptr)
+    if (mResult != nullptr) {
         mysql_free_result(mResult);
+    }
 }
 
-bool DBQueryResult::IsUnsigned(uint32 index) const {
+bool DBQueryResult::IsUnsigned(uint32 index) const
+{
     return ((mFields[index]->flags & UNSIGNED_FLAG) == UNSIGNED_FLAG);
 }
 
-bool DBQueryResult::IsBinary(uint32 index) const {
+bool DBQueryResult::IsBinary(uint32 index) const
+{
     // According to MySQL C API Documentation, binary string
     // fields like BLOB or VAR_BINARY have charset "63".
     return (mFields[index]->charsetnr == 63);
 }
 
-void DBQueryResult::SetResult(MYSQL_RES* res, uint32 colCount) {
+void DBQueryResult::SetResult(MYSQL_RES* res, uint32 colCount)
+{
     Reset();
 
     mResult = res;
@@ -531,30 +557,36 @@ void DBQueryResult::SetResult(MYSQL_RES* res, uint32 colCount) {
 
     if (mResult != nullptr) {
         mFields = new MYSQL_FIELD*[ mColumnCount ];
-        for(uint16 i = 0; i < mColumnCount; i++)
+        for (uint16 i = 0; i < mColumnCount; i++) {
             mFields[ i ] = mysql_fetch_field(mResult);
+        }
     }
 }
 
-bool DBQueryResult::GetRow(DBResultRow& into) {
-    if (mResult == nullptr)
+bool DBQueryResult::GetRow(DBResultRow& into)
+{
+    if (mResult == nullptr) {
         return false;
+    }
 
     MYSQL_ROW row = mysql_fetch_row(mResult);
-    if (row == nullptr)
+    if (row == nullptr) {
         return false;
+    }
 
     const ulong* lengths = mysql_fetch_lengths(mResult);
-    if (lengths == nullptr)
+    if (lengths == nullptr) {
         return false;
+    }
 
     into.SetData(this, row, lengths);
     return true;
 }
 
-const char* DBQueryResult::ColumnName(uint32 index) const {
+const char* DBQueryResult::ColumnName(uint32 index) const
+{
     if (index >= mColumnCount) {
-        _log(DATABASE__ERROR,  "DBCore ColumnName: Column index %u exceeds number of columns in row (%i)\n", index, mColumnCount);
+        _log(DATABASE__ERROR, "DBCore ColumnName: Column index %u exceeds number of columns in row (%i)\n", index, mColumnCount);
         EvE::traceStack();
         return "(ERROR)";
     }
@@ -562,34 +594,37 @@ const char* DBQueryResult::ColumnName(uint32 index) const {
     return mFields[ index ]->name;
 }
 
-DBTYPE DBQueryResult::ColumnType(uint32 index) const {
+DBTYPE DBQueryResult::ColumnType(uint32 index) const
+{
     if (index >= mColumnCount) {
-        _log(DATABASE__ERROR,  "DBCore ColumnType: Column index %u exceeds number of columns in row (%i)\n", index, mColumnCount);
+        _log(DATABASE__ERROR, "DBCore ColumnType: Column index %u exceeds number of columns in row (%i)\n", index, mColumnCount);
         EvE::traceStack();
         return DBTYPE_STR;
     }
 
     uint16 columnType = mFields[ index ]->type;
 
-    if (columnType > MYSQL_TYPE_BIT)
-        columnType -= 229;  //(MYSQL_TYPE_NEWDECIMAL - MYSQL_TYPE_BIT - 1)
+    if (columnType > MYSQL_TYPE_BIT) {
+        columnType -= 229;  // (MYSQL_TYPE_NEWDECIMAL - MYSQL_TYPE_BIT - 1)
+    }
 
     DBTYPE result = (IsUnsigned(index) ? MYSQL_DBTYPE_TABLE_UNSIGNED : MYSQL_DBTYPE_TABLE_SIGNED)[ columnType ];
 
-    // test for numeric type and set to signed 64b integer.  may have to revise this to float/double depending on what's found.
-    if (result == DBTYPE_ERROR)
-        if (IS_NUM(columnType))
+    // Test for numeric type and set to signed 64b integer.
+    if (result == DBTYPE_ERROR) {
+        if (IS_NUM(mFields[ index ]->type)) {
             result = DBTYPE_I8;
+        }
+    }
 
-    /* if result is (wide) binary string, set result to DBTYPE_BYTES. */
-    if (((DBTYPE_STR == result) or (DBTYPE_WSTR == result)) and IsBinary(index))
+    /* If result is (wide) binary string, set result to DBTYPE_BYTES. */
+    if (((DBTYPE_STR == result) || (DBTYPE_WSTR == result)) && IsBinary(index)) {
         result = DBTYPE_BYTES;
+    }
 
-    /* debug check */
     assert(result != DBTYPE_ERROR);
     return result;
 }
-
 
 DBResultRow::DBResultRow()
 : mRow(nullptr),
@@ -598,15 +633,17 @@ mResult(nullptr)
 {
 }
 
-void DBResultRow::SetData(DBQueryResult* res, MYSQL_ROW& row, const ulong* lengths) {
+void DBResultRow::SetData(DBQueryResult* res, MYSQL_ROW& row, const ulong* lengths)
+{
     mRow = row;
     mResult = res;
     mLengths = lengths;
 }
 
-uint32 DBResultRow::ColumnLength(uint32 index) const {
+uint32 DBResultRow::ColumnLength(uint32 index) const
+{
     if (index >= mResult->ColumnCount()) {
-        _log(DATABASE__ERROR,  "   DBCore::GetColumnLength: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount());
+        _log(DATABASE__ERROR, "   DBCore::GetColumnLength: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount());
         EvE::traceStack();
         return 0;
     }
@@ -614,118 +651,127 @@ uint32 DBResultRow::ColumnLength(uint32 index) const {
     return mLengths[ index ];
 }
 
-bool DBResultRow::GetBool(uint32 index) const {
+bool DBResultRow::GetBool(uint32 index) const
+{
     if (index >= mResult->ColumnCount()) {
-        _log(DATABASE__ERROR,  "   DBCore::GetBool: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount());
+        _log(DATABASE__ERROR, "   DBCore::GetBool: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount());
         EvE::traceStack();
         return false;
     }
 
-    if (IsNull(index))
+    // FIX: Core Null Pointer Protection Rule Integration Sitewide
+    if (mRow[index] == nullptr) {
         return false;
+    }
 
-    long int res = strtol(mRow[index], nullptr, 0);
-    if (res == 0)
-        return false;
-    if (res != 0)
-        return true;
-
-    return false;
+    long int res = std::strtol(mRow[index], nullptr, 0);
+    return (res != 0);
 }
 
-int8 DBResultRow::GetInt8(uint32 index) const {
+int8 DBResultRow::GetInt8(uint32 index) const
+{
     if (index >= mResult->ColumnCount()) {
-        _log(DATABASE__ERROR,  "   DBCore::GetUInt8: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount());
+        _log(DATABASE__ERROR, "   DBCore::GetInt8: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount());
         EvE::traceStack();
         return 0;
     }
 
-    //use base 0 on the obscure chance that this is a string column with an 0x hex number in it.
-    return static_cast<int8>(strtol(mRow[index], nullptr, 0));
+    if (mRow[index] == nullptr) { return 0; }
+    return static_cast<int8>(std::strtol(mRow[index], nullptr, 0));
 }
 
-uint8 DBResultRow::GetUInt8(uint32 index) const {
+uint8 DBResultRow::GetUInt8(uint32 index) const
+{
     if (index >= mResult->ColumnCount()) {
-        _log(DATABASE__ERROR,  "   DBCore::GetUInt8: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount());
+        _log(DATABASE__ERROR, "   DBCore::GetUInt8: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount());
         EvE::traceStack();
         return 0;
     }
 
-    //use base 0 on the obscure chance that this is a string column with an 0x hex number in it.
-    return static_cast<uint8>(strtoul(mRow[index], nullptr, 0));
+    if (mRow[index] == nullptr) { return 0; }
+    return static_cast<uint8>(std::strtoul(mRow[index], nullptr, 0));
 }
 
-int16 DBResultRow::GetInt16(uint32 index) const {
+int16 DBResultRow::GetInt16(uint32 index) const
+{
     if (index >= mResult->ColumnCount()) {
-        _log(DATABASE__ERROR,  "   DBCore::GetUInt8: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount());
+        _log(DATABASE__ERROR, "   DBCore::GetInt16: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount());
         EvE::traceStack();
         return 0;
     }
 
-    //use base 0 on the obscure chance that this is a string column with an 0x hex number in it.
-    return static_cast<int16>(strtol(mRow[index], nullptr, 0));
+    if (mRow[index] == nullptr) { return 0; }
+    return static_cast<int16>(std::strtol(mRow[index], nullptr, 0));
 }
 
-uint16 DBResultRow::GetUInt16(uint32 index) const {
+uint16 DBResultRow::GetUInt16(uint32 index) const
+{
     if (index >= mResult->ColumnCount()) {
-        _log(DATABASE__ERROR,  "   DBCore::GetUInt8: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount());
+        _log(DATABASE__ERROR, "   DBCore::GetUInt16: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount());
         EvE::traceStack();
         return 0;
     }
 
-    //use base 0 on the obscure chance that this is a string column with an 0x hex number in it.
-    return static_cast<uint16>(strtoul(mRow[index], nullptr, 0));
+    if (mRow[index] == nullptr) { return 0; }
+    return static_cast<uint16>(std::strtoul(mRow[index], nullptr, 0));
 }
 
-int32 DBResultRow::GetInt(uint32 index) const {
+int32 DBResultRow::GetInt(uint32 index) const
+{
     if (index >= mResult->ColumnCount()) {
-        _log(DATABASE__ERROR,  "   DBCore::GetInt: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount());
+        _log(DATABASE__ERROR, "   DBCore::GetInt: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount());
         EvE::traceStack();
         return 0;
     }
 
-    //use base 0 on the obscure chance that this is a string column with an 0x hex number in it.
-    return strtol(mRow[index], nullptr, 0);
+    if (mRow[index] == nullptr) { return 0; }
+    return static_cast<int32>(std::strtol(mRow[index], nullptr, 0));
 }
 
-uint32 DBResultRow::GetUInt(uint32 index) const {
+uint32 DBResultRow::GetUInt(uint32 index) const
+{
     if (index >= mResult->ColumnCount()) {
-        _log(DATABASE__ERROR,  "   DBCore::GetUInt: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount());
+        _log(DATABASE__ERROR, "   DBCore::GetUInt: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount());
         EvE::traceStack();
         return 0;
     }
 
-    //use base 0 on the obscure chance that this is a string column with an 0x hex number in it.
-    return strtoul(mRow[index], nullptr, 0);
+    if (mRow[index] == nullptr) { return 0; }
+    return static_cast<uint32>(std::strtoul(mRow[index], nullptr, 0));
 }
 
-int64 DBResultRow::GetInt64(uint32 index) const {
+int64 DBResultRow::GetInt64(uint32 index) const
+{
     if (index >= mResult->ColumnCount()) {
-        _log(DATABASE__ERROR,  "   DBCore::GetInt64: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount());
+        _log(DATABASE__ERROR, "   DBCore::GetInt64: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount());
         EvE::traceStack();
         return 0;
     }
 
-    //use base 0 on the obscure chance that this is a string column with an 0x hex number in it.
-    return strtoll(mRow[index], nullptr, 0);
+    if (mRow[index] == nullptr) { return 0; }
+    return static_cast<int64>(std::strtoll(mRow[index], nullptr, 0));
 }
 
-float DBResultRow::GetFloat(uint32 index) const {
+float DBResultRow::GetFloat(uint32 index) const
+{
     if (index >= mResult->ColumnCount()) {
-        _log(DATABASE__ERROR,  "   DBCore::GetFloat: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount());
+        _log(DATABASE__ERROR, "   DBCore::GetFloat: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount());
         EvE::traceStack();
         return 0.0f;
     }
 
-    return strtof(mRow[index], nullptr);
+    if (mRow[index] == nullptr) { return 0.0f; }
+    return std::strtof(mRow[index], nullptr);
 }
 
-double DBResultRow::GetDouble(uint32 index) const {
+double DBResultRow::GetDouble(uint32 index) const
+{
     if (index >= mResult->ColumnCount()) {
-        _log(DATABASE__ERROR,  "   DBCore::GetDouble: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount());
+        _log(DATABASE__ERROR, "   DBCore::GetDouble: Column index %u exceeds number of columns in row (%u)", index, mResult->ColumnCount());
         EvE::traceStack();
         return 0.0;
     }
 
-    return strtod(mRow[index], nullptr);
+    if (mRow[index] == nullptr) { return 0.0; }
+    return std::strtod(mRow[index], nullptr);
 }
