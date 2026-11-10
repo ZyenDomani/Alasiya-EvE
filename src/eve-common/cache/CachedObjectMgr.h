@@ -96,6 +96,8 @@ public:
     bool SaveCachedToFile(const std::string &cacheDir, const std::string &objectID) const;
     bool SaveCachedToFile(const std::string &cacheDir, const PyRep *objectID) const;
 
+    static PyRep* LoadRawBulkCache(const std::string& cacheDir, const std::string& objName);
+
 protected:
     //static bool AddCachedFileContents(const char *filename, const char *oname, PySubStream *into);
     void GetCacheFileName(PyRep *key, std::string &into);

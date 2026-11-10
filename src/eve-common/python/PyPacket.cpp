@@ -601,7 +601,7 @@ bool PyCallStream::Decode(const std::string &type, PyTuple *&in_payload) {
      * This maps straight to remoteObject.
      */
     if (maint->items[0]->IsInt()) {
-        remoteObject = PyRep::IntegerValue(maint->items[0]);
+        remoteObject = PyRep::IntegerValueU32(maint->items[0]);
         remoteObjectStr = "";
     } else if (maint->items[0]->IsString()) {
         remoteObject = 0;

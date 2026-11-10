@@ -49,7 +49,7 @@ extern bool Marshal( const PyRep* rep, Buffer& into );
  * @retval true  Marshaling ran successfully.
  * @retval false Error occured during marshaling.
  */
-extern bool MarshalDeflate( const PyRep* rep, Buffer& into, const uint32 deflationLimit = 0x2000 );
+extern bool MarshalDeflate( const PyRep* rep, Buffer& into, const uint32 deflationLimit = 128 * 1024);
 
 /**
  * @brief Turns Python objects into marshal bytecode.

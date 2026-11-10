@@ -69,7 +69,7 @@ void ImageServer::Init() {
     sLog.Cyan("      ImageServer", "Image Server path: %s", _basePath.c_str());
 
     if (CreateDirectory( _basePath.c_str(), NULL ) == 0) {
-        for (int i = 0; i < CategoryCount; i++) {
+        for (int i = 0; i < CategoryCount; ++i) {
             std::string subdir = _basePath;
             subdir.append(Categories[i]);
             CreateDirectory( subdir.c_str(), NULL );
@@ -106,8 +106,8 @@ void ImageServer::ReportNewCharacter(uint32 creatorAccountID, uint32 characterID
     // we have, so save it
     //std::ofstream stream;
     std::string dirName = "Character";
-    std::string path(GetFilePath(dirName, characterID, 512));
-    FILE * fp = fopen(path.c_str(), "wb");
+    std::string path = GetFilePath(dirName, characterID, 512);
+    std::FILE * fp = fopen(path.c_str(), "wb");
 
     //stream.open(path, std::ios::binary | std::ios::trunc | std::ios::out);
     std::shared_ptr<std::vector<char> > data = _limboImages[creatorAccountID];
@@ -128,8 +128,8 @@ std::shared_ptr<std::vector<char>> ImageServer::GetImage(std::string& category, 
         return std::shared_ptr<std::vector<char>>();
 
     // 1. Attempt to scrape the exact resolution file requested by the client from disk
-    std::string path(GetFilePath(category, id, size));
-    FILE* fp = fopen(path.c_str(), "rb");
+    std::string path = GetFilePath(category, id, size);
+    std::FILE* fp = fopen(path.c_str(), "rb");
 
     // ==========================================
     // 🛡️ THE ARCHITECTURAL FALLBACK GATE
@@ -143,7 +143,7 @@ std::shared_ptr<std::vector<char>> ImageServer::GetImage(std::string& category, 
 
         // Fetch the file path for your high-res master asset cleanly through your refactored method
         std::string masterPath(GetFilePath(category, id, masterSize));
-        FILE* masterFp = fopen(masterPath.c_str(), "rb");
+        std::FILE* masterFp = fopen(masterPath.c_str(), "rb");
 
         // Secondary Fallback: If your download script is still running and the 128px version
         // doesn't exist on disk yet, drop back to using your legacy 64px backup file as the source

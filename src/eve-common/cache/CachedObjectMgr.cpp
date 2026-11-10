@@ -78,6 +78,7 @@
 
 #include "cache/CachedObjectMgr.h"
 #include "marshal/EVEMarshal.h"
+#include "marshal/EVEUnmarshal.h"
 #include "marshal/EVEMarshalOpcodes.h"
 #include "packets/ObjectCaching.h"
 #include "python/PyVisitor.h"
@@ -329,7 +330,7 @@ bool CachedObjectMgr::LoadCachedFromFile(const std::string &cacheDir, const PyRe
     std::string filename(cacheDir);
     filename += "/" + str + ".cache";
 
-    FILE *f = fopen(filename.c_str(), "rb");
+    std::FILE *f = fopen(filename.c_str(), "rb");
 
     if (f == nullptr)
         return false;
@@ -348,7 +349,7 @@ bool CachedObjectMgr::LoadCachedFromFile(const std::string &cacheDir, const PyRe
 
     Buffer* buf = new Buffer(header.length);
 
-    if (fread(&(*buf)[0], sizeof(uint8), header.length, f) != header.length) {
+    if (fread(buf->get_raw_ptr(), sizeof(uint8), header.length, f) != header.length) {
         SafeDelete(buf);
         fclose(f);
         return false;
@@ -395,7 +396,7 @@ bool CachedObjectMgr::SaveCachedToFile(const std::string &cacheDir, const PyRep 
     filename += str;
     filename += ".cache";
 
-    FILE *f = fopen(filename.c_str(), "wb");
+    std::FILE *f = fopen(filename.c_str(), "wb");
 
     if (f == nullptr)
         return false;
@@ -420,23 +421,6 @@ bool CachedObjectMgr::SaveCachedToFile(const std::string &cacheDir, const PyRep 
     return true;
 }
 
-/*
-void CachedObjectMgr::AddCacheHint(const char *oname, const char *key, PyDict *into) {
-    PyRep *t = _MakeCacheHint(oname);
-    if (t == nullptr)
-        return;
-    into->add(key, t);
-}
-*/
-
-
-/*bool CachedObjectMgr::AddCachedFileContents(const char *filename, const char
-    *oname, PySubStream *into) { PySubStream *cache;
-    if (!LoadCachedFile(filename, oname, cache))
-        return false;
-
-}*/
-
 PySubStream* CachedObjectMgr::LoadCachedFile(const char *obj_name)
 {
     PyString* str = new PyString(obj_name);
@@ -450,45 +434,90 @@ PySubStream *CachedObjectMgr::LoadCachedFile(PyRep *key, const char *oname)
     std::string fname;
     GetCacheFileName(key, fname);
 
-    std::string abs_fname = "../data/cache/";
+    std::string abs_fname = "../server_cache/";
     abs_fname += fname;
 
     return LoadCachedFile(abs_fname.c_str(), oname);
 }
 
-PySubStream* CachedObjectMgr::LoadCachedFile(const char* abs_fname, const char* oname)
+PySubStream* CachedObjectMgr::LoadCachedFile(const char* filename, const char* oname)
 {
-    FILE* f = fopen(abs_fname, "rb");
+    std::FILE* f = fopen(filename, "rb");
 
     if (f == nullptr) {
-        sLog.Error("CachedObjMgr","Unable to open cache file '%s' for oname '%s': %s", abs_fname, oname, strerror(errno));
-        return 0;
+        sLog.Error("CachedObjMgr","Unable to open cache file '%s' for '%s': %s", filename, oname, strerror(errno));
+        return nullptr;
     }
 
     int64 file_length = filesize(f);
-    if (file_length == 0)
-    {
-        sLog.Error("CachedObjMgr","Unable to stat cache file '%s' for oname '%s'", abs_fname, oname);
+    if (file_length == 0) {
+        sLog.Error("CachedObjMgr","Unable to stat cache file '%s' for '%s'", filename, oname);
         fclose(f);
-        return 0;
+        return nullptr;
     }
 
     Buffer* buf = new Buffer(static_cast<size_t>(file_length));
 
-    if (file_length != fread(&(*buf)[0], sizeof(uint8), static_cast<size_t>(file_length), f)) {
-        sLog.Error("CachedObjMgr","Unable to read cache file '%s' for oname '%s': %s", abs_fname, oname, strerror(errno));
+    if (file_length != fread(buf->get_raw_ptr(), sizeof(uint8), static_cast<size_t>(file_length), f)) {
+        sLog.Error("CachedObjMgr","Unable to read cache file '%s' for '%s': %s", filename, oname, strerror(errno));
         SafeDelete(buf);
         fclose(f);
-        return 0;
+        return nullptr;
     }
 
     fclose(f);
-    sLog.Debug("CachedObjMgr","Loaded cache file for '%s': length %lli", oname, file_length);
+    sLog.Debug("CachedObjMgr","Loaded cache file '%s' for '%s': length %lli", filename, oname, file_length);
 
     // @todo  buf may leak here...
     PySubStream* res = new PySubStream(new PyBuffer(&buf));
-    SafeDelete(buf);
     return res;
+}
+
+PyRep* CachedObjectMgr::LoadRawBulkCache(const std::string& cacheDir, const std::string& filename)
+{
+    std::string objName(cacheDir);
+    objName += "/";
+    objName += filename;
+    objName += ".cache";
+
+    std::FILE* f = fopen(objName.c_str(), "rb");
+    if (f == nullptr) {
+        sLog.Error("CachedObjMgr", "LoadRawBulkCache: Failed to open bulk cache file: %s", objName.c_str());
+        return nullptr;
+    }
+
+    // Read the binary header block from the disk file
+    CacheFileHeader header;
+    if (fread(&header, sizeof(header), 1, f) != 1) {
+        fclose(f);
+        return nullptr;
+    }
+
+    // Explicitly validate that this is a legal, matching engine asset
+    if (header.magic != CacheFileMagic) {
+        sLog.Error("CachedObjMgr", "LoadRawBulkCache: Invalid magic signature in: %s", objName.c_str());
+        fclose(f);
+        return nullptr;
+    }
+
+    // Allocate memory ONLY for the actual deflated data block length, skipping the header entirely
+    Buffer buf(header.length);
+    if (fread(buf.get_raw_ptr(), sizeof(uint8), header.length, f) != header.length) {
+        sLog.Error("CachedObjMgr", "LoadRawBulkCache: Truncated or corrupted read in: %s", objName.c_str());
+        fclose(f);
+        return nullptr;
+    }
+    fclose(f);
+
+    // Inflate the raw compressed zlib bytes back into flat uncompressed opcodes
+    // This perfectly resurrects the clean, isolated CRowset object tree
+    PyRep* cleanRowset = InflateUnmarshal(buf);
+    if (cleanRowset == nullptr) {
+        sLog.Error("CachedObjMgr", "LoadRawBulkCache: Failed to inflate and unmarshal payload for: %s", objName.c_str());
+        return nullptr;
+    }
+
+    return cleanRowset;
 }
 
 PyCachedObjectDecoder *CachedObjectMgr::LoadCachedObject(const char *filename, const char *oname)

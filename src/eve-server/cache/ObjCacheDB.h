@@ -44,9 +44,16 @@ protected:
     std::map<std::string, genFunc> m_generators;
 
     //hack:
-    PyRep *DBResultToRowsetTuple(DBQueryResult &result);
+    //PyRep *DBResultToRowsetTuple(DBQueryResult &result);
 
     //declare all the generators
+    PyRep* Generate_operands();
+    PyRep* Generate_expressions();
+    PyRep* Generate_attributes();
+    PyRep* Generate_effects();
+    PyRep* Generate_typeattributes();
+    PyRep* Generate_typeeffects();
+
     PyRep *Generate_PaperdollResources();
     PyRep *Generate_PaperdollColors();
     PyRep *Generate_PaperdollModifierLocations();

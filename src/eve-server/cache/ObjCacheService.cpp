@@ -249,6 +249,14 @@ ObjCacheService::ObjCacheService(PyServiceMgr *mgr, const char *cacheDir)
     m_cacheKeys["charNewExtraCreationInfo.careers"] = "careers";
     m_cacheKeys["charNewExtraCreationInfo.specialityskills"] = "specialityskills";
     m_cacheKeys["charNewExtraCreationInfo.specialities"] = "specialities";
+
+    // bulkdata sets
+    m_cacheKeys["config.BulkData.operands"] = "config.BulkData.operands";
+    m_cacheKeys["config.BulkData.expressions"] = "config.BulkData.expressions";
+    m_cacheKeys["config.BulkData.attributes"] = "config.BulkData.attributes";
+    m_cacheKeys["config.BulkData.effects"] = "config.BulkData.effects";
+    m_cacheKeys["config.BulkData.typeattributes"] = "config.BulkData.typeattributes";
+    m_cacheKeys["config.BulkData.typeeffects"] = "config.BulkData.typeeffects";
 }
 
 ObjCacheService::~ObjCacheService() {
@@ -304,13 +312,6 @@ void ObjCacheService::PrimeCache()
         PySafeDecRef(str);
     }
 }
-
-PySubStream* ObjCacheService::LoadCachedFile(const char *filename, const char *oname)
-{
-    //temp hack...
-    return m_cache.LoadCachedFile( filename, oname );
-}
-
 
 bool ObjCacheService::_LoadCachableObject(const PyRep *objectID) {
     if (m_cache.HaveCached(objectID))
@@ -393,7 +394,7 @@ void ObjCacheService::InsertCacheHints(hintSet hset, PyDict *into) {
         return;
 
     std::map<std::string, std::string>::const_iterator res;
-    for(uint32 r = 0; r < object_count; r++) {
+    for(uint32 r = 0; r < object_count; ++r) {
         //find the dict key to use for this object
         res = m_cacheKeys.find(objects[r]);
         if (res == m_cacheKeys.end()) {
@@ -404,7 +405,7 @@ void ObjCacheService::InsertCacheHints(hintSet hset, PyDict *into) {
         //get the hint
         PyString* str = new PyString( objects[r] );
         PyRep *cache_hint = GetCacheHint( str );
-        //PySafeDecRef( str );
+        PySafeDecRef( str );
 
         if (cache_hint == nullptr)
             continue;    //print already done.

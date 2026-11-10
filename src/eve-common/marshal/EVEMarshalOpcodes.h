@@ -23,8 +23,6 @@
     Author:        Zhur
 */
 
-// no clue where these come from, how they were found, or how i can implement the unfinished ones....
-
 
 #ifndef EVE_MARSHAL_OPCODES_H
 #define EVE_MARSHAL_OPCODES_H
@@ -80,11 +78,13 @@ enum PyRepOpcode
     Op_PyVarInteger            = 0x2F, // variable length integer field??? // PyLong from Byte array
     PyRepOpcodeMask            = 0x3F
 
-    //  seen these on main server.
+    //  seen these errors.  dont know what they are/mean
     // E Unmarshal: Invalid stream received (header byte ...)
     //                          = 0x5
     //                          = 0xE
+    //                          = 0x37  (new bulkdata)
     //                          = 0xCC
+    //                          = 0xD7  (new bulkdata)
 };    //6 bits
 
 struct ZeroCompressOpcode
@@ -97,12 +97,29 @@ struct ZeroCompressOpcode
 };
 
 static const uint8 PyRepSaveMask = 0x40;
-static const uint8 PyRepUnknownMask = 0x80;
+static const uint8 PyRepExtendedMask = 0x80;
 static const uint8 MarshalHeaderByte = 0x7E;    //'~'
 
 #endif//EVE_MARSHAL_OPCODES_H
 
 
 
-
+/**  trying to understand/explain EvE opcodes and how the server handles them...
+ * first 8-bits is the opcode byte
+ *    first bit (7) is 'extended' flag
+ *    second bit (6) is 'save' flag. it means "make pointer to this data, which will be used for subsequent access" - avoid copy
+ *    lower 6 are the actual opcode
+ *
+ * opcodes above the known list should be masked with the 'opcode mask' 0x3F to get code
+ *
+ * seeing error with 0xD7 means the dump code isnt smart enough to decypher this
+ *   0x37 = 00110111  (zlib compression byte)
+ *   0x3F = 00111111  (opcode mask)
+ *   0xD7 = 11010111  (byte the code was seeing, which it didnt understand)
+ *
+ * apply the opcode mask to the file's opcode
+ * 0xD7 & 0x3F = 0x17 (00010111)
+ *        0x17 = PyObject
+ *
+ */
 

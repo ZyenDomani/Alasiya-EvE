@@ -5,7 +5,7 @@
  *
  * @Author:    Allan
  * @date:      24 January 2017
- *
+ * @update:     Allan  9 November 2026 (long-running error that finally came out)
  */
 
 
@@ -59,28 +59,28 @@ void BulkDB::Initialize()
 
     double start = GetTimeMSeconds();
 
-    m_bulkData.insert(std::pair<uint8, PyRep*>(0, GetOperands()));
-    m_bulkData.insert(std::pair<uint8, PyRep*>(1, GetDogmaAttribs()));
-    m_bulkData.insert(std::pair<uint8, PyRep*>(2, GetDogmaEffects()));
+    m_bulkData.emplace(0, GetOperands());
+    m_bulkData.emplace(1, GetDogmaAttribs());
+    m_bulkData.emplace(2, GetDogmaEffects());
 
     for (int i = 1; i < m_chunks; ++i) {
         switch (i) {
             case 1:
             case 2: {
-                m_bulkDataChunks.insert(std::pair<uint8, PyRep*>(i, GetExpressions(i+1)));
+                m_bulkDataChunks.emplace(i, GetExpressions(i));
             } break;
             case 3:
             case 4:
             case 5:
             case 6: {
                 uint8 chunk = i - 2;  // 1 to 4
-                m_bulkDataChunks.insert(std::pair<uint8, PyRep*>(i, GetDogmaTypeEffects(chunk)));
+                m_bulkDataChunks.emplace(i, GetDogmaTypeEffects(chunk));
             } break;
             default: {
                 uint8 chunk = i - 6;  // 1 to 36
                 if (chunk > 36)
                     assert(true);  // make error here for wrong chunkID
-                m_bulkDataChunks.insert(std::pair<uint8, PyRep*>(i, GetDogmaTypeAttribs(chunk)));
+                m_bulkDataChunks.emplace(i, GetDogmaTypeAttribs(chunk));
             } break;
         }
     }
@@ -212,7 +212,19 @@ PyRep* BulkDB::GetDogmaAttribs()
         _log(DATABASE__ERROR, "Error in GetDogmaAttribs: %s",res.error.c_str());
         return nullptr;
     }
-    return DBResultToCRowset(res);
+
+    PyRep* rowset = DBResultToCRowset(res);
+    if ((rowset != nullptr) and is_log_enabled(BULKDATA__TRACE)) {
+        Buffer testBuf;
+        sLog.Warning("BulkData Diag", "GetDogmaAttribs");
+        if (Marshal(rowset, testBuf)) {
+            sLog.Green("BulkData Diag", "rowcount: %zu.  streamsize: %zu", res.GetRowCount(), testBuf.size());
+        } else {
+            sLog.Error("BulkData Diag", "Stream failed to marshal");
+        }
+    }
+
+    return rowset;
 }
 
 PyRep* BulkDB::GetDogmaEffects()
@@ -229,66 +241,18 @@ PyRep* BulkDB::GetDogmaEffects()
         return nullptr;
     }
 
-    return DBResultToCRowset(res);
-    /*  this doesnt work right.... AttributeError: EveConfig instance has no attribute 'dgmeffects'
-    PyList* list = new PyList();
-    DBResultRow row;
-    while (res.GetRow(row)) {
-        PyDict* dict = new PyDict();
-        dict->SetItemString("effectID",                         new PyInt(row.GetInt(0)));
-        dict->SetItemString("effectName",                       new PyString(row.GetText(1)));
-        dict->SetItemString("displayNameID",                    new PyInt(row.GetInt(2)));
-        dict->SetItemString("descriptionID",                    new PyInt(row.GetInt(3)));
-        dict->SetItemString("dataID",                           new PyInt(row.GetInt(4)));
-        dict->SetItemString("effectCategory",                   new PyInt(row.GetInt(5)));
-        dict->SetItemString("preExpression",                    new PyInt(row.GetInt(6)));
-        dict->SetItemString("postExpression",                   new PyInt(row.GetInt(7)));
-        dict->SetItemString("description",                      new PyString(row.GetText(8)));
-        dict->SetItemString("guid",                             new PyString(row.GetText(9)));
-        dict->SetItemString("isOffensive",                      new PyBool(row.GetBool(10)));
-        dict->SetItemString("isAssistance",                     new PyBool(row.GetBool(11)));
-        dict->SetItemString("disallowAutoRepeat",               new PyBool(row.GetBool(17)));
-        dict->SetItemString("published",                        new PyBool(row.GetBool(18)));
-        dict->SetItemString("displayName",                      new PyString(row.GetText(19)));
-        dict->SetItemString("isWarpSafe",                       new PyBool(row.GetBool(20)));
-        dict->SetItemString("rangeChance",                      new PyBool(row.GetBool(21)));
-        dict->SetItemString("electronicChance",                 new PyBool(row.GetBool(22)));
-        dict->SetItemString("propulsionChance",                 new PyBool(row.GetBool(23)));
-        dict->SetItemString("distribution",                     new PyInt(row.GetInt(24)));
-        dict->SetItemString("sfxName",                          new PyString(row.GetText(25)));
-        dict->SetItemString("npcUsageChanceAttributeID",        new PyInt(row.GetInt(26)));
-        dict->SetItemString("npcActivationChanceAttributeID",   new PyInt(row.GetInt(27)));
-        dict->SetItemString("fittingUsageChanceAttributeID",    new PyInt(row.GetInt(28)));
-        dict->SetItemString("iconID",                           new PyInt(row.GetInt(29)));
-        dict->SetItemString("modifierInfo",                     new PyString(row.GetText(30)));
-
-        // these can be null
-        if (row.IsNull(12))
-            dict->SetItemString("durationAttributeID",          PyStatic.NewNone());
-        else
-            dict->SetItemString("durationAttributeID",          new PyInt(row.GetInt(12)));
-        if (row.IsNull(13))
-            dict->SetItemString("trackingSpeedAttributeID",     PyStatic.NewNone());
-        else
-            dict->SetItemString("trackingSpeedAttributeID",     new PyInt(row.GetInt(13)));
-        if (row.IsNull(14))
-            dict->SetItemString("dischargeAttributeID",         PyStatic.NewNone());
-        else
-            dict->SetItemString("dischargeAttributeID",         new PyInt(row.GetInt(14)));
-        if (row.IsNull(15))
-            dict->SetItemString("rangeAttributeID",             PyStatic.NewNone());
-        else
-            dict->SetItemString("rangeAttributeID",             new PyInt(row.GetInt(15)));
-        if (row.IsNull(16))
-            dict->SetItemString("falloffAttributeID",           PyStatic.NewNone());
-        else
-            dict->SetItemString("falloffAttributeID",           new PyInt(row.GetInt(16)));
-
-        list->AddItem(new PyObject("util.KeyVal", dict));
+    PyRep* rowset = DBResultToCRowset(res);
+    if ((rowset != nullptr) and is_log_enabled(BULKDATA__TRACE)) {
+        Buffer testBuf;
+        sLog.Warning("BulkData Diag", "GetDogmaEffects");
+        if (Marshal(rowset, testBuf)) {
+            sLog.Green("BulkData Diag", "rowcount: %zu.  streamsize: %zu", res.GetRowCount(), testBuf.size());
+        } else {
+            sLog.Error("BulkData Diag", "Stream failed to marshal");
+        }
     }
 
-    return list;
-    */
+    return rowset;
 }
 
 PyRep* BulkDB::GetExpressions(uint8 chunkID)    // 2 chunks
@@ -302,16 +266,27 @@ PyRep* BulkDB::GetExpressions(uint8 chunkID)    // 2 chunks
             q << " LIMIT 0, 9000";
         } break;
         case 2: {
-            q << " LIMIT 9000, 18000";
+            q << " LIMIT 9000, 9000";
         } break;
     };
 
-    if ( !sDatabase.RunQuery(res, q.str().c_str()))  // start at row 0 and get next 8k rows
-    {
+    if ( !sDatabase.RunQuery(res, q.str().c_str())) {
         codelog(DATABASE__ERROR, "Error in GetExpressions: %s", res.error.c_str());
         return nullptr;
     }
-    return DBResultToCRowset(res);
+
+    PyRep* rowset = DBResultToCRowset(res);
+    if ((rowset != nullptr) and is_log_enabled(BULKDATA__TRACE)) {
+        Buffer testBuf;
+        sLog.Warning("BulkData Diag", "GetExpressions: chunkID %u", chunkID);
+        if (Marshal(rowset, testBuf)) {
+            sLog.Green("BulkData Diag", "rowcount: %zu.  streamsize: %zu", res.GetRowCount(), testBuf.size());
+        } else {
+            sLog.Error("BulkData Diag", "Stream failed to marshal");
+        }
+    }
+
+    return rowset;
 }
 
 PyRep* BulkDB::GetDogmaTypeEffects(uint8 chunkID)   // 4 chunks
@@ -334,12 +309,23 @@ PyRep* BulkDB::GetDogmaTypeEffects(uint8 chunkID)   // 4 chunks
         } break;
     };
 
-    if (!sDatabase.RunQuery(res, q.str().c_str()))
-    {
+    if (!sDatabase.RunQuery(res, q.str().c_str())) {
         _log(DATABASE__ERROR, "Error in GetDogmaTypeEffects: %s",res.error.c_str());
         return nullptr;
     }
-    return DBResultToCRowset(res);
+
+    PyRep* rowset = DBResultToCRowset(res);
+    if ((rowset != nullptr) and is_log_enabled(BULKDATA__TRACE)) {
+        Buffer testBuf;
+        sLog.Warning("BulkData Diag", "GetDogmaTypeEffects: chunkID %u", chunkID);
+        if (Marshal(rowset, testBuf)) {
+            sLog.Green("BulkData Diag", "rowcount: %zu.  streamsize: %zu", res.GetRowCount(), testBuf.size());
+        } else {
+            sLog.Error("BulkData Diag", "Stream failed to marshal");
+        }
+    }
+
+    return rowset;
 }
 
 PyRep* BulkDB::GetDogmaTypeAttribs(uint8 chunkID)   // 36 chunks
@@ -458,10 +444,21 @@ PyRep* BulkDB::GetDogmaTypeAttribs(uint8 chunkID)   // 36 chunks
         } break;
     };
 
-    if (!sDatabase.RunQuery(res, q.str().c_str()))
-    {
+    if (!sDatabase.RunQuery(res, q.str().c_str())) {
         _log(DATABASE__ERROR, "Error in GetDogmaTypeAttribs: %s",res.error.c_str());
         return nullptr;
     }
-    return DBResultToCRowset(res);
+
+    PyRep* rowset = DBResultToCRowset(res);
+    if ((rowset != nullptr) and is_log_enabled(BULKDATA__TRACE)) {
+        Buffer testBuf;
+        sLog.Warning("BulkData Diag", "GetDogmaTypeAttribs: chunkID %u", chunkID);
+        if (Marshal(rowset, testBuf)) {
+            sLog.Green("BulkData Diag", "rowcount: %zu.  streamsize: %zu", res.GetRowCount(), testBuf.size());
+        } else {
+            sLog.Error("BulkData Diag", "Stream failed to marshal");
+        }
+    }
+
+    return rowset;
 }

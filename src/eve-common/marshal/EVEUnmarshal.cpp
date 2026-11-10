@@ -148,6 +148,7 @@ PyRep* UnmarshalStream::Load( const Buffer& data )
 
     return res;
 }
+
 PyRep* UnmarshalStream::LoadStream( size_t streamLength )
 {
     const uint8 header = Read<uint8>();
@@ -167,27 +168,24 @@ PyRep* UnmarshalStream::LoadStream( size_t streamLength )
 
 PyRep* UnmarshalStream::LoadRep()
 {
-    if (mInPtr >= mEndPtr) {
+    if (mInPtr >= mEndPtr)
         return nullptr;
-    }
 
     const uint8 header = Read<uint8>();
 
-    const bool flagUnknown = ( header & PyRepUnknownMask ) != 0;
+    const bool flagExtended = ( header & PyRepExtendedMask ) != 0;
     const bool flagSave = ( header & PyRepSaveMask ) != 0;
     const uint8 opcode = ( header & PyRepOpcodeMask );
 
-    if ( flagUnknown ) {
-        sLog.Warning( "Unmarshal", "Encountered flagUnknown in header 0x%X.", header );
-    }
+    if ( flagExtended )
+        sLog.Warning( "Unmarshal", "Encountered Extended flag in header 0x%X.", header );
 
     const uint32 storageIndex = ( flagSave ? GetStorageIndex() : 0 );
 
     PyRep* rep = ( this->*s_mLoadMap[ opcode ] )();
-
-    if (storageIndex != 0) {
+    
+    if (storageIndex != 0)
         StoreObject(storageIndex, rep);
-    }
 
     return rep;
 }

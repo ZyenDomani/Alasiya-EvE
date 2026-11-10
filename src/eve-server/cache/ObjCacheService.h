@@ -66,8 +66,6 @@ public:
 
     PyRep *GetCacheHint(const PyRep* objectID);
 
-    PySubStream* LoadCachedFile(const char *filename, const char *oname);
-
     //handlers for simple cached method calls.
     bool IsCacheLoaded(const PyRep *objectID) const;
     bool IsCacheLoaded(const ObjectCachedMethodID &m) const { return IsCacheLoaded(m.objectID); }

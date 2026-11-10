@@ -16,83 +16,6 @@
  * for now, we'll leave this as-is, because it seems to be working ok, and i *MAY NOT* have complete data for all the bulkfiles
  */
 
-/** @update  the client install has default bulkdata files found in the eve/bulkdata directory.  need to get these files and compare with
- * what we have to see what needs to be updated, and go from there.
- * next comment has all data used by client (found in code)
- */
-
-/** @todo  @update  used by client...
- *
-        self.dgmunits = self.LoadBulkIndex('dgmunits', const.cacheDogmaUnits, 'unitID')
-        self.invbptypes = self.LoadBulkIndex('invbptypes', const.cacheInvBlueprintTypes, 'blueprintTypeID')
-        self.invcategories = self.LoadBulkIndex('invcategories', const.cacheInvCategories, 'categoryID', InvCategory)
-        self.invmetagroups = self.LoadBulkIndex('invmetagroups', const.cacheInvMetaGroups, 'metaGroupID', InvMetaGroup)
-        self.invgroups = self.LoadBulkIndex('invgroups', const.cacheInvGroups, 'groupID', InvGroup)
-        self.invtypes = self.LoadBulkIndex('invtypes', const.cacheInvTypes, 'typeID', InvType)
-        self.invtypereactions = self.LoadBulkFilter('invtypereactions', const.cacheInvTypeReactions, 'reactionTypeID')
-        self.invmetatypes = self.LoadBulkIndex('invmetatypes', const.cacheInvMetaTypes, 'typeID')
-        self.invmetatypesByParent = self.LoadBulkFilter('invmetatypesByParent', const.cacheInvMetaTypes, 'parentTypeID')
-        invcontrabandtypes = self.LoadBulk(None, const.cacheInvContrabandTypes)
-
-        npccharacters = self.LoadBulkIndex(None, const.cacheChrNpcCharacters, 'characterID')
-
-        self.regions = self.LoadBulkIndex('regions', const.cacheMapRegionsTable, 'regionID', Region)
-        self.constellations = self.LoadBulkIndex('constellations', const.cacheMapConstellationsTable, 'constellationID', Constellation)
-        self.solarsystems = self.LoadBulkIndex('solarsystems', const.cacheMapSolarSystemsTable, 'solarSystemID', SolarSystem)
-        self.stations = self.LoadBulk('stations', const.cacheStaStationsStatic, Recordset(sys.Row, 'stationID', 'GetStationEx', 'GetMultiStationEx'))
-
-        self.messages = self.LoadBulkIndex('messages', const.cacheEveMessages, 'messageKey')
-        self.graphics = self.LoadBulkIndex('graphics', const.cacheResGraphics, 'graphicID')
-        self.icons = self.LoadBulkIndex('icons', const.cacheResIcons, 'iconID')
-        self.sounds = self.LoadBulkIndex('sounds', const.cacheResSounds, 'soundID')
-        self.detailMeshes = self.LoadBulkIndex('detailMeshes', const.cacheResDetailMeshes, 'detailGraphicID')
-        self.detailMeshesByTarget = self.LoadBulkFilter('detailMeshesByTarget', const.cacheResDetailMeshes, 'targetGraphicID')
-        self._worldspacesDistrictsCache = {}
-        self.worldspaces = self.LoadBulkIndex('worldspaces', const.cacheWorldSpaces, 'worldSpaceTypeID', sys.Worldspaces)
-        self.entitySpawns = self.LoadBulkIndex('entitySpawns', const.cacheEntitySpawns, 'spawnID')
-        self.entitySpawnsByWorldSpaceID = self.LoadBulkFilter('entitySpawnsByWorldSpaceID', const.cacheEntitySpawns, 'worldSpaceTypeID')
-        self.entitySpawnsByRecipeID = self.LoadBulkFilter('entitySpawnsByRecipeID', const.cacheEntitySpawns, 'recipeID')
-        self.entityIngredientInitialValues = self.LoadBulkFilter('entityIngredientInitialValues', const.cacheEntityIngredientInitialValues, 'ingredientID')
-        self.entityIngredientsByParentID = self.LoadBulkFilter('entityIngredientsByParentID', const.cacheEntityIngredients, 'parentID')
-        self.entityIngredientsByRecipeID = self.LoadBulkFilter('entityIngredientsByRecipeID', const.cacheEntityIngredients, 'recipeID')
-        self.ingredients = self.LoadBulkIndex('ingredients', const.cacheEntityIngredients, 'ingredientID')
-        self.entitySpawnGroups = self.LoadBulkIndex('entitySpawnGroups', const.cacheEntitySpawnGroups, 'spawnGroupID')
-        self.entitySpawnsBySpawnGroup = self.LoadBulkFilter('entitySpawnsBySpawnGroup', const.cacheEntitySpawnGroupLinks, 'spawnGroupID')
-        self.recipes = self.LoadBulkIndex('recipes', const.cacheEntityRecipes, 'recipeID')
-        self.recipesByParentRecipeID = self.LoadBulkFilter('recipesByParentRecipeID', const.cacheEntityRecipes, 'parentRecipeID')
-        self.treeNodes = self.LoadBulkIndex('treeNodes', const.cacheTreeNodes, 'treeNodeID')
-        self.treeLinks = self.LoadBulkFilter('treeLinks', const.cacheTreeLinks, 'parentTreeNodeID')
-        self.treeNodeProperties = self.LoadBulkIndex('treeNodeProperties', const.cacheTreeProperties, 'propertyID')
-        self.actionTreeSteps = self.LoadBulkFilter('actionTreeSteps', const.cacheActionTreeSteps, 'actionID')
-        self.actionTreeProcs = self.LoadBulkFilter('actionTreeProcs', const.cacheActionTreeProcs, 'actionID')
-        self.actionObjects = self.LoadBulkIndex('actionObjects', const.cacheActionObjects, 'actionObjectID')
-        self.actionStations = self.LoadBulkIndex('actionStations', const.cacheActionStations, 'actionStationTypeID')
-        self.actionStationActions = self.LoadBulkFilter('actionStationActions', const.cacheActionStationActions, 'actionStationTypeID')
-        self.actionObjectStations = self.LoadBulkFilter('actionObjectStations', const.cacheActionObjectStations, 'actionObjectID')
-        self.actionObjectExits = self.LoadBulkFilter('actionObjectExits', const.cacheActionObjectExits, ['actionObjectID', 'actionStationInstanceID', True])
-        self.paperdollModifierLocations = self.LoadBulkIndex('paperdollModifierLocations', const.cachePaperdollModifierLocations, 'modifierLocationID')
-        self.paperdollResources = self.LoadBulkIndex('paperdollResources', const.cachePaperdollResources, 'paperdollResourceID')
-        self.paperdollSculptingLocations = self.LoadBulkIndex('paperdollSculptingLocations', const.cachePaperdollSculptingLocations, 'sculptLocationID')
-        self.paperdollColors = self.LoadBulkIndex('paperdollColors', const.cachePaperdollColors, 'colorID')
-        self.paperdollColorNames = self.LoadBulkIndex('paperdollColorNames', const.cachePaperdollColorNames, 'colorNameID')
-        self.paperdollColorRestrictions = self.LoadBulkFilter('paperdollColorRestrictions', const.cachePaperdollColorRestrictions, 'colorNameID')
-        self.perceptionSenses = self.LoadBulkIndex('perceptionSenses', const.cachePerceptionSenses, 'senseID')
-        self.perceptionStimTypes = self.LoadBulkIndex('perceptionStimTypes', const.cachePerceptionStimTypes, 'stimTypeID')
-        self.perceptionSubjects = self.LoadBulkIndex('perceptionSubjects', const.cachePerceptionSubjects, 'subjectID')
-        self.perceptionTargets = self.LoadBulkIndex('perceptionTargets', const.cachePerceptionTargets, 'targetID')
-        self.perceptionBehaviorSenses = self.LoadBulk('perceptionBehaviorSenses', const.cachePerceptionBehaviorSenses)
-        self.perceptionBehaviorDecays = self.LoadBulk('perceptionBehaviorDecays', const.cachePerceptionBehaviorDecays)
-        self.perceptionBehaviorFilters = self.LoadBulk('perceptionBehaviorFilters', const.cachePerceptionBehaviorFilters)
-        self.encounters = self.LoadBulkIndex('encounters', const.cacheEncounterEncounters, 'encounterID')
-        self.encounterCoordinateSets = self.LoadBulkIndex('encounterCoordinateSets', const.cacheEncounterCoordinateSets, 'coordinateSetID')
-        self.encounterCoordinatesBySet = self.LoadBulkFilter('encounterCoordinatesBySet', const.cacheEncounterCoordinates, 'coordinateSetID')
-        self.encounterCoordinates = self.LoadBulkIndex('encounterCoordinates', const.cacheEncounterCoordinates, 'coordinateID')
-        self.encounterCoordinateSetsByWorldSpaceID = self.LoadBulkFilter('encounterCoordinateSetsByWorldSpaceID', const.cacheEncounterCoordinateSets, 'worldSpaceTypeID')
-        self.encountersByCoordinateSet = self.LoadBulkFilter('encountersByCoordinateSet', const.cacheEncounterEncounters, 'coordinateSetID')
-
- *
- */
-
 #include "../eve-server.h"
 
 #include "PyServiceCD.h"
@@ -142,9 +65,11 @@ PyResult BulkMgrService::Handle_GetVersion(PyCallArgs &call)
 
 PyResult BulkMgrService::Handle_UpdateBulk(PyCallArgs &call)
 {
+    if (is_log_enabled(BULKDATA__DUMP)) {
+        sLog.Error( "BulkMgrService::Handle_UpdateBulk()", "size= %zu", call.tuple->size() );
+        call.Dump(BULKDATA__DUMP);
+    }
     /*
-    sLog.White( "BulkMgrService::Handle_UpdateBulk()", "size= %zu", call.tuple->size() );
-    call.Dump(BULKDATA__DUMP);
     updateData = self.bulkMgr.UpdateBulk(changeID, hashValue, branch)
 
         updateType = updateData['type']
@@ -165,12 +90,12 @@ PyResult BulkMgrService::Handle_UpdateBulk(PyCallArgs &call)
     // bulkDataChangeID found in eve-common/EVE_Defines.h and defines the serverVersion of this set of bulkdata
     //  NOTE:  all of these values sent to SetItem/SetItemString will need objects to call PyDecRef on.
     if (args.changeID != bulkDataChangeID) {
-        res->SetItemString("type", new PyInt(updateBulkStatusTooManyRevisions));
+        res->SetItemString("type", new PyInt(Bulk::Status::TooManyRevisions));
     } else if (args.branch != bulkDataBranch) {
-        res->SetItemString("type", new PyInt(updateBulkStatusWrongBranch));
+        res->SetItemString("type", new PyInt(Bulk::Status::WrongBranch));
     } else if (args.hashValue->IsNone()) {  //241bfba3c85c1bb4680be745e6c7d1ee
         // not right response, but easiest to hack, as it compares servers fileIDs to local fileIDs and removes matching ids
-        res->SetItemString("type", new PyInt(updateBulkStatusHashMismatch));
+        res->SetItemString("type", new PyInt(Bulk::Status::HashMismatch));
         // make list of fileIDs to send to client.
         PyList* list = new PyList();
             list->AddItem(new PyInt(800002));   //cacheDogmaOperands
@@ -181,7 +106,7 @@ PyResult BulkMgrService::Handle_UpdateBulk(PyCallArgs &call)
             list->AddItem(new PyInt(800007));   //cacheDogmaTypeEffects
         res->SetItemString("data", list);
     } else {
-        res->SetItemString("type", new PyInt(updateBulkStatusOK));
+        res->SetItemString("type", new PyInt(Bulk::Status::OK));
     }
 
     res->SetItemString("version", new PyInt(bulkDataChangeID));
@@ -189,7 +114,7 @@ PyResult BulkMgrService::Handle_UpdateBulk(PyCallArgs &call)
 
     /*
     res->SetItemString("data", new PyList(0));
-        data is PyDict of 'chunkCount','chunk','changedTablesKeys','toBeDeleted','changedTablesKeys','branch' when 'type' = updateBulkStatusNeedToUpdate
+        data is PyDict of 'chunkCount','chunk','changedTablesKeys','toBeDeleted','changedTablesKeys','branch' when 'type' = Bulk::Status::NeedToUpdate
         */
     if (is_log_enabled(BULKDATA__TRACE))
         res->Dump(BULKDATA__TRACE, "  ");
@@ -199,9 +124,11 @@ PyResult BulkMgrService::Handle_UpdateBulk(PyCallArgs &call)
 
 PyResult BulkMgrService::Handle_GetFullFiles(PyCallArgs &call)
 {
+    if (is_log_enabled(BULKDATA__DUMP)) {
+        sLog.Error( "BulkMgrService::Handle_GetFullFiles()", "size= %zu", call.tuple->size() );
+        call.Dump(BULKDATA__DUMP);
+    }
     /*
-    sLog.White( "BulkMgrService::Handle_GetFullFiles()", "size= %zu", call.tuple->size() );
-    call.Dump(BULKDATA__DUMP);
         toBeChanged, bulksEndingInChunk, numberOfChunks, chunkSetID, self.allowUnsubmitted = self.bulkMgr.GetFullFiles(toGet)
         -- toGet is sent as PyList of fileIDs server should send back
 
@@ -300,23 +227,25 @@ PyResult BulkMgrService::Handle_GetFullFiles(PyCallArgs &call)
     if (bulksEndingInChunk->size() > 0) {
         response->SetItem(1, bulksEndingInChunk);
     } else {
+        PyDecRef(bulksEndingInChunk);
         response->SetItem(1, PyStatic.NewNone());
     }
 
     response->SetItem(4, PyStatic.NewFalse());     //allowUnsubmitted isnt supported (yet)
 
-    if (is_log_enabled(BULKDATA__TRACE))
-        response->Dump(BULKDATA__TRACE, "  ");
+    //if (is_log_enabled(BULKDATA__TRACE))
+    //    response->Dump(BULKDATA__TRACE, "  ");
 
-    PyDecRef(bulksEndingInChunk);
     return response;
 }
 
 PyResult BulkMgrService::Handle_GetFullFilesChunk(PyCallArgs &call)
 {
+    if (is_log_enabled(BULKDATA__DUMP)) {
+        sLog.Error( "BulkMgrService::Handle_GetFullFilesChunk()", "size= %zu", call.tuple->size() );
+        call.Dump(BULKDATA__DUMP);
+    }
     /*
-    sLog.White( "BulkMgrService::Handle_GetFullFilesChunk()", "size= %zu", call.tuple->size() );
-    call.Dump(BULKDATA__DUMP);
         toBeChanged, bulksEndingInChunk = self.bulkMgr.GetFullFilesChunk(chunkSetID, chunkNumber)
             this breaks files up into ?kb chunks for sending to client.  client requests "chunkSetID" and "chunkNumber", where chunkSetID is ???
      */
@@ -337,7 +266,10 @@ PyResult BulkMgrService::Handle_GetFullFilesChunk(PyCallArgs &call)
         return PyStatic.NewNone();
     }
 
-    _log(BULKDATA__INFO, "BulkMgrService::Handle_GetFullFilesChunk(): bulkFileID: %i, chunkSetID: %u, chunkNumber: %u", bulkFileID, args.chunkSetID, args.chunkNumber);
+    if (is_log_enabled(BULKDATA__INFO))
+        _log(BULKDATA__INFO, "BulkMgrService::Handle_GetFullFilesChunk(): bulkFileID: %i, chunkSetID: %u, chunkNumber: %u", \
+                bulkFileID, args.chunkSetID, args.chunkNumber);
+
     toBeChanged->SetItem(new PyInt(bulkFileID), sBulkDB.GetBulkDataChunks(args.chunkSetID, args.chunkNumber));
 
     // 2, 4, 36
@@ -366,6 +298,9 @@ PyResult BulkMgrService::Handle_GetFullFilesChunk(PyCallArgs &call)
     }
 
     response->SetItem(0, toBeChanged);
+
+    if (is_log_enabled(BULKDATA__TRACE))
+        response->Dump(BULKDATA__TRACE, "  ");
     return response;
 }
 
@@ -393,8 +328,8 @@ PyResult BulkMgrService::Handle_GetAllBulkIDs(PyCallArgs &call)
 PyResult BulkMgrService::Handle_GetChunk(PyCallArgs &call)
 {
     if (is_log_enabled(BULKDATA__DUMP)) {
-    sLog.White( "BulkMgrService::Handle_GetChunk()", "size= %zu", call.tuple->size() );
-    call.Dump(BULKDATA__DUMP);
+        sLog.Error( "BulkMgrService::Handle_GetChunk()", "size= %zu", call.tuple->size() );
+        call.Dump(BULKDATA__DUMP);
     }
     /*
      *    toBeChanged = self.bulkMgr.GetChunk(changeID, chunkNumber)
@@ -417,8 +352,8 @@ PyResult BulkMgrService::Handle_GetChunk(PyCallArgs &call)
 PyResult BulkMgrService::Handle_GetUnsubmittedChunk(PyCallArgs &call)
 {
     if (is_log_enabled(BULKDATA__DUMP)) {
-    sLog.White( "BulkMgrService::Handle_GetUnsubmittedChunk()", "size= %zu", call.tuple->size() );
-    call.Dump(BULKDATA__DUMP);
+        sLog.Error( "BulkMgrService::Handle_GetUnsubmittedChunk()", "size= %zu", call.tuple->size() );
+        call.Dump(BULKDATA__DUMP);
     }
     /*
                 toBeChanged = self.bulkMgr.GetUnsubmittedChunk(chunkNumber)
@@ -437,8 +372,8 @@ PyResult BulkMgrService::Handle_GetUnsubmittedChunk(PyCallArgs &call)
 PyResult BulkMgrService::Handle_GetUnsubmittedChanges(PyCallArgs &call)
 {
     if (is_log_enabled(BULKDATA__DUMP)) {
-    sLog.White( "BulkMgrService::Handle_GetUnsubmittedChanges()", "size= %zu", call.tuple->size() );
-    call.Dump(BULKDATA__DUMP);
+        sLog.Error( "BulkMgrService::Handle_GetUnsubmittedChanges()", "size= %zu", call.tuple->size() );
+        call.Dump(BULKDATA__DUMP);
     }
     /*
         unsubmitted = self.bulkMgr.GetUnsubmittedChanges()

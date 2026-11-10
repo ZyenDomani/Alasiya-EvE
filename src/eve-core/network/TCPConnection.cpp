@@ -243,24 +243,24 @@ bool TCPConnection::Process() {
 
 bool TCPConnection::SendData( char* errbuf )
 {
-    if ( errbuf )
-    errbuf[0] = 0;
+    if (errbuf != nullptr )
+        errbuf[0] = 0;
 
     MutexLock lock( mMSock );
     if ((mSockState != STATE_CONNECTED) && (mSockState != STATE_DISCONNECTING ))
         return false;
 
     mMSendQueue.Lock();
-    Buffer* buf(nullptr);
+    Buffer* buf = nullptr;
     int status = 0;
     while (!mSendQueue.empty()) {
         buf = mSendQueue.front();
         mSendQueue.pop_front();
         mMSendQueue.Unlock();
         if (mSendQueue.empty()) {
-            status = mSock->send( &(*buf)[ 0 ], (uint)buf->size(), MSG_NOSIGNAL);
+            status = mSock->send( buf->get_raw_ptr(), (uint)buf->size(), MSG_NOSIGNAL);
         } else {
-            status = mSock->send( &(*buf)[ 0 ], (uint)buf->size(), (MSG_NOSIGNAL | MSG_MORE) );
+            status = mSock->send( buf->get_raw_ptr(), (uint)buf->size(), (MSG_NOSIGNAL | MSG_MORE) );
         }
         if (status == SOCKET_ERROR) {
             if (errno == EWOULDBLOCK) {

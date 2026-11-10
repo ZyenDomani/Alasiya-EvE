@@ -33,7 +33,7 @@
 /* EVETCPConnection                                                      */
 /*************************************************************************/
 const uint32 EVETCPConnection::TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
-const uint32 EVETCPConnection::PACKET_SIZE_LIMIT = 1024 * 1024; // 1 megabyte
+const uint32 EVETCPConnection::PACKET_SIZE_LIMIT = 10 * 1024 * 1024; // 10 megabyte
 
 EVETCPConnection::EVETCPConnection()
 : TCPConnection(),

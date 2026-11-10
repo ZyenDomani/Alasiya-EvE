@@ -41,7 +41,7 @@ bool Marshal(const PyRep* rep, Buffer& into)
     return stream.Save(rep, into);
 }
 
-bool MarshalDeflate(const PyRep* rep, Buffer& into, const uint32 deflationLimit)
+bool MarshalDeflate(const PyRep* rep, Buffer& into, const uint32 deflationLimit/*128kb*/)
 {
     // FIX: Stack allocated scratch buffer prevents dynamic heap allocations
     Buffer scratch_data;
@@ -73,17 +73,32 @@ bool MarshalStream::Save(const PyRep* rep, Buffer& into)
     return res;
 }
 
+// Static tracking threshold inside EVEMarshal.cpp
+static const uint32 MAX_SERIALIZATION_DEPTH = 50; // Valid structures never exceed this
+static thread_local uint32 g_CurrentNestingDepth = 0;
+
 bool MarshalStream::SaveStream(const PyRep* rep)
 {
+    if (rep == nullptr)
+        return false;
+
+    // stack loop counting.
+    g_CurrentNestingDepth++;
+    if (g_CurrentNestingDepth > MAX_SERIALIZATION_DEPTH) {
+        _log(SERVICE__ERROR, "MarshalStream: Infinite recursion loop detected! Breaking stream pass to prevent crash. Object Type Tag: %d", rep->GetType());
+        g_CurrentNestingDepth--;
+        return false; // Safely drop the looping node and return up the stack
+    }
+
     Put<uint8>(MarshalHeaderByte);
 
     // Mapcount (EVE protocol object referencing; tracking placeholder left as zero)
     Put<uint32>(0);
+    bool ret = rep->visit(*this);
 
-    if (rep == nullptr) {
-        return false;
-    }
-    return rep->visit(*this);
+    // Unwind cleanly when stepping back up the tree
+    g_CurrentNestingDepth--;
+    return ret;
 }
 
 bool MarshalStream::VisitInteger(const PyInt* rep)

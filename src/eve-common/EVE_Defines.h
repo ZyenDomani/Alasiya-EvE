@@ -69,12 +69,6 @@
 #ifndef EVE_DEFINES_H
 #define EVE_DEFINES_H
 
-// bulkdata version
-#define bulkDataBranch          4
-//  bulkDataChangeID rddmmyyyy
-//  where r=revision, dd=day, mm=month, yyyy=year
-#define bulkDataChangeID        130012025
-
 //  define number of rentable offices in stations (config option later?)
 //  this replaces the hard-coded count previously used in station.h
 #define maxRentableOffices      10

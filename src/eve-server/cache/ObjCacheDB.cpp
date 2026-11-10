@@ -22,7 +22,6 @@
     ------------------------------------------------------------------------------------
     Author:        Zhur
 */
-/** @todo this needs to be updated a bit... */
 
 #include "../eve-server.h"
 
@@ -31,6 +30,13 @@
 ObjCacheDB::ObjCacheDB()
 {
     //register all the generators
+    m_generators["config.BulkData.operands"] = &ObjCacheDB::Generate_operands;
+    m_generators["config.BulkData.expressions"] = &ObjCacheDB::Generate_expressions;
+    m_generators["config.BulkData.attributes"] = &ObjCacheDB::Generate_attributes;
+    m_generators["config.BulkData.effects"] = &ObjCacheDB::Generate_effects;
+    m_generators["config.BulkData.typeattributes"] = &ObjCacheDB::Generate_typeattributes;
+    m_generators["config.BulkData.typeeffects"] = &ObjCacheDB::Generate_typeeffects;
+
     m_generators["charNewExtraCreationInfo.raceskills"] = &ObjCacheDB::Generate_CharNewExtraRaceSkills;
     m_generators["charNewExtraCreationInfo.careerskills"] = &ObjCacheDB::Generate_CharNewExtraCareerSkills;
     m_generators["charNewExtraCreationInfo.careers"] = &ObjCacheDB::Generate_CharNewExtraCareers;
@@ -128,6 +134,66 @@ ObjCacheDB::ObjCacheDB()
     m_generators["charCreationInfo.skins"] = &ObjCacheDB::Generate_a_skins;
     m_generators["charCreationInfo.lipsticks"] = &ObjCacheDB::Generate_a_lipsticks;
 }
+
+PyRep* ObjCacheDB::Generate_attributes() {
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res, "SELECT * FROM dgmAttributeTypes")) {
+        _log(DATABASE__ERROR, "Error in GetDogmaAttribs: %s",res.error.c_str());
+        return nullptr;
+    }
+    return DBResultToCRowset(res);
+}
+
+PyRep* ObjCacheDB::Generate_effects() {
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res, "SELECT * FROM dgmEffects")) {
+        _log(DATABASE__ERROR, "Error in GetDogmaEffects: %s",res.error.c_str());
+        return nullptr;
+    }
+
+    return DBResultToCRowset(res);
+}
+
+PyRep* ObjCacheDB::Generate_expressions() {
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res, "SELECT * FROM dgmExpressions")) {
+        _log(DATABASE__ERROR, "Error in GetDogmaEffects: %s",res.error.c_str());
+        return nullptr;
+    }
+
+    return DBResultToCRowset(res);
+}
+
+PyRep* ObjCacheDB::Generate_operands() {
+    DBQueryResult res;
+    if ( !sDatabase.RunQuery(res, "SELECT * FROM dgmOperands")) {
+        codelog(DATABASE__ERROR, "Error in GetOperands: %s", res.error.c_str());
+        return nullptr;
+    }
+
+    return DBResultToCRowset(res);
+}
+
+PyRep* ObjCacheDB::Generate_typeattributes() {
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res, "SELECT * FROM dgmTypeAttributes")) {
+        _log(DATABASE__ERROR, "Error in GetDogmaEffects: %s",res.error.c_str());
+        return nullptr;
+    }
+
+    return DBResultToCRowset(res);
+}
+
+PyRep* ObjCacheDB::Generate_typeeffects() {
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res, "SELECT * FROM dgmTypeEffects")) {
+        _log(DATABASE__ERROR, "Error in GetDogmaEffects: %s",res.error.c_str());
+        return nullptr;
+    }
+
+    return DBResultToCRowset(res);
+}
+
 
 PyRep *ObjCacheDB::GetCachableObject(const std::string &type)
 {
