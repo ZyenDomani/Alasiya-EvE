@@ -426,7 +426,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     m_bubble = pShip->SysBubble();
     m_sysMgr = pShip->SystemMgr();
     m_targMgr = pShip->TargetMgr();
-    m_destinyMgr = pShip->DestinyMgr();
+    // fixme m_destinyMgr = pShip->DestinyMgr();
 
     // Do initial cycle immediately while we start timer
     SetTimer(DoCycle());
@@ -478,7 +478,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     } else {
         SendShipEffect(true, false);
     }
-
+/*
     switch (groupID()) {
         case EVEDB::invGroups::Afterburner:
         case EVEDB::invGroups::Microwarpdrive: {
@@ -488,7 +488,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
             if (m_targetSE != nullptr)
                 m_targetSE->DestinyMgr()->WebbedMe();
         } break;
-    }
+    }*/
     /*def OnSpecialFX
      *     if start and guid == 'effects.WarpScramble*':
      *     if settings.user.ui.Get('notifyMessagesEnabled', 1) or eve.session.shipid in (shipID, targetID):
@@ -785,7 +785,7 @@ void ActiveModule::DeactivateCycle(bool abortCycle/*false*/)
                 m_modRef->name(), m_targetID, m_targetSE);
     } */
 
-    switch (groupID()) {
+    switch (groupID()) {/*
         case EVEDB::invGroups::Tractor_Beam: {
             if (m_targetSE != nullptr)
                 m_targetSE->DestinyMgr()->TractorBeamStop();
@@ -797,7 +797,7 @@ void ActiveModule::DeactivateCycle(bool abortCycle/*false*/)
         case EVEDB::invGroups::Stasis_Web: {
             if (m_targetSE != nullptr)
                 m_targetSE->DestinyMgr()->WebbedMe();
-        } break;
+        } break;*/
         case EVEDB::invGroups::Survey_Scanner: {
             if (abortCycle) {
                 Clear();
@@ -1187,7 +1187,7 @@ bool ActiveModule::CanActivate() {
                         allowed = true;
 
                 if (allowed) {
-                    m_targetSE->DestinyMgr()->TractorBeamStart(m_shipRef->GetPilot()->GetShipSE(), GetAttribute(AttrMaxTractorVelocity));
+                    // fixme m_targetSE->DestinyMgr()->TractorBeamStart(m_shipRef->GetPilot()->GetShipSE(), GetAttribute(AttrMaxTractorVelocity));
                 } else {
                     Clear();
                     m_shipRef->GetPilot()->SendNotifyMsg("The %s cannot engage a tractor beam on that object as it is not owned by you, a fellow fleet member or another member of a player corporation you belong to.",
@@ -1551,7 +1551,7 @@ void ActiveModule::LaunchMissile()
         travelTime = 1;
     pMissile->SetSpeed(missileSpeed);
     pMissile->SetHitTimer(travelTime *1000);
-    pMissile->DestinyMgr()->MakeMissile(pMissile);
+    // fixme pMissile->DestinyMgr()->MakeMissile(pMissile);
 
     // Reduce ammo charge by 1 unit:
     ConsumeCharge();

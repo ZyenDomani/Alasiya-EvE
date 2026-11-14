@@ -181,16 +181,16 @@ public:
               const Vector3d &_position = NULL_ORIGIN, const char *_customInfo = "", bool _contraband = false);
 
     // Content:
-    bool            contraband :1;
-    bool            singleton :1;            // singletonBlueprintCopy = 2
-    EVEItemFlags    flag;
-    uint16          typeID;
-    uint32          ownerID;
-    uint32          locationID;
-    int32           quantity;
-    Vector3d          position;
+    Vector3d        position;
     std::string     name;
     std::string     customInfo;
+    int32           quantity;
+    uint32          ownerID;
+    uint32          locationID;
+    uint16          typeID;
+    EVEItemFlags    flag;
+    bool            contraband;
+    bool            singleton;            // singletonBlueprintCopy = 2
 };
 
 #endif /* __ITEM_TYPE__H__INCL__ */

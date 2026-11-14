@@ -33,7 +33,6 @@
 #include "station/StationOffice.h"
 #include "station/StationDataMgr.h"
 #include "system/Container.h"
-#include "system/DestinyManager.h"
 #include "system/SpaceEntity.h"
 #include "system/SystemManager.h"
 

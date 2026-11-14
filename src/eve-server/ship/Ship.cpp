@@ -12,7 +12,6 @@
 #include "ship/Ship.h"
 #include "ship/modules/GenericModule.h"
 #include "station/Station.h"
-#include "system/DestinyManager.h"
 #include "system/BubbleManager.h"
 #include "system/SolarSystem.h"
 #include "system/SystemBubble.h"

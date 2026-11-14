@@ -72,7 +72,7 @@ SpaceEntity* EntityFactory::BuildEntity(SystemManager& sysMgr, const DBSystemDyn
             if (fData.ownerID == 1) {
                 // initialize abandoned ship here.
                 ship->Init();
-                sSE->DestinyMgr()->UpdateShipVariables();
+                // fixme sSE->DestinyMgr()->UpdateShipVariables();
             }
             return sSE;
         } break;

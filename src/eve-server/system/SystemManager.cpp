@@ -55,7 +55,6 @@
 #include "station/Station.h"
 #include "system/Asteroid.h"
 #include "system/Container.h"
-#include "system/DestinyManager.h"
 #include "system/SolarSystem.h"
 #include "system/SystemBubble.h"
 #include "system/SystemManager.h"
@@ -217,8 +216,10 @@ bool SystemManager::ProcessTic() {
 
     std::map<uint32, SpaceEntity*>::iterator itr = m_ticEntities.begin(), end = m_ticEntities.end();
     while (itr != end) {
+        const uint32 curID = itr->first;
         /* main process call. */
         itr->second->Process();
+        //BallPark::Process(itr->second, m_ticStamp);
 
     /* the idea here is entities map NEVER has invalid items in it, but our iterator may become invalid
      * when SE->Process() returns because it will add/remove from the map as needed for
@@ -228,15 +229,10 @@ bool SystemManager::ProcessTic() {
      */
         if (m_entityChanged) {
             m_entityChanged = false;
-            // using .find() is MUCH faster than iterating thru entire list
-            itr = m_ticEntities.find(itr->first);
+            // Jumps cleanly to the first itemID strictly greater than curID
+            itr = m_ticEntities.upper_bound(curID);
             end = m_ticEntities.end();
-
-            if (itr == end) {
-                // cur SE is the iterator being deleted.  break out.
-                // NOTE:  do NOT start over here, as that will allow all previous SE a second action in this tic.
-                break;
-            }
+            continue;
         }
 
         // move on to next one.
@@ -548,7 +544,7 @@ bool SystemManager::BuildDynamicEntity(const DBSystemDynamicEntity& data, uint32
         // set wreck speed based on killed object
         SpaceEntity* pSE = GetSE(launcherID);
         if (pSE != nullptr) {
-            pWE->DestinyMgr()->SetTrollData(pSE->DestinyMgr());
+            //pWE->DestinyMgr()->SetTrollData(pSE->DestinyMgr());
         }
     }
 
@@ -1275,10 +1271,10 @@ void SystemManager::DScan(int64 range, const Vector3d& position, std::vector<Spa
                 continue;
             if (cur.second->GetGroupID() == EVEDB::invGroups::CombatRecon)
                 continue;
-        }
+        }/*
         if (cur.second->DestinyMgr() != nullptr)
             if (cur.second->DestinyMgr()->IsCloaked())
-                continue;
+                continue;*/
         // made it this far.  add item to scan list
         delta = cur.second->GetPosition() - position;
         dist = delta.Length();

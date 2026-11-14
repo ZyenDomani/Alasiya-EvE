@@ -13,7 +13,6 @@
 #include "StaticDataMgr.h"
 #include "npc/NPC.h"
 #include "npc/NPCAI.h"
-#include "system/DestinyManager.h"
 #include "system/SystemManager.h"
 #include "system/SystemBubble.h"
 #include "system/cosmicMgrs/SpawnMgr.h"
@@ -208,7 +207,7 @@ void SpawnMgr::WarpOutSpawn(NPC* pNPC, SystemBubble* pBubble) {
             continue;
         }
         rNPC->GetAI()->DisableWarpOutTimer();
-        rNPC->DestinyMgr()->WarpTo(pBubble->GetCenter(), MakeRandomFloat(10, 30) * 100);
+        //rNPC->DestinyMgr()->WarpTo(pBubble->GetCenter(), MakeRandomFloat(10, 30) * 100);
         ratsToMove.emplace(pBubble->GetID(), itr->second);
         ++itr;
     }
@@ -263,12 +262,12 @@ void SpawnMgr::SpawnKilled(SystemBubble* pBubble, uint32 itemID) {
     }
 
     // this should be map to track squads here...what about multiple squads per bubble?
-    NPCSquad* pSquad = nullptr; //GetSquad(pBubble->GetID());
+    Squad* pSquad = nullptr; //GetSquad(pBubble->GetID());
 
     if (pSquad != nullptr) {
         // If the squad array has fallen completely silent, execute clean memory deletion
         if (pSquad->GetMembers().empty()) {
-            _log(NPC__INFO, "SpawnManager: Reclaiming empty NPCSquad heap memory for bubble %u.", pBubble->GetID());
+            _log(NPC__INFO, "SpawnManager: Reclaiming empty Squad heap memory for bubble %u.", pBubble->GetID());
 
             // Remove the squad pointer from the manager's master index tracker list
             //UnlinkSquadIndex(pSquad);
@@ -810,9 +809,9 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
 
     // only create squad if there are more than 3 ships and it's beltrats
     //TODO:  this check isnt right...toSpawn is types, and each have qty...this only checks if there are >3 types
-    NPCSquad* pCurrentSquad = nullptr;
+    Squad* pCurrentSquad = nullptr;
     if ((sClass <= Spawn::Class::BeltSpawn) and (m_toSpawn.size() > 3)) {
-        pCurrentSquad = new NPCSquad(m_squadID++);
+        pCurrentSquad = new Squad(m_squadID++);
 
         // Track the pointer under the Spawn Manager's absolute ownership map
         //m_activeSquads[pBubble->GetID()].push_back(pCurrentSquad);
@@ -924,7 +923,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
 
                 //}
 
-                pNPC->DestinyMgr()->WarpTo(warpTo, (MakeRandomInt(-5, 10) * 1000));
+                //pNPC->DestinyMgr()->WarpTo(warpTo, (MakeRandomInt(-5, 10) * 1000));
             }
 
             // increment live counter for this bubble
@@ -989,7 +988,7 @@ void SpawnMgr::ReSpawn(SystemBubble* pBubble, Spawn::Entry& spawnEntry) {
     }
 
     m_system->AddNPC(pNPC);
-    pNPC->DestinyMgr()->WarpTo(warpToPoint, (MakeRandomInt(-5, 10) * 1000));
+    //pNPC->DestinyMgr()->WarpTo(warpToPoint, (MakeRandomInt(-5, 10) * 1000));
 
     spawnEntry.stamp = 0;
     spawnEntry.respawn = false;
@@ -1052,7 +1051,7 @@ void SpawnMgr::RemoveSpawn(uint16 bubbleID, uint32 itemID) {
 }
 
 void SpawnMgr::NPCArrivedOnGrid(NPC* pNPC) {
-    NPCSquad* pSquad = pNPC->GetSquad();
+    Squad* pSquad = pNPC->GetSquad();
     if (pSquad == nullptr)
         return;
 /*

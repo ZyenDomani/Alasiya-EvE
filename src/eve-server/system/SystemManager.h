@@ -43,7 +43,6 @@ class InventoryItem;
 class SpaceEntity;
 class SystemBubble;
 class SetState;
-class DestinyManager;
 
 class AnomalyMgr;
 class BeltMgr;
@@ -82,7 +81,7 @@ public:
     uint32 GetConstellationID()                         { return m_data.constellationID; }
     const std::string& GetNameStr() const               { return m_data.name; }
     const char* GetName() const                         { return m_data.name.c_str(); }
-    // this is the letter/number rating 
+    // this is the letter/number rating
     const char* GetSecurityClass()                      { return m_data.securityClass.c_str(); }
     // 1.0 to -0.9
     const float GetSecurityRating()                     { return m_data.security; }

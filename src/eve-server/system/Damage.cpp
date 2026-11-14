@@ -347,7 +347,7 @@ bool SpaceEntity::ApplyDamage(Damage &damage) {
         }
 
         m_killed = true;
-        m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID(), isGlobal());
+        // fixme m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID(), isGlobal());
 
         //TODO: find a way to determine if this entity has missiles out and update missile for dead launcher
         Killed(damage);  // this must NOT remove dead SE from system. (except base class)
@@ -426,7 +426,7 @@ bool SpaceEntity::ApplyDamage(Damage &damage) {
 }
 
 void ShipSE::Killed(Damage &damage) {
-    if ((m_bubble == nullptr) or (m_destiny == nullptr) or (m_system == nullptr))
+    if ((m_bubble == nullptr) or (m_system == nullptr))
         return; // make error here?
 
     m_shipRef->SetPopped(true);
@@ -461,7 +461,7 @@ void ShipSE::Killed(Damage &damage) {
     MapDB::AddFactionKill(locationID);
 
     // set up basic wreck data
-    Vector3d wreckPosition = m_destiny->GetPosition();
+    Vector3d wreckPosition = GetPosition();
     if (wreckPosition.isNaN()) {
         sLog.Error("Ship::Killed()", "Wreck Position is NaN");
         return;
@@ -510,7 +510,7 @@ void ShipSE::Killed(Damage &damage) {
             return;
         }
 
-        m_destiny->SendJettisonPacket();
+        // fixme m_destiny->SendJettisonPacket();
         return;
     }
 
@@ -658,7 +658,7 @@ void ShipSE::Killed(Damage &damage) {
     } else {
         PayInsurance();
 
-        m_destiny->SendJettisonPacket();
+        // fixme m_destiny->SendJettisonPacket();
 
         uint16 groupID = m_self->groupID();
         Vector3d podPosition = wreckPosition;

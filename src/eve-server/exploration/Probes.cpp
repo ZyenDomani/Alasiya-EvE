@@ -542,7 +542,7 @@ void ProbeSE::SendSlimChange()
     PyTuple* updates = new PyTuple(2);
         updates->SetItem(0, new PyString("OnSlimItemChange"));
         updates->SetItem(1, probeData);
-    m_destiny->SendSingleDestinyUpdate(&updates, true);
+    // fixme m_destiny->SendSingleDestinyUpdate(&updates, true);
     //PyDecRef(updates);
 }
 

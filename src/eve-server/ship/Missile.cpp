@@ -31,7 +31,6 @@
 #include "Profiler.h"
 #include "character/Character.h"
 #include "inventory/AttributeEnum.h"
-#include "system/DestinyManager.h"
 #include "system/SystemBubble.h"
 #include "ship/Missile.h"
 #include "ship/Ship.h"

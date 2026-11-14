@@ -37,7 +37,7 @@
 #include "npc/NPC.h"
 #include "system/Container.h"
 #include "system/Damage.h"
-#include "system/DestinyManager.h"
+#include "system/Squad.h"
 #include "system/SystemBubble.h"
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/AnomalyMgr.h"
@@ -45,13 +45,11 @@
 
 NPC::NPC(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, const FactionData& data, SpawnMgr* spawnMgr)
 : DynamicSpaceEntity(self, services, system),
-m_AI(new NPCAIMgr(this)),
+m_AI(new NPCAI(this)),
 m_spawnMgr(spawnMgr),
 m_squad(nullptr),
 m_hauler(false),
-m_squadLeader(false),
 m_moduleCount(0),
-m_rank(0),
 m_orbitingID(0)
 {
     m_allyID = data.allianceID;
@@ -91,7 +89,7 @@ bool NPC::Load() {
     m_AI->Init();
 
     // load data for destiny
-    m_destiny->UpdateShipVariables();
+    // fixme m_destiny->UpdateShipVariables();
 
     //dSE::Load() just returns true for now (no code)
     return DynamicSpaceEntity::Load();
@@ -205,11 +203,11 @@ void NPC::EncodeDestiny(Buffer& into)
 {
     using namespace Destiny;
 
-    uint8 mode = m_destiny->GetBallMode(); //Ball::Mode::STOP;
+    // fixme uint8 mode = m_destiny->GetBallMode(); //Ball::Mode::STOP;
 
     BallHeader head = BallHeader();
         head.entityID = GetID();
-        head.mode = mode;
+        head.mode = 0;
         head.radius = GetRadius();
         head.posX = x();
         head.posY = y();
@@ -217,7 +215,7 @@ void NPC::EncodeDestiny(Buffer& into)
         head.flags = Ball::Flag::IsFree;
         //if (mode != Ball::Mode::WARP)
         //    head.flags = Ball::Flag::IsFree | Ball::Flag::IsMassive;
-
+/*
     into.Append(head);
     MassSector mass = MassSector();
         mass.mass = m_self->mass();
@@ -233,8 +231,8 @@ void NPC::EncodeDestiny(Buffer& into)
         data.velZ = m_destiny->GetVelocity().z;
         data.inertia = m_self->GetAttribute(AttrInertiaMod).get_float();
         data.speedfraction = m_destiny->GetSpeedFraction();
-    into.Append(data);
-    switch (mode) {
+    into.Append(data);*/
+    switch (0) {/*
         case Ball::Mode::WARP: {
             Vector3d target = m_destiny->GetTargetPoint();
             WARP_Struct warp;
@@ -277,7 +275,7 @@ void NPC::EncodeDestiny(Buffer& into)
             go.y = target.y;
             go.z = target.z;
             into.Append(go);
-        }  break;
+        }  break;*/
         case Ball::Mode::FORMATION: {
             // this implies squad
             assert (m_squad != nullptr);
@@ -296,7 +294,7 @@ void NPC::EncodeDestiny(Buffer& into)
     }
 
     std::string modeStr = "Goto";
-    switch (mode) {
+    switch (0) {
         case 1: modeStr = "Follow"; break;
         case 2: modeStr = "Stop"; break;
         case 3: modeStr = "Warp"; break;
@@ -310,13 +308,13 @@ void NPC::EncodeDestiny(Buffer& into)
         case 11: modeStr = "Rigid"; break;
         case 12: modeStr = "Formation"; break;
     }
-
+/*
     _log(SE__DESTINY, "NPC::EncodeDestiny(): %s - id:%lli, mode:%s, flags:0x%X, Vel:%.1f, %.1f, %.1f", \
-            GetName(), head.entityID, modeStr.c_str(), head.flags, data.velX, data.velY, data.velZ);
+            GetName(), head.entityID, modeStr.c_str(), head.flags, data.velX, data.velY, data.velZ);*/
 }
 
 void NPC::Killed(Damage &fatal_blow) {
-    if ((m_bubble == nullptr) or (m_destiny == nullptr) or (m_system == nullptr))
+    if ((m_bubble == nullptr) or (m_system == nullptr))
         return; // make error here?
 
     // remove from bubble's gfx map (may/may not be in here)
@@ -417,76 +415,16 @@ void NPC::Killed(Damage &fatal_blow) {
         wreckItemRef->Delete();
         return;
     }
-    m_destiny->SendJettisonPacket();
+    // fixme m_destiny->SendJettisonPacket();
 }
 
 void NPC::CmdDropLoot()
 {
-    m_destiny->SendJettisonPacket();
+    // fixme m_destiny->SendJettisonPacket();
     /** @todo finish this */
     //DropLoot(wreckItemRef, m_self->groupID());
 }
 
 void NPC::ApplyTrackingBoost(float mod/*1.0f*/) {
 
-}
-
-void NPCSquad::RegisterMember(NPC* pNPC) {
-    if (pNPC == nullptr)
-        return;
-
-    m_members.push_back(pNPC);
-    pNPC->SetSquad(this);
-
-    // Dynamic Promotion Engine
-    uint8 newRank = pNPC->GetCommandRank();
-    if (m_squadLeader == nullptr) {
-        // First ship on grid is leader by default
-        m_squadLeader = pNPC;
-        pNPC->SetSquadLeader(true);
-    } else if (newRank > m_squadLeader->GetCommandRank()) {
-        m_squadLeader->SetSquadLeader(false);
-        m_squadLeader = pNPC;
-        pNPC->SetSquadLeader(true);
-
-        _log(NPC__AI_MESSAGE, "Squad ID %u Hierarchy Shift: %s(%u) is assuming fleet command.",
-             m_squadID, pNPC->GetName(), pNPC->GetID());
-    }
-}
-
-void NPCSquad::UnregisterMember(NPC* pNPC) {
-    if (pNPC == nullptr)
-        return;
-
-    auto it = std::find(m_members.begin(), m_members.end(), pNPC);
-    if (it != m_members.end())
-        m_members.erase(it);
-
-    if (m_squadLeader == pNPC) {
-        m_squadLeader = nullptr;
-        if (!m_members.empty()) {
-            m_squadLeader = m_members.front();
-            _log(NPC__AI_MESSAGE, "Squad Leader was killed! NPC %u is stepping up to take tactical command.",
-                 m_squadLeader->GetID());
-        }
-    }
-
-    if (m_members.empty()) {
-        _log(NPC__AI_MESSAGE, "Squad ID %u has been completely wiped out from grid partition.", m_squadID);
-        m_squadTarget = nullptr;
-        m_squadLeader = nullptr;
-    }
-}
-
-void NPCSquad::OnAllMembersArrived() {
-    // this should be a switch
-    if (m_tacticalTier == 1) {
-        _log(NPC__AI_MESSAGE, "Squad ID %u fully landed. Assembling into formation for 5 seconds.", m_squadID);
-
-        // Broadcast the formation ID to the client: watch them glide into position!
-        //BroadcastFormationToGrid(EVEDB::Formations::Wedge);
-
-        // Start a 5-second combat delay countdown timer
-        m_formationBreakTimer.Start(5000);
-    }
 }

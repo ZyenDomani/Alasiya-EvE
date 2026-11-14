@@ -101,10 +101,10 @@ public:
     uint32                  ownerID() const             { return m_data.ownerID; }
     uint32                  locationID() const          { return m_data.locationID; }
     EVEItemFlags            flag() const                { return m_data.flag; }
-    const Vector3d &          position() const            { return m_data.position; }
+    Vector3d&               position()                  { return m_data.position; }
     const ItemType &        type() const                { return m_type; }
-    const std::string &     itemName() const            { return m_data.name; }
-    const std::string &     customInfo() const          { return m_data.customInfo; }
+    const std::string &     itemName()                  { return m_data.name; }
+    const std::string &     customInfo()                { return m_data.customInfo; }
 
     const char*             name()                      { return m_data.name.c_str(); }
 
@@ -289,9 +289,9 @@ protected:
     uint32 m_itemID;
 
 private:
-    bool m_delete;
     ItemData m_data;
     ItemType m_type;
+    bool m_delete;
 
 /* new effects processing system */
 public:

@@ -22,7 +22,6 @@
 #include "rogueDrones/SwarmSE.h"
 #include "system/Container.h"
 #include "system/Damage.h"
-#include "system/DestinyManager.h"
 #include "system/SystemBubble.h"
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/AnomalyMgr.h"

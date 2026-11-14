@@ -25,51 +25,85 @@
 */
 
 
-#ifndef __NPC_H_INCL__
-#define __NPC_H_INCL__
+#pragma once
 
 #include "npc/NPCAI.h"
 #include "system/cosmicMgrs/SpawnMgr.h"
 #include "system/SpaceEntity.h"
 
 class PyServiceMgr;
-class DestinyManager;
 class InventoryItem;
 class Missile;
-class NPCSquad;
+class Squad;
 class SystemManager;
 
 class NPC
 : public DynamicSpaceEntity
 {
 public:
+    struct Size {
+        enum {
+            None        = 0,
+            Swarm       = 35,
+            Frigate     = 50,
+            Destroyer   = 100,
+            Cruiser     = 200,
+            BCruiser    = 300,
+            BShip       = 350,
+            Indy        = 450
+        };
+    };
+
+    struct Rank {
+        enum  {
+            None    = 0,
+            Frigate = 1,
+            Cruiser = 2,
+            Elite   = 3,
+            BShip   = 4,
+            Commander = 5 // Specialized Overseer/Boss hulls
+        };
+    };
+
+    // default c'tor
+    NPC() =delete;
+    // main c'tor
     NPC(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, const FactionData& data, SpawnMgr* spawnMgr = nullptr);
-    virtual ~NPC();
+    // copy c'tor
+    NPC(const NPC* oth) =delete;
+    // move c'tor
+    NPC(NPC&& oth) noexcept =default;
+    // copy assignment
+    NPC& operator=(NPC& oth) =delete;
+    // move assignment
+    NPC& operator=(NPC&& oth) =default;
+    // d'tor
+    ~NPC();
 
     /* class type pointer querys. */
-    virtual const char*         GetSEType()             { return "NPC SE"; }
-    virtual NPC*        GetNPCSE()                      { return this; }
+    const char*         GetSEType()             { return "NPC SE"; }
+    NPC*        GetNPCSE()                      { return this; }
     /* class type tests. */
-    virtual bool        IsNPCSE()                       { return true; }
+    bool        IsNPCSE()                       { return true; }
 
     /* SpaceEntity interface */
-    virtual void        Process();
-    virtual void        EncodeDestiny(Buffer& into);
+    void        Process();
+    void        EncodeDestiny(Buffer& into);
 
-    /* virtual functions default to base class and overridden as needed */
-    virtual void        Killed(Damage &fatal_blow);
-    virtual bool        Load();  // sets npc resists and inits destiny vars
+    /* functions default to base class and overridden as needed */
+    void        Killed(Damage &fatal_blow);
+    bool        Load();  // sets npc resists and inits destiny vars
 
-    /* virtual functions for npc/drone AI and player reporting */
-    virtual void        ReportDamage(uint8 type=0, SpaceEntity* pSourceSE=nullptr)
+    /* functions for npc/drone AI and player reporting */
+    void        ReportDamage(uint8 type=0, SpaceEntity* pSourceSE=nullptr)
                                                         { m_AI->ReportDamage(type, pSourceSE); }
     // tell AI a missile has been launched at us.  allows defender missile code
-    virtual void     MissileLaunched(Missile* pMissile) { m_AI->MissileLaunched(pMissile); }
-    virtual void    TargetLost(SpaceEntity* pTargetSE) { m_AI->TargetLost(pTargetSE); }
-    virtual void   TargetAdded(SpaceEntity* pTargetSE) { /* do nothing here */ }
+    void     MissileLaunched(Missile* pMissile) { m_AI->MissileLaunched(pMissile); }
+    void    TargetLost(SpaceEntity* pTargetSE) { m_AI->TargetLost(pTargetSE); }
+    void   TargetAdded(SpaceEntity* pTargetSE) { /* do nothing here */ }
     // this is call to inform us of yellowbox
-    virtual void   TargetedAdd(SpaceEntity* pTargetSE) { m_AI->Targeted(pTargetSE); }
-    virtual void  TargetedLost(SpaceEntity* pTargetSE) { /* do nothing here */ }
+    void   TargetedAdd(SpaceEntity* pTargetSE) { m_AI->Targeted(pTargetSE); }
+    void  TargetedLost(SpaceEntity* pTargetSE) { /* do nothing here */ }
 
 
     /* specific functions handled here. */
@@ -87,7 +121,7 @@ public:
     float               GetKinetic()                    { return m_self->GetAttribute(AttrKineticDamage).get_float(); }
     float               GetExplosive()                  { return m_self->GetAttribute(AttrExplosiveDamage).get_float(); }
 
-    NPCAIMgr*           GetAI()                         { return m_AI; }
+    NPCAI*              GetAI()                         { return m_AI; }
     SpawnMgr*           GetSpawnMgr()                   { return m_spawnMgr; }
 
     /* for command dropLoot - commands all npcs in bubble to jettison loot */
@@ -97,76 +131,20 @@ public:
     void                ApplyTrackingBoost(float mod=1.0f);
 
     /* for new squad class */
-    void                SetSquad(NPCSquad* squad)       { m_squad = squad; }
-    void                SetSquadLeader(bool set=false)  { m_squadLeader = set; }
-    bool                IsSquadLeader()                 { return m_squadLeader; }
-    void                SetCommandRank(uint8 set=0)     { m_rank = set; }
-    uint8               GetCommandRank()                { return m_rank; }
-    NPCSquad*           GetSquad()                      { return m_squad; }
+    void                SetSquad(Squad* squad)          { m_squad = squad; }
+    Squad*              GetSquad()                      { return m_squad; }
+    uint8               GetRank()                       { return m_rank; }
 
 protected:
     void                SetHauler()                     { m_hauler = true; }
 
 private:
-    NPCAIMgr*           m_AI;
+    NPCAI*              m_AI;
     SpawnMgr*           m_spawnMgr;
-    NPCSquad*           m_squad;
+    Squad*              m_squad;
 
-    bool                m_hauler;
-    bool                m_squadLeader;
+    uint32              m_orbitingID;
     uint8               m_moduleCount;
     uint8               m_rank;
-    uint32              m_orbitingID;
+    bool                m_hauler;
 };
-
-
-namespace Squad {
-    namespace Tier {
-        enum {
-            Rookie      = 1,
-            Soldier     = 2,
-            Veteran     = 3,
-            Elite       = 4,
-            Apex        = 5
-        };
-    }
-}
-
-// A lightweight, transient group coordinator
-class NPCSquad {
-public:
-    NPCSquad(uint32 squadID) : m_formationBreakTimer(0), m_tacticalTier(0), m_squadID(squadID),
-                               m_squadLeader(nullptr), m_squadTarget(nullptr)  {}
-    ~NPCSquad()                                         { m_members.clear(); }
-
-    void                RegisterMember(NPC* pNPC);
-    void                UnregisterMember(NPC* pNPC);
-    void                OnAllMembersArrived();
-
-    // The Master Focus-Fire Hook
-    SpaceEntity*       GetSquadTarget()                { return m_squadTarget; }
-    void                SetSquadTarget(SpaceEntity* pTarget)
-                                                        { m_squadTarget = pTarget; }
-
-    uint16              GetID()                         { return m_squadID; }
-    uint8               GetFormID()                     { return m_formationID; }
-    float               GetSpacing()                    { return m_spacing; }
-    uint8               GetTier()                       { return m_tacticalTier; }
-
-    // Formation Handles
-    void                AssignLeader(NPC* pNPC)         { m_squadLeader = pNPC; }
-    NPC*                GetLeader()                     { return m_squadLeader; }
-    std::vector<NPC*>&  GetMembers()                    { return m_members; }
-
-private:
-    Timer               m_formationBreakTimer;
-    uint8               m_tacticalTier;
-    uint32              m_squadID;
-    uint8               m_formationID;
-    float               m_spacing;
-    NPC*                m_squadLeader;
-    SpaceEntity*       m_squadTarget;
-    std::vector<NPC*>   m_members;     // Safe transient references to active grid rats
-};
-
-#endif

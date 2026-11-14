@@ -23,7 +23,6 @@
 #include "StatisticMgr.h"
 #include "effects/EffectsDataMgr.h"
 #include "inventory/AttributeEnum.h"
-#include "system/DestinyManager.h"
 #include "npc/Drone.h"
 #include "npc/DroneAI.h"
 #include "system/Container.h"
@@ -1955,19 +1954,6 @@ bool DroneAIMgr::ValidTarget() {
     if (targSE->IsDead())
         return false;
 
-    DestinyManager* pDestiny = targSE->DestinyMgr();
-    if (pDestiny == nullptr) {
-        _log(DRONE__AI_TRACE, "Drone %s(%u): Target %s(%u) has no destiny manager.",
-                mySE->GetName(), mySE->GetID(), targSE->GetName(), targSE->GetID());
-        return false;
-    }
-
-    // Check to see if the target is cloaked:
-    if (pDestiny->IsCloaked()) {
-        _log(DRONE__AI_TRACE, "Drone %s(%u): Target %s(%u) is cloaked.",
-                mySE->GetName(), mySE->GetID(), targSE->GetName(), targSE->GetID());
-        return false;
-    }
     return true;
 }
 

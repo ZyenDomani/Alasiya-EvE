@@ -30,7 +30,6 @@
 #include "PyServiceCD.h"
 #include "Probes.h"
 #include "exploration/ScanMgrService.h"
-#include "system/DestinyManager.h"
 #include "system/SystemManager.h"
 #include "system/SystemBubble.h"
 
@@ -105,11 +104,6 @@ ScanMgrService::~ScanMgrService() {
 }
 
 PyResult ScanMgrService::Handle_GetSystemScanMgr( PyCallArgs& call ) {
-    DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
-    if (pDestiny == nullptr) {
-        codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
-        return PyStatic.NewNone();
-    }
 
     ScanBound* pSB = new ScanBound(m_manager, call.client);
     PyRep* result = m_manager->BindObject(call.client, pSB);
@@ -129,14 +123,6 @@ PyResult ScanBound::Handle_ConeScan( PyCallArgs& call ) {
         return PyStatic.NewNone();
     }
 
-    DestinyManager* pDestiny = m_client->GetShipSE()->DestinyMgr();
-    if (pDestiny == nullptr) {
-        codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", m_client->GetName());
-        return PyStatic.NewNone();
-    } else if (pDestiny->IsWarping()) {
-        call.client->SendNotifyMsg( "You can't scan while warping");
-        return PyStatic.NewNone();
-    }
 
     if (m_client->GetShipSE()->SysBubble() == nullptr)
         sBubbleMgr.Add(m_client->GetShipSE());
@@ -154,14 +140,6 @@ PyResult ScanBound::Handle_RequestScans( PyCallArgs& call ) {
     if (is_log_enabled(SCAN__DUMP))
     call.Dump(SCAN__DUMP);
 
-    DestinyManager* pDestiny = m_client->GetShipSE()->DestinyMgr();
-    if (pDestiny == nullptr) {
-        codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
-        return PyStatic.NewNone();
-    } else if (pDestiny->IsWarping()) {
-        call.client->SendNotifyMsg( "You can't scan while warping");
-        return PyStatic.NewNone();
-    }
 
     if (m_client->GetShipSE()->SysBubble() == nullptr)
         sBubbleMgr.Add(m_client->GetShipSE());

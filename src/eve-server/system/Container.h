@@ -131,7 +131,6 @@ private:
  * ContainerEntity which represents container object in space
  */
 class PyServiceMgr;
-class DestinyManager;
 class SystemManager;
 class ServiceDB;
 

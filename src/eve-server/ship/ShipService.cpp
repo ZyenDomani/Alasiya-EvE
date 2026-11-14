@@ -37,7 +37,6 @@
 #include "pos/Structure.h"
 #include "ship/ShipService.h"
 #include "system/Container.h"
-#include "system/DestinyManager.h"
 #include "system/SystemBubble.h"
 #include "system/SystemManager.h"
 #include "system/sov/SovereigntyDataMgr.h"
@@ -344,7 +343,7 @@ PyResult ShipBound::Handle_Undock(PyCallArgs &call) {
     Client* pClient = call.client;
     ShipItemRef pShip = pClient->GetShip();
     if (pShip.get() == nullptr) {
-        sLog.Error("ShipBound::Handle_ActivateShip()", "%s: Failed to get ship item.", pClient->GetName());
+        sLog.Error("ShipBound::Handle_Undock()", "%s: Failed to get ship item.", pClient->GetName());
         throw CustomError("Something bad happened as you prepared to undock the ship.");
     }
 
@@ -697,9 +696,9 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
 
     //  missing launch error throw msgs.... LaunchCPWarning, LaunchUpgradePlatformWarning
     //   - these are thrown before item is launched and will negate entire launch group until warning is approved, then entire group is reprocessed
-
+/*
     if (shipDrop)
-        pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
+        pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();*/
 
     return dict;
 }
@@ -945,7 +944,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                 sSE->SetPosition(location);
                 sRef->SaveItem();
                 pSysMgr->AddEntity(sSE);
-                pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
+                // fixme  pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
                 itr = args.ints.erase(itr);
             } break;
             case EVEDB::invCategories::Orbitals: {
@@ -992,7 +991,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                 sRef->SaveItem();
                 CustomsSE* sSE(new CustomsSE(sRef, *m_manager, pSysMgr, data));
                 pSysMgr->AddEntity(sSE);
-                pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
+                // fixme  pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
                 itr = args.ints.erase(itr);
             } break;
             case EVEDB::invCategories::Deployable: {
@@ -1008,7 +1007,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                 dSE->SetPosition(location);
                 cRef->SaveItem();
                 pSysMgr->AddEntity(dSE);
-                pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
+                // fixme  pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
                 itr = args.ints.erase(itr);
             } break;
             /** @todo  Handle other cargo */
@@ -1032,7 +1031,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                         cSE->SetPosition(location);
                         ccRef->SaveItem();
                         pSysMgr->AddEntity(cSE);
-                        pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
+                        // fixme  pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
 
                         // container found.  remove this item from list, then break out of here and use to contain all other non-pos items
                         args.ints.erase(itr);
@@ -1088,7 +1087,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
             // set anchored to avoid deletion when empty...no, this disables tractoring
             //jcRef->SetAnchor(true);
             pSysMgr->AddEntity(cSE);
-            pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
+            // fixme  pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
             pClient->StartJetcanTimer();
         }
         // check current can for capacity limits.

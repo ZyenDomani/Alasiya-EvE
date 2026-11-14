@@ -79,8 +79,7 @@ public:
 protected:
     // we do not own any of these next 5
     SystemBubble*       m_bubble;
-    SpaceEntity*       m_targetSE;
-    DestinyManager*     m_destinyMgr;   // ship's DestinyManager
+    SpaceEntity*        m_targetSE;
     SystemManager*      m_sysMgr;       // ship's SystemManager
     TargetManager*      m_targMgr;      // ship's TargetManager
 

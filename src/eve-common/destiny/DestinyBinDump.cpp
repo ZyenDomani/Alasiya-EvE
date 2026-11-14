@@ -78,7 +78,7 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
         return 0;
     }
 
-    if (ballhead->mode > MAX_DSTBALL) {
+    if (ballhead->mode > Ball::MAX_DSTBALL) {
         _log(into, "Error: Invalid ball mode %u for ball %lli.  remaining len %u", \
                 ballhead->mode, ballhead->entityID, len);
         return 0;

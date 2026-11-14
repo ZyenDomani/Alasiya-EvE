@@ -294,7 +294,6 @@ private:
  */
 class PyServiceMgr;
 class InventoryItem;
-class DestinyManager;
 class Missile;
 class SystemManager;
 class ServiceDB;

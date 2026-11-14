@@ -40,7 +40,6 @@
 #include "planet/Planet.h"
 #include "pos/Structure.h"
 #include "standing/StandingMgr.h"
-#include "system/DestinyManager.h"
 #include "station/Station.h"
 #include "system/SystemBubble.h"
 #include "system/SpaceEntity.h"
@@ -49,8 +48,8 @@
 
 
 SpaceEntity::SpaceEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
-:m_self(self),m_services(services),m_system(system),m_bubble(nullptr),m_destiny(nullptr),
-m_targMgr(nullptr),m_killed(false),m_abandoned(false),m_damageReported(false),
+:m_self(self),m_services(services),m_system(system),m_bubble(nullptr),
+m_targMgr(nullptr),m_moveData(nullptr),m_killed(false),m_abandoned(false),m_damageReported(false),
 m_harmonic(EVEPOS::Harmonic::Inactive),m_warID(0),m_allyID(0),m_corpID(0),
 m_fleetID(0),m_ownerID(1)
 {
@@ -60,14 +59,15 @@ m_fleetID(0),m_ownerID(1)
     _log(SE__DEBUG, "Created SE for item %s (%u).", self->name(), self->itemID());
 }
 
+SpaceEntity::~SpaceEntity() {
+    SafeDelete(m_moveData);
+}
+
 void SpaceEntity::Process() {
     if (m_killed) {
         _log(SE__DEBUG, "SE::Process() - %s(%u) is dead but still in system.", m_self->name(), m_self->itemID());
         return;
     }
-
-    if (m_destiny != nullptr)
-        m_destiny->Process();
 }
 
 PyTuple* SpaceEntity::MakeDamageState() {
@@ -280,6 +280,11 @@ void SpaceEntity::Abandon() {
     /** @todo  should this have a slimupdate or bubblecast or something?  */
 }
 
+void SpaceEntity::CreateMoveData() {
+    m_moveData = new MoveData(this);
+    m_moveData->Init();
+}
+
 
 /* Static / Non-Mobile / Non-Destructable / Celestial Objects - Suns, Planets, Moons, Belts, Gates, Stations */
 StaticSpaceEntity::StaticSpaceEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
@@ -385,7 +390,7 @@ PyDict* StargateSE::MakeSlimItem() {
 
 /* FSE - Non-Static, Non-Mobile, Non-Destructible
  * - ForceFields, CynoFields
- * - no TargetMgr, no DestinyMgr
+ * - no TargetMgr
  */
 FieldSpaceEntity::FieldSpaceEntity(InventoryItemRef self, PyServiceMgr& services, SystemManager* system)
 : SpaceEntity(self, services, system)
@@ -711,10 +716,8 @@ m_invul(false),
 m_frozen(false)
 {
     m_targMgr = new TargetManager(this);
-    m_destiny = new DestinyManager(this);
 
     assert(m_targMgr != nullptr);
-    assert(m_destiny != nullptr);
 }
 
 DynamicSpaceEntity::~DynamicSpaceEntity()
@@ -727,7 +730,6 @@ DynamicSpaceEntity::~DynamicSpaceEntity()
         }
 
     SafeDelete(m_targMgr);
-    SafeDelete(m_destiny);
 }
 
 PyDict *DynamicSpaceEntity::MakeSlimItem() {
@@ -759,7 +761,7 @@ void DynamicSpaceEntity::EncodeDestiny(Buffer& into)
         head.posY = y();
         head.posZ = z();
         head.flags = Ball::Flag::IsFree;
-    into.Append(head);
+    into.Append(head);/*
     MassSector mass = MassSector();
         mass.mass = m_self->mass();
         mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
@@ -774,7 +776,7 @@ void DynamicSpaceEntity::EncodeDestiny(Buffer& into)
         data.velY = m_destiny->GetVelocity().y;
         data.velZ = m_destiny->GetVelocity().z;
         data.speedfraction = m_destiny->GetSpeedFraction();
-    into.Append(data);
+    into.Append(data);*/
     STOP_Struct main;
         main.formationID = -1;
     into.Append(main);

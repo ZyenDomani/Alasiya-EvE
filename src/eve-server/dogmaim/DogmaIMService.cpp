@@ -261,20 +261,6 @@ PyResult DogmaIMBound::Handle_ItemGetInfo(PyCallArgs& call) {
 
 PyResult DogmaIMBound::Handle_SetModuleOnline(PyCallArgs& call) {
     Client* pClient = call.client;
-
-    if (pClient->IsInSpace()) {
-        DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
-        if (pDestiny == nullptr) {
-            _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
-            return PyStatic.NewNone();
-        } else if (pDestiny->IsWarping()) {
-            /** @todo  warpsafe modules can be activated while warping.  fix this */
-            //!sFxDataMgr.isWarpSafe(effectID)
-            pClient->SendNotifyMsg("You can't do this while warping");
-            return PyStatic.NewNone();
-        }
-    }
-
     Call_TwoIntegerArgs args; //locationID, moduleID
 
     if (!args.Decode(&call.tuple)) {
@@ -293,20 +279,6 @@ PyResult DogmaIMBound::Handle_SetModuleOnline(PyCallArgs& call) {
 
 PyResult DogmaIMBound::Handle_TakeModuleOffline(PyCallArgs& call) {
     Client* pClient = call.client;
-
-    if (pClient->IsInSpace()) {
-        DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
-        if (pDestiny == nullptr) {
-            _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
-            return PyStatic.NewNone();
-        } else if (pDestiny->IsWarping()) {
-            /** @todo  warpsafe modules can be deactivated while warping.  fix this */
-            //!sFxDataMgr.isWarpSafe(effectID)
-            pClient->SendNotifyMsg("You can't do this while warping");
-            return PyStatic.NewNone();
-        }
-    }
-
     Call_TwoIntegerArgs args; //locationID, moduleID
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
@@ -479,17 +451,6 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
         }
     }
 
-    // caller destiny tests
-    DestinyManager* pMyDestiny = mySE->DestinyMgr();
-    if (pMyDestiny == nullptr) {
-        _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
-        throw UserError("DeniedTargetingAttemptFailed")
-                .AddFormatValue("target", new PyInt(args.arg));
-    }
-    if (pMyDestiny->IsCloaked())
-        throw UserError("CantTargetWhileCloaked");
-       // throw UserError("DeniedTargetingCloaked");
-
     // caller sysMgr tests
     SystemManager* pSysMgr = pClient->SystemMgr();
     if (pSysMgr == nullptr) {
@@ -529,27 +490,13 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
                     .AddFormatValue("targetName", new PyString(tSE->GetName()));
     }
 
-    if (pMyDestiny->IsWarping()) {
-        _log(TARGET__WARNING, "Handle_AddTarget - TargMgr.StartTargeting() failed - warping.");
-        throw UserError("DeniedTargetSelfWarping")
-                .AddFormatValue("targetName", new PyString(tSE->GetName()));
-    }
-    if (tSE->DestinyMgr() != nullptr) {
-        if (tSE->DestinyMgr()->IsCloaked())
-            throw UserError("DeniedTargetingTargetCloaked");
-        if (tSE->DestinyMgr()->IsWarping()) {
-            _log(TARGET__WARNING, "Handle_AddTarget - TargMgr.StartTargeting() failed - target warping.");
-            throw UserError("DeniedTargetOtherWarping")
-                    .AddFormatValue("targetName", new PyString(tSE->GetName()));
-        }
-    }
-
     // target bubble tests
     if (tSE->SysBubble() == nullptr) {
         _log(DESTINY__ERROR, "Target %s does not have a bubble.", tSE->GetName());
         throw UserError("DeniedTargetingAttemptFailed")
                 .AddFormatValue("target", new PyInt(args.arg));
     }
+
     if (tSE->SysBubble()->HasTower()) {
         TowerSE* ptSE = tSE->SysBubble()->GetTowerSE();
         if (ptSE->HasForceField()) {

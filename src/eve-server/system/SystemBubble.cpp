@@ -36,7 +36,6 @@
 #include "ship/modules/ActiveModule.h"
 #include "system/BubbleManager.h"
 #include "system/Container.h"
-#include "system/DestinyManager.h"
 #include "system/SystemBubble.h"
 #include "system/SpaceEntity.h"
 #include "system/SystemManager.h"
@@ -130,10 +129,10 @@ void SystemBubble::ProcessWander(std::vector<SpaceEntity*> &wanderers) {
         }
 
         // need to check for jumping ships here also. (not written yet)
-        if ((pSE->DestinyMgr() != nullptr) and pSE->DestinyMgr()->IsWarping()) {
-            ++itr;
-            continue;
-        }
+//         if ( pSE->IsWarping()) {
+//             ++itr;
+//             continue;
+//         }
         if (!InBubble(pSE->GetPosition())) {
             wanderers.push_back(pSE);
             //17:38:57 [DestinyWarning] SysBubble::ProcessWander() - entity 140006173(sys:30002507) not in bubble 1 for systemID 30002510.
@@ -409,15 +408,14 @@ void SystemBubble::GetEntities(std::map<uint32, SpaceEntity*> &into) const {
      *    Command_killallnpcs()           --GM command
      *    StructureSE::InitData()         --Get TowerSE for pos items
      *    DroneAI::FindTarget()           --Drone AI target finding
-     *    NPCAIMgr::EvaluateGridThreats() --advanced npc AI targeting
+     *    NPCAI::EvaluateGridThreats() --advanced npc AI targeting
      */
     if (m_dynamicEntities.empty())
         return;
 
     for (auto &cur : m_dynamicEntities) {
-        if (cur.second->DestinyMgr() != nullptr)
-            if (cur.second->DestinyMgr()->IsCloaked())
-                continue;
+        if (cur.second->IsShipSE()->IsCloaked())
+            continue;
         into.emplace(cur.first, cur.second);
     }
 }
@@ -442,7 +440,7 @@ void SystemBubble::GetEntityVec(std::vector< SpaceEntity* >& into) const {
 
 void SystemBubble::GetPlayers(std::vector<Client*> &into) const {
     /* updated to send ONLY players to the following:         -allan 14Feb15
-     *    NPCAIMgr::Process()             --for npc targeting
+     *    NPCAI::Process()             --for npc targeting
      *    SpawnEntry::Process()           --for npc spawning
      */
     into.clear();
@@ -455,7 +453,7 @@ void SystemBubble::GetPlayers(std::vector<Client*> &into) const {
 
 void SystemBubble::GetNPCs(std::vector<NPC*> &into) const {
     /* updated to send ONLY players to the following:         -allan 14Feb15
-     *    NPCAIMgr::Process()             --for npc targeting
+     *    NPCAI::Process()             --for npc targeting
      *    SpawnEntry::Process()           --for npc spawning
      */
     into.clear();
@@ -468,7 +466,7 @@ void SystemBubble::GetNPCs(std::vector<NPC*> &into) const {
 
 void SystemBubble::GetDrones(std::vector<DroneSE*> &into) const {
     /* updated to send ONLY players to the following:         -allan 14Feb15
-     *    NPCAIMgr::Process()             --for npc targeting
+     *    NPCAI::Process()             --for npc targeting
      *    SpawnEntry::Process()           --for npc spawning
      */
     into.clear();
@@ -539,7 +537,7 @@ void SystemBubble::PrintEntityList() {
             }
         }
         if (cur->IsShipSE()) {
-            if (cur->DestinyMgr()->IsCloaked()) {
+            if (cur->IsShipSE()->IsCloaked()) {
                 sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Cloaked Ship.", cur->GetName(), cur->GetID()); found = true;
             } else if (cur->HasPilot()) {
                 sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Player Ship.", cur->GetName(), cur->GetID()); found = true;
@@ -624,9 +622,8 @@ void SystemBubble::SendAddBalls(SpaceEntity* to_who) {
     addballs.slims = new PyList();
 
     for (auto &cur : m_dynamicEntities) {
-        if (cur.second->DestinyMgr() != nullptr)
-            if (cur.second->DestinyMgr()->IsCloaked())
-                continue;
+            //if (cur.second->DestinyMgr()->IsCloaked())
+            //    continue;
         if (!cur.second->IsMissileSE() or !cur.second->IsFieldSE())
             addballs.damageDict[cur.first] = cur.second->MakeDamageState();
         addballs.slims->AddItem(new PyObject("foo.SlimItem", cur.second->MakeSlimItem()));
@@ -714,8 +711,8 @@ void SystemBubble::SendAddBalls2(SpaceEntity* to_who) {
 void SystemBubble::AddBallExclusive(SpaceEntity* pSE) {
     if (!m_system->IsLoaded())
         return;
-    if ((pSE->DestinyMgr() != nullptr) and (pSE->DestinyMgr()->IsCloaked()))
-        return;
+    //if ((pSE->DestinyMgr() != nullptr) and (pSE->DestinyMgr()->IsCloaked()))
+    //    return;
 
     Buffer* destinyBuffer = new Buffer();
 
@@ -862,7 +859,7 @@ void SystemBubble::SyncPos() {
                 du.y = dse.second->GetPosition().y;
                 du.z = dse.second->GetPosition().z;
             PyTuple* up = du.Encode();
-            player.second->GetShipSE()->DestinyMgr()->SendSingleDestinyUpdate(&up);
+            //player.second->GetShipSE()->DestinyMgr()->SendSingleDestinyUpdate(&up);
             //PyDecRef(up);
         }
 }

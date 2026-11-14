@@ -28,10 +28,10 @@
 
 #include "../../eve-common/EVE_Dungeon.h"
 
+#include "MoveData.h"
 #include "SystemDB.h"
 #include "inventory/InventoryItem.h"
 #include "pos/PosMgrDB.h"
-#include "system/DestinyManager.h"
 #include "system/TargetManager.h"
 
 class BeltMgr;
@@ -50,7 +50,7 @@ class FieldSE;
 class ProbeSE;
 class FieldSpaceEntity;
 class CynoSE;
-
+class MoveData;
 
 class StationSE;
 class StaticSpaceEntity;
@@ -89,7 +89,7 @@ class OutpostSE;
 
 
 /* SE - base class for all SystemEntities
- * - no TargetMgr, no DestinyMgr
+ * - no TargetMgr
  * - provides base method calls
  */
 class SpaceEntity {
@@ -108,7 +108,7 @@ public:
     // move assignment
     SpaceEntity& operator=(SpaceEntity&& oth) =default;
     // d'tor
-    virtual ~SpaceEntity()                             { /* do nothing here */ }
+    virtual ~SpaceEntity();
 
     /* Process Calls - Overridden as needed in derived classes */
     virtual void                Process();
@@ -117,29 +117,29 @@ public:
     /* (Allan) the next two sections eliminate the overhead of RTTI static casting.  */
     /* class type pointer querys, grouped by base class.  public for anyone to access. */
     /* Base */
-    virtual SpaceEntity*       GetSE()                 { return this; }
+    virtual SpaceEntity*        GetSE()                 { return this; }
     virtual const char*         GetSEType()             { return "Base SE"; }
     /* Static */
-    virtual StaticSpaceEntity* GetStaticSE()           { return nullptr; }
+    virtual StaticSpaceEntity*  GetStaticSE()           { return nullptr; }
     virtual StationSE*          GetStationSE()          { return nullptr; }
     virtual PlanetSE*           GetPlanetSE()           { return nullptr; }
     virtual MoonSE*             GetMoonSE()             { return nullptr; }
     virtual StargateSE*         GetGateSE()             { return nullptr; }
     virtual BeltSE*             GetBeltSE()             { return nullptr; }
 	/* Field */
-    virtual FieldSpaceEntity*  GetFieldEntity()        { return nullptr; }
+    virtual FieldSpaceEntity*   GetFieldEntity()        { return nullptr; }
     virtual FieldSE*            GetFieldSE()            { return nullptr; }
     virtual CynoSE*             GetCynoSE()             { return nullptr; }
     virtual DungeonEditSE*      GetDungeonEditSE()      { return nullptr; }
     /* Item */
-    virtual ItemSpaceEntity*   GetItemSE()             { return nullptr; }
+    virtual ItemSpaceEntity*    GetItemSE()             { return nullptr; }
     virtual ContainerSE*        GetContSE()             { return nullptr; }
     virtual WreckSE*            GetWreckSE()            { return nullptr; }
     virtual AnomalySE*          GetAnomalySE()          { return nullptr; }
     virtual WormholeSE*         GetWormholeSE()         { return nullptr; }
     virtual ProbeSE*            GetProbeSE()            { return nullptr; }
     /* Object */
-    virtual ObjectSpaceEntity* GetObjectSE()           { return nullptr; }
+    virtual ObjectSpaceEntity*  GetObjectSE()           { return nullptr; }
     virtual AsteroidSE*         GetAsteroidSE()         { return nullptr; }
     virtual StructureSE*        GetPOSSE()              { return nullptr; }
     virtual StructureSE*        GetJammerSE()           { return nullptr; }
@@ -159,8 +159,8 @@ public:
     virtual SBUSE*              GetSBUSE()              { return nullptr; }
     virtual IHubSE*             GetIHubSE()             { return nullptr; }
     /* Dynamic */
-    virtual DynamicSpaceEntity* GetDynamicSE()         { return nullptr; }
-    virtual NPC*                GetNPCSE()              { return nullptr; }
+    virtual DynamicSpaceEntity* GetDynamicSE()          { return nullptr; }
+    virtual NPC*              GetNPCSE()              { return nullptr; }
     virtual DroneSE*            GetDroneSE()            { return nullptr; }
     virtual Missile*            GetMissileSE()          { return nullptr; }
     virtual ShipSE*             GetShipSE()             { return nullptr; }
@@ -169,7 +169,7 @@ public:
     /* class type tests, grouped by base class.  public for anyone to access. */
     /* Base */
     virtual bool                isGlobal()              { return m_self->isGlobal(); }    // not all items have this attribute set
-    virtual bool                IsSpaceEntity()        { return true; }
+    virtual bool                IsSpaceEntity()         { return true; }
     virtual bool                IsInanimateSE()         { return false; }
     /* Static */
     virtual bool                IsStaticEntity()        { return false; }
@@ -229,7 +229,7 @@ public:
     SystemBubble*               SysBubble()             { return m_bubble; }
     SystemManager*              SystemMgr()             { return m_system; }
     TargetManager*              TargetMgr()             { return m_targMgr; }
-    DestinyManager*             DestinyMgr()            { return m_destiny; }
+    MoveData*                   GetMoveData()           { return m_moveData; }
 
     /* common functions for all entities handled here */
     /* public data queries  */
@@ -243,6 +243,7 @@ public:
     uint32                      GetLocationID()         { return m_self->locationID(); }
     const char*                 GetName() const         { return m_self->name(); }
     const Vector3d&             GetPosition() const     { return m_self->position(); }
+    Vector3d&                   GetPositionRef() const  { return m_self->position(); }
     void                        SetPosition(const Vector3d &pos)
                                                         { m_self->SetPosition(pos); }
     inline double               x()                     { return m_self->position().x; }
@@ -276,9 +277,11 @@ public:
     /* generic functions handled here, but set elsewhere */
     bool                        IsDead()                { return m_killed; }
     void                        SetDead()               { m_killed = true; }
+    void                        CreateMoveData();
 
     // this is virtual to allow drones to override it (they dont have DestinyMgr)
-    virtual const Vector3d&      GetVelocity()           { return (m_destiny != nullptr ? m_destiny->GetVelocity() : NULL_ORIGIN); }
+    // fixme
+    virtual const Vector3d&      GetVelocity()           { return  NULL_ORIGIN; }
 
     /* virtual functions default to base class and overridden as needed */
     virtual void                Killed(Damage &damage);
@@ -322,7 +325,7 @@ protected:
     SystemBubble*               m_bubble;               /* we do not own this. never NULL in space */
     SystemManager*              m_system;               /* we do not own this  never NULL in space */
     TargetManager*              m_targMgr;              /* we do not own this. only Destructible items will have it */
-    DestinyManager*             m_destiny;              /* we do not own this. only mobile items will have it */
+    MoveData*                   m_moveData;
 
     PyServiceMgr&               m_services;
 
@@ -346,7 +349,7 @@ protected:
 
 /* SSE - Static, Non-Mobile, Non-Destructable
  * - Suns, Planets, Moons, Belts, Gates, NPC Stations
- * - no TargetMgr, no DestinyMgr
+ * - no TargetMgr
  */
 class StaticSpaceEntity : public SpaceEntity {
 public:
@@ -463,7 +466,7 @@ protected:
 
 /* FSE - Non-Static, Non-Mobile, Non-Destructible
  * - ForceFields, CynoFields
- * - no TargetMgr, no DestinyMgr
+ * - no TargetMgr
  */
 class FieldSpaceEntity : public SpaceEntity {
 public:
@@ -595,7 +598,7 @@ private:
 
 /* ISE - Non-Static, Mobile, Non-Destructible
  * - Containers, DeadSpace
- * - no TargetMgr, has DestinyMgr
+ * - no TargetMg
  */
 class ItemSpaceEntity : public SpaceEntity {
 public:
@@ -635,7 +638,7 @@ private:
 
 /* OSE - Non-Static, Non-Mobile, Destructible
  * - POS Structures, Outposts, Deployables, empty Ships, Asteroids
- * - has TargetMgr,  no DestinyMgr
+ * - has TargetMgr
  */
 class ObjectSpaceEntity : public SpaceEntity {
 public:
@@ -710,7 +713,7 @@ public:
 
 /* DSE - Non-Static, Mobile, Destructible
  * - Drones, Ships, Missiles, Wrecks
- * - has TargetMgr, has DestinyMgr
+ * - has TargetMgr
  */
 class DynamicSpaceEntity : public SpaceEntity {
 public:

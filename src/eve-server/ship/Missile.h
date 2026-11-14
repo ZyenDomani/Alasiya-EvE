@@ -30,7 +30,6 @@
 
 class PyServiceMgr;
 class InventoryItem;
-class DestinyManager;
 class SystemManager;
 class ShipItem;
 class GenericModule;

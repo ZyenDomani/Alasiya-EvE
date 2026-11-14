@@ -313,10 +313,10 @@ PyResult KeeperService::Handle_ActivateAccelerationGate(PyCallArgs &call) {
     }
 
     Client* pClient = call.client;
-
+/*
     SpaceEntity* pSE = pClient->SystemMgr()->GetEntityByID(arg.arg);
     if ((pSE != nullptr) and (pSE->DestinyMgr() != nullptr))
-        pSE->DestinyMgr()->SendGFX10(arg.arg, "effects.WarpGateEffect");
+        pSE->DestinyMgr()->SendGFX10(arg.arg, "effects.WarpGateEffect");*/
 
     double distance = MakeRandomFloat(5, 25) * ONE_AU_IN_METERS;
     Vector3d warpToPoint;
@@ -324,7 +324,7 @@ PyResult KeeperService::Handle_ActivateAccelerationGate(PyCallArgs &call) {
     warpToPoint.y = MakeRandomFloat(-1.0, 1.0) * distance;
     warpToPoint.z = MakeRandomFloat(-2.0, 2.0) * ONE_AU_IN_METERS;
 
-    pClient->GetShipSE()->DestinyMgr()->WarpTo(warpToPoint);
+    //pClient->GetShipSE()->DestinyMgr()->WarpTo(warpToPoint);
 
     /* return error msg from this call, if applicable, else nodeid and timestamp */
     return new PyLong(GetFileTimeNow());

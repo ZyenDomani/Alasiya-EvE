@@ -20,7 +20,6 @@
 #include "map/MapData.h"
 #include "npc/Drone.h"
 #include "system/Damage.h"
-#include "system/DestinyManager.h"
 #include "system/SystemManager.h"
 #include "system/SystemBubble.h"
 #include "system/cosmicMgrs/BeltMgr.h"
@@ -683,13 +682,12 @@ PyResult Command_unspawn(Client* pClient, CommandDB* db, PyServiceMgr* services,
 PyResult Command_location(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
     if (!pClient->IsInSpace())
-        throw CustomError("You're not in space.");
+        throw CustomError("You're not in space.");/*
     if (pClient->GetShipSE()->DestinyMgr() == nullptr)
-        pClient->SetDestiny(NULL_ORIGIN);
+        pClient->SetDestiny(NULL_ORIGIN);*/
     if (pClient->GetShipSE()->SysBubble() == nullptr)
         pClient->EnterSystem(pClient->GetSystemID());
 
-    DestinyManager *dm = pClient->GetShipSE()->DestinyMgr();
     SystemBubble *pBubble = pClient->GetShipSE()->SysBubble();
     if (pBubble == nullptr) {
         sBubbleMgr.Add(pClient->GetShipSE());
@@ -697,8 +695,9 @@ PyResult Command_location(Client* pClient, CommandDB* db, PyServiceMgr* services
     }
     uint16 bubble = pBubble->GetID();
 
-    const Vector3d &loc = dm->GetPosition();
-    const Vector3d &vel = dm->GetVelocity();
+    // todo: fix me
+    const Vector3d &loc = pClient->GetShipSE()->GetPosition();
+    const Vector3d &vel = pClient->GetShipSE()->GetVelocity();
 
     char reply[140];
     snprintf(reply, 140,
@@ -720,9 +719,9 @@ PyResult Command_location(Client* pClient, CommandDB* db, PyServiceMgr* services
 PyResult Command_syncloc(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
     if (!pClient->IsInSpace())
-        throw CustomError("You're not in space.");
+        throw CustomError("You're not in space.");/*
     if (pClient->GetShipSE()->DestinyMgr() == nullptr)
-        pClient->SetDestiny(NULL_ORIGIN);
+        pClient->SetDestiny(NULL_ORIGIN);*/
     if (pClient->GetShipSE()->SysBubble() == nullptr)
         pClient->EnterSystem(pClient->GetSystemID());
     if (pClient->IsSessionChange()) {
@@ -731,7 +730,7 @@ PyResult Command_syncloc(Client* pClient, CommandDB* db, PyServiceMgr* services,
         return new PyString("SessionChange Active.  Request Denied.");
     }
 
-    pClient->GetShipSE()->DestinyMgr()->SetPosition(pClient->GetShipSE()->GetPosition(), true);
+    //pClient->GetShipSE()->DestinyMgr()->SetPosition(pClient->GetShipSE()->GetPosition(), true);
     pClient->SetSessionTimer();
 
     return new PyString("Position synchronized.");
@@ -740,9 +739,9 @@ PyResult Command_syncloc(Client* pClient, CommandDB* db, PyServiceMgr* services,
 PyResult Command_syncpos(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
     if (!pClient->IsInSpace())
-        throw CustomError("You're not in space.");
+        throw CustomError("You're not in space.");/*
     if (pClient->GetShipSE()->DestinyMgr() == nullptr)
-        pClient->SetDestiny(NULL_ORIGIN);
+        pClient->SetDestiny(NULL_ORIGIN);*/
     if (pClient->GetShipSE()->SysBubble() == nullptr)
         pClient->EnterSystem(pClient->GetSystemID());
     if (pClient->IsSessionChange()) {
@@ -759,9 +758,9 @@ PyResult Command_syncpos(Client* pClient, CommandDB* db, PyServiceMgr* services,
 
 PyResult Command_update(Client* pClient, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
     if (!pClient->IsInSpace())
-        throw CustomError("You're not in space.");
+        throw CustomError("You're not in space.");/*
     if (pClient->GetShipSE()->DestinyMgr() == nullptr)
-        pClient->SetDestiny(NULL_ORIGIN);
+        pClient->SetDestiny(NULL_ORIGIN);*/
     if (pClient->GetShipSE()->SysBubble() == nullptr)
         pClient->EnterSystem(pClient->GetSystemID());
     if (pClient->IsSessionChange()) {
@@ -770,7 +769,7 @@ PyResult Command_update(Client* pClient, CommandDB *db, PyServiceMgr *services, 
         return new PyString("SessionChange Active.  Request Denied.");
     }
 
-    pClient->GetShipSE()->DestinyMgr()->SetPosition(pClient->GetShipSE()->GetPosition(), true);
+    //pClient->GetShipSE()->DestinyMgr()->SetPosition(pClient->GetShipSE()->GetPosition(), true);
 
     SystemBubble *pBubble = pClient->GetShipSE()->SysBubble();
     if (pBubble == nullptr) {
@@ -780,16 +779,16 @@ PyResult Command_update(Client* pClient, CommandDB *db, PyServiceMgr *services, 
     pBubble->SendAddBalls(pClient->GetShipSE());
 
     pClient->SetStateSent(false);
-    pClient->GetShipSE()->DestinyMgr()->SendSetState();
+    //pClient->GetShipSE()->DestinyMgr()->SendSetState();
     pClient->SetSessionTimer();
     return new PyString("Update sent.");
 }
 
 PyResult Command_sendstate(Client* pClient, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
     if (!pClient->IsInSpace())
-        throw CustomError("You're not in space.");
+        throw CustomError("You're not in space.");/*
     if (pClient->GetShipSE()->DestinyMgr() == nullptr)
-        pClient->SetDestiny(NULL_ORIGIN);
+        pClient->SetDestiny(NULL_ORIGIN);*/
     if (pClient->GetShipSE()->SysBubble() == nullptr)
         pClient->EnterSystem(pClient->GetSystemID());
     if (pClient->IsSessionChange()) {
@@ -798,17 +797,17 @@ PyResult Command_sendstate(Client* pClient, CommandDB *db, PyServiceMgr *service
         return new PyString("SessionChange Active.  Request Denied.");
     }
 
-    pClient->SetStateSent(false);
+    pClient->SetStateSent(false);/*
     pClient->GetShipSE()->DestinyMgr()->SendSetState();
-    pClient->SetSessionTimer();
+    pClient->SetSessionTimer();*/
     return new PyString("Update sent.");
 }
 
 PyResult Command_addball(Client* pClient, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
     if (!pClient->IsInSpace())
-        throw CustomError("You're not in space.");
+        throw CustomError("You're not in space.");/*
     if (pClient->GetShipSE()->DestinyMgr() == nullptr)
-        pClient->SetDestiny(NULL_ORIGIN);
+        pClient->SetDestiny(NULL_ORIGIN);*/
     if (pClient->GetShipSE()->SysBubble() == nullptr)
         pClient->EnterSystem(pClient->GetSystemID());
 
@@ -824,9 +823,9 @@ PyResult Command_addball(Client* pClient, CommandDB *db, PyServiceMgr *services,
 
 PyResult Command_addball2(Client* pClient, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
     if (!pClient->IsInSpace())
-        throw CustomError("You're not in space.");
+        throw CustomError("You're not in space.");/*
     if (pClient->GetShipSE()->DestinyMgr() == nullptr)
-        pClient->SetDestiny(NULL_ORIGIN);
+        pClient->SetDestiny(NULL_ORIGIN);*/
     if (pClient->GetShipSE()->SysBubble() == nullptr)
         pClient->EnterSystem(pClient->GetSystemID());
 
@@ -843,12 +842,12 @@ PyResult Command_addball2(Client* pClient, CommandDB *db, PyServiceMgr *services
 PyResult Command_cloak(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
     if (args.argCount() == 1) {
-        if (pClient->IsInSpace()) {
+        if (pClient->IsInSpace()) {/*
             if (pClient->GetShipSE()->DestinyMgr()->IsCloaked()) {
                 pClient->GetShipSE()->DestinyMgr()->UnCloak();
             } else {
                 pClient->GetShipSE()->DestinyMgr()->Cloak();
-            }
+            }*/
         } else {
             throw CustomError("ERROR!  You must be in space to cloak!");
         }

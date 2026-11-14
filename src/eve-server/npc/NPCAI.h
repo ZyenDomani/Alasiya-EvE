@@ -24,13 +24,20 @@
     Rewrite:    Allan
 */
 
-#ifndef __NPCAI_H_INCL__
-#define __NPCAI_H_INCL__
+#pragma once
 
+#include "ship/modules/TurretFormulas.h"
+#include "system/SpaceEntity.h"
 
-namespace NPCAI {
+class Client;
+class Missile;
+class NPC;
+class Timer;
+
+class NPCAI {
+public:
     //NOTE:  state and action are reversed from drones
-    namespace State {
+    struct State {
         enum {
             Invalid     = -1,
             Passive     = 0,  // non-combat npcs    no targeting, no weapons
@@ -46,9 +53,9 @@ namespace NPCAI {
             WarpOut     = 10,  // leaving bubble
             WarpFollow  = 11   // will follow warping ship to their destination (adv)
         };
-    }
+    };
 
-    namespace Action {
+    struct Action {
         enum {
             // these act on m_*target. attack is missile/lazor; action is all others, including self
             Invalid     = -1,
@@ -63,46 +70,22 @@ namespace NPCAI {
             Scram       = 7,  //
             EWar        = 8   //
         };
-    }
+    };
 
-    namespace Size {
-        enum {
-            None        = 0,
-            Swarm       = 35,
-            Frigate     = 50,
-            Destroyer   = 100,
-            Cruiser     = 200,
-            BCruiser    = 300,
-            BShip       = 350,
-            Indy        = 450
-        };
-    }
-
-    namespace Rank {
-        enum  {
-            None    = 0,
-            Frigate = 1,
-            Cruiser = 2,
-            Elite   = 3,
-            BShip   = 4,
-            Commander = 5 // Specialized Overseer/Boss hulls
-        };
-    }
-}
-
-
-#include "ship/modules/TurretFormulas.h"
-#include "system/SpaceEntity.h"
-
-class Client;
-class Missile;
-class NPC;
-class Timer;
-
-class NPCAIMgr {
-public:
-    NPCAIMgr(NPC *who);
-    ~NPCAIMgr()                                         { /* do nothing here */ }
+    // default c'tor
+    NPCAI() =delete;
+    // main c'tor
+    NPCAI(NPC *who);
+    // copy c'tor
+    NPCAI(const NPCAI* oth) =delete;
+    // move c'tor
+    NPCAI(NPCAI&& oth) noexcept =default;
+    // copy assignment
+    NPCAI& operator=(NPCAI& oth) =delete;
+    // move assignment
+    NPCAI& operator=(NPCAI&& oth) =default;
+    // d'tor
+    ~NPCAI()                                            { /* do nothing here */ }
 
     void                Init();  // initialize multiple variables after npc/se created
 
@@ -205,16 +188,15 @@ protected:
     void                SwitchTarget();
     void                Guard(SpaceEntity* pTargetSE); // for now, orbit? target ship at 1/2 orbit range
     void                Assist(SpaceEntity* pTargetSE);// use reppers on target
-    SpaceEntity*       FindSecondaryTarget();
+    SpaceEntity*        FindSecondaryTarget();
     float               AggroModifiers(SpaceEntity* pTargetSE);
-    SpaceEntity*       EvaluateThreats();
+    SpaceEntity*        EvaluateThreats();
     void                ExecuteCombatMovement(SpaceEntity* pPlayerTarget);
 
 private:
     NPC*                myNPC;
-    SpaceEntity*       m_actionTarget;
-    SpaceEntity*       m_attackTarget;
-    DestinyManager*     m_destiny;
+    SpaceEntity*        m_actionTarget;
+    SpaceEntity*        m_attackTarget;
     InventoryItemRef    m_self;
 
     TurretFormulas      m_formula;
@@ -227,7 +209,6 @@ private:
     int8                m_action;
     uint8               m_maxLockedTargets;
     uint16              m_size;
-    // do i need to separate fxID and gunID for action/attack?  probably so
     uint16              m_effectID;
     uint16              m_turretID;
 
@@ -285,7 +266,6 @@ private:
     std::map<int8, uint16>     m_defendFXMap;           // (NPCAI::State, fxID)
 };
 
-#endif
 
 /*  these are only for sleepers (hence the high attr #'s)
     AttrAI_ShouldUseTargetSwitching = 1648,

@@ -31,7 +31,6 @@
 #include "EntityMgr.h"
 #include "EVEServerConfig.h"
 #include "planet/PlanetDB.h"
-#include "system/DestinyManager.h"
 #include "system/Container.h"
 #include "system/SystemManager.h"
 #include "system/SystemBubble.h"
@@ -247,10 +246,7 @@ ContainerSE::ContainerSE(CargoContainerRef self, PyServiceMgr& services, SystemM
  m_global(false)
 {
     m_targMgr = new TargetManager(this);
-    m_destiny = new DestinyManager(this);
-
     assert(m_targMgr != nullptr);
-    assert(m_destiny != nullptr);
 
     m_warID = data.factionID;
     m_allyID = data.allianceID;
@@ -279,7 +275,6 @@ ContainerSE::~ContainerSE()
         }
 
     SafeDelete(m_targMgr);
-    SafeDelete(m_destiny);
 }
 
 void ContainerSE::Process() {
@@ -324,7 +319,7 @@ void ContainerSE::AnchorContainer()
 void ContainerSE::EncodeDestiny(Buffer& into)
 {
     using namespace Destiny;
-    uint8 mode = m_destiny->GetBallMode(); //Ball::Mode::STOP;
+    // fixme uint8 mode = m_destiny->GetBallMode(); //Ball::Mode::STOP;
 
     BallHeader head = BallHeader();
         head.entityID = GetID();
@@ -332,7 +327,7 @@ void ContainerSE::EncodeDestiny(Buffer& into)
         head.posX = x();
         head.posY = y();
         head.posZ = z();
-        head.mode = mode;
+        head.mode = 0;
         head.flags = Ball::Flag::IsFree | Ball::Flag::IsInteractive;
     into.Append(head);
     MassSector mass = MassSector();
@@ -341,7 +336,7 @@ void ContainerSE::EncodeDestiny(Buffer& into)
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
         mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
-    into.Append(mass);
+    into.Append(mass);/*
     DataSector data = DataSector();
         data.maxSpeed = m_destiny->GetMaxVelocity();
         data.velX = m_destiny->GetVelocity().x;
@@ -349,15 +344,16 @@ void ContainerSE::EncodeDestiny(Buffer& into)
         data.velZ = m_destiny->GetVelocity().z;
         data.speedfraction = m_destiny->GetSpeedFraction();
         data.inertia = 1.0f;
-    into.Append(data);
-    switch (mode) {
+    into.Append(data);*/
+    // fixme
+    switch (0) {/*
         case Ball::Mode::FOLLOW: {
             FOLLOW_Struct follow;
                 follow.formationID = -1;
                 follow.followID = m_destiny->GetTargetID();
                 follow.followRange = m_destiny->GetTargetDistance();
             into.Append(follow);
-        }  break;
+        }  break;*/
         case Ball::Mode::TROLL: {
             TROLL_Struct troll;
                 troll.formationID = -1;
@@ -547,7 +543,6 @@ m_deleteTimer(sConfig.rates.WorldDecay * 60 * 1000),
 m_launchedByID(0)
 {
     assert(m_targMgr != nullptr);
-    assert(m_destiny != nullptr);
 
     m_warID = data.factionID;
     m_allyID = data.allianceID;
@@ -576,14 +571,14 @@ void WreckSE::Process() {
 
 void WreckSE::EncodeDestiny(Buffer& into) {
     using namespace Destiny;
-    uint8 mode = m_destiny->GetBallMode(); //Ball::Mode::TROLL;
+    // fixme uint8 mode = m_destiny->GetBallMode(); //Ball::Mode::TROLL;
     BallHeader head = BallHeader();
         head.entityID = GetID();
         head.radius = GetRadius();
         head.posX = x();
         head.posY = y();
         head.posZ = z();
-        head.mode = mode;
+        head.mode = 0;
         head.flags = Ball::Flag::IsFree | Ball::Flag::IsInteractive;
     into.Append(head);
     MassSector mass = MassSector();
@@ -592,7 +587,7 @@ void WreckSE::EncodeDestiny(Buffer& into) {
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
         mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
-    into.Append(mass);
+    into.Append(mass);/*
     DataSector data = DataSector();
         data.maxSpeed = m_destiny->GetMaxVelocity();
         data.velX = m_destiny->GetVelocity().x;
@@ -600,14 +595,14 @@ void WreckSE::EncodeDestiny(Buffer& into) {
         data.velZ = m_destiny->GetVelocity().z;
         data.speedfraction = m_destiny->GetSpeedFraction();
         data.inertia = 1.0f;
-    into.Append(data);
-    switch (mode) {
-        case Ball::Mode::FOLLOW: {
+    into.Append(data);*/
+    switch (0) {
+        case Ball::Mode::FOLLOW: {/*
             FOLLOW_Struct follow;
                 follow.formationID = -1;
                 follow.followID = m_destiny->GetTargetID();
                 follow.followRange = m_destiny->GetTargetDistance();
-            into.Append(follow);
+            into.Append(follow);*/
         }  break;
         case Ball::Mode::TROLL: {
             // preliminary implementation:

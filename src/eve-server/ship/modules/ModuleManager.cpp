@@ -24,7 +24,6 @@
 #include "ship/modules/ModuleFactory.h"
 #include "ship/modules/ActiveModule.h"
 #include "station/Station.h"
-#include "system/DestinyManager.h"
 
 /*
  * MODULE__ERROR
@@ -669,12 +668,6 @@ void ModuleManager::Activate(int32 itemID, uint16 effectID, int32 targetID, int3
         return;
     }
 
-    DestinyManager* pDestiny = pShipItem->GetPilot()->GetShipSE()->DestinyMgr();
-    if (pDestiny == nullptr) {
-        _log(PLAYER__ERROR, "%s: Ship has no destiny manager!", pShipItem->GetPilot()->GetName());
-        return;
-    }
-
     GenericModule* pMod = GetModule(itemID);
     if (pMod == nullptr) {
         _log(MODULE__ERROR, "MM::Activate() - Called on module %u that is not loaded.", itemID );
@@ -693,11 +686,13 @@ void ModuleManager::Activate(int32 itemID, uint16 effectID, int32 targetID, int3
         // client wont allow activating an offline module.  this is catchall. (but should never hit)
         pShipItem->GetPilot()->SendErrorMsg("You cannot activate an offline module.");
         return;
+        /*
     } else if (pDestiny->IsWarping()) {
         if (pMod->HasAttribute(AttrDisallowActivateOnWarp) or !sFxDataMgr.isWarpSafe(effectID))
             throw UserError("DeniedActivateInWarp");
     } else if (pDestiny->IsCloaked()) {
         throw UserError("DeniedActivateCloaked");
+        */
     } else if (pShipItem->GetPilot()->IsJump()) {
         throw UserError("DeniedActivateInJump");
     }
@@ -710,7 +705,7 @@ void ModuleManager::Activate(int32 itemID, uint16 effectID, int32 targetID, int3
         SpaceEntity* pSE = pShipItem->GetPilot()->SystemMgr()->GetSE(targetID);
         if (pSE == nullptr)
             throw UserError("DeniedActivateTargetNotPresent");
-        if (pSE->DestinyMgr()->IsTractored()) {
+        if (pSE->IsTractored()) {
             pShipItem->GetPilot()->SendNotifyMsg("Your %s cannot engage the %s, which is already being tractor beamed by something else.", pMod->GetSelf()->name(), pSE->GetName());
             return;
         }

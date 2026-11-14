@@ -368,7 +368,7 @@ void TargetManager::TargetLost(SpaceEntity *tSE) {
         return;
     }
 
-    mySE->DestinyMgr()->EntityRemoved(tSE);
+    //mySE->DestinyMgr()->EntityRemoved(tSE);
 
     if (mySE->IsNPCSE())
         mySE->GetNPCSE()->TargetLost(tSE);

@@ -162,6 +162,7 @@ public:
     std::string         GetOwnerName(int32 ownerID);
 
     const char*         GetProcStateName(int8 state);
+    const char*         GetBallModeName(uint8 mode);
 
     uint32              GetWreckFaction(uint32 typeID);
 

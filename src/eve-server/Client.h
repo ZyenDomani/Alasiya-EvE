@@ -467,8 +467,8 @@ protected:
 private:
     PyPacket* pPacket;
     //queues for destiny updates:
-    PyList* m_destinyEventQueue;    //we own these. These are events as used in OnMultiEvent
-    PyList* m_destinyUpdateQueue;    //we own these. They are the `update` which go into DoDestinyAction
+    PyList* m_EventQueue;    //we own these. These are events as used in OnMultiEvent
+    PyList* m_UpdateQueue;    //we own these. They are the `update` which go into DoDestinyAction
     void _SendQueuedUpdates();
 
     uint32 m_nextNotifySequence;

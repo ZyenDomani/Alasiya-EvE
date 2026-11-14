@@ -50,7 +50,6 @@
 //#include "npc/DroneAI.h"
 #include "station/StationDataMgr.h"
 #include "station/StationOffice.h"
-#include "system/DestinyManager.h"
 #include "system/SystemManager.h"
 #include "system/SystemBubble.h"
 #include "system/cosmicMgrs/AnomalyMgr.h"
@@ -90,8 +89,8 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
   m_jetcanTimer(0),
   m_sessionTimer(0),
   m_uncloakTimer(0),
-  m_destinyEventQueue(new PyList()),
-  m_destinyUpdateQueue(new PyList()),
+  m_EventQueue(new PyList()),
+  m_UpdateQueue(new PyList()),
   m_nextNotifySequence(0),
   m_scanProbe(false),
   pPacket(nullptr),
@@ -192,8 +191,8 @@ Client::~Client() {
     SafeDelete(m_scan);
     SafeDelete(pSession);
     SafeDelete(pPacket);
-    SafeDelete(m_destinyEventQueue);
-    SafeDelete(m_destinyUpdateQueue);
+    SafeDelete(m_EventQueue);
+    SafeDelete(m_UpdateQueue);
 }
 
 bool Client::ProcessNet()
@@ -433,7 +432,7 @@ void Client::ProcessClient() {
             m_ballparkTimer.Disable();
             SetBallPark();
         }
-
+/*
     if (pShipSE->DestinyMgr()->IsCloaked())
         if (m_cloakTimer.Check(false)) {
             _log(CLIENT__TIMER, "ProcessClient():  SetCloak to false for %s(%u)", m_char->name(), m_char->itemID());
@@ -441,7 +440,7 @@ void Client::ProcessClient() {
             pShipSE->DestinyMgr()->UnCloak();
             //m_clientState = Player::State::Idle;
             //_log(AUTOPILOT__TRACE, "ProcessClient() - Cloaked - m_clientState set to Idle");
-        }
+        }*/
 
     if (m_uncloak)
         if (m_uncloakTimer.Check(false)) {
@@ -466,7 +465,7 @@ void Client::ProcessClient() {
                 case Player::State::Undock: {
                     _log(CLIENT__TIMER, "ProcessClient()::CheckState():  case: Undock");
                     SetBallPark();
-                    pShipSE->DestinyMgr()->Undock(m_movePoint);
+                    // fixme pShipSE->DestinyMgr()->Undock(m_movePoint);
                     m_clientState = Player::State::Idle;
                 } break;
                 case Player::State::Killed: {
@@ -591,9 +590,8 @@ void Client::WarpOut() {
 bool Client::IsAutoPilot() {
     if (pShipSE == nullptr)
         return false;
-    if (pShipSE->DestinyMgr() == nullptr)
-        return false;
-    return pShipSE->DestinyMgr()->IsAutoPilot();
+    // fixme return pShipSE->DestinyMgr()->IsAutoPilot();
+    return false;
 }
 
 void Client::SetAutoPilot(bool set/*false*/)
@@ -601,10 +599,8 @@ void Client::SetAutoPilot(bool set/*false*/)
     // itemID=10644  flag=*module*  not published - not in client data
     if (pShipSE == nullptr)
         return;
-    if (pShipSE->DestinyMgr() == nullptr)
-        return;
 
-    pShipSE->DestinyMgr()->SetAutoPilot(set);
+    // fixme pShipSE->DestinyMgr()->SetAutoPilot(set);
     _log(AUTOPILOT__MESSAGE, "%s called SetAutoPilot to %s", GetName(), (set ? "true" : "false"));
 }
 
@@ -793,10 +789,10 @@ void Client::SetDestiny(const Vector3d& pt, bool update/*false*/) {
 
     _log(PLAYER__AP_TRACE, "Client::SetDestiny(): %s:%u - shipSystemID: %u, SystemID: %u, update: %s, updateShip: %s, jump: %s, cloak: %s", \
             GetName(), GetCharID(),  pShipSE->SystemMgr()->GetID(), m_system->GetID(), update?"true":"false", \
-            updateShip?"true":"false", IsJump()?"true":"false", pShipSE->DestinyMgr()->IsCloaked()?"true":"false");
+            updateShip?"true":"false", IsJump()?"true":"false", "false"); // fixme
 
-    if (update)
-        pShipSE->DestinyMgr()->SetPosition(pt, update);
+    //if (update)
+    //    pShipSE->DestinyMgr()->SetPosition(pt, update);
 
     if (updateShip)
         UpdateNewShip();
@@ -818,14 +814,14 @@ void Client::SetBallPark() {
         return;
     }
     if (!m_setStateSent and m_beyonce) {  // MUST have beyonce before sending state data.
-        pShipSE->DestinyMgr()->SendSetState();
+        // fixme pShipSE->DestinyMgr()->SendSetState();
         m_ballparkTimer.Disable();
         if (IsGateJump()) {
             SetInvulTimer(Player::Timer::JumpInvul);
             // dont use settimer method here...(jumping ship will flash at destination)
             m_cloakTimer.Start(Player::Timer::JumpCloak);
             m_clientState = Player::State::Idle;
-            pShipSE->DestinyMgr()->SendGateActivity(m_toGateID);
+            // fixme pShipSE->DestinyMgr()->SendGateActivity(m_toGateID);
             m_toGateID = 0;
         }
         if (IsDriveJump()) {
@@ -850,10 +846,10 @@ void Client::CheckBallparkTimer() {
 
     _log(CLIENT__TIMER, "CheckBallparkTimer():  State: %s, SetState: %s, Beyonce: %s, Login: %s", \
             GetStateName(m_clientState).c_str(), m_setStateSent?"true":"false", \
-            m_beyonce?"true":"false", m_login?"true":"false");
+            m_beyonce?"true":"false", m_login?"true":"false");/*
     _log(CLIENT__TIMER, "CheckBallparkTimer():  invul: %s, cloak: %s, bubblewait: %s", m_invul?"true":"false", \
         pShipSE == nullptr? "ship null": pShipSE->DestinyMgr() == nullptr? "destiny null": pShipSE->DestinyMgr()->IsCloaked()?"true":"false", \
-        m_bubbleWait?"true":"false");
+        m_bubbleWait?"true":"false");*/
 }
 
 void Client::SetInvul(bool invul/*false*/) {
@@ -865,17 +861,17 @@ void Client::SetInvul(bool invul/*false*/) {
 }
 
 void Client::MoveToPosition(const Vector3d &pt) {
-    if ((pShipSE == nullptr) or (pShipSE->DestinyMgr() == nullptr)) {
+    if (pShipSE == nullptr) {
         CreateShipSE();
         pShipSE->SetPilot(this);
         m_system->AddEntity(pShipSE);
         UpdateNewShip();
     }
-    pShipSE->DestinyMgr()->SetPosition(pt, true);
+    // fixme pShipSE->DestinyMgr()->SetPosition(pt, true);
     if (m_ship->IsUndocking())
-        return;
+        return;/*
     if (pShipSE->DestinyMgr()->IsMoving())
-        pShipSE->DestinyMgr()->Halt();
+        pShipSE->DestinyMgr()->Halt();*/
 }
 
 void Client::DockToStation() {
@@ -885,7 +881,7 @@ void Client::DockToStation() {
     m_setStateSent = false;
     m_clientState = Player::State::Idle;
     _log(AUTOPILOT__TRACE, "DockToStation() - m_clientState set to Idle");
-    pShipSE->DestinyMgr()->DockingAccepted();
+    // fixme pShipSE->DestinyMgr()->DockingAccepted();
     m_bubbleWait = false;
 
     //Check if player is in pod and have no ships in hangar, in which case they get a rookie ship for free
@@ -964,12 +960,12 @@ void Client::DestroyShipSE() {
 
 void Client::UpdateNewShip() {
     sItemFactory.SetUsingClient(this);
-    pShipSE->SetPilot(this);
+    pShipSE->SetPilot(this);/*
     if (m_login) {
         pShipSE->DestinyMgr()->UpdateShipVariables();
     } else {
         pShipSE->DestinyMgr()->UpdateNewShip(m_ship);
-    }
+}*/// fixme
     sItemFactory.UnsetUsingClient();
 
     char ci[45];
@@ -1066,7 +1062,7 @@ void Client::Board(ShipSE* newShipSE)
         m_ship->SetFlag(flagShipOffline);
         m_ship->Eject();
 
-        pShipSE->DestinyMgr()->Eject();
+        // fixme pShipSE->DestinyMgr()->Eject();
 
         SetShip(newShipSE->GetShipItemRef());
         pShipSE = newShipSE;
@@ -1121,7 +1117,7 @@ void Client::Eject()
     m_ship->SetFlag(flagShipOffline);
     m_ship->Eject();
 
-    pShipSE->DestinyMgr()->Eject();
+    // fixme pShipSE->DestinyMgr()->Eject();
 
     Vector3d capsulePosition(pShipSE->GetPosition());
     capsulePosition.MakeRandomPointOnSphere(m_ship->radius() + m_pod->radius() + MakeRandomInt(30, 120));
@@ -1176,7 +1172,7 @@ void Client::ResetAfterPopped(Vector3d& position)
     }
 
     newShipSE->SetLauncherID(pShipSE->GetID());
-    pShipSE->DestinyMgr()->Eject();
+    // fixme pShipSE->DestinyMgr()->Eject();
     // nullify pilot before removing from bubble, which removes player from bubble map
     pShipSE->SetPilot(nullptr);
     // remove dead ship from bubble before calling SetShip() (it deletes pShipSE)
@@ -1418,8 +1414,8 @@ void Client::WormholeJump(InventoryItemRef wormhole) {
     }
 
     MapDB::AddJump(m_locationID);
-    pShipSE->DestinyMgr()->SendJumpOutWormhole(wormhole->itemID());
-    pShipSE->DestinyMgr()->SendWormholeActivity(wormhole->itemID());
+    // fixme pShipSE->DestinyMgr()->SendJumpOutWormhole(wormhole->itemID());
+    // fixme pShipSE->DestinyMgr()->SendWormholeActivity(wormhole->itemID());
 
     m_moveSystemID = wormhole->GetAttribute(AttrWormholeTargetSystem1).get_uint32();
     MapDB::AddJump(m_moveSystemID);
@@ -1518,9 +1514,9 @@ void Client::SetCloakTimer(uint32 time/*Player::Timer::Default*/)
 {
     if (time == 0) {
         m_cloakTimer.Disable();
-        if (pShipSE != nullptr)
+        if (pShipSE != nullptr)/*
             if (pShipSE->DestinyMgr() != nullptr)
-                pShipSE->DestinyMgr()->UnCloak();
+                pShipSE->DestinyMgr()->UnCloak();*/
         _log(CLIENT__TIMER, "%s: Cloak Timer Disabled", m_char->name());
         return;
     }
@@ -1534,10 +1530,10 @@ void Client::SetCloakTimer(uint32 time/*Player::Timer::Default*/)
     _log(CLIENT__TIMER, "%s: Cloak Timer set at %ums.   current state time is %ums", m_char->name(), time, m_cloakTimer.GetCurrentTime());
     m_cloakTimer.Start(time);
     if (m_login)
-        return;
+        return;/*
     if (pShipSE != nullptr)
         if (pShipSE->DestinyMgr() != nullptr)
-            pShipSE->DestinyMgr()->Cloak();
+            pShipSE->DestinyMgr()->Cloak();*/
 }
 
 void Client::SetUncloakTimer(uint32 time/*Player::Timer::Default*/)
@@ -1602,19 +1598,19 @@ void Client::SetStateTimer( int8 state, uint32 time/*Player::Timer::Default*/)
 // these next two are for sending jump effects (easier to test here)
 /** @todo  these jumpfx are incomplete */
 void Client::JumpInEffect()
-{
+{/*
     if (pShipSE != nullptr)
         if (pShipSE->DestinyMgr() != nullptr)
             if (!pShipSE->DestinyMgr()->IsCloaked())
-                pShipSE->DestinyMgr()->SendJumpInEffect("effects.JumpIn");
+                pShipSE->DestinyMgr()->SendJumpInEffect("effects.JumpIn");*/
 }
 
 void Client::JumpOutEffect(uint32 locationID)
-{
+{/*
     if (pShipSE != nullptr)
         if (pShipSE->DestinyMgr() != nullptr)
             if (!pShipSE->DestinyMgr()->IsCloaked())
-                pShipSE->DestinyMgr()->SendJumpOutEffect("effects.JumpOut", locationID);
+                pShipSE->DestinyMgr()->SendJumpOutEffect("effects.JumpOut", locationID);*/
 }
 
 std::string Client::GetStateName(int8 state)
@@ -2113,7 +2109,7 @@ void Client::QueueDestinyEvent(PyTuple** event) {
         return;
     if (is_log_enabled(CLIENT__QUEUE_DUMP))
         (*event)->Dump(CLIENT__QUEUE_DUMP, "");
-    m_destinyEventQueue->AddItem(*event);
+    m_EventQueue->AddItem(*event);
     //PyDecRef(*event);
 }
 
@@ -2142,8 +2138,8 @@ void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool
             // this will package all current updates (and those coming in before next flush) into
             //   a single PackagedAction packet, which is then inserted into the DoDestinyAction packet.
             PyList* paList = new PyList();
-            if (!m_destinyUpdateQueue->empty())
-                paList->AddItem(m_destinyUpdateQueue);
+            if (!m_UpdateQueue->empty())
+                paList->AddItem(m_UpdateQueue);
             paList->AddItem(*update);
             PackagedAction pa;
                 pa.substream = new PySubStream(paList);
@@ -2163,42 +2159,42 @@ void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool
     } else {
         act.update = *update;
         //m_packaged = true;
-        m_destinyUpdateQueue->AddItem(act.Encode());
+        m_UpdateQueue->AddItem(act.Encode());
     }
 
     //PySafeDecRef(*update);
 }
 
 void Client::_SendQueuedUpdates() {
-    if (!m_destinyUpdateQueue->empty()) {
-        if (m_destinyEventQueue->empty()) {
+    if (!m_UpdateQueue->empty()) {
+        if (m_EventQueue->empty()) {
             DoDestinyUpdateMain_2 dum;
-                dum.updates = m_destinyUpdateQueue;
+                dum.updates = m_UpdateQueue;
                 dum.waitForBubble = m_bubbleWait;
             PyTuple* t = dum.Encode();
             SendNotification("DoDestinyUpdate", "clientID", &t);
         } else {
             DoDestinyUpdateMain dum;
-                dum.updates = m_destinyUpdateQueue;
-                dum.events = m_destinyEventQueue;
+                dum.updates = m_UpdateQueue;
+                dum.events = m_EventQueue;
                 dum.waitForBubble = m_bubbleWait;
             PyTuple* t = dum.Encode();
             SendNotification("DoDestinyUpdate", "clientID", &t);
         }
-    } else if (!m_destinyEventQueue->empty()) {
+    } else if (!m_EventQueue->empty()) {
         Notify_OnMultiEvent nom;
-            nom.events = m_destinyEventQueue;
+            nom.events = m_EventQueue;
         PyTuple* t = nom.Encode();
         SendNotification("OnMultiEvent", "charid", &t);
     } //else nothing to be sent ...
 
     // clear the queues now, after the packets have been sent
-    //for (auto &curUD : m_destinyUpdateQueue)
+    //for (auto &curUD : m_UpdateQueue)
     //    PySafeDecRef(curUD);
-    m_destinyUpdateQueue->clear();
-    //for (auto &curEv : m_destinyEventQueue)
+    m_UpdateQueue->clear();
+    //for (auto &curEv : m_EventQueue)
     //    PySafeDecRef(curEv);
-    m_destinyEventQueue->clear();
+    m_EventQueue->clear();
     m_packaged = false;
 }
 

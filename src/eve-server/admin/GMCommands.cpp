@@ -42,7 +42,6 @@
 #include "npc/NPC.h"
 #include "npc/NPCAI.h"
 #include "system/Damage.h"
-#include "system/DestinyManager.h"
 #include "system/SystemManager.h"
 #include "system/SystemBubble.h"
 #include "system/cosmicMgrs/BeltMgr.h"

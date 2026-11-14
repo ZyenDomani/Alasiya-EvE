@@ -36,10 +36,9 @@
  */
 
 class PyServiceMgr;
-class DestinyManager;
 class SystemManager;
 class ServiceDB;
-class NPCAIMgr;
+class NPCAI;
 class Damage;
 
 class DroneSE

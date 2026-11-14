@@ -2317,6 +2317,25 @@ const char* StaticDataMgr::GetProcStateName(int8 state) {
     return "Undefined";
 }
 
+const char* StaticDataMgr::GetBallModeName(uint8 mode) {
+    switch (mode) {
+        case 1: return "Follow"; break;
+        case 2: return "Stop"; break;
+        case 3: return "Warp"; break;
+        case 4: return "Orbit"; break;
+        case 5: return "Missile"; break;
+        case 6: return "Mushroom"; break;
+        case 7: return "Boid"; break;
+        case 8: return "Troll"; break;
+        case 9: return "Miniball"; break;
+        case 10: return "Field"; break;
+        case 11: return "Rigid"; break;
+        case 12: return "Formation"; break;
+    }
+
+    return "Invalid";
+}
+
 const char* StaticDataMgr::GetFlagName(uint16 flag) {
     return GetFlagName((EVEItemFlags)flag);
 }

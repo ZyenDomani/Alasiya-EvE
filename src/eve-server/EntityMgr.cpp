@@ -41,7 +41,6 @@
 #include "market/MarketBotMgr.h"
 #include "missions/MissionDataMgr.h"
 #include "station/Station.h"
-#include "system/DestinyManager.h"
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/AnomalyMgr.h"
 #include "system/cosmicMgrs/CivilianMgr.h"
@@ -244,9 +243,10 @@ void EntityMgr::Process() {
             ++itr;
         }
 
-        // these need 1Hz tics
-        sCivMgr.Process();
+        // bubbles process bump mechanics after all ships have moved this round
         sBubbleMgr.Process();
+
+        sCivMgr.Process();
 
         // these minute tics do not need to be precise
         if (m_minuteTimer.Check()) {

@@ -19,7 +19,7 @@ COMMAND( syncloc, Acct::Role::PLAYER,
 COMMAND( syncpos, Acct::Role::PLAYER,
          "- Synchronizes locations of all dynamic entities in current bubble with location on server for all players in callers bubble." )
 COMMAND( update, Acct::Role::PLAYER,
-         "- Sets Current Position according to Server's DestinyManager, then Sends Bubble AddBalls and Destiny SetState. (resets spaceview with current server data)" )
+         "- Sets Current Position according to item's Position, then Sends Bubble AddBalls and Destiny SetState. (resets spaceview with current server data)" )
 COMMAND( sendstate, Acct::Role::CONTENT,
          "- Sends DoDestinyUpdate SetState." )
 COMMAND( addball, Acct::Role::PLAYER,

@@ -27,64 +27,64 @@
 #ifndef __DESTINY_STRUCTS_H__
 #define __DESTINY_STRUCTS_H__
 
-namespace Destiny {
+namespace Ball {
 
     static const uint8 MAX_DSTBALL = 12;
 
-    namespace Ball {
-        namespace Mode {
-            enum {
-                GOTO        = 0,    // AlignTo / Primary trajectory point translation
-                FOLLOW      = 1,    // Linear trailing chase logic
-                STOP        = 2,    // Rapid dampening / absolute brake step
-                WARP        = 3,    // High-speed collisionless absolute vector pathing
-                ORBIT       = 4,    // Perpendicular tangent vector shifting loop (Rule 2)
-                MISSILE     = 5,    // Speed-scaled dynamic mass turning tracking (Rule 4)
-                MUSHROOM    = 6,    // Radial gravity/area expansion envelope (Smartbombs/AOE)
-                // This is used when objects are spawned in proximity and need to resolve their initial positions before settling.
-                BOID        = 7,    // Spatial swarm flock aggregation physics (Craig Reynolds' Bird-oid)
-                TROLL       = 8,    // Inertially decaying unanchored physical drop (Wrecks/Cans dropped from moving objects)
-                MINIBALL    = 9,    // Component multi-hitbox structural sub-mesh
-                FIELD       = 10,   // Non-blocking spatial event boundaries (POS shields)
-                RIGID       = 11,   // Frozen, zero-calculation static structures (Stations/Gates)
-                FORMATION   = 12    // Matrix-offset slave tracking relative to group leader
-            };
-        }
-
-        namespace Flag {
-            enum  {
-                IsFree          = 0x01,   // Contains DataSector (dynamic physical calculation)
-                IsGlobal        = 0x02,   // Universally distributed lifecycle node
-                IsMassive       = 0x04,   // Subject to rigid body elastic boundary bumping
-                IsInteractive   = 0x08,   // Targetable UI spatial object selector
-                IsMoribund      = 0x10,   // Junk items queued for deletion
-                HasMiniBalls    = 0x40,   // Trailing array stream contains structural sub-shapes
-            };
-        }
-
-        namespace HookEvent {
-            enum {
-                DST_CREATE         = 1,   // Creation setup execution
-                DST_DESTROY        = 2,   // Destructor memory sweep
-                DST_PROXIMITY      = 3,   // Proximity threshold breach check
-                DST_PRETICK        = 4,   // Impulse calculation staging clear
-                DST_POSTTICK       = 5,   // Unified blend feedback evaluation
-                DST_COLLISION      = 6,   // Elastic bumping response execution
-                DST_RANGE          = 7,   // Outer radius exit/entry calculation
-                DST_MODECHANGE     = 8,   // Core flight mode transition trigger
-                DST_PARTITION      = 9,   // Grid cell border cross step
-                DST_WARPACTIVATION = 10,  // Warp entry linear transformation staging
-                DST_WARPEXIT       = 11   // Deceleration warp drop normalization
-            };
-        }
+    namespace Mode {
+        enum {
+            GOTO        = 0,    // AlignTo / Primary trajectory point translation
+            FOLLOW      = 1,    // Linear trailing chase logic
+            STOP        = 2,    // Rapid dampening / absolute brake step
+            WARP        = 3,    // High-speed collisionless absolute vector pathing
+            ORBIT       = 4,    // Perpendicular tangent vector shifting loop (Rule 2)
+            MISSILE     = 5,    // Speed-scaled dynamic mass turning tracking (Rule 4)
+            MUSHROOM    = 6,    // Radial gravity/area expansion envelope (Smartbombs/AOE)
+            // This is used when objects are spawned in proximity and need to resolve their initial positions before settling.
+            BOID        = 7,    // Spatial swarm flock aggregation physics (Craig Reynolds' Bird-oid)
+            TROLL       = 8,    // Inertially decaying unanchored physical drop (Wrecks/Cans dropped from moving objects)
+            MINIBALL    = 9,    // Component multi-hitbox structural sub-mesh
+            FIELD       = 10,   // Non-blocking spatial event boundaries (POS shields)
+            RIGID       = 11,   // Frozen, zero-calculation static structures (Stations/Gates)
+            FORMATION   = 12    // Matrix-offset slave tracking relative to group leader
+        };
     }
+
+    namespace Flag {
+        enum  {
+            IsFree          = 0x01,   // Contains DataSector (dynamic physical calculation)
+            IsGlobal        = 0x02,   // Universally distributed lifecycle node
+            IsMassive       = 0x04,   // Subject to rigid body elastic boundary bumping
+            IsInteractive   = 0x08,   // Targetable UI spatial object selector
+            IsMoribund      = 0x10,   // Junk items queued for deletion
+            HasMiniBalls    = 0x40,   // Trailing array stream contains structural sub-shapes
+        };
+    }
+
+    namespace HookEvent {
+        enum {
+            DST_CREATE         = 1,   // Creation setup execution
+            DST_DESTROY        = 2,   // Destructor memory sweep
+            DST_PROXIMITY      = 3,   // Proximity threshold breach check
+            DST_PRETICK        = 4,   // Impulse calculation staging clear
+            DST_POSTTICK       = 5,   // Unified blend feedback evaluation
+            DST_COLLISION      = 6,   // Elastic bumping response execution
+            DST_RANGE          = 7,   // Outer radius exit/entry calculation
+            DST_MODECHANGE     = 8,   // Core flight mode transition trigger
+            DST_PARTITION      = 9,   // Grid cell border cross step
+            DST_WARPACTIVATION = 10,  // Warp entry linear transformation staging
+            DST_WARPEXIT       = 11   // Deceleration warp drop normalization
+        };
+    }
+}
+
+namespace Destiny {
 
 /** @note  this file MUST use packed data and variable types must remain as-is
  * client will not recognize it with byte-ordered padding, and expects values to be at specific locations
  * (error: malformed packet)
  */
 #pragma pack(1)
-
 
 // ============================================================================
 // CORE STRUCTS & SYSTEM HEADERS

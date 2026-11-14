@@ -12,7 +12,6 @@
 #include "system/Asteroid.h"
 
 #include "EVEServerConfig.h"
-#include "system/DestinyManager.h"
 #include "system/Damage.h"
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/BeltMgr.h"

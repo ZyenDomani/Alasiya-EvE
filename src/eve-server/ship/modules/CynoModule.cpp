@@ -42,7 +42,7 @@ void CynoModule::Activate(uint16 effectID, uint32 targetID, int16 repeat)
         pClient->SendNotifyMsg("You cannot light the cyno while your ship is moving.");
         return;
     }
-
+/*
     if (pShipSE->DestinyMgr() == nullptr) {
         pClient->SendNotifyMsg("You cannot light the cyno while your ship is moving.");
         return;
@@ -52,7 +52,7 @@ void CynoModule::Activate(uint16 effectID, uint32 targetID, int16 repeat)
         // cant activate while ship is moving.
         pClient->SendNotifyMsg("You cannot light the cyno while your ship is moving.");
         return;
-    }
+    }*/
 
     m_firstRun = true;
     ActiveModule::Activate(effectID, targetID, repeat);
@@ -64,9 +64,9 @@ void CynoModule::Activate(uint16 effectID, uint32 targetID, int16 repeat)
     _log(MODULE__DEBUG, "Cynosural field generator activated by %s in %s", pClient->GetName(), m_sysMgr->GetName());
 
     // hack to disable ship movement here
-    m_shipVelocity = pShipSE->DestinyMgr()->GetMaxVelocity();
-    pShipSE->DestinyMgr()->Halt(true);
-    pShipSE->DestinyMgr()->SkipTic(true);
+    // fixme m_shipVelocity = pShipSE->DestinyMgr()->GetMaxVelocity();
+    // fixme pShipSE->DestinyMgr()->Halt(true);
+    // fixme pShipSE->DestinyMgr()->SkipTic(true);
 }
 
 void CynoModule::DeactivateCycle(bool abort)
@@ -79,7 +79,7 @@ void CynoModule::DeactivateCycle(bool abort)
     // hack to reinstate ship movement here
     // may have to reset/reapply all fx for ship movement
     pShipSE->GetSelf()->SetAttribute(AttrMaxVelocity, m_shipVelocity);
-    pShipSE->DestinyMgr()->SkipTic(false);
+    // fixme pShipSE->DestinyMgr()->SkipTic(false);
 }
 
 bool CynoModule::CanActivate()

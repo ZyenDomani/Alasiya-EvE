@@ -162,7 +162,7 @@ void BubbleManager::Add(SpaceEntity* pSE, bool isPostWarp /*false*/) {
         return;
 
     if (pSE->GetPosition().isZero())
-        pSE->DestinyMgr()->SetPosition(sMapData.GetRandPointOnPlanet(pSE->SystemMgr()->GetID()));
+        pSE->SetPosition(sMapData.GetRandPointOnPlanet(pSE->SystemMgr()->GetID()));
 
     Vector3d center = pSE->GetPosition();
     if (isPostWarp) {
