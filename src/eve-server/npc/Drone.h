@@ -45,7 +45,7 @@ class DroneSE
 : public ObjectSpaceEntity
 {
 public:
-  friend DroneAIMgr;
+  friend DroneAI;
     DroneSE(InventoryItemRef drone, PyServiceMgr& services, SystemManager* pSystem, const FactionData& data);
     virtual ~DroneSE();
 
@@ -89,7 +89,7 @@ public:
 
     /* specific functions handled here. */
     Client*             GetOwner()                      { return m_pClient; }
-    DroneAIMgr*         GetAI()                         { return m_AI; }
+    DroneAI*         GetAI()                         { return m_AI; }
 
     // assign drone to ship, add to system and update bandwidth
     void                Launch(ShipSE* pShipSE);        // this is only for drone owner.
@@ -161,7 +161,7 @@ public:
 
 protected:
     SystemManager*      m_system;               //we do not own this
-    DroneAIMgr*         m_AI;                   //we do own this
+    DroneAI*         m_AI;                   //we do own this
     Client*             m_pClient;              //our owner
     ShipSE*             m_pShipSE;              //owning ship (home ship)
 

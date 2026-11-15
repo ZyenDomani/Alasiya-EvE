@@ -2523,7 +2523,7 @@ void ShipSE::Jump(int32 fromGateID, bool showCloak/*true*/) {
     }
 
     m_shipRef->Jump();
-    m_destiny->Jump(fromGateID, showCloak);
+    // fixme m_destiny->Jump(fromGateID, showCloak);
 }
 
 void ShipSE::Warp() {
@@ -2544,7 +2544,7 @@ void ShipSE::RemoveTarget(SpaceEntity* pSE) {
 void ShipSE::EncodeDestiny( Buffer& into) {
     using namespace Destiny;
 
-    uint8 mode = m_destiny->GetBallMode(); //Ball::Mode::STOP;
+    uint8 mode = 0; // fixme m_destiny->GetBallMode(); //Ball::Mode::STOP;
 /*
     NameStruct name;
         name.name = GetName();
@@ -2573,7 +2573,7 @@ void ShipSE::EncodeDestiny( Buffer& into) {
         } else {
             head.flags = Ball::Flag::IsFree;
         }
-    into.Append(head);
+    into.Append(head);/*
     MassSector mass = MassSector();
         mass.mass = m_self->mass();
         mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
@@ -2588,8 +2588,8 @@ void ShipSE::EncodeDestiny( Buffer& into) {
         data.velY = m_destiny->GetVelocity().y;
         data.velZ = m_destiny->GetVelocity().z;
         data.speedfraction = m_destiny->GetSpeedFraction();
-    into.Append(data);
-    switch (mode) {
+    into.Append(data);*/
+    switch (mode) {/*
         case Ball::Mode::WARP: {
             Vector3d target = m_destiny->GetTargetPoint();
             WARP_Struct warp;
@@ -2615,7 +2615,7 @@ void ShipSE::EncodeDestiny( Buffer& into) {
                      * 4669471951536783360     15000 m   ap default distance
                      * 0
                      *
-                     */
+                     * /  // fixme
                 } else {
                     warp.effectStamp    = -1;      // counter for stuck on align (tics at -1; warp forced on 0)
                     warp.warpDistance   = -1.0;    // warp distance is nil during align
@@ -2645,7 +2645,7 @@ void ShipSE::EncodeDestiny( Buffer& into) {
                 go.y = target.y;
                 go.z = target.z;
             into.Append(go);
-        }  break;
+        }  break;*/
         default: {
             STOP_Struct main;
                 main.formationID = -1;
@@ -2747,7 +2747,7 @@ void ShipSE::RemoveBoost()
     m_shipRef->SetAttribute(AttrScanResolution, m_oldScanRes);
     m_shipRef->SetAttribute(AttrMaxTargetRange, m_oldTargetRange);
 
-    m_destiny->UpdateShipVariables();
+    // fixme m_destiny->UpdateShipVariables();
 
     ClearBoostData();
 }
@@ -2781,7 +2781,7 @@ void ShipSE::ApplyBoost(BoostData& bData)
     m_shipRef->SetAttribute(AttrShieldCapacity, shieldHP);
     m_shipRef->SetAttribute(AttrMaxTargetRange, targRange);
 
-    m_destiny->UpdateShipVariables();
+    // fixme m_destiny->UpdateShipVariables();
     /** @todo anything that is currently using targRange or inertia will have to be reset after this */
 
     m_boosted = true;

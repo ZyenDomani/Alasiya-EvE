@@ -11,7 +11,7 @@
 #define __EVESERVER_SHIPMODULES_ACTIVE_MODULES_TURRENTMODULE_H
 
 #include "ship/modules/ActiveModule.h"
-#include "ship/modules/TurretFormulas.h"
+#include "ship/modules/TurretMath.h"
 
 
 class TurretModule : public ActiveModule
@@ -33,7 +33,6 @@ public:
     virtual void        ApplyDamage();
 
 protected:
-    TurretFormulas      m_formula;
 
     float               m_crystalDmg;
     float               m_crystalDmgAmount;

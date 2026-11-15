@@ -39,7 +39,7 @@
 DroneSE::DroneSE(InventoryItemRef drone, PyServiceMgr &services, SystemManager* pSystem, const FactionData& data)
 : ObjectSpaceEntity(drone, services, pSystem),
 m_system(pSystem),
-m_AI(new DroneAIMgr(this)),
+m_AI(new DroneAI(this)),
 m_pClient(nullptr),
 m_pShipSE(nullptr),
 m_processTimer(0),

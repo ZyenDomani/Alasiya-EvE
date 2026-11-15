@@ -291,7 +291,7 @@ void CustomsSE::SendEffectUpdate(int16 effectID, bool active)
         events->AddItem(shipEff.Encode());
     PyTuple* event = new PyTuple(1);
         event->SetItem(0, events);
-    m_destiny->SendSingleDestinyEvent(&event);   // consumed
+    // fixme m_destiny->SendSingleDestinyEvent(&event);   // consumed
 }
 
 void CustomsSE::SendSlimUpdate()
@@ -314,7 +314,7 @@ void CustomsSE::SendSlimUpdate()
     PyTuple* sItem = new PyTuple(2);
         sItem->SetItem(0,                               new PyString("OnSlimItemChange"));
         sItem->SetItem(1,                               shipData);
-    m_destiny->SendSingleDestinyUpdate(&sItem);
+    // fixme m_destiny->SendSingleDestinyUpdate(&sItem);
     PyDecRef(sItem);
 }
 
@@ -326,13 +326,13 @@ void CustomsSE::SetAnchor(Client* pClient, Vector3d& pos)
         return;  // make error here?
     }
 
-    m_destiny->SetPosition(pos);
+    // fixme m_destiny->SetPosition(pos);
     sBubbleMgr.Add(this);
 
     if (is_log_enabled(POS__TRACE))
         _log(POS__TRACE, "CustomsSE::Anchor() - TowerSE %s(%u) new position %.2f, %.2f, %.2f", GetName(), m_cData.itemID, pos.x, pos.y, pos.z);
 
-    m_destiny->SetPosition(pos);
+    // fixme m_destiny->SetPosition(pos);
     m_self->SaveItem();
 
     m_cData.state = EVEPOS::EntityState::Anchoring;
@@ -353,11 +353,11 @@ void CustomsSE::SetAnchor(Client* pClient, Vector3d& pos)
             sbr.entityID = m_self->itemID();
             sbr.radius = m_self->radius();
         updates.push_back(sbr.Encode());
-            m_destiny->SendDestinyUpdates(updates); //consumed
+        // fixme m_destiny->SendDestinyUpdates(updates); //consumed
 
         //SendEffectUpdate(anchorDropForOrbitals, true);
         // this also needs a timestamp
-        m_destiny->SendGFX14(m_cData.itemID, m_cData.itemID, m_self->typeID(),0,0,"effects.AnchorDrop",0,1,1,-1,0);
+        // fixme m_destiny->SendGFX14(m_cData.itemID, m_cData.itemID, m_self->typeID(),0,0,"effects.AnchorDrop",0,1,1,-1,0);
     }
 }
 
@@ -376,8 +376,8 @@ void CustomsSE::PullAnchor()
 
     //SendEffectUpdate(anchorLiftForOrbitals, true);
     // this also needs a timestamp
-    if (m_bubble->HasPlayers())
-        m_destiny->SendGFX14(m_cData.itemID, m_cData.itemID, m_self->typeID(),0,0,"effects.AnchorLift",0,1,1,-1,0);
+    // fixme if (m_bubble->HasPlayers())
+    // fixme     m_destiny->SendGFX14(m_cData.itemID, m_cData.itemID, m_self->typeID(),0,0,"effects.AnchorLift",0,1,1,-1,0);
 }
 
 void CustomsSE::EncodeDestiny(Buffer& into)
@@ -461,7 +461,7 @@ PyDict *CustomsSE::MakeSlimItem() {
 }
 
 void CustomsSE::Killed(Damage &fatal_blow) {
-    if ((m_bubble == nullptr) or (m_destiny == nullptr) or (m_system == nullptr))
+    if ((m_bubble == nullptr) or (m_system == nullptr))
         return; // make error here?
 
     uint32 killerID = 0;
@@ -557,7 +557,7 @@ void CustomsSE::Killed(Damage &fatal_blow) {
             AwardSecurityStatus(m_self, pClient->GetChar().get());  // this awards secStatusChange for npcs in empire space
     }
 
-    Vector3d wreckPosition = m_destiny->GetPosition();
+    Vector3d wreckPosition = GetPosition();
     std::string wreck_name = m_self->itemName();
     wreck_name += " Wreck";
     ItemData wreckItemData(3962/*CO gantry*/, killerID, locationID, flagAutoFit, wreck_name.c_str(), wreckPosition, itoa(m_allyID));
@@ -588,7 +588,7 @@ void CustomsSE::Killed(Damage &fatal_blow) {
         wreckItemRef->Delete();
         return;
     }
-    m_destiny->SendJettisonPacket();
+    // fixme m_destiny->SendJettisonPacket();
 
     DropLoot(wreckItemRef, m_self->groupID(), killerID);
 

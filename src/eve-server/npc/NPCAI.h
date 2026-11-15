@@ -26,7 +26,7 @@
 
 #pragma once
 
-#include "ship/modules/TurretFormulas.h"
+#include "ship/modules/TurretMath.h"
 #include "system/SpaceEntity.h"
 
 class Client;
@@ -100,7 +100,7 @@ public:
 
     void                DisableRepTimers(bool shield=true, bool armor=true);
 
-    // public methods to enable calls from other classes (namely, TurretFormulas.cpp)
+    // public methods to enable calls from other classes (namely, TurretMath.cpp)
     bool                IsIdle()                        { return (m_state == NPCAI::State::Idle); }
     bool                IsFighting();
     uint16              GetOptimalRange()               { return m_optimalRange; }
@@ -199,30 +199,17 @@ private:
     SpaceEntity*        m_attackTarget;
     InventoryItemRef    m_self;
 
-    TurretFormulas      m_formula;
+    // not sure how im gonna do this yet...160 fx types
+    std::vector<TypeEffects>   m_effectMap;             //  all 'modules' this npc has (using effect data)
 
-    bool                m_useSigRadius     :1;
-    bool                m_useSecondTarget  :1;
-    bool                m_useTargSwitching :1;
+    std::map<int8, uint16>     m_attackFxMap;           // (NPCAI::State, fxID)
+    std::map<int8, uint16>     m_defendFXMap;           // (NPCAI::State, fxID)
 
-    int8                m_state;
-    int8                m_action;
-    uint8               m_maxLockedTargets;
-    uint16              m_size;
-    uint16              m_effectID;
-    uint16              m_turretID;
+    Vector3d            m_homePoint;                    // tether for idle and wander distance check
 
-    //these attributes are cached to reduce access times. (faster but uses more memory)
-
-    uint16              m_maxSpeed;                     // mwd speed
-    uint16              m_cruiseSpeed;                  // normal and orbit speed
-
-    int32               m_actionSpeed;
-    int32               m_attackSpeed;
-    int32               m_armorRepairDuration;
-    int32               m_shieldBoosterDuration;
-
-    float               m_sigRadModifier;
+    int64               m_actionTime;
+    int64               m_attackTime;                   // timestamp when attack started
+    int64               m_chaseTimeEnd;                 // timestamp when npc chasing will end (maxChaseDuration)
 
     //in order of distance  far to close
     double              m_sightRange;                   //[6] npc sight range
@@ -238,9 +225,18 @@ private:
     double              m_flyRange;                     //[1] preferred orbit distance
     double              m_flyRangeSq;
 
-    int64               m_actionTime;
-    int64               m_attackTime;                   // timestamp when attack started
-    int64               m_chaseTimeEnd;                 // timestamp when npc chasing will end (maxChaseDuration)
+    uint16              m_size;
+    uint16              m_effectID;
+    uint16              m_turretID;
+
+    //these attributes are cached to reduce access times. (faster but uses more memory)
+
+    int32               m_actionSpeed;
+    int32               m_attackSpeed;
+    int32               m_armorRepairDuration;
+    int32               m_shieldBoosterDuration;
+
+    float               m_sigRadModifier;
 
     float               m_switchTargChance;             //fuzzy logic
     float               m_trackingSpeed;
@@ -257,13 +253,17 @@ private:
     Timer               m_warpOutTimer;                 // as stated
     Timer               m_retargetTimer;                // comfort breaker (allow npcs to change targets)
 
-    Vector3d            m_homePoint;                    // tether for idle and wander distance check
+    uint16              m_maxSpeed;                     // mwd speed
+    uint16              m_cruiseSpeed;                  // normal and orbit speed
 
-    // not sure how im gonna do this yet...160 fx types
-    std::vector<TypeEffects>   m_effectMap;             //  all 'modules' this npc has (using effect data)
+    int8                m_state;
+    int8                m_action;
+    uint8               m_maxLockedTargets;
 
-    std::map<int8, uint16>     m_attackFxMap;           // (NPCAI::State, fxID)
-    std::map<int8, uint16>     m_defendFXMap;           // (NPCAI::State, fxID)
+    bool                m_useSigRadius     :1;
+    bool                m_useSecondTarget  :1;
+    bool                m_useTargSwitching :1;
+
 };
 
 

@@ -496,7 +496,7 @@ SET( ship_modules_INCLUDE
      "${TARGET_INCLUDE_DIR}/ship/modules/PassiveModule.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/RigModule.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/SubSystemModule.h"
-     "${TARGET_INCLUDE_DIR}/ship/modules/TurretFormulas.h"
+     "${TARGET_INCLUDE_DIR}/ship/modules/TurretMath.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/TurretModule.h" )
 SET( ship_modules_SOURCE
      "${TARGET_SOURCE_DIR}/ship/modules/ActiveModule.cpp"
@@ -509,7 +509,7 @@ SET( ship_modules_SOURCE
      "${TARGET_SOURCE_DIR}/ship/modules/PassiveModule.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/RigModule.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/SubSystemModule.cpp"
-     "${TARGET_SOURCE_DIR}/ship/modules/TurretFormulas.cpp"
+     "${TARGET_SOURCE_DIR}/ship/modules/TurretMath.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/TurretModule.cpp" )
 
 SET( standing_INCLUDE

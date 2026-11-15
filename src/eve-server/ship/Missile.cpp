@@ -184,7 +184,7 @@ void Missile::EncodeDestiny(Buffer& into)
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
         mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
-    into.Append(mass);
+    into.Append(mass);/*
     DataSector data = DataSector();
         data.maxSpeed = m_speed;
         data.velX = m_destiny->GetVelocity().x;
@@ -202,7 +202,7 @@ void Missile::EncodeDestiny(Buffer& into)
         miss.x = x();
         miss.y = y();
         miss.z = z();
-    into.Append(miss);
+    into.Append(miss);*/
 
     _log(SE__DESTINY, "Missile::EncodeDestiny(): %s id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
@@ -237,7 +237,7 @@ void Missile::MakeDamageState(DoDestinyDamageState &into) {
 void Missile::HitTarget() {
     // check for defender missile and blow up target missile when it hits
     if (m_self->typeID() == EVEDB::invTypes::DefenderI) {
-        m_destiny->SendTerminalExplosion(m_targetSE->GetID(), m_bubble->GetID());
+        // fixme m_destiny->SendTerminalExplosion(m_targetSE->GetID(), m_bubble->GetID());
         m_targetSE->GetMissileSE()->Delete();
     }
 

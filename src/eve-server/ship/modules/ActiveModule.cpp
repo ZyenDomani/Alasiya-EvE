@@ -27,7 +27,6 @@ m_bubble(nullptr),
 m_sysMgr(nullptr),
 m_targMgr(nullptr),
 m_targetSE(nullptr),
-m_destinyMgr(nullptr),
 m_usesCharge(false),
 m_needsCharge(false),
 m_needsTarget(false),
@@ -279,7 +278,6 @@ void ActiveModule::Clear() {
     m_sysMgr = nullptr;
     m_targMgr = nullptr;
     m_targetSE = nullptr;
-    m_destinyMgr = nullptr;
     m_needsTarget = false;
 
     m_timer.Disable();
@@ -1464,10 +1462,10 @@ void ActiveModule::SendShipEffect(bool start/*false*/, bool abortCycle/*false*/)
     PyTuple* tuple = shipEff.Encode();
     if (is_log_enabled(EFFECTS__DUMP))
         tuple->Dump(EFFECTS__DUMP, "");
-
-    if ((m_destinyMgr == nullptr)
-    or   m_destinyMgr->IsWarping()
-    or  (m_bubble == nullptr)) {
+    // fixme
+//     if ((m_destinyMgr == nullptr)
+//     or   m_destinyMgr->IsWarping()
+    if  (m_bubble == nullptr) {
         m_shipRef->GetPilot()->QueueDestinyEvent(&tuple);
     } else {
         m_bubble->BubblecastDestinyEvent(&tuple, "DestinyEvent");

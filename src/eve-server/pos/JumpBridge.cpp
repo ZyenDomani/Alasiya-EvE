@@ -138,6 +138,6 @@ void JumpBridgeSE::SendSlimUpdate()
     PyTuple *sItem = new PyTuple(2);
         sItem->SetItem(0, new PyString("OnSlimItemChange"));
         sItem->SetItem(1, shipData);
-    m_destiny->SendSingleDestinyUpdate(&sItem);
+        // fixme m_destiny->SendSingleDestinyUpdate(&sItem);
     PyDecRef(sItem);
 }

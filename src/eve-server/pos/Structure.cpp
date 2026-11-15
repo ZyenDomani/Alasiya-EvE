@@ -459,8 +459,8 @@ void StructureSE::Process()
         {
             SendSlimUpdate();
             // this also needs a timestamp
-            if (m_bubble->HasPlayers())
-                m_destiny->SendGFX14(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.AnchorLift", 0, 0, 0, -1, 0);
+            // fixme if (m_bubble->HasPlayers())
+            // fixme     m_destiny->SendGFX14(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.AnchorLift", 0, 0, 0, -1, 0);
             m_db.UpdateBaseData(m_data);
         }
         break;
@@ -468,8 +468,8 @@ void StructureSE::Process()
         {
             SendSlimUpdate();
             // this also needs a timestamp
-            if (m_bubble->HasPlayers())
-                m_destiny->SendGFX14(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.AnchorDrop", 0, 1, 1, -1, 0);
+            // fixme if (m_bubble->HasPlayers())
+            // fixme     m_destiny->SendGFX14(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.AnchorDrop", 0, 1, 1, -1, 0);
             if (m_tower)
                 m_moonSE->SetTower(this);
             if (m_sbu)
@@ -658,7 +658,7 @@ void StructureSE::SetAnchor(Client* pClient, Vector3d &pos)
         pos.y = (yGrid * bubbleDia + BUBBLE_RADIUS_METERS);
         pos.z = (zGrid * bubbleDia + BUBBLE_RADIUS_METERS);
 
-        m_destiny->SetPosition(pos);
+        // fixme m_destiny->SetPosition(pos);
         sBubbleMgr.Add(this);
 
         if (is_log_enabled(POS__TRACE))
@@ -684,7 +684,7 @@ void StructureSE::SetAnchor(Client* pClient, Vector3d &pos)
         }
 
         // position is within range.  allow anchoring
-        m_destiny->SetPosition(pos);
+        // fixme m_destiny->SetPosition(pos);
 
         if (is_log_enabled(POS__TRACE))
             _log(POS__TRACE, "StructureSE::Anchor() - SBUSE %s(%u) is anchoring %u m from %s",
@@ -701,7 +701,7 @@ void StructureSE::SetAnchor(Client* pClient, Vector3d &pos)
         pos.y = (yGrid * bubbleDia + BUBBLE_RADIUS_METERS);
         pos.z = (zGrid * bubbleDia + BUBBLE_RADIUS_METERS);
 
-        m_destiny->SetPosition(pos);
+        // fixme m_destiny->SetPosition(pos);
     } else if (m_platform) {
         //  will these be used here??
         //verify anchor distance from planet
@@ -715,7 +715,7 @@ void StructureSE::SetAnchor(Client* pClient, Vector3d &pos)
                     m_self->name(), anchorMax);
             return;
         }
-        m_destiny->SetPosition(pos);
+        // fixme m_destiny->SetPosition(pos);
     } else {
         if (!m_moonSE->HasTower()) {
             // this should never hit...
@@ -726,7 +726,7 @@ void StructureSE::SetAnchor(Client* pClient, Vector3d &pos)
          * maxStructureDistance
          * posStructureControlDistanceMax   15000
          */
-        m_destiny->SetPosition(pos);
+        // fixme m_destiny->SetPosition(pos);
     }
 
     m_self->SaveItem();
@@ -749,8 +749,8 @@ void StructureSE::SetAnchor(Client* pClient, Vector3d &pos)
             sbr.entityID = m_self->itemID();
             sbr.radius = m_self->radius();
         updates.push_back(sbr.Encode());
-        m_destiny->SendDestinyUpdates(updates); //consumed
-        m_destiny->SendGFX14(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.AnchorDrop", 0, 1, 1, -1, 0);
+        // fixme m_destiny->SendDestinyUpdates(updates); //consumed
+        // fixme m_destiny->SendGFX14(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.AnchorDrop", 0, 1, 1, -1, 0);
     }
 }
 
@@ -783,8 +783,8 @@ void StructureSE::PullAnchor()
         SendEffectUpdate(EvE::GFXID::anchorLiftForOrbitals, true);
     else
         */
-    if (m_bubble->HasPlayers())
-        m_destiny->SendGFX14(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.AnchorLift", 0, 1, 1, -1, 0);
+    // fixme if (m_bubble->HasPlayers())
+    // fixme     m_destiny->SendGFX14(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.AnchorLift", 0, 1, 1, -1, 0);
 }
 
 /*
@@ -843,8 +843,8 @@ void StructureSE::Activate(int32 effectID)
     m_data.timestamp = GetFileTimeNow();
 
     SendSlimUpdate();
-    if (m_bubble->HasPlayers())
-        m_destiny->SendGFX14(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.StructureOnline", 0, 1, 1, -1, 0);
+    // fixme if (m_bubble->HasPlayers())
+    // fixme     m_destiny->SendGFX14(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.StructureOnline", 0, 1, 1, -1, 0);
 
     // should this be done here?
     if (m_module)
@@ -875,8 +875,8 @@ void StructureSE::SetOnline()
 
     SetTimer(m_duration);
     m_db.UpdateBaseData(m_data);
-    if (m_bubble->HasPlayers())
-        m_destiny->SendGFX14(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.StructureOnlined", 0, 1, 1, -1, 0);
+    // fixme if (m_bubble->HasPlayers())
+    // fixme     m_destiny->SendGFX14(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.StructureOnlined", 0, 1, 1, -1, 0);
     if (m_generator)
         svDataMgr.UpdateSystemBeaconID(m_self->locationID(),m_self->itemID());
     if (m_jammer)
@@ -991,7 +991,7 @@ void StructureSE::SendSlimUpdate()
     PyTuple *sItem = new PyTuple(2);
     sItem->SetItem(0, new PyString("OnSlimItemChange"));
     sItem->SetItem(1, shipData);
-    m_destiny->SendSingleDestinyUpdate(&sItem);
+    // fixme m_destiny->SendSingleDestinyUpdate(&sItem);
     PyDecRef(sItem);
 }
 
@@ -1021,7 +1021,7 @@ void StructureSE::SendEffectUpdate(int16 effectID, bool active)
     events->AddItem(shipEff.Encode());
     PyTuple *event = new PyTuple(1);
     event->SetItem(0, events);
-    m_destiny->SendSingleDestinyEvent(&event); // consumed
+    // fixme m_destiny->SendSingleDestinyEvent(&event); // consumed
 }
 
 void StructureSE::EncodeDestiny(Buffer &into)
@@ -1222,7 +1222,7 @@ void StructureSE::GetEffectState(PyList &into)
 
 void StructureSE::Killed(Damage &damage)
 {
-    if ((m_bubble == nullptr) or (m_destiny == nullptr) or (m_system == nullptr))
+    if ((m_bubble == nullptr) or (m_system == nullptr))
         return; // make error here?
 
     if (m_tower)
@@ -1369,7 +1369,7 @@ void StructureSE::Killed(Damage &damage)
         return;
     }
 
-    m_destiny->SendJettisonPacket();
+    // fixme m_destiny->SendJettisonPacket();
 }
 
 void StructureSE::Anchor()

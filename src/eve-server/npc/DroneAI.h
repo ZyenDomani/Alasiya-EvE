@@ -8,14 +8,18 @@
  * @Rewrite:    3Feb25  (complete refactor to process all types and actions of drones)
  */
 
-#ifndef __EVEMU_SHIP_DRONEAI_H__
-#define __EVEMU_SHIP_DRONEAI_H__
+#pragma once
 
-#include "ship/modules/TurretFormulas.h"
+#include "ship/modules/TurretMath.h"
 
-// only for drones
-namespace DroneAI {
-    namespace State {
+
+class DroneSE;
+class SpaceEntity;
+class Timer;
+
+class DroneAI {
+public:
+    struct State {
         enum {
             Incapacitated       = -2,
             Invalid             = -1,
@@ -36,9 +40,9 @@ namespace DroneAI {
             Assisting           = 12, //  this will be remote reppers/boosters
             FocusFire           = 13  // not sure if we'll need this one
         };
-    }
+    };
 
-    namespace Action {
+    struct Action {
         enum {
             Invalid             = -1,
             Idle                = 0,  // not doing anything....idle.
@@ -51,16 +55,9 @@ namespace DroneAI {
             OrbitShip           = 7,  // Idle and orbiting assigned ship
             DecelToStop         = 8   // set to idle.  decel to stop
         };
-    }
-}
+    };
 
-class DroneSE;
-class SpaceEntity;
-class Timer;
-
-class DroneAIMgr {
-public:
-    DroneAIMgr(DroneSE* pdSE);
+    DroneAI(DroneSE* pdSE);
 
     /* initialize drone ai variables
      *   (move, distance, ranges and default fxID)
@@ -206,23 +203,10 @@ private:
     DroneSE*            mySE;
     ShipSE*             shipSE;
 
-    TurretFormulas      m_formula;
+    double              m_agility;
+    double              m_moveTime;                     //in ms       - time when speed change started.  used to calculate m_timeFraction
 
-    EVEItemFlags        m_holdFlag;
-
-    Timer               m_processTimer;                 // set to m_cycleTime;  for all drones to engage target
-    Timer               m_warpScramblerTimer;
-    Timer               m_webifierTimer;
-
-    bool                m_sendCmd;                      // send updated orbit packet?
-    bool                m_booster;                      // repair drone
-    bool                m_repeat;                       // is drone action repeatable?
-    bool                m_focusfire;                    // common target between all active drones
-
-    int8                m_state;
-    int8                m_action;
-
-    uint16              m_effectID;                     // default effectID
+    int64               m_startTime;                    // timestamp when effect started
 
     int32               m_cycleTime;                    // time in ms for drone to complete an action
 
@@ -237,7 +221,11 @@ private:
     uint32              m_maxSpeed;                     // mwd speed  - stationary drones have zero here
     uint32              m_cruiseSpeed;                  // normal speed
 
-    int64               m_startTime;                    // timestamp when effect started
+    EVEItemFlags        m_holdFlag;
+
+    Timer               m_processTimer;                 // set to m_cycleTime;  for all drones to engage target
+    Timer               m_warpScramblerTimer;
+    Timer               m_webifierTimer;
 
     float               m_alignTime;
     float               m_accelTime;
@@ -247,11 +235,17 @@ private:
     float               m_userSpeedFraction;            //fuzzy logic - user commanded percent of max speed
     float               m_activeSpeedFraction;          //fuzzy logic - current percent of max speed
 
-    double              m_agility;
-    double              m_moveTime;                     //in ms       - time when speed change started.  used to calculate m_timeFraction
+    uint16              m_effectID;                     // default effectID
+
+    int8                m_state;
+    int8                m_action;
+
+    bool                m_sendCmd;                      // send updated orbit packet?
+    bool                m_booster;                      // repair drone
+    bool                m_repeat;                       // is drone action repeatable?
+    bool                m_focusfire;                    // common target between all active drones
 };
 
-#endif  // __EVEMU_SHIP_DRONEAI_H__
 
 /*  distance and speed attribs
  *     AttrMaxVelocity = 37,                       //Maximum velocity of ship

@@ -244,8 +244,8 @@ void TowerSE::SetOnline()
 
     SendSlimUpdate();
 
-    if (m_bubble->HasPlayers())
-        m_destiny->SendGFX14(m_self->itemID(),m_self->itemID(),m_self->typeID(),0,0,"effects.StructureOnline",0,1,1,-1,0);
+    // fixme if (m_bubble->HasPlayers())
+    // fixme     m_destiny->SendGFX14(m_self->itemID(),m_self->itemID(),m_self->typeID(),0,0,"effects.StructureOnline",0,1,1,-1,0);
 
     m_db.UpdateBaseData(m_data);
 
@@ -342,7 +342,7 @@ void TowerSE::UpdatePassword()
             sbh.mass = -1;      // always -1
             sbh.harmonic = m_harmonic;
         updates.push_back(sbh.Encode());
-        m_destiny->SendDestinyUpdates(updates); //consumed
+        // fixme  m_destiny->SendDestinyUpdates(updates); //consumed
     } else {
         m_harmonic = EVEPOS::Harmonic::Online;
         m_tdata.harmonic = m_harmonic;

@@ -31,7 +31,7 @@
 #include "system/TargetManager.h"
 
 
-DroneAIMgr::DroneAIMgr(DroneSE* pdSE)
+DroneAI::DroneAI(DroneSE* pdSE)
 : m_heading(NULL_ORIGIN),
 m_velocity(NULL_ORIGIN),
 targSE(nullptr),
@@ -72,7 +72,7 @@ m_moveTime(0.0)
 
 }
 
-void DroneAIMgr::Init() {
+void DroneAI::Init() {
     InventoryItemRef dRef = mySE->GetSelf();
     m_maxSpeed = (dRef->GetAttribute(AttrMaxVelocity).get_uint32());
     m_cycleTime = (dRef->GetAttribute(AttrSpeed).get_int());
@@ -217,7 +217,7 @@ void DroneAIMgr::Init() {
     _log(DRONE__MESSAGE, "DroneAI::Init() - %s  agility: %.4f, acceltime: %.2f", dRef->name(), m_agility, m_accelTime);
 }
 
-void DroneAIMgr::Process() {
+void DroneAI::Process() {
     if (!sConfig.drone.ProcessAll) {
         // disabled and invalid have movetime=0 to avoid tics;  nothing to process till new command received
         if (m_moveTime == 0)
@@ -853,7 +853,7 @@ void DroneAIMgr::Process() {
         Move(timeStamp);
 }
 
-void DroneAIMgr::Engage(PyDict* dict, int8 state/*0*/, bool repeat/*0*/) {
+void DroneAI::Engage(PyDict* dict, int8 state/*0*/, bool repeat/*0*/) {
     // this is the main entry point into drone movement and actions
     //  so....we gotta decide what the hell's going on here to start with...
 
@@ -1156,7 +1156,7 @@ void DroneAIMgr::Engage(PyDict* dict, int8 state/*0*/, bool repeat/*0*/) {
     OrbitTarget();
 }
 
-void DroneAIMgr::SetIdle() {
+void DroneAI::SetIdle() {
     if (m_state == DroneAI::State::Idle)
         return;
     if (!mySE->IsEnabled())
@@ -1177,7 +1177,7 @@ void DroneAIMgr::SetIdle() {
             SetAction(DroneAI::Action::Idle);
             if (previousOrder) {
                 if (is_log_enabled(DRONE__MESSAGE))
-                    sLog.Warning("DroneAIMgr::SetIdle(repeat)", " state is %s for %s.  Canceling GFX", GetStateName(m_state), mySE->GetName());
+                    sLog.Warning("DroneAI::SetIdle(repeat)", " state is %s for %s.  Canceling GFX", GetStateName(m_state), mySE->GetName());
                 // probably had some active gfx before returning to idle
                 SendGFX();
             }
@@ -1256,7 +1256,7 @@ void DroneAIMgr::SetIdle() {
     }
 }
 
-void DroneAIMgr::Target(SpaceEntity* pTargetSE) {
+void DroneAI::Target(SpaceEntity* pTargetSE) {
     // check for changing targets first
     if (targSE == pTargetSE) {
         // same target.  do nothing
@@ -1290,7 +1290,7 @@ void DroneAIMgr::Target(SpaceEntity* pTargetSE) {
     // test  do we need to set timer here?
 }
 
-void DroneAIMgr::ClearTarget() {
+void DroneAI::ClearTarget() {
     mySE->TargetMgr()->ClearTarget(targSE);
     //mySE->TargetMgr()->OnTarget(pSE, TargMgr::Mode::Lost);
 
@@ -1298,7 +1298,7 @@ void DroneAIMgr::ClearTarget() {
     SetIdle();
 }
 
-void DroneAIMgr::RepairTarget() {
+void DroneAI::RepairTarget() {
     _log(DRONE__AI_TRACE, "Drone %s(%u): RepairTarget: %s(%u) begin engaging.",
             mySE->GetName(), mySE->GetID(), targSE->GetName(), targSE->GetID());
 
@@ -1336,7 +1336,7 @@ void DroneAIMgr::RepairTarget() {
 //also check for special effects and write code to implement them
 //modifyTargetSpeedRange, modifyTargetSpeedChance
 //entityWarpScrambleChance
-void DroneAIMgr::AttackTarget() {
+void DroneAI::AttackTarget() {
     if (!mySE->TargetMgr()->CanAttack())
         return;
 
@@ -1354,7 +1354,7 @@ void DroneAIMgr::AttackTarget() {
             // damage attack here...
             Damage dam(mySE,
                        mySE->GetSelf(),
-                       m_formula.GetDroneToHit(mySE, targSE)
+                       TurretMath::GetDroneToHit(mySE, targSE)
                       );
 
             dam *= mySE->GetSelf()->GetAttribute(AttrDamageMultiplier).get_float();
@@ -1388,7 +1388,7 @@ void DroneAIMgr::AttackTarget() {
     }
 }
 
-void DroneAIMgr::MineTarget() {
+void DroneAI::MineTarget() {
     // note:  there are no ice harvesting drones
     // when mining drone's target is depleted, drone will get half cycle and not count in ore removed for module count
     float cycleVol(mySE->GetSelf()->GetAttribute(AttrMiningAmount).get_float());
@@ -1422,7 +1422,7 @@ void DroneAIMgr::MineTarget() {
     sStatMgr.Add(Stat::oreMined, cycleVol);
 }
 
-void DroneAIMgr::OrbitTarget() {
+void DroneAI::OrbitTarget() {
     if (m_maxSpeed == 0)
         return;
 
@@ -1582,7 +1582,7 @@ void DroneAIMgr::OrbitTarget() {
         sLog.Error("movetime", "set - OrbitTarget()  %s(%s)", GetStateName(m_state), GetActionName(m_action));
 }
 
-void DroneAIMgr::FindTarget() {
+void DroneAI::FindTarget() {
     // some drones wont be aggressive...
     switch (mySE->GetGroupID()) {
         case EVEDB::invGroups::Mining_Drone:
@@ -1721,7 +1721,7 @@ void DroneAIMgr::FindTarget() {
             // either of these with !aggressive isnt quite right...set aggression and continue?
             case DroneAI::State::Guarding:
             case DroneAI::State::Assisting: {
-                sLog.Blue("DroneAIMgr::FindTarget()", "%s and !aggressive", GetStateName(m_state));
+                sLog.Blue("DroneAI::FindTarget()", "%s and !aggressive", GetStateName(m_state));
                 //return;
             } break;
             // these probably have another target...continue
@@ -1749,7 +1749,7 @@ void DroneAIMgr::FindTarget() {
     }
 }
 
-void DroneAIMgr::AssignShip(ShipSE* pSE) {
+void DroneAI::AssignShip(ShipSE* pSE) {
     shipSE = pSE;
     if (shipSE == nullptr) {
         Abandon();
@@ -1763,7 +1763,7 @@ void DroneAIMgr::AssignShip(ShipSE* pSE) {
     }
 }
 
-void DroneAIMgr::Abandon() {
+void DroneAI::Abandon() {
     // drone abandoned.  clear everything and idle
     m_processTimer.Disable();
     m_webifierTimer.Disable();
@@ -1780,7 +1780,7 @@ void DroneAIMgr::Abandon() {
     fTargSE = nullptr;
 }
 
-void DroneAIMgr::ModuleActivated(SpaceEntity* pTargetSE) {
+void DroneAI::ModuleActivated(SpaceEntity* pTargetSE) {
     // for assisting, drone will engage any target assigned ship activates an offensive module on
     //   this is our notification
     // are we currently focused on anything?
@@ -1836,7 +1836,7 @@ void DroneAIMgr::ModuleActivated(SpaceEntity* pTargetSE) {
     }
 }
 
-void DroneAIMgr::ShipAddedTarget(SpaceEntity* pTargetSE) {
+void DroneAI::ShipAddedTarget(SpaceEntity* pTargetSE) {
     // our ship has added a new target...whatever shall we do??
     // see if focus has added this target already
     if (fTargSE == pTargetSE)
@@ -1883,7 +1883,7 @@ void DroneAIMgr::ShipAddedTarget(SpaceEntity* pTargetSE) {
     }
 }
 
-void DroneAIMgr::ShipTargeted(SpaceEntity* pSourceSE) {
+void DroneAI::ShipTargeted(SpaceEntity* pSourceSE) {
     // our ship has been redboxed
     if (!mySE->GetSelf()->GetAttribute(AttrDroneIsAgressive).get_bool()) {
         // damn, we gotta roll over and play nice...
@@ -1913,7 +1913,7 @@ void DroneAIMgr::ShipTargeted(SpaceEntity* pSourceSE) {
     }
 }
 
-void DroneAIMgr::MissileLaunched(Missile* pMissile) {
+void DroneAI::MissileLaunched(Missile* pMissile) {
     // TODO:  check mode, state and actions then react
     std::string text = "missile inbound";
     //01101101 01101001 01110011 01110011 01101001 01101100 01100101 00100000 01101001 01101110 01100010 01101111 01110101 01101110 01100100
@@ -1921,7 +1921,7 @@ void DroneAIMgr::MissileLaunched(Missile* pMissile) {
     shipSE->GetPilot()->SendNotifyMsg("Incoming Message: %s", BinString(text).c_str());
 }
 
-void DroneAIMgr::ReportDamage(uint8 type/*0*/, SpaceEntity* pSourceSE/*nullptr*/) {
+void DroneAI::ReportDamage(uint8 type/*0*/, SpaceEntity* pSourceSE/*nullptr*/) {
     // TODO:  check mode, state and actions then react
     std::string text = "damaged";
     //01100100 01100001 01101101 01100001 01100111 01100101 01100100
@@ -1932,7 +1932,7 @@ void DroneAIMgr::ReportDamage(uint8 type/*0*/, SpaceEntity* pSourceSE/*nullptr*/
     // types:  0=invalid, 1=shield loss, 2=armor loss
 }
 
-void DroneAIMgr::Targeted(SpaceEntity* pAgressor) {
+void DroneAI::Targeted(SpaceEntity* pAgressor) {
     _log(DRONE__AI_TRACE, "Drone %s(%u): Targeted by %s(%u) while %s & %s.", \
                 mySE->GetName(), mySE->GetID(), pAgressor->GetName(), \
                 pAgressor->GetID(), GetStateName(m_state)), GetActionName(m_action);
@@ -1946,7 +1946,7 @@ void DroneAIMgr::Targeted(SpaceEntity* pAgressor) {
     shipSE->GetPilot()->SendNotifyMsg("Incoming Message: %s", BinString(text).c_str());
 }
 
-bool DroneAIMgr::ValidTarget() {
+bool DroneAI::ValidTarget() {
     if (targSE == nullptr)
         return false;
     if (targSE->SysBubble() == nullptr)
@@ -1957,7 +1957,7 @@ bool DroneAIMgr::ValidTarget() {
     return true;
 }
 
-void DroneAIMgr::TargetDestroyed(SpaceEntity* pTargetSE) {
+void DroneAI::TargetDestroyed(SpaceEntity* pTargetSE) {
     if (targSE != pTargetSE) {
         // not current target...dont care
         return;
@@ -1967,7 +1967,7 @@ void DroneAIMgr::TargetDestroyed(SpaceEntity* pTargetSE) {
     ClearTarget();
 }
 
-void DroneAIMgr::TargetLost(SpaceEntity* pTargetSE) {
+void DroneAI::TargetLost(SpaceEntity* pTargetSE) {
     if (targSE != pTargetSE) {
         // not current target...dont care
         return;
@@ -2012,7 +2012,7 @@ void DroneAIMgr::TargetLost(SpaceEntity* pTargetSE) {
         case DroneAI::State::Approaching: {
             if (targSE == nullptr) {
                 // we dont have a target?  odd...
-                sLog.Warning("DroneAIMgr::TargetDestroyed()", "%s's targSE=null", mySE->GetName());
+                sLog.Warning("DroneAI::TargetDestroyed()", "%s's targSE=null", mySE->GetName());
             }
 
             if (fTargSE == nullptr) {
@@ -2052,7 +2052,7 @@ void DroneAIMgr::TargetLost(SpaceEntity* pTargetSE) {
     }
 }
 
-void DroneAIMgr::FocusFire(DroneSE* pFromSE, SpaceEntity* pTargetSE) {
+void DroneAI::FocusFire(DroneSE* pFromSE, SpaceEntity* pTargetSE) {
     // if we are sending this then ignore
     if (pFromSE == mySE)
         return;
@@ -2067,14 +2067,14 @@ void DroneAIMgr::FocusFire(DroneSE* pFromSE, SpaceEntity* pTargetSE) {
     mySE->Engage(pTargetSE);
 }
 
-void DroneAIMgr::ClearTargets() {
+void DroneAI::ClearTargets() {
     m_repeat = false;
     m_focusfire = false;
     mySE->TargetMgr()->ClearTargets();
     targSE = nullptr;
 }
 
-void DroneAIMgr::ClearAllTargets() {
+void DroneAI::ClearAllTargets() {
     m_repeat = false;
     m_focusfire = false;
     mySE->TargetMgr()->ClearAllTargets();
@@ -2082,7 +2082,7 @@ void DroneAIMgr::ClearAllTargets() {
     targSE = nullptr;
 }
 
-void DroneAIMgr::SendTrueState(int8 state) {
+void DroneAI::SendTrueState(int8 state) {
     _log(DRONE__AI_TRACE, "%s(%u) - sending true state %s.", mySE->GetName(), mySE->GetID(), GetStateName(state));
     OnDroneStateChange du;
         du.droneID = mySE->GetID();
@@ -2097,7 +2097,7 @@ void DroneAIMgr::SendTrueState(int8 state) {
         mySE->SysBubble()->BubblecastDestinyUpdate(&up, "Drone State Change");
 }
 
-bool DroneAIMgr::IsIdle() {
+bool DroneAI::IsIdle() {
     bool idle = false;
     // check state and action...
     switch (m_state) {
@@ -2163,7 +2163,7 @@ bool DroneAIMgr::IsIdle() {
     return idle;
 }
 
-uint32 DroneAIMgr::GetTargetDistance() {
+uint32 DroneAI::GetTargetDistance() {
     switch (m_action) {
         case DroneAI::Action::Idle:
         case DroneAI::Action::Invalid:
@@ -2185,7 +2185,7 @@ uint32 DroneAIMgr::GetTargetDistance() {
     return 0;
 }
 
-uint32 DroneAIMgr::GetTargetID() {
+uint32 DroneAI::GetTargetID() {
     switch (m_action) {
         case DroneAI::Action::Idle:
         case DroneAI::Action::Invalid:
@@ -2209,7 +2209,7 @@ uint32 DroneAIMgr::GetTargetID() {
     return 0;
 }
 
-SpaceEntity* DroneAIMgr::GetTargetSE() {
+SpaceEntity* DroneAI::GetTargetSE() {
     switch (m_action) {
         case DroneAI::Action::Idle:
         case DroneAI::Action::Invalid:
@@ -2231,7 +2231,7 @@ SpaceEntity* DroneAIMgr::GetTargetSE() {
     return nullptr;
 }
 
-float DroneAIMgr::GetSpeedFraction() {
+float DroneAI::GetSpeedFraction() {
     // this is for encodedestiny
     switch (m_action) {
         // if the drone is orbiting, send fractional speed
@@ -2256,48 +2256,48 @@ float DroneAIMgr::GetSpeedFraction() {
     return 1.0f;
 }
 
-bool DroneAIMgr::InProxmityDistance(SpaceEntity* pTargetSE) {
+bool DroneAI::InProxmityDistance(SpaceEntity* pTargetSE) {
     Vector3d delta = pTargetSE->GetPosition() - mySE->GetPosition();
     double dist = delta.Length();
     dist -= pTargetSE->GetRadius();
     return (dist < m_proximityDistance);
 }
 
-bool DroneAIMgr::InActionDistance(SpaceEntity* pTargetSE) {
+bool DroneAI::InActionDistance(SpaceEntity* pTargetSE) {
     Vector3d delta = pTargetSE->GetPosition() - mySE->GetPosition();
     double dist = delta.Length();
     dist -= pTargetSE->GetRadius();
     return (dist < sConfig.drone.InteractDistace);
 }
 
-bool DroneAIMgr::InOrbitDistance(SpaceEntity* pTargetSE) {
+bool DroneAI::InOrbitDistance(SpaceEntity* pTargetSE) {
     Vector3d delta = pTargetSE->GetPosition() - mySE->GetPosition();
     double dist = delta.Length();
     dist -= pTargetSE->GetRadius();
     return (dist < m_orbitDistance);
 }
-bool DroneAIMgr::InFalloffDistance(SpaceEntity* pTargetSE) {
+bool DroneAI::InFalloffDistance(SpaceEntity* pTargetSE) {
     Vector3d delta = pTargetSE->GetPosition() - mySE->GetPosition();
     double dist = delta.Length();
     dist -= pTargetSE->GetRadius();
     return (dist < m_falloffDistance);
 }
 
-bool DroneAIMgr::InEngageDistance(SpaceEntity* pTargetSE) {
+bool DroneAI::InEngageDistance(SpaceEntity* pTargetSE) {
     Vector3d delta = pTargetSE->GetPosition() - mySE->GetPosition();
     double dist = delta.Length();
     dist -= pTargetSE->GetRadius();
     return (dist < m_engageDistance);
 }
 
-bool DroneAIMgr::InChaseDistance(SpaceEntity* pTargetSE) {
+bool DroneAI::InChaseDistance(SpaceEntity* pTargetSE) {
     Vector3d delta = pTargetSE->GetPosition() - mySE->GetPosition();
     double dist = delta.Length();
     dist -= pTargetSE->GetRadius();
     return (dist < m_chaseDistance);
 }
 
-bool DroneAIMgr::InMaxDistance(SpaceEntity* pTargetSE) {
+bool DroneAI::InMaxDistance(SpaceEntity* pTargetSE) {
     Vector3d delta = pTargetSE->GetPosition() - mySE->GetPosition();
     double dist = delta.Length();
     dist -= pTargetSE->GetRadius();
@@ -2307,7 +2307,7 @@ bool DroneAIMgr::InMaxDistance(SpaceEntity* pTargetSE) {
 
 // destiny methods below...
 
-void DroneAIMgr::Stop() {
+void DroneAI::Stop() {
     m_velocity = NULL_ORIGIN;
     UpdatePosition();
     m_moveTime = 0;
@@ -2325,7 +2325,7 @@ void DroneAIMgr::Stop() {
     }
 }
 
-void DroneAIMgr::Pause() {
+void DroneAI::Pause() {
     // this will set position and velocity, then stop further processing until next command
     //  velocity is set for faking proper weapon tracking and tohit calc's
 
@@ -2354,7 +2354,7 @@ void DroneAIMgr::Pause() {
         sLog.Error("movetime", "0 - Pause() %s(%s)", GetStateName(m_state), GetActionName(m_action));
 }
 
-void DroneAIMgr::Move(double timeStamp) {
+void DroneAI::Move(double timeStamp) {
     if (m_maxSpeed == 0)
         return;
 
@@ -2605,7 +2605,7 @@ void DroneAIMgr::Move(double timeStamp) {
     UpdatePosition(false);
 }
 
-void DroneAIMgr::MoveDrone(SpaceEntity* pTargetSE) {
+void DroneAI::MoveDrone(SpaceEntity* pTargetSE) {
     Vector3d head = pTargetSE->GetPosition() - mySE->GetPosition();
     head.Normalize();
     Vector3d pos = pTargetSE->GetPosition();
@@ -2615,7 +2615,7 @@ void DroneAIMgr::MoveDrone(SpaceEntity* pTargetSE) {
     mySE->SetPosition(pos);
 }
 
-void DroneAIMgr::UpdatePosition(bool update/*false*/) {
+void DroneAI::UpdatePosition(bool update/*false*/) {
     // basic position updating - variables updated elsewhere
     Vector3d pos = mySE->GetPosition();
     pos.x += m_velocity.x;
@@ -2639,7 +2639,7 @@ void DroneAIMgr::UpdatePosition(bool update/*false*/) {
     }
 }
 
-void DroneAIMgr::SendSpeedFraction() {
+void DroneAI::SendSpeedFraction() {
     CmdSetSpeedFraction ssf;
         ssf.entityID = mySE->GetID();
         ssf.fraction = m_userSpeedFraction;
@@ -2657,7 +2657,7 @@ void DroneAIMgr::SendSpeedFraction() {
  *    mySE->SysBubble()->GetID(), m_targBubble->GetID());
  * } */
 
-void DroneAIMgr::CancelGFX() {
+void DroneAI::CancelGFX() {
     if (m_repeat) {
         // if repeat is set, then we probably have active GFX.  cancel it
         m_repeat = false;
@@ -2665,7 +2665,7 @@ void DroneAIMgr::CancelGFX() {
     }
 }
 
-void DroneAIMgr::SendGFX(Client* pClient/*nullptr*/) {
+void DroneAI::SendGFX(Client* pClient/*nullptr*/) {
     if (m_effectID < 1) {
         // not necessarily an error.  just make note
         _log(DRONE__WARNING, "m_effectID < 1 for typeID:%u (%s).", mySE->GetTypeID(), mySE->GetName());
@@ -2719,19 +2719,19 @@ void DroneAIMgr::SendGFX(Client* pClient/*nullptr*/) {
     PyDecRef(up);
 }
 
-void DroneAIMgr::SetAction(int8 actionID/*-1*/) {
+void DroneAI::SetAction(int8 actionID/*-1*/) {
     _log(DRONE__AI_TRACE, "%s(%u) - setting action from %s to %s.", \
             mySE->GetName(), mySE->GetID(), GetActionName(m_action), GetActionName(actionID));
     m_action = actionID;
 }
 
-void DroneAIMgr::SetState(int8 stateID/*-1*/) {
+void DroneAI::SetState(int8 stateID/*-1*/) {
     _log(DRONE__AI_TRACE, "%s(%u) - setting state from %s to %s.", \
             mySE->GetName(), mySE->GetID(), GetStateName(m_state), GetStateName(stateID));
     m_state = stateID;
 }
 
-void DroneAIMgr::MarkPoint(const Vector3d& position) {
+void DroneAI::MarkPoint(const Vector3d& position) {
     std::string name = "drone marker", desc = "";
     // create jetcan to visualize point in space
     ItemData idata(23, ownerSystem, mySE->GetLocationID(), flagAutoFit, name.c_str(), position, desc.c_str());
@@ -2753,7 +2753,7 @@ void DroneAIMgr::MarkPoint(const Vector3d& position) {
     mySE->SystemMgr()->AddMarker(cSE);
 }
 
-int8 DroneAIMgr::GetState() {
+int8 DroneAI::GetState() {
     switch (m_state) {
         case DroneAI::State::Invalid:
             return DroneAI::State::Idle;
@@ -2788,7 +2788,7 @@ int8 DroneAIMgr::GetState() {
     }
 }
 
-const char* DroneAIMgr::GetStateName(int8 stateID) {
+const char* DroneAI::GetStateName(int8 stateID) {
     switch (stateID) {
         case DroneAI::State::Idle:            return "\033[1mIdle\033[0m";
         case DroneAI::State::Combat:          return "\033[1mCombat\033[0m";
@@ -2809,7 +2809,7 @@ const char* DroneAIMgr::GetStateName(int8 stateID) {
     }
 }
 
-const char* DroneAIMgr::GetActionName(int8 stateID) {
+const char* DroneAI::GetActionName(int8 stateID) {
     switch (stateID) {
         case DroneAI::Action::Idle:            return "\033[1mIdle\033[0m";
         case DroneAI::Action::Engaged:         return "\033[1mEngaged\033[0m";

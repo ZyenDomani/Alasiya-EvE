@@ -81,7 +81,7 @@ void TurretModule::ApplyDamage()
             m_chargeRef->GetAttribute(AttrThermalDamage).get_float(),
             m_chargeRef->GetAttribute(AttrEmDamage).get_float(),
             m_chargeRef->GetAttribute(AttrExplosiveDamage).get_float(),
-            m_formula.GetToHit(m_shipRef, this, m_targetSE)
+            TurretMath::GetToHit(m_shipRef, this, m_targetSE)
     );
     
     d *= GetAttribute(AttrDamageMultiplier).get_float();

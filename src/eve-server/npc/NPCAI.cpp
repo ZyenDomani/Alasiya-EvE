@@ -1821,7 +1821,7 @@ void NPCAI::ReportDamage(uint8 type, SpaceEntity* pSourceSE) {
 void NPCAI::ShootTarget() {
     Damage d(myNPC,
              m_self,
-             m_formula.GetNPCToHit(myNPC, m_attackTarget)
+             TurretMath::GetNPCToHit(myNPC, m_attackTarget)
             );
 
     d *= m_damageMultiplier;
