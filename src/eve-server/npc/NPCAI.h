@@ -26,7 +26,6 @@
 
 #pragma once
 
-#include "ship/modules/TurretMath.h"
 #include "system/SpaceEntity.h"
 
 class Client;

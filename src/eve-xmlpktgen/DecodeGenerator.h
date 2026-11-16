@@ -24,8 +24,8 @@
     Author:        Zhur
 */
 
-#ifndef __DECODEGENERATOR_H_INCL__
-#define __DECODEGENERATOR_H_INCL__
+#pragma once
+
 
 #include "Generator.h"
 
@@ -89,6 +89,3 @@ private:
     std::stack<std::string> mVariableStack;
     uint32 mItemNumber;
 };
-
-
-#endif

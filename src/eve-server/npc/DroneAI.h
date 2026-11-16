@@ -104,7 +104,7 @@ public:
     void                ClearTargets();                 // clear our targets and set repeat=false
     void                ClearAllTargets();              // clear all targets and set repeat=false
 
-    int8                GetState();                     // for EncodeDestiny()
+    int8                GetState();                     // for EncodeStateData()
 
     void                Abandon();                      // disable timers and null targets
     void                AssignShip(ShipSE* pSE);
@@ -198,8 +198,8 @@ protected:
 
 
 private:
-    SpaceEntity*       targSE;
-    SpaceEntity*       fTargSE;                        // FocusFire target (for later)
+    SpaceEntity*       targetSE;
+    SpaceEntity*       ftargetSE;                        // FocusFire target (for later)
     DroneSE*            mySE;
     ShipSE*             shipSE;
 

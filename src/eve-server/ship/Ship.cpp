@@ -16,6 +16,7 @@
 #include "system/SolarSystem.h"
 #include "system/SystemBubble.h"
 #include "system/SystemManager.h"
+#include <system/BallPark.h>
 
 /*
  * ShipItem
@@ -373,7 +374,7 @@ void ShipItem::Eject()
         m_ModuleManager->CharacterLeavingShip();
     }
     SaveShip();
-    // linked weapons will be persistant here.
+    // linked weapons will be persistent here.
     //UnlinkAllWeapons();
 }
 
@@ -2501,6 +2502,14 @@ bool ShipSE::IsLogin() {
     return false;
 }
 
+void ShipSE::Eject() {
+    // basic updates for ejecting from ship...does <Eject> stop ship?
+    // MAKE SURE...pod is set to troll with ship's current velocity.
+    //UpdateOldShip(pSE->GetShipSE());
+    //SendJettisonPacket();
+    //BallPark::Stop();
+}
+
 void ShipSE::Dock() {
     m_shipRef->Dock();
 
@@ -2523,7 +2532,25 @@ void ShipSE::Jump(int32 fromGateID, bool showCloak/*true*/) {
     }
 
     m_shipRef->Jump();
-    // fixme m_destiny->Jump(fromGateID, showCloak);
+
+    // set vars to show ship stopped but dont call Stop() or Halt() here.
+    MoveData* mData = GetMoveData();
+    BallPark::Halt(mData);
+
+    SpaceEntity* pSE = m_system->GetEntityByID(fromGateID);
+    m_system->SendGateActivity(pSE);
+    if (!mData->IsCloaked())
+        m_system->SendJumpOut(pSE);
+
+    mData->SetCloaked(showCloak);
+
+    if (m_bubble != nullptr)
+        m_bubble->RemoveExclusive(this);
+
+    if (mData->IsAutoPilot()) {
+        // this is a hack, but allows me to not refactor everything for AP
+        mData->SetTargetSE(this);
+    }
 }
 
 void ShipSE::Warp() {
@@ -2541,15 +2568,62 @@ void ShipSE::RemoveTarget(SpaceEntity* pSE) {
     //m_targMgr->OnTarget(pSE, TargMgr::Mode::Lost, TargMgr::Msg::StoppedTargeting);
 }
 
-void ShipSE::EncodeDestiny( Buffer& into) {
+/*
+ *                  [PyTuple 2 items]
+ *                    [PyInt 517]
+ *                    [PyTuple 2 items]
+ *                      [PyString "OnSpecialFX"]
+ *                      [PyTuple 14 items]
+ *                        [PyIntegerVar 1002332228246]
+ *                        [PyIntegerVar 1002333797260]
+ *                        [PyInt 11578]
+ *                        [PyNone]
+ *                        [PyNone]
+ *                        [PyList 0 items]
+ *                        [PyString "effects.Cloaking"]
+ *                        [PyBool False]
+ *                        [PyInt 1]
+ *                        [PyInt 1]
+ *                        [PyInt -1]
+ *                        [PyInt 0]
+ *                        [PyIntegerVar 129527563080275219]
+ *                        [PyNone]
+ *                [PyBool False]
+ */
+
+void ShipSE::Cloak() {
+    if (GetMoveData()->IsCloaked())
+        return;
+    GetMoveData()->SetCloaked(true);
+    m_system->SendGFX10(this, "effects.Cloak");
+
+    if (m_bubble != nullptr)
+        m_bubble->RemoveExclusive(this);
+}
+
+void ShipSE::UnCloak() {
+    if (!GetMoveData()->IsCloaked())
+        return;
+    GetMoveData()->SetCloaked(false);
+    m_system->SendGFX10(this, "effects.Uncloak");
+
+    /*  i think this is just for modules...
+     *    SetBallUncloak du;
+     *        du.entityID = mySE->GetID();
+     *    PyTuple *up = du.Encode();
+     *    SendSingleDestinyUpdate(&up);
+     *    PyDecRef(up);
+     */
+
+    if (m_bubble != nullptr)
+        m_bubble->AddBallExclusive(this);
+}
+
+void ShipSE::EncodeStateData(Buffer& into) {
+    MoveData* mData = GetMoveData();
     using namespace Destiny;
 
-    uint8 mode = 0; // fixme m_destiny->GetBallMode(); //Ball::Mode::STOP;
-/*
-    NameStruct name;
-        name.name = GetName();
-        name.name_len = sizeof(name.name);
-  */
+    uint8 mode = mData->GetBallMode(); //Ball::Mode::STOP;
     BallHeader head = BallHeader();
         head.entityID = GetID();
         head.mode = mode;
@@ -2573,36 +2647,37 @@ void ShipSE::EncodeDestiny( Buffer& into) {
         } else {
             head.flags = Ball::Flag::IsFree;
         }
-    into.Append(head);/*
+    into.Append(head);
     MassSector mass = MassSector();
         mass.mass = m_self->mass();
-        mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
+        mass.cloak = (mData->IsCloaked() ? 1 : 0);
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
         mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
     into.Append(mass);
+    const Vector3d& velocity = mData->GetVelocity();
     DataSector data = DataSector();
+        data.velX = velocity.x;
+        data.velY = velocity.y;
+        data.velZ = velocity.z;
+        data.maxSpeed = mData->GetMaxSpeed();
+        data.speedfraction = mData->GetSpeedFraction();
         data.inertia = m_self->GetAttribute(AttrInertiaMod).get_float();
-        data.maxSpeed = m_destiny->GetMaxVelocity();
-        data.velX = m_destiny->GetVelocity().x;
-        data.velY = m_destiny->GetVelocity().y;
-        data.velZ = m_destiny->GetVelocity().z;
-        data.speedfraction = m_destiny->GetSpeedFraction();
-    into.Append(data);*/
-    switch (mode) {/*
+    into.Append(data);
+    switch (mode) {
         case Ball::Mode::WARP: {
-            Vector3d target = m_destiny->GetTargetPoint();
+            const Vector3d& target = mData->GetTargetPoint();
             WARP_Struct warp;
                 warp.formationID = -1;
                 warp.targX = target.x;
                 warp.targY = target.y;
                 warp.targZ = target.z;
-                warp.warpFactor = m_destiny->GetWarpSpeed();       //ship warp speed x10  (x * 0.1 in client)
+                warp.warpFactor = mData->warpState.warpSpeedAU * 10;    //ship warp speed in AU x10  (x * 0.1 in client)
                 // warp timing and data
-                if (m_destiny->IsWarping()) {
-                    warp.effectStamp    = m_destiny->GetTicStamp();   //timestamp when warp started
-                    warp.warpDistance   = m_destiny->GetTargetDistance();
-                    warp.minRange       = m_destiny->GetFollowDistance();
+                if (mData->IsWarping()) {
+                    warp.effectStamp    = mData->GetTicStamp();   //timestamp when warp started
+                    warp.warpDistance   = mData->GetTargetDistance();
+                    warp.minRange       = mData->GetDesiredDistance();
                     /* followRange / warpDistance  total warp distance
                      * -4616189618054758400 -1.0   while aligning
                      * 4802252820405690112   77.28 au
@@ -2615,8 +2690,9 @@ void ShipSE::EncodeDestiny( Buffer& into) {
                      * 4669471951536783360     15000 m   ap default distance
                      * 0
                      *
-                     * /  // fixme
+                     */
                 } else {
+                    // these are correct 14Nov26
                     warp.effectStamp    = -1;      // counter for stuck on align (tics at -1; warp forced on 0)
                     warp.warpDistance   = -1.0;    // warp distance is nil during align
                     warp.minRange       = 0.0;     // minRange is nil during align
@@ -2626,26 +2702,26 @@ void ShipSE::EncodeDestiny( Buffer& into) {
         case Ball::Mode::FOLLOW: {
             FOLLOW_Struct follow;
                 follow.formationID = -1;
-                follow.followID = m_destiny->GetTargetID();
-                follow.followRange = m_destiny->GetTargetDistance();
+                follow.followID = mData->GetTargetSE()->GetID();
+                follow.followRange = mData->GetTargetDistance();
             into.Append(follow);
         }  break;
         case Ball::Mode::ORBIT: {
             ORBIT_Struct orbit;
                 orbit.formationID = -1;
-                orbit.targetID = m_destiny->GetTargetID();
-                orbit.followRange = m_destiny->GetTargetDistance();
+                orbit.targetID = mData->GetTargetSE()->GetID();
+                orbit.followRange = mData->GetTargetDistance();
             into.Append(orbit);
         }  break;
         case Ball::Mode::GOTO: {
-            Vector3d target = m_destiny->GetTargetPoint();
+            Vector3d targPt = mData->GetTargetPoint();
             GOTO_Struct go;
                 go.formationID = -1;
-                go.x = target.x;
-                go.y = target.y;
-                go.z = target.z;
+                go.x = targPt.x;
+                go.y = targPt.y;
+                go.z = targPt.z;
             into.Append(go);
-        }  break;*/
+        }  break;
         default: {
             STOP_Struct main;
                 main.formationID = -1;
@@ -2653,24 +2729,9 @@ void ShipSE::EncodeDestiny( Buffer& into) {
         } break;
     }
 
-    std::string modeStr = "Goto";
-    switch (mode) {
-        case 1: modeStr = "Follow"; break;
-        case 2: modeStr = "Stop"; break;
-        case 3: modeStr = "Warp"; break;
-        case 4: modeStr = "Orbit"; break;
-        case 5: modeStr = "Missile"; break;
-        case 6: modeStr = "Mushroom"; break;
-        case 7: modeStr = "Boid"; break;
-        case 8: modeStr = "Troll"; break;
-        case 9: modeStr = "Miniball"; break;
-        case 10: modeStr = "Field"; break;
-        case 11: modeStr = "Rigid"; break;
-        case 12: modeStr = "Formation"; break;
-    }
-
-    _log(SE__DESTINY, "ShipSE::EncodeDestiny(): %s - id:%lli, mode:%s, flags:0x%X, Vel:%.1f, %.1f, %.1f", \
-            GetName(), head.entityID, modeStr.c_str(), head.flags, data.velX, data.velY, data.velZ);
+    if (is_log_enabled(SE__DESTINY))
+        _log(SE__DESTINY, "ShipSE::EncodeStateData(): %s - id:%lli, mode:%s, flags:0x%X, Vel:%.1f, %.1f, %.1f", \
+                GetName(), head.entityID, sDataMgr.GetBallModeName(mode), head.flags, data.velX, data.velY, data.velZ);
 }
 
 void ShipSE::MakeDamageState(DoDestinyDamageState &into) {

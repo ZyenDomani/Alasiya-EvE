@@ -39,6 +39,7 @@
 #include "pos/Structure.h"
 #include "ship/BeyonceService.h"
 #include "station/StationDataMgr.h"
+#include "system/BallPark.h"
 #include "system/BookmarkService.h"
 #include "system/Container.h"
 #include "system/SystemBubble.h"
@@ -154,7 +155,12 @@ PyResult BeyonceBound::Handle_CmdStop(PyCallArgs &call) {
 
     call.client->SetUndock(false);
 
-    pDestiny->Stop();
+    ShipSE* sSE = call.client->GetShipSE();
+    MoveData* mData = sSE->GetMoveData();
+    if (mData == nullptr)
+        mData = sSE->CreateMoveData();
+
+    BallPark::Stop(mData);
 
     return PyStatic.NewNone();
 }
@@ -168,14 +174,21 @@ PyResult BeyonceBound::Handle_CmdGotoDirection(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
-    //sLog.Cyan("GotoDirection", "%.4f, %.4f, %.4f", arg.x, arg.y, arg.z);
     call.client->SetInvul(false);
     call.client->SetUndock(false);
 
-    ->SetAutoPilot(false);
+    ShipSE* sSE = call.client->GetShipSE();
+    MoveData* mData = sSE->GetMoveData();
+    if (mData == nullptr)
+        mData = sSE->CreateMoveData();
 
-    const Vector3d dir(arg.x, arg.y, arg.z);
-    ->GotoDirection(dir);
+    mData->SetAutoPilot(false);
+
+    Vector3d direction(arg.x, arg.y, arg.z);
+    mData->SetHeading(direction);
+    mData->SetTargetPoint(mData->GetMySE()->GetPosition() + (direction * 1e9));
+
+    BallPark::GotoDirection(mData);
 
     return PyStatic.NewNone();
 }
@@ -191,7 +204,12 @@ PyResult BeyonceBound::Handle_CmdSetSpeedFraction(PyCallArgs &call) {
     _log(AUTOPILOT__MESSAGE, "%s called SetSpeedFraction to %.3f. AP: %s", \
             call.client->GetName(), arg.arg, (call.client->IsAutoPilot() ? "true" : "false"));
 
-    ->SetSpeedFraction(arg.arg);
+    ShipSE* sSE = call.client->GetShipSE();
+    MoveData* mData = sSE->GetMoveData();
+    if (mData == nullptr)
+        mData = sSE->CreateMoveData();
+
+    BallPark::SetSpeedFraction(mData, arg.arg);
 
     return PyStatic.NewNone();
 }
@@ -219,9 +237,16 @@ PyResult BeyonceBound::Handle_CmdAlignTo(PyCallArgs &call) {
 
     call.client->SetInvul(false);
     call.client->SetUndock(false);
-    ->SetAutoPilot(false);
 
-    ->AlignTo(pSE);
+    ShipSE* sSE = call.client->GetShipSE();
+    MoveData* mData = sSE->GetMoveData();
+    if (mData == nullptr)
+        mData = sSE->CreateMoveData();
+
+    mData->SetAutoPilot(false);
+    mData->SetTargetSE(pSE);
+    mData->SetTargetPoint(pSE->GetPosition());
+    BallPark::AlignTo(mData);
 
     return PyStatic.NewNone();
 }
@@ -263,7 +288,6 @@ PyResult BeyonceBound::Handle_CmdStargateJump(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
-    /** @todo  check distance from ship to gate */
     SpaceEntity* pGateSE = call.client->SystemMgr()->GetSE(args.fromStargateID);
     if (pGateSE == nullptr) {
         call.client->SendNotifyMsg("Error - Stargate not found.");
@@ -279,7 +303,15 @@ PyResult BeyonceBound::Handle_CmdStargateJump(PyCallArgs &call) {
     } else {
         // {'FullPath': u'UI/Messages', 'messageID': 277027, 'label': u'GenericTooFarAway'}(u'You are too far away to do that.', None, None)
         call.client->SendNotifyMsg( "You are too far from the Gate to activate it. You need to be within 2500m but are %.0fm.", dist);
-        ->SetPosition(call.client->GetShip()->position(), true);
+
+        ShipSE* sSE = call.client->GetShipSE();
+        MoveData* mData = sSE->GetMoveData();
+        if (mData == nullptr)
+            mData = sSE->CreateMoveData();
+
+        mData->SetTargetSE(pGateSE);
+        mData->SetTargetPoint(pGateSE->GetPosition());
+        BallPark::ApproachBall(mData);
         return PyStatic.NewNone();
     }
 
@@ -306,9 +338,20 @@ PyResult BeyonceBound::Handle_CmdFollowBall(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
-    SpaceEntity* pSE = pSystem->GetSE(args.ballID);
-    if (pSE == nullptr) {
+    SpaceEntity* targetSE = pSystem->GetSE(args.ballID);
+    if (targetSE == nullptr) {
         _log(CLIENT__ERROR, "%s: Unable to find entity %i to Follow/Approach.", call.client->GetName(), args.ballID);
+        return PyStatic.NewNone();
+    }
+
+    ShipSE* sSE = call.client->GetShipSE();
+    MoveData* mData = sSE->GetMoveData();
+    if (mData == nullptr)
+        mData = sSE->CreateMoveData();
+
+    mData->SetTargetSE(targetSE);
+    if (!BallPark::ValidTarget(mData)) {
+        BallPark::Stop(mData);
         return PyStatic.NewNone();
     }
 
@@ -316,10 +359,13 @@ PyResult BeyonceBound::Handle_CmdFollowBall(PyCallArgs &call) {
     call.client->SetUndock(false);
 
     // ap sends distance as float.  all others use int
-    //if (args.distance->IsFloat())
-        //pDestiny->SetAutoPilot(true);
+    if (args.distance->IsFloat())
+        mData->SetAutoPilot(true);
 
-    ->FollowBall(pSE, PyRep::IntegerValueI32(args.distance));
+    mData->SetTargetPoint(mData->GetMySE()->GetPosition());
+    mData->SetDistance(PyRep::IntegerValueI32(args.distance) + mData->GetMySE()->GetRadius() + targetSE->GetRadius());
+
+    BallPark::FollowBall(mData);
 
     return PyStatic.NewNone();
 }
@@ -327,49 +373,62 @@ PyResult BeyonceBound::Handle_CmdFollowBall(PyCallArgs &call) {
 PyResult BeyonceBound::Handle_CmdGotoBookmark(PyCallArgs &call) {
     _log(AUTOPILOT__MESSAGE, "%s called GotoBookmark. AP: %s", call.client->GetName(), (call.client->IsAutoPilot() ? "true" : "false"));
 
-
     SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
-    ->SetAutoPilot(false);
-
-    double x(0.0), y(0.0), z(0.0);
-    uint16 typeID = 0;
-    uint32 itemID(0), locationID = 0;
-
     BookmarkService* pBMSvc = (BookmarkService*)(call.client->services().LookupService( "bookmark" ));
-
     if (pBMSvc == nullptr) {
         sLog.Error( "BeyonceService::Handle_GotoBookmark()", "Attempt to access BookmarkService via (BookmarkService*)(call.client->services().LookupService(\"bookmark\")) returned NULL." );
         return PyStatic.NewNone();
-    } else {
-        pBMSvc->LookupBookmark(arg.arg, itemID, typeID, locationID, x, y, z);
-
-        if (typeID == 5) {
-            if (call.client->GetSystemID() != locationID) {
-                //  this bm is for different system.  make and send error here.
-                return PyStatic.NewNone();
-            }
-
-            Vector3d point(x, y, z);
-            ->GotoPoint(point);
-        } else {
-            // Bookmark type is of a static system entity, so search for it and obtain its coordinates:
-            SpaceEntity* pSE = call.client->SystemMgr()->GetSE(itemID);
-            if (pSE == nullptr) {
-                sLog.Error( "BeyonceService::Handle_GotoBookmark()", "%s: unable to find location %d", call.client->GetName(), itemID );
-                return PyStatic.NewNone();
-            }
-
-            ->GotoPoint( pSE->GetPosition() );
-        }
     }
+
+    double x = 0.0, y = 0.0, z = 0.0;
+    uint32 itemID =0, locationID = 0;
+    uint16 typeID = 0;
+
+    ShipSE* sSE = call.client->GetShipSE();
+    MoveData* mData = sSE->GetMoveData();
+    if (mData == nullptr)
+        mData = sSE->CreateMoveData();
 
     call.client->SetInvul(false);
     call.client->SetUndock(false);
+
+    mData->SetAutoPilot(false);
+    pBMSvc->LookupBookmark(arg.arg, itemID, typeID, locationID, x, y, z);
+
+    if (typeID == 5) {
+        if (call.client->GetSystemID() != locationID) {
+            // todo: this bm is for different system.  make and send error here.
+            return PyStatic.NewNone();
+        }
+
+        Vector3d point(x, y, z);
+        mData->SetTargetPoint(point);
+        mData->SetHeading(point - mData->GetMySE()->GetPosition());
+        //mData->SetTargetDistance(mData->desiredHeading.Length());
+        BallPark::GotoPoint(mData);
+    } else {
+        // Bookmark type is of a static system entity, so search for it and obtain its coordinates:
+        SpaceEntity* targetSE = call.client->SystemMgr()->GetSE(itemID);
+        if (targetSE == nullptr) {
+            sLog.Error( "BeyonceService::Handle_GotoBookmark()", "%s: unable to find location %d", call.client->GetName(), itemID );
+            return PyStatic.NewNone();
+        }
+
+        mData->SetTargetSE(targetSE);
+        if (!BallPark::ValidTarget(mData)) {
+            BallPark::Stop(mData);
+            return PyStatic.NewNone();
+        }
+
+        mData->SetTargetPoint(targetSE->GetPosition());
+        mData->SetDistance(0);
+        BallPark::FollowBall(mData);
+    }
 
     return PyStatic.NewNone();
 }
@@ -377,7 +436,7 @@ PyResult BeyonceBound::Handle_CmdGotoBookmark(PyCallArgs &call) {
 PyResult BeyonceBound::Handle_CmdOrbit(PyCallArgs &call) {
     // is orbiting even enabled?
     if (!sConfig.debug.UseOrbit) {
-        call.client->SendNotifyMsg( "Orbiting is disabled due to excessive desync.");
+        call.client->SendNotifyMsg("Orbiting is disabled due to excessive desync.");
         return PyStatic.NewNone();
     }
 
@@ -391,25 +450,40 @@ PyResult BeyonceBound::Handle_CmdOrbit(PyCallArgs &call) {
     }
 
     if (is_log_enabled(SERVICE__CALL_DUMP))
-    call.Dump(SERVICE__CALL_DUMP);
+        call.Dump(SERVICE__CALL_DUMP);
+
     Call_Orbit args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
-
-    SpaceEntity* pEntity = pSystem->GetSE(args.entityID);
-    if (pEntity == nullptr) {
+    SpaceEntity* targetSE = pSystem->GetSE(args.entityID);
+    if (targetSE == nullptr) {
         _log(CLIENT__ERROR, "%s: Unable to find entity %u to Orbit.", call.client->GetName(), args.entityID);
         return PyStatic.NewNone();
     }
 
+    ShipSE* sSE = call.client->GetShipSE();
+    MoveData* mData = sSE->GetMoveData();
+    if (mData == nullptr)
+        mData = sSE->CreateMoveData();
+
+    mData->SetTargetSE(targetSE);
+    if (!BallPark::ValidTarget(mData)) {
+        BallPark::Stop(mData);
+        return PyStatic.NewNone();
+    }
+
+    mData->SetAutoPilot(false);
     call.client->SetInvul(false);
     call.client->SetUndock(false);
-    ->SetAutoPilot(false);
 
-    ->OrbitBall(pEntity, PyRep::IntegerValueU32(args.range));
+    // not sure if i wanna use desired or target here...currently orbit calc's use desired
+    mData->SetDistance(PyRep::IntegerValueU32(args.range) + mData->GetMySE()->GetRadius() + targetSE->GetRadius());
+    //mData->targetDistance = mData->desiredDistance + mData->GetMySE()->GetRadius() + targetSE->GetRadius();
+
+    BallPark::OrbitBall(mData);
 
     return PyStatic.NewNone();
 }
@@ -418,20 +492,22 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
     _log(AUTOPILOT__MESSAGE, "%s called WarpToStuff. AP: %s", call.client->GetName(), (call.client->IsAutoPilot() ? "true" : "false"));
 
     if (is_log_enabled(SERVICE__CALL_DUMP)) {
-  _log(SERVICE__CALL_DUMP, "BeyonceBound::Handle_CmdWarpToStuff() - size %zu", call.tuple->size() );
-   call.Dump(SERVICE__CALL_DUMP);
+        _log(SERVICE__CALL_DUMP, "BeyonceBound::Handle_CmdWarpToStuff() - size %zu", call.tuple->size() );
+        call.Dump(SERVICE__CALL_DUMP);
     }
 
-   Client* pClient = call.client;
-   if (pClient->GetShipSE()->SysBubble() == nullptr) {
-       codelog(CLIENT__ERROR, "%s: Client is not in a bubble!", pClient->GetName());
-       return PyStatic.NewNone();
-   }
-   /** @todo (allan) finish warp scramble system */
-   // >0 means ship cannot warp (warp stabs are neg values, warp scrams are pos values)
-   if (pClient->GetShip()->GetAttribute(AttrWarpScrambleStatus) > 0)
-        throw UserError("WarpScrambled");
+    if (call.tuple->size() < 2)
+        return PyStatic.NewNone();
 
+    Client* pClient = call.client;
+    if (pClient->GetShipSE()->SysBubble() == nullptr) {
+        codelog(CLIENT__ERROR, "%s: Client is not in a bubble!", pClient->GetName());
+        return PyStatic.NewNone();
+    }
+    /** @todo (allan) finish warp scramble system */
+    // >0 means ship cannot warp (warp stabs are neg values, warp scrams are pos values)
+    if (pClient->GetShip()->GetAttribute(AttrWarpScrambleStatus) > 0)
+        throw UserError("WarpScrambled");
 
     SystemManager* pSystem = pClient->SystemMgr();
     if (pSystem == nullptr) {
@@ -439,7 +515,12 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
-    ->SetAutoPilot(false);
+    ShipSE* sSE = call.client->GetShipSE();
+    MoveData* mData = sSE->GetMoveData();
+    if (mData == nullptr)
+        mData = sSE->CreateMoveData();
+
+    mData->SetAutoPilot(false);
 
     bool fleet = false;
     if (call.byname.find("fleet") != call.byname.end())
@@ -452,7 +533,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
         distance = PyRep::IntegerValueI32(call.byname.find("minRange")->second);
 
     Vector3d warpToPoint = NULL_ORIGIN;
-    SpaceEntity* pSE = nullptr;
+    SpaceEntity* targetSE = nullptr;
     int32 radius = 0;
     uint32 toID = 0;
     std::string stringArg = "";
@@ -466,8 +547,8 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
 
     std::string type = PyRep::StringContent(call.tuple->GetItem(0));
     if (type == "item" ) {
-        pSE = pSystem->GetSE(toID);
-        if (pSE == nullptr) {
+        targetSE = pSystem->GetSE(toID);
+        if (targetSE == nullptr) {
             codelog(CLIENT__ERROR, "%s: unable to find item location %u in %s(%u)", pClient->GetName(), toID, pSystem->GetName(), pSystem->GetID());
             return PyStatic.NewNone();
         }
@@ -494,19 +575,29 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             warpToPoint.z = z;
         } else {
             // Bookmark type is of a static system entity, so search for it and obtain its coordinates:
-            pSE = pSystem->GetSE( toID );
-            if (pSE == nullptr) {
+            targetSE = pSystem->GetSE( toID );
+            if (targetSE == nullptr) {
                 codelog(CLIENT__ERROR, "%s: unable to find bookmark location %u in %s(%u)", pClient->GetName(), toID, pSystem->GetName(), pSystem->GetID());
                 return PyStatic.NewNone();
             }
         }
     } else if (type == "scan") {
         uint32 anomID = pSystem->GetAnomMgr()->GetAnomalyID(stringArg);
-        pSE = pSystem->GetSE(anomID);
+        targetSE = pSystem->GetSE(anomID);
+        if (targetSE == nullptr) {
+            codelog(CLIENT__ERROR, "%s: unable to find location %s in %s(%u)", pClient->GetName(), stringArg.c_str(), pSystem->GetName(), pSystem->GetID());
+            pClient->SendErrorMsg("Cannot find location data for anomalyID %s.", stringArg.c_str());
+            return PyStatic.NewNone();
+        }
     } else if (type == "launch") {
         //warpToPoint = PlanetDB::GetLaunchPos(toID);
-        pSE = pSystem->GetSE(toID);
+        targetSE = pSystem->GetSE(toID);
         // launchpickup - launch, launchid
+        if (targetSE == nullptr) {
+            codelog(CLIENT__ERROR, "%s: unable to find location for %u in %s(%u)", pClient->GetName(), toID, pSystem->GetName(), pSystem->GetID());
+            pClient->SendErrorMsg("Cannot find location data for launchID %u.", toID);
+            return PyStatic.NewNone();
+        }
     }
     // the systems below are not implemented yet.  hold on coding till systems are working and we know what needs to be done here
     // more info can be found in client::menuSvc.py
@@ -575,18 +666,18 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
          *    y = r * math.sin(rr) * 0.5
          *    return util.KeyVal(x=x, y=y, z=z)
          */
-    if (pSE != nullptr) {
-        radius = pSE->GetRadius();
+    if (targetSE != nullptr) {
+        radius = targetSE->GetRadius();
         // this will need adjustment for warping to bookmarks
-        warpToPoint = pSE->GetPosition();
-        if (pSE->IsPlanetSE()) {
-            if (pSE->GetPlanetSE()->HasCOSE()) {
+        warpToPoint = targetSE->GetPosition();
+        if (targetSE->IsPlanetSE()) {
+            if (targetSE->GetPlanetSE()->HasCOSE()) {
                 // if planet has a customs office, make warpin point 5km from co.
-                warpToPoint = pSE->GetPlanetSE()->GetCustomsOffice()->GetPosition();
+                warpToPoint = targetSE->GetPlanetSE()->GetCustomsOffice()->GetPosition();
                 Vector3d vectorFromOrigin = warpToPoint - pClient->GetShipSE()->GetPosition();
                 vectorFromOrigin.Normalize();   //we now have a direction
                 Vector3d stopPoint = (vectorFromOrigin * 10000);
-                distance += pSE->GetPlanetSE()->GetCustomsOffice()->GetRadius();
+                distance += targetSE->GetPlanetSE()->GetCustomsOffice()->GetRadius();
                 distance += pClient->GetShip()->radius();
                 warpToPoint.x -= (stopPoint.x - distance);
                 warpToPoint.y -= (stopPoint.y - distance);
@@ -595,16 +686,16 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             } else {
                 srandom(toID);  //this is the only place random() is used....other random functions use rand() as it's non-repeatable.
                 int rand = random();
-                double j = (((rand / RAND_MAX) - 1.0f) / 3.0f);
-                double s = 20 * pow(0.025f * (10 * std::log10(radius / 1000000) - 39), 20) + 0.5f;
+                double j = (((static_cast<double>(rand) / RAND_MAX) - 1.0f) / 3.0f);
+                double s = 20 * std::pow(0.025f * (10 * std::log10(static_cast<double>(radius) / 1000000.0) - 39), 20) + 0.5f;
                 s = EvE::max(0.5f, EvE::min(s, 10.5f));
-                double t = std::asin((warpToPoint.x / std::fabs(warpToPoint.x)) * (warpToPoint.z / std::sqrt(pow(warpToPoint.x, 2) + pow(warpToPoint.z, 2)))) + j;
+                double t = std::asin((warpToPoint.x / std::fabs(warpToPoint.x)) * (warpToPoint.z / std::sqrt(pow(warpToPoint.x, 2) + std::pow(warpToPoint.z, 2)))) + j;
                 uint32 d = radius * (s + 1) + 1000000;
-                warpToPoint.x += (d * sin(t));
-                warpToPoint.y += (0.5f * radius * sin(j));
-                warpToPoint.z -= (d * cos(t));
+                warpToPoint.x += (d * std::sin(t));
+                warpToPoint.y += (0.5f * radius * std::sin(j));
+                warpToPoint.z -= (d * std::cos(t));
             }
-        } else if (pSE->IsStationSE()) {
+        } else if (targetSE->IsStationSE()) {
             // fudge the distance a bit for these... its' a lil close by default
             Vector3d vectorFromOrigin = warpToPoint - pClient->GetShipSE()->GetPosition();
             vectorFromOrigin.Normalize();   //we now have a direction
@@ -612,8 +703,8 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             warpToPoint.x -= stopPoint.x;
             warpToPoint.z -= stopPoint.z;
             // this makes ship warp to station dock elevation (y), instead of warping to stations "center point" position (where icon is)
-            warpToPoint.y = stDataMgr.GetDockPosY(pSE->GetID());
-        } else if (pSE->IsCOSE() or pSE->IsGateSE()) {
+            warpToPoint.y = stDataMgr.GetDockPosY(targetSE->GetID());
+        } else if (targetSE->IsCOSE() or targetSE->IsGateSE()) {
             // fudge the distance a bit for these... its' a lil close by default
             Vector3d vectorFromOrigin = warpToPoint - pClient->GetShipSE()->GetPosition();
             vectorFromOrigin.Normalize();   //we now have a direction
@@ -621,10 +712,10 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             warpToPoint.x -= stopPoint.x;
             warpToPoint.y -= stopPoint.y;
             warpToPoint.z -= stopPoint.z;
-        } else if (pSE->IsMoonSE()) {
-            if (pSE->GetMoonSE()->HasTower()) {
+        } else if (targetSE->IsMoonSE()) {
+            if (targetSE->GetMoonSE()->HasTower()) {
                 // if moon has a tower, make warpin point 20km inside edge of tower's bubble.
-                warpToPoint = pSE->GetMoonSE()->GetMyTower()->GetPosition();
+                warpToPoint = targetSE->GetMoonSE()->GetMyTower()->GetPosition();
                 Vector3d vectorFromOrigin = warpToPoint - pClient->GetShipSE()->GetPosition();
                 vectorFromOrigin.Normalize();   //we now have a direction
                 Vector3d stopPoint = (vectorFromOrigin * (BUBBLE_RADIUS_METERS - 20000));  // 20km inside bubble.
@@ -640,7 +731,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
                 warpToPoint.y -= radius;
                 warpToPoint.z -= radius;
             }
-        } else if (pSE->IsWormholeSE()) {
+        } else if (targetSE->IsWormholeSE()) {
             // move warpin point -20km from center of wh.
             Vector3d vectorFromOrigin = warpToPoint - pClient->GetShipSE()->GetPosition();
             vectorFromOrigin.Normalize();   //we now have a direction
@@ -650,9 +741,9 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             warpToPoint.z -= stopPoint.z;
         } else if (radius > 90000) {
             // this doesnt work for moons
-            warpToPoint.x += ((radius + 500000) * cos(radius));
+            warpToPoint.x += ((radius + 500000) * std::cos(radius));
             warpToPoint.y += ((radius * 1.3f) - 7500);
-            warpToPoint.z -= ((radius + 500000) * sin(radius));
+            warpToPoint.z -= ((radius + 500000) * std::sin(radius));
         }
         /*
         if (radius < 90000) {
@@ -669,21 +760,147 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
         // point is zero ....make error and return
         codelog(CLIENT__ERROR, "%s: warpToPoint.isZero() = true.  Cannot find location %u for '%s'", \
                 pClient->GetName(), toID, type.c_str());
-        pClient->SendErrorMsg("WarpTo: Item location not found.");
-        return PyStatic.NewNone();
+        throw UserError("WarpDestinationGone");
     }
 
     pClient->SetInvul(false);
     pClient->SetUndock(false);
 
-    pDestiny->WarpTo(warpToPoint, distance, false, pSE);
+    mData->warpState.Reset();
+    mData->SetTargetPoint(warpToPoint);
+
+    Vector3d warp_vector = warpToPoint - mData->GetMySE()->GetPosition();
+    mData->SetDistance(distance);
+    mData->SetTargetDistance(warp_vector.Length());
+    // expand normal to avoid dupe sqrt since we have dist already
+    const double invDist = 1.0 / mData->GetTargetDistance();
+    mData->SetHeading(warp_vector * invDist);
+
+    if (sSE->HasPilot()) {
+        if (mData->GetTargetDistance() < MIN_WARP_DISTANCE) {
+            // warp distance too close.  cancel warp and return
+            if (targetSE != nullptr) {
+                //TooCloseToWarp
+                pClient->SendErrorMsg("That is too close for your Warp Drive.  Approaching Target.");
+                BallPark::ApproachBall(mData);
+            } else {
+                pClient->SendErrorMsg("That is too close for your Warp Drive.  Stopping Ship.");
+                BallPark::Stop(mData);
+            }
+            return PyStatic.NewNone();
+        }
+
+        // check for enough cap to warp.
+
+        /*  capacitor for warp formulas from https://oldforums.eveonline.com/?a=topic&threadID=332116
+         *  Energy to warp = warpCapacitorNeed * mass(kG) * au * (1 - warp_drive_operation_skill_level * 0.10)
+         ** @note:  warpCapacitorNeed is type double...max ive seen is shuttles @ 0.00000134771  and indys @ 0.000000108911
+         */
+
+        double dist = ((double)mData->GetTargetDistance() / ONE_AU_IN_METERS);
+        double currentShipCap = pClient->GetShip()->GetAttribute(AttrCapacitorCharge).get_double();
+        double capNeeded = sSE->GetSelf()->mass() * mData->GetWarpCapNeed() * dist;
+        capNeeded *= (1.0 - (0.1 * pClient->GetChar()->GetSkillLevel(EvESkill::WarpDriveOperation)));
+
+        _log(DESTINY__WARNING, "Warp Cap need for %s(%u) for %.0fm (%0.3f AU) is %0.5f GJ", \
+                sSE->GetName(), sSE->GetID(), mData->GetTargetDistance(), dist, capNeeded);
+
+        // set min cap need to 1.0
+        if (capNeeded < 1.0f)
+            capNeeded = 1.0;
+
+        //  check if ship has enough capacitor to warp full distance
+        if (capNeeded > currentShipCap) {
+            // not enough cap.  reset everything based on available cap
+            double capHas = currentShipCap / (sSE->GetSelf()->mass() * mData->GetWarpCapNeed());
+            if (capHas > 1.0f) {
+                mData->SetWarpCapNeed(0.1);
+                double targDist = capHas * ONE_AU_IN_METERS;
+                Vector3d warp_direction = mData->GetTargetPoint() - sSE->GetPosition();
+                // make heading
+                warp_direction.Normalize();
+                mData->SetHeading(warp_direction);
+                mData->SetTargetPoint(warp_direction * targDist);
+                mData->SetTargetDistance(targDist);
+                pClient->SendErrorMsg("Your commanded warp of %0.3f AU requires %0.1f GJ of capacitor charge, but you only have %0.1f GJ available.<br>This is enough for %0.3f AU.<br><br>Setting course for available capacitor charge.", \
+                        dist, capNeeded,  currentShipCap, capHas );
+            } else {
+                // if not enough cap to do min warp. cancel and return
+                //WarpingWithAvailablePowerBody
+                pClient->SendErrorMsg("You don't have enough capacitor charge to warp.");
+                _log(DESTINY__WARNING, "Destiny::InitWarp() - %s(%u): Capacitor needed vs current  %f / %0.5f",
+                     sSE->GetName(), sSE->GetID(), capNeeded, currentShipCap);
+
+                BallPark::Stop(mData);
+                return PyStatic.NewNone();
+            }
+        } else {
+            mData->SetWarpCapNeed(currentShipCap - capNeeded);
+        }
+    }
+
+    //You will always exit warp at a random point 2,500 meters from your actual exit point - per EveUni
+    //  this will need update for formation warp...leader will have random offset, others follow per formation
+    /* disabled for testing
+     * if (pSE->HasPilot())
+     *   mData->targetPoint.MakeRandomPointOnSphereLayer(-2500, 2500);   disabled for testing
+     */
+
+    // get targ bubble.  this will create bubble if needed, so never returns null
+    mData->warpState.targBubble = sBubbleMgr.GetBubble(sSE->SystemMgr(), mData->GetTargetPoint());
+
+    /*supercap warp modifiers
+     * these will go here, and modify distance, target, and range accordingly
+     *
+     * AttrWarpAccuracyMaxRange = 1021,
+     * AttrWarpAccuracyFactor = 1022,
+     * AttrWarpAccuracyFactorMultiplier = 1023,
+     * AttrWarpAccuracyMaxRangeMultiplier = 1024,
+     * AttrWarpAccuracyFactorPercentage = 1025,
+     * AttrWarpAccuracyMaxRangePercentage = 1026,
+     */
+
+
+    /*  TODO PUT CHECK HERE FOR WARP BUBBLES
+     *     and other things that affect warp-in point.....when we get to there.
+     * AttrWarpBubbleImmune = 1538,  (none in db)
+     * AttrWarpBubbleImmuneModifier = 1539,     (4 in db)
+     *
+     *   NOTE:  warp bubble in path (or within 150km of mData->targetPoint) will change mData->targetDistance and mData->targetPoint
+     *   however, this does NOT affect original calculations for energy needed, etc...
+     */
+
+    /** @todo  does this apply for ANY bubble along warp route or just end?
+     * would be fun to check entire route for bubble...can bm along route to add bubble
+     * however, this will take a bit to implement
+     *
+     * IDEA:  ...nope, lost it.
+     */
+    if (mData->warpState.targBubble->HasWarpBubble())
+        if (!targetSE->GetSelf()->HasAttribute(AttrWarpBubbleImmune)) {
+            /*  there is a bubble here and ship isnt immune.
+             * at this point, determine where the bubble is
+             * then set ship targetPoint to random point 2500m(?) from center of bubble
+             */
+        }
+
+    // found few warp error msgs in client and noted in BeyonceSvc.h
+    //  test for and implement here
+
+    // make sure this is jumpcloak and not module cloak
+    //UnCloak();
+
+    // if usf < 75%, set usf for warp
+    if (mData->GetUSF() < 0.751)
+        BallPark::SetSpeedFraction(mData, 1.0f);
+
+    BallPark::WarpTo(mData, false);
 
     return PyStatic.NewNone();
 }
 
 /** @todo THIS is how we know client is using AP...it needs to be updated   */
 PyResult BeyonceBound::Handle_CmdWarpToStuffAutopilot(PyCallArgs &call) {
-
     SystemManager* pSystem = call.client->SystemMgr();
     if (pSystem == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
@@ -707,21 +924,39 @@ PyResult BeyonceBound::Handle_CmdWarpToStuffAutopilot(PyCallArgs &call) {
     call.client->SetInvul(false);
     call.client->SetUndock(false);
 
-    ->SetAutoPilot(true);
+    ShipSE* sSE = call.client->GetShipSE();
+    MoveData* mData = sSE->GetMoveData();
+    if (mData == nullptr)
+        mData = sSE->CreateMoveData();
+
+    mData->SetAutoPilot(true);
 
     Vector3d warpToPoint = pSE->GetPosition();
-    Vector3d vectorFromOrigin = warpToPoint - call.client->GetShipSE()->GetPosition();
-    vectorFromOrigin.Normalize();   //we now have a direction
-    int32 radius = call.client->GetShipSE()->GetRadius() + sConfig.world.apWarptoDistance;
-    warpToPoint.x -= (vectorFromOrigin.x * radius);
-    warpToPoint.y -= (vectorFromOrigin.y * radius);
-    warpToPoint.z -= (vectorFromOrigin.z * radius);
+    Vector3d warp_vector = warpToPoint - sSE->GetPosition();
 
+    double targDist = warp_vector.Length();
+    mData->SetTargetDistance(targDist);
+    // expand normal to avoid dupe sqrt since we have dist already
+    const double invDist = 1.0 / targDist;
+    mData->SetHeading(warp_vector * invDist);
+
+    int32 radius = sSE->GetRadius() + sConfig.world.apWarptoDistance;
+    Vector3d head = mData->GetDesiredHeading();
+    warpToPoint.x -= (head.x * radius);
+    warpToPoint.y -= (head.y * radius);
+    warpToPoint.z -= (head.z * radius);
+
+    mData->warpState.Reset();
+    mData->SetTargetPoint(warpToPoint);
+    mData->SetTargetSE(pSE);
+    mData->SetDistance(sSE->GetRadius());
+
+    /*
     _log(AUTOPILOT__MESSAGE, "%s called WarpToStuffAutopilot. AP: %s  Target:%s(%u)", \
             call.client->GetName(), (pDestiny->IsAutoPilot() ? "true" : "false"), \
-            pSE->GetName(), pSE->GetID());
+            pSE->GetName(), pSE->GetID());*/
 
-    ->WarpTo(pSE->GetPosition(), (int)pSE->GetRadius(), true, pSE);
+    BallPark::WarpTo(mData, true);
 
     return PyStatic.NewNone();
 }
@@ -749,7 +984,7 @@ PyResult BeyonceBound::Handle_CmdDock(PyCallArgs &call) {
 
 
     /* return error msg from this call, if applicable, else nodeid and timestamp */
-    return pDestiny->AttemptDockOperation();
+    return nullptr; // fixme  pDestinypDestiny->AttemptDockOperation();
 }
 
 PyResult BeyonceBound::Handle_CmdAbandonLoot(PyCallArgs &call) {
@@ -792,8 +1027,11 @@ PyResult BeyonceBound::Handle_UpdateStateRequest(PyCallArgs &call) {
     codelog(CLIENT__ERROR, "%s: Client sent UpdateStateRequest. Previous call generated a bad return.  Check Logs.", call.client->GetName());
 
 
+    if (call.client->GetShipSE() == nullptr)
+        return PyStatic.NewNone();
+
     call.client->SetStateSent(false);
-    pDestiny->SendSetState();
+    call.client->SystemMgr()->SendBallPark(call.client->GetShipSE());
 
     return PyStatic.NewNone();
 }

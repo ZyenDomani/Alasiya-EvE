@@ -74,6 +74,7 @@ SpaceEntity* EntityFactory::BuildEntity(SystemManager& sysMgr, const DBSystemDyn
                 ship->Init();
                 // fixme sSE->DestinyMgr()->UpdateShipVariables();
             }
+            sSE->CreateMoveData();
             return sSE;
         } break;
         case EVEDB::invCategories::Deployable: {

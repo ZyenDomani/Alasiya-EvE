@@ -24,8 +24,8 @@
     Author:        Zhur
 */
 
-#ifndef __DUMPGENERATOR_H_INCL__
-#define __DUMPGENERATOR_H_INCL__
+#pragma once
+
 
 #include "Generator.h"
 
@@ -83,6 +83,3 @@ protected:
     bool ProcessSubStreamInline( const TiXmlElement* field );
     bool ProcessSubStructInline( const TiXmlElement* field );
 };
-
-#endif
-

@@ -305,7 +305,7 @@ bool Client::SelectCharacter(int32 charID/*0*/) {
         UpdateNewShip();
         WarpIn();
         // if we are in space, everything is set up at this point, so set ballpark
-        //pShipSE->DestinyMgr()->SendSetState();
+        pShipSE->SystemMgr()->SendBallPark(pShipSE);
     } else {
         if (m_ship->typeID() == EVEDB::invTypes::Capsule) {
             if (sConfig.server.NoobShipCheck) {
@@ -433,7 +433,7 @@ void Client::ProcessClient() {
             SetBallPark();
         }
 /*
-    if (pShipSE->DestinyMgr()->IsCloaked())
+ if (pShipSE->GetMoveData()->IsCloaked())
         if (m_cloakTimer.Check(false)) {
             _log(CLIENT__TIMER, "ProcessClient():  SetCloak to false for %s(%u)", m_char->name(), m_char->itemID());
             m_cloakTimer.Disable();
@@ -564,6 +564,7 @@ void Client::WarpIn() {
     Vector3d warpFromPoint(m_ship->position());
     warpFromPoint.MakeRandomPointOnSphere(0.5 * ONE_AU_IN_METERS);
     pShipSE->DestinyMgr()->SetPosition(warpFromPoint);
+    NOTE:  see new datasets in beyonce to add here (or call warp command)
     pShipSE->DestinyMgr()->WarpTo(warpToPoint);        // Warp ship from the random login point to the position saved on last disconnect
     */
 }
@@ -791,14 +792,8 @@ void Client::SetDestiny(const Vector3d& pt, bool update/*false*/) {
             GetName(), GetCharID(),  pShipSE->SystemMgr()->GetID(), m_system->GetID(), update?"true":"false", \
             updateShip?"true":"false", IsJump()?"true":"false", "false"); // fixme
 
-    //if (update)
-    //    pShipSE->DestinyMgr()->SetPosition(pt, update);
-
     if (updateShip)
         UpdateNewShip();
-
-    //if (m_login)
-    //    pShipSE->DestinyMgr()->SetCloak(true);
 }
 
 void Client::SetBallPark() {
@@ -814,7 +809,7 @@ void Client::SetBallPark() {
         return;
     }
     if (!m_setStateSent and m_beyonce) {  // MUST have beyonce before sending state data.
-        // fixme pShipSE->DestinyMgr()->SendSetState();
+        pShipSE->SystemMgr()->SendBallPark(pShipSE);
         m_ballparkTimer.Disable();
         if (IsGateJump()) {
             SetInvulTimer(Player::Timer::JumpInvul);
@@ -848,7 +843,7 @@ void Client::CheckBallparkTimer() {
             GetStateName(m_clientState).c_str(), m_setStateSent?"true":"false", \
             m_beyonce?"true":"false", m_login?"true":"false");/*
     _log(CLIENT__TIMER, "CheckBallparkTimer():  invul: %s, cloak: %s, bubblewait: %s", m_invul?"true":"false", \
-        pShipSE == nullptr? "ship null": pShipSE->DestinyMgr() == nullptr? "destiny null": pShipSE->DestinyMgr()->IsCloaked()?"true":"false", \
+        pShipSE == nullptr? "ship null": pShipSE->DestinyMgr() == nullptr? "destiny null": pShipSE->GetMoveData()->IsCloaked()?"true":"false", \
         m_bubbleWait?"true":"false");*/
 }
 
@@ -864,14 +859,12 @@ void Client::MoveToPosition(const Vector3d &pt) {
     if (pShipSE == nullptr) {
         CreateShipSE();
         pShipSE->SetPilot(this);
+        pShipSE->SetPosition(pt);
         m_system->AddEntity(pShipSE);
         UpdateNewShip();
+    } else {
+        pShipSE->SetPosition(pt);
     }
-    // fixme pShipSE->DestinyMgr()->SetPosition(pt, true);
-    if (m_ship->IsUndocking())
-        return;/*
-    if (pShipSE->DestinyMgr()->IsMoving())
-        pShipSE->DestinyMgr()->Halt();*/
 }
 
 void Client::DockToStation() {
@@ -960,12 +953,10 @@ void Client::DestroyShipSE() {
 
 void Client::UpdateNewShip() {
     sItemFactory.SetUsingClient(this);
-    pShipSE->SetPilot(this);/*
-    if (m_login) {
-        pShipSE->DestinyMgr()->UpdateShipVariables();
-    } else {
-        pShipSE->DestinyMgr()->UpdateNewShip(m_ship);
-}*/// fixme
+    pShipSE->SetPilot(this);
+    pShipSE->CreateMoveData();
+    //pShipSE->DestinyMgr()->UpdateNewShip(m_ship);
+
     sItemFactory.UnsetUsingClient();
 
     char ci[45];
@@ -1061,8 +1052,7 @@ void Client::Board(ShipSE* newShipSE)
         m_ship->SetCustomInfo(ci);
         m_ship->SetFlag(flagShipOffline);
         m_ship->Eject();
-
-        // fixme pShipSE->DestinyMgr()->Eject();
+        pShipSE->Eject();
 
         SetShip(newShipSE->GetShipItemRef());
         pShipSE = newShipSE;
@@ -1601,7 +1591,7 @@ void Client::JumpInEffect()
 {/*
     if (pShipSE != nullptr)
         if (pShipSE->DestinyMgr() != nullptr)
-            if (!pShipSE->DestinyMgr()->IsCloaked())
+            if (!pShipSE->GetMoveData()->IsCloaked())
                 pShipSE->DestinyMgr()->SendJumpInEffect("effects.JumpIn");*/
 }
 
@@ -1609,7 +1599,7 @@ void Client::JumpOutEffect(uint32 locationID)
 {/*
     if (pShipSE != nullptr)
         if (pShipSE->DestinyMgr() != nullptr)
-            if (!pShipSE->DestinyMgr()->IsCloaked())
+            if (!pShipSE->GetMoveData()->IsCloaked())
                 pShipSE->DestinyMgr()->SendJumpOutEffect("effects.JumpOut", locationID);*/
 }
 

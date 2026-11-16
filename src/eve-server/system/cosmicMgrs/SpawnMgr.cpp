@@ -13,6 +13,7 @@
 #include "StaticDataMgr.h"
 #include "npc/NPC.h"
 #include "npc/NPCAI.h"
+#include "system/Squad.h"
 #include "system/SystemManager.h"
 #include "system/SystemBubble.h"
 #include "system/cosmicMgrs/SpawnMgr.h"
@@ -207,7 +208,7 @@ void SpawnMgr::WarpOutSpawn(NPC* pNPC, SystemBubble* pBubble) {
             continue;
         }
         rNPC->GetAI()->DisableWarpOutTimer();
-        //rNPC->DestinyMgr()->WarpTo(pBubble->GetCenter(), MakeRandomFloat(10, 30) * 100);
+        rNPC->WarpTo(pBubble->GetCenter(), MakeRandomFloat(10, 30) * 100);
         ratsToMove.emplace(pBubble->GetID(), itr->second);
         ++itr;
     }
@@ -266,14 +267,14 @@ void SpawnMgr::SpawnKilled(SystemBubble* pBubble, uint32 itemID) {
 
     if (pSquad != nullptr) {
         // If the squad array has fallen completely silent, execute clean memory deletion
-        if (pSquad->GetMembers().empty()) {
+        if (!pSquad->HasMembers()) {
             _log(NPC__INFO, "SpawnManager: Reclaiming empty Squad heap memory for bubble %u.", pBubble->GetID());
 
             // Remove the squad pointer from the manager's master index tracker list
             //UnlinkSquadIndex(pSquad);
 
             // The single point of clean, safe heap destruction!
-            delete pSquad;
+            SafeDelete(pSquad);
         }
     }
 
@@ -923,7 +924,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
 
                 //}
 
-                //pNPC->DestinyMgr()->WarpTo(warpTo, (MakeRandomInt(-5, 10) * 1000));
+                pNPC->WarpTo(warpTo, (MakeRandomInt(-5, 10) * 1000));
             }
 
             // increment live counter for this bubble
@@ -988,7 +989,7 @@ void SpawnMgr::ReSpawn(SystemBubble* pBubble, Spawn::Entry& spawnEntry) {
     }
 
     m_system->AddNPC(pNPC);
-    //pNPC->DestinyMgr()->WarpTo(warpToPoint, (MakeRandomInt(-5, 10) * 1000));
+    pNPC->WarpTo(warpToPoint, (MakeRandomInt(-5, 10) * 1000));
 
     spawnEntry.stamp = 0;
     spawnEntry.respawn = false;

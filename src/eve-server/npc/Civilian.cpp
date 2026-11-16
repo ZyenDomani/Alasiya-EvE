@@ -182,14 +182,14 @@ void Civilian::Undock() {
     m_velocity = stationData.dockOrientation * m_type->GetAttribute(AttrMaxVelocity).get_uint32();
 }
 
-void Civilian::Warp(SpaceEntity* ptargSE) {
+void Civilian::Warp(SpaceEntity* ptargetSE) {
     std::vector<PyTuple*> up;
     // send warp update
     CmdWarpTo wt;
         wt.entityID = m_itemID;
-    	wt.dest_x = ptargSE->GetPosition().x;
-        wt.dest_y = ptargSE->GetPosition().y;
-        wt.dest_z = ptargSE->GetPosition().z;
+    	wt.dest_x = ptargetSE->GetPosition().x;
+        wt.dest_y = ptargetSE->GetPosition().y;
+        wt.dest_z = ptargetSE->GetPosition().z;
         wt.distance = 0;
         wt.warpSpeed = m_type->GetAttribute(AttrWarpFactor).get_int() * 10;      // warp speed x10
     up.push_back(wt.Encode());
@@ -203,7 +203,7 @@ void Civilian::Add(SystemBubble* pBubble) {
     Buffer* destinyBuffer = new Buffer();
 
     //create AddBalls header
-    Destiny::AddBall_header head = Destiny::AddBall_header();
+    Destiny::AddBall_header head = {};
         head.packet_type = 1;   // 0 = full state   1 = balls
     if (m_origSE->SystemMgr() != nullptr) {
         head.stamp = m_origSE->SystemMgr()->GetTicCount();
@@ -214,7 +214,7 @@ void Civilian::Add(SystemBubble* pBubble) {
 
     AddBalls addballs;
     //encode destiny binary
-    EncodeDestiny(*destinyBuffer);
+    EncodeStateData(*destinyBuffer);
     addballs.state = new PyBuffer(&destinyBuffer);
 	//encode damage state
     addballs.damageDict[m_itemID] = MakeDamageState();
@@ -279,7 +279,7 @@ void Civilian::SendGateActivity(SpaceEntity* pGateSE) const {
     PyDecRef(up);
 }
 
-void Civilian::EncodeDestiny( Buffer& into) {
+void Civilian::EncodeStateData( Buffer& into) {
     using namespace Destiny;
     uint8 mode = Ball::Mode::STOP;
     switch (m_state) {

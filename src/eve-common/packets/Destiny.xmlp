@@ -136,7 +136,7 @@ DST_WARPEXIT = 11
     </tupleInline>
   </elementDef>
 
-  <elementDef name="SetState" decode="false" >
+  <elementDef name="BallParkData" decode="false" >
     <tupleInline>
       <!-- 0 -->
       <stringInline value="SetState" />
@@ -151,7 +151,7 @@ DST_WARPEXIT = 11
             </dictInlineEntry>
             <dictInlineEntry key="state">
               <!-- this is the big nasty state buffer -->
-              <buffer name="destiny_state" />
+              <buffer name="ballState" />
             </dictInlineEntry>
             <dictInlineEntry key="ego">
               <int name="ego" />

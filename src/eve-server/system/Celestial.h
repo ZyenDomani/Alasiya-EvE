@@ -119,7 +119,7 @@ public:
     virtual bool                IsAnomalySE()           { return true; }
 
     /* SpaceEntity interface */
-    virtual void                EncodeDestiny(Buffer& into);
+    virtual void                EncodeStateData(Buffer& into);
 
     virtual PyDict*             MakeSlimItem();
 };
@@ -137,7 +137,7 @@ public:
     virtual bool                IsWormholeSE()          { return true; }
 
     /* SpaceEntity interface */
-    virtual void                EncodeDestiny(Buffer& into);
+    virtual void                EncodeStateData(Buffer& into);
 
     virtual PyDict*             MakeSlimItem();
 

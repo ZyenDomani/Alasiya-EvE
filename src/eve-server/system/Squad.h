@@ -50,26 +50,26 @@ public:
     void                OnAllMembersArrived();
 
     //
-    SpaceEntity*       GetTarget()                     { return m_target; }
-    void                SetTarget(SpaceEntity* pTarget)
-                                                        { m_target = pTarget; }
+    SpaceEntity*        GetTarget()                     { return m_target; }
+    NPC*                GetLeader()                     { return m_leader; }
+    std::vector<NPC*>&  GetMemberVec()                  { return m_members; }
+
+    bool                HasMembers()                    { return !m_members.empty(); }
 
     uint16              GetID()                         { return m_squadID; }
     uint8               GetFormID()                     { return m_formationID; }
     float               GetSpacing()                    { return m_spacing; }
     uint8               GetTier()                       { return m_tier; }
-	const char* 		GetTierName();
-	const char* 		GetTierName(uint8 tier=0);
+    const char* 	GetTierName();
+    const char* 	GetTierName(uint8 tier=0);
 
-    //
+    void                SetTarget(SpaceEntity* pTarget) { m_target = pTarget; }
     void                AssignLeader(NPC* pNPC);
-    NPC*              GetLeader()                   { return m_leader; }
-    std::vector<NPC*>&  GetMemberVec()                { return m_members; }
 
 private:
-    std::vector<NPC*> m_members;     // members of this squad, can be in multiple bubbles
-    NPC*              m_leader;
-    SpaceEntity*       m_target;
+    std::vector<NPC*>   m_members;     // members of this squad, can be in multiple bubbles
+    NPC*                m_leader;
+    SpaceEntity*        m_target;
 
     uint32              m_squadID;
     float               m_spacing;

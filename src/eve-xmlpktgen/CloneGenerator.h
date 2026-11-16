@@ -24,8 +24,8 @@
     Author:        Zhur
 */
 
-#ifndef __CLONEGENERATOR_H_INCL__
-#define __CLONEGENERATOR_H_INCL__
+#pragma once
+
 
 #include "Generator.h"
 
@@ -83,5 +83,3 @@ protected:
     bool ProcessSubStreamInline( const TiXmlElement* field );
     bool ProcessSubStructInline( const TiXmlElement* field );
 };
-
-#endif

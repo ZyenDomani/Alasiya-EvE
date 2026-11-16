@@ -6,13 +6,13 @@
 
 
 Squad::Squad(uint32 squadID)
-: m_breakTimer(0),
-m_tier(0),
+: m_leader(nullptr),
+m_target(nullptr),
 m_squadID(squadID),
-m_formationID(0),
 m_spacing(0),
-m_leader(nullptr),
-m_target(nullptr)
+m_breakTimer(0),
+m_tier(Tier::Invalid),
+m_formationID(0)
 {
 
 }

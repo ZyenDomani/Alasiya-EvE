@@ -84,18 +84,6 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
         return 0;
     }
 
-    /*  not used yet.
-    const NameStruct *name = (const NameStruct *) data;
-    data += sizeof(NameStruct);
-    len -= sizeof(NameStruct);
-    if (name->name_len > 0) {
-        _log(into, "   Name: len: %u", name->name_len);
-        _log(into, "    ~ %s", name->name);
-
-        data += name->name_len*sizeof(uint16);
-        len  -= name->name_len*sizeof(uint16);
-    }
-    */
     _log(into, "entity: %lli, mode: %s(%u) flags: %s", ballhead->entityID, modeNames[ballhead->mode], ballhead->mode, Destiny::GetFlagNames(ballhead->flags).c_str());
     _log(into, "   pos: %.1f, %.1f, %.1f, radius: %.1f", ballhead->posX, ballhead->posY, ballhead->posZ, ballhead->radius);
 

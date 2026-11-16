@@ -24,8 +24,7 @@
     Author:        Zhur
 */
 
-#ifndef __ENCODEGENERATOR_H_INCL__
-#define __ENCODEGENERATOR_H_INCL__
+#pragma once
 
 #include "Generator.h"
 
@@ -90,5 +89,3 @@ private:
     std::stack<std::string> mVariableStack;
     const char* mName;
 };
-
-#endif

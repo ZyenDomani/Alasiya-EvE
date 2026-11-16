@@ -14,7 +14,7 @@
 
 #pragma once
 
-#include "eve-compat.h"
+#include "eve-common.h"
 #include "math/Vector3d.h"
 #include "destiny/DestinyStructs.h"
 
@@ -42,7 +42,8 @@ struct WarpState {
     int64 decelDist      = 0;   // in m
 
     // 4-byte aligned group (12 bytes)
-    int32 startTime      = 0;   // from sEntityMgr::GetStamp()
+    int32 startTime      = 0;   // from sysMgr::GetStamp()
+    float warpSpeedAU    = 0.0f;// in AU
     float warpTime       = 0.0f;// in s
     float accelTime      = 0.0f;// in s
     float cruiseTime     = 0.0f;// in s
@@ -73,26 +74,30 @@ struct WarpState {
 
 class MoveData {
 public:
-    MoveData(SpaceEntity* pSE);
+    MoveData( SpaceEntity* pSE );
     ~MoveData() = default;
 
     void Init();
 
     // --- Fast Inline Getters ---
     inline const Vector3d& GetVelocity() const          { return myVelocity; }
-    inline Vector3d&    GetVelocityRef()                { return myVelocity; }
+    inline Vector3d&    GetVelocity()                   { return myVelocity; }
+    inline const Vector3d& GetDesiredHeading() const    { return desiredHeading; }
+    inline Vector3d&    GetDesiredHeading()             { return desiredHeading; }
     inline double       GetSpeed() const                { return myVelocity.Length(); }
     inline float        GetSpeedFraction() const        { return activeSpeedFraction; }
-    inline float        GetMaxVelocity() const          { return maxSpeed; }
+    inline float        GetMaxSpeed() const             { return maxSpeed; }
     inline double       GetAgility() const              { return agility; }
     inline uint8        GetBallMode() const             { return ballMode; }
     inline int32        GetTicStamp() const             { return ticStamp; }
-
-    //inline uint32       GetTargetID() const             { return targSE->GetID(); }
-    inline SpaceEntity* GetTargetSE() const             { return targSE; }
-    inline const Vector3d& GetTargetPoint() const       { return targPoint; }
+    inline double       GetWarpCapNeed() const          { return warpCapNeed; }
+    inline SpaceEntity* GetMySE() const                 { return mySE; }
+    inline SpaceEntity* GetTargetSE() const             { return targetSE; }
+    inline const Vector3d& GetTargetPoint() const       { return targetPoint; }
     inline double       GetTargetDistance() const       { return static_cast<double>(targetDistance); }
-    inline double       GetFollowDistance() const       { return static_cast<double>(followDistance); }
+    inline double       GetDesiredDistance() const     { return static_cast<double>(desiredDistance); }
+    inline const float  GetUSF() const                  { return userSpeedFraction; }
+    inline const float  GetASF() const                  { return activeSpeedFraction; }
 
     // --- State Checks ---
     inline bool 	IsMoving() const    		{ return (activeSpeedFraction > 0.01f); }
@@ -102,15 +107,32 @@ public:
     inline bool 	IsFollowing() const 		{ return (ballMode == Ball::Mode::FOLLOW); }
     inline bool         IsFormation() const             { return (ballMode == Ball::Mode::FORMATION); }
     inline bool 	IsTractored() const 		{ return tractored; }
+    inline bool         IsAutoPilot() const             { return autoPilot; }
     inline bool         IsWarping() const               { return warpState.active; }
+    inline bool         IsCloaked() const               { return cloaked; }
 
+    // Setters
+    inline void         SetTargetSE(SpaceEntity* set)   { targetSE = set; }
+    inline void         SetHeading(const Vector3d& set) { desiredHeading = set; }
+    inline void         SetDistance(int64 set)          { desiredDistance = set; }
+    inline void         SetTargetDistance(int64 set)    { targetDistance = set; }
+    inline void         SetWarpCapNeed(double set)      { warpCapNeed = set; }
+    inline void         SetTargetPoint(const Vector3d& set)   { targetPoint = set; }
     inline void 	SetSkipTic(bool set=true) 	{ skipTic = set; }
+    inline void         SetTractored(bool set=true)     { tractored = set; }
+    inline void         SetTractorPause(bool set=true)  { tractorPause = set; }
+    inline void         SetMassive(bool set=true)       { massive = set; }
+    inline void         SetStop(bool set=true)          { stop = set; }
+    inline void         SetAutoPilot(bool set=true)     { autoPilot = set; }
+    inline void         SetCloaked(bool set=true)       { cloaked = set; }
+
+    inline void         SetUSF(float set)               { userSpeedFraction = set; }
+    inline void         SetASF(float set)               { activeSpeedFraction = set; }
 
     void                SetAgilityInertia();
     void                UpdateShipVariables();
 
     // --- Core Updaters & Modifiers ---
-    bool                IsAligned(const Vector3d& targHeading) const;
     bool                ValidTarget();
     void                EntityRemoved(SpaceEntity* pSE);
 
@@ -123,33 +145,38 @@ public:
 
     // Friend for BallPark's static math engine direct access
     friend class        BallPark;
+    friend class        NPC;
+
+    WarpState           warpState;
 
 private:
     // --- 8-byte aligned members ---
-    SpaceEntity*        mySE;           // Back-pointer to parent SE (8 bytes)
-    SpaceEntity*        targSE;         // pointer to active targetSE (8 bytes)
-    WarpState           warpState;
+    SpaceEntity*        mySE;           // pointer to my SE (8 bytes)
+    SpaceEntity*        targetSE;       // null or pointer to targetSE (8 bytes)
 
-    Vector3d            targPoint;
+    // used for any preliminary 3d point or direction, but reset in CalculateFollowPoint
+    Vector3d            targetPoint;
     Vector3d            myVelocity;
+    // used by BallPark *veloctiy methods to set desiredVelocity and used in alignTo checks (vs current heading)
     Vector3d            desiredHeading;
+    // used by blender to set actual movement and position
     Vector3d            desiredVelocity;
 
     double              expTerm;
     double              posScale;
     double              timeFactor;
     double              agility;
-    double              timeStamp;
+    double              timeStamp;      // filetime command received
     double              alignTime;
-    double              warpSpeed;
+    double              warpSpeed;      // ship base warp speed.  can change in WarpInit() based on distance
     double              speedToLeaveWarp;
-    double              warpCapNeed;
+    double              warpCapNeed;    // this is remaining cap after warp inits
 
-    int64               targetDistance;
-    int64               followDistance;
+    int64               targetDistance; // actual distance to target.  originally set in beyonce
+    int64               desiredDistance; // desired distance for orbit, follow, warpto
 
     // --- 4-byte aligned members ---
-    int32               ticStamp;
+    int32               ticStamp;       // this is the state tic in which this client's ballpark was started
     float               maxSpeed;
     float               userSpeedFraction;
     float               activeSpeedFraction;
@@ -167,4 +194,5 @@ private:
     bool                tractorPause;
     bool                massive;
     bool                autoPilot;
+    bool                cloaked;
 };

@@ -24,8 +24,7 @@
     Rewrite:    Allan
 */
 
-#ifndef __SYSTEMMANAGER_H_INCL__
-#define __SYSTEMMANAGER_H_INCL__
+#pragma once
 
 #include "system/BubbleManager.h"
 #include "system/EntityFactory.h"
@@ -59,7 +58,19 @@ class Civilian;
 class SystemManager
 {
 public:
+    // default c'tor
+    SystemManager() =delete;
+    // main c'tor
     SystemManager(uint32 systemID, PyServiceMgr &svc);//, ItemData idata);
+    // copy c'tor
+    SystemManager(const SystemManager* oth) =delete;
+    // move c'tor
+    SystemManager(SystemManager&& oth) noexcept =default;
+    // copy assignment
+    SystemManager& operator=(SystemManager& oth) =delete;
+    // move assignment
+    SystemManager& operator=(SystemManager&& oth) =default;
+    // d'tor
     ~SystemManager();
 
     bool ProcessTic();          // called at 1Hz.
@@ -74,7 +85,6 @@ public:
     ShipItemRef GetShipFromInventory(uint32 shipID);
     StationItemRef GetStationFromInventory(uint32 stationID);
     CargoContainerRef GetContainerFromInventory(uint32 contID);
-
 
     uint32 GetID() const                                { return m_data.systemID; }
     uint32 GetRegionID()                                { return m_data.regionID; }
@@ -135,7 +145,6 @@ public:
 
     /* this is to send new global ball added to system AFTER SetState has been sent */
     void SendStaticBall(SpaceEntity* pSE);
-    void MakeSetState(const SystemBubble* pBubble, SetState& into) const;
 
     uint32 GetRandBeltID();
     uint32 GetClosestPlanetID(const Vector3d& myPos);
@@ -179,6 +188,44 @@ public:
     void RemoveCiv(Civilian* pCiv);
     void GetCivPath(SpaceEntity* pOrig, SpaceEntity* pDest);
 
+    /* relocated ex-destiny methods and calls */
+    void CreateShipMarker(SpaceEntity* pSE);
+    void RemoveAllMarkers();
+    void RemoveShipMarkers();
+    void MarkPoint(SpaceEntity* pSE, std::string& name, std::string& desc, bool orbit=false);
+
+    /* update and event queue methods */
+    // this will not consume *ev
+    void SendSingleEvent(SpaceEntity* mySE, PyTuple** ev, bool self_only=false) const;
+    // this will not consume *up
+    void SendSingleUpdate(SpaceEntity* mySE, PyTuple** up, bool self_only=false) const;
+    // this will consume all updates in vector
+    void SendDestinyUpdates(SpaceEntity* mySE, std::vector< PyTuple* >& updates, bool self_only=false) const;
+
+    /* GFX sending methods */
+    void SendJumpOut(SpaceEntity* mySE) const;
+    void SendJumpOutWormhole(SpaceEntity* mySE) const;
+    void SendGateActivity(SpaceEntity* mySE) const;
+    void SendWormholeActivity(SpaceEntity* mySE) const;
+    void SendJumpInEffect(SpaceEntity* mySE, std::string JumpEffect) const;
+    void SendJumpOutEffect(SpaceEntity* mySE, std::string JumpEffect, uint32 shipID) const;
+    void SendJettisonPacket(SpaceEntity* mySE) const;
+    void SendTerminalExplosion(SpaceEntity* mySE, uint32 shipID, uint32 bubbleID, bool isGlobal=false) const;
+    void SendBallInteractive(SpaceEntity* mySE, bool set = false) const;
+    // this is for space-type effects - warping, GateActivity, jumping, jettison, cloak
+    // jumpout sends stargateID as target - wormhole sends ?? as otherTypeID
+    void SendGFX10(SpaceEntity* mySE, std::string guid,
+                   int32 targetID = 0, int32 otherTypeID = 0 ) const;
+    // this is for structure effects
+    // refactor this to avoid creating copies of args
+    void SendGFX14(SpaceEntity* mySE, int32 moduleID, int32 moduleTypeID, int32 targetID,
+                   int32 chargeTypeID, std::string guid, bool isOffensive, bool start,
+                   bool isActive, int32 duration, int32 repeat, int64 startTime=0, int32 graphicInfo=0,
+                   Client* pClient=nullptr) const;
+
+    /* this is current state of system */
+    void SendBallPark(SpaceEntity* mySE) const;
+
 protected:
     /** @todo  this needs more work */
     void PayBounties();
@@ -193,82 +240,72 @@ protected:
     bool LoadPlayerDynamics();
 
 private:
-    AnomalyMgr* m_anomMgr;      //we own this, never NULL.
-    BeltMgr* m_beltMgr;         //we own this, never NULL.
-    DungeonMgr* m_dungMgr;      //we own this, never NULL.
-    SpawnMgr* m_spawnMgr;       //we own this, never NULL.
+    // --- 8-byte aligned group (Pointers, Refs, Containers, Structs) ---
+    AnomalyMgr*     m_anomMgr;          // we own this, never NULL.
+    BeltMgr*        m_beltMgr;          // we own this, never NULL.
+    DungeonMgr*     m_dungMgr;          // we own this, never NULL.
+    SpawnMgr*       m_spawnMgr;         // we own this, never NULL.
 
-    PyServiceMgr& m_services;
-    SolarSystemRef m_solarSystemRef;
+    PyServiceMgr&   m_services;
+    SolarSystemRef  m_solarSystemRef;
 
-    // static system data
-    SystemData m_data;
+    // static & dynamic system structs
+    SystemData      m_data;
+    SystemKillData  m_killData;
 
-    float m_secValue;  // range is 0.1 for 1.0 system to 2.0 for -0.9 system
+    // system entity lists
+    std::map<uint32, NPC*>          m_npcs;             // npcID/ptr  we do not own these
+    std::map<uint32, Client*>       m_clients;          // charID/ptr  we do not own these
+    std::map<uint32, SpaceEntity*>  m_entities;         // all entities in this system. we own these.
+    std::map<uint32, SpaceEntity*>  m_ticEntities;      // entities that need process tics
+    std::map<uint32, SpaceEntity*>  m_staticEntities;   // static entities to send in setstate
+    std::map<uint32, SpaceEntity*>  m_opStaticEntities; // operational static entities
+    std::map<uint32, SpaceEntity*>  m_deleteLater;      // SEs deferred for deletion
+    std::map<uint32, SpaceEntity*>  m_shipMarkers;      // ship position marker cans. we do own these.
 
-    // system tic counter
-    int32 m_ticStamp;
+    // POS & celestial maps (we do not own the SE*)
+    std::map<uint32, SpaceEntity*>  m_moonMap;
+    std::map<uint32, SpaceEntity*>  m_planetMap;
+    std::map<uint32, SpaceEntity*>  m_gateMap;
 
-    // for dynamic data system  -allan 10June2019
-    SystemKillData m_killData;
-    uint16 m_docked;
-    void ManipulateTimeData();
-    std::map<uint32, uint8> m_jumpMap;  // timestamp/jumps
-    // may have to do kill data like jumps above
+    // dynamic data, bounty, spawn & civilian containers
+    typedef std::map<uint16, uint8> RatDataMap;         // typeID/amt
+    std::map<uint32, uint8>         m_jumpMap;          // timestamp/jumps
+    std::map<uint32, BountyData>    m_bountyMap;        // charID/data
+    std::map<uint32, RatDataMap>    m_ratMap;           // charID/rat data
+    std::vector<uint32>             m_beltVector;       // belts in system
+    std::vector<Civilian*>          m_civilians;
+    SpawnBubbleMap                  m_ratBubbles;       // map of id/bubble with rat spawns
+    SpawnBubbleMap                  m_roidBubbles;      // map of id/bubble with roid spawns
 
-    // for spawn systems     -allan 15July15
-    uint8 m_beltCount;
-    uint8 m_gateCount;
-    uint8 m_activeRatSpawns;
-    uint8 m_activeGateSpawns;
-    uint16 m_activeRoidSpawns;
-    std::vector<uint32> m_beltVector;                   // belts in system
-    SpawnBubbleMap m_ratBubbles;                        // map of id/bubble with rat spawns  - not actually used yet
-    SpawnBubbleMap m_roidBubbles;                       // map of id/bubble with roid spawns  - not actually used yet
+    // --- 4-byte aligned group (Timers, float, int32/uint32) ---
+    Timer           m_bountyTimer;      // 20m timer (16 bytes, 4-byte aligned)
+    Timer           m_minutetimer;      // PI timing (16 bytes, 4-byte aligned)
+    float           m_secValue;         // range is 0.1 for 1.0 system to 2.0 for -0.9 system
+    int32           m_ticStamp;         // system tic counter
+    uint32          m_activityTime;
+    uint32          m_minutes;
 
-    // for POS system       -allan 23July17
-    std::map<uint32, SpaceEntity*> m_moonMap;        // our container, but we DONT own the SE*
-    std::map<uint32, SpaceEntity*> m_planetMap;      // our container, but we DONT own the SE*
-    std::map<uint32, SpaceEntity*> m_gateMap;      // our container, but we DONT own the SE*
+    // --- 2-byte aligned group (uint16) ---
+    uint16          m_docked;
+    uint16          m_players;          // current total count
+    uint16          m_activeRoidSpawns;
 
-    // for grid Unloading system  -allan  27June2015
-    bool m_loaded;
-    bool SystemActivity();
-    bool SafeToUnload();
-    uint16 m_players;           // current total count
-    uint32 m_activityTime;
+    // --- 1-byte aligned group (uint8, bool) ---
+    uint8           m_beltCount;
+    uint8           m_gateCount;
+    uint8           m_activeRatSpawns;
+    uint8           m_activeGateSpawns;
+    uint8           m_civDensity;
+    uint8           m_civSpawnTic;
+    bool            m_loaded;
+    bool            m_entityChanged;    // plain bool is faster than :1 bitfield
 
-    // system entity lists:
-    bool m_entityChanged :1;
-    std::map<uint32, NPC*> m_npcs;                      //npcID/ptr  we do not own these
-    std::map<uint32, Client*> m_clients;                //charID/ptr  we do not own these
-    std::map<uint32, SpaceEntity*> m_entities;         // this list is all entities in this system.  we own these.
-    std::map<uint32, SpaceEntity*> m_ticEntities;      // this list is for entities that need process tics (objects, npc, client ships)
-    std::map<uint32, SpaceEntity*> m_staticEntities;   // this list is for static entities to send in setstate
-    std::map<uint32, SpaceEntity*> m_opStaticEntities; // this list is for static entities which are operational and need to be initialized and operated upon even when system is empty
+    // --- Private helper methods ---
+    void        ManipulateTimeData();
+    void        SpawnCivilian();
+    bool        SystemActivity();
+    bool        SafeToUnload();
 
-    std::map<uint32, SpaceEntity*> m_deleteLater;      //  this list contains SEs that cannot be deleted immediately when removed from system.
-
-    // for bounty processing (20m timer)
-    Timer m_bountyTimer;
-    typedef std::map<uint16, uint8> RatDataMap;  // typeID/amt
-    std::map<uint32, BountyData> m_bountyMap;  // charID/data
-    std::map<uint32, RatDataMap> m_ratMap;  // charID/rat data
-
-    // for PI timing
-    Timer m_minutetimer;
-    uint32 m_minutes;
-
-    // for new Civilian System
-    void SpawnCivilian();
-
-    uint8 m_civDensity;
-    uint8 m_civSpawnTic;
-    std::vector<Civilian*> m_civilians;
-
-    // check for null iterator.  this will need to be moved to a memory code file eventually.
-    // unfortunately, this is very specific for which iterators it can check.  see notes in code.
-    bool IsNull(std::map<uint32, SpaceEntity*>::iterator& i);
 };
 
-#endif

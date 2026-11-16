@@ -64,7 +64,7 @@ void CynoModule::Activate(uint16 effectID, uint32 targetID, int16 repeat)
     _log(MODULE__DEBUG, "Cynosural field generator activated by %s in %s", pClient->GetName(), m_sysMgr->GetName());
 
     // hack to disable ship movement here
-    // fixme m_shipVelocity = pShipSE->DestinyMgr()->GetMaxVelocity();
+    // fixme m_shipVelocity = pShipSE->DestinyMgr()->GetMaxSpeed();
     // fixme pShipSE->DestinyMgr()->Halt(true);
     // fixme pShipSE->DestinyMgr()->SkipTic(true);
 }

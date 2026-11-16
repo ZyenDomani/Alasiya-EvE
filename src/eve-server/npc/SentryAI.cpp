@@ -287,7 +287,7 @@ void SentryAI::Attack(SpaceEntity* pTarget)
             return;
         }
         // Check to see if the target is not cloaked:
-        if (pTarget->DestinyMgr()->IsCloaked()) {
+        if (pTarget->GetMoveData()->IsCloaked()) {
             _log(NPC__AI_TRACE, "%s(%u): Target %s(%u) is cloaked.  Clear target and move on",
                  m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
             ClearTarget(pTarget);

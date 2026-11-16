@@ -674,7 +674,7 @@ PyDict* DroneSE::MakeSlimItem() {
     return slim;
 }
 
-void DroneSE::EncodeDestiny(Buffer& into) {
+void DroneSE::EncodeStateData(Buffer& into) {
     using namespace Destiny;
 
     uint8 mode(Ball::Mode::STOP);
@@ -723,7 +723,7 @@ void DroneSE::EncodeDestiny(Buffer& into) {
         } break;
     }
 
-    _log(SE__DESTINY, "DroneSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "DroneSE::EncodeStateData(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 void DroneSE::MakeDamageState(DoDestinyDamageState &into) {

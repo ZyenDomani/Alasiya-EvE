@@ -35,6 +35,7 @@
 #include "inventory/AttributeEnum.h"
 #include "map/MapDB.h"
 #include "npc/NPC.h"
+#include "system/BallPark.h"
 #include "system/Container.h"
 #include "system/Damage.h"
 #include "system/Squad.h"
@@ -46,11 +47,12 @@
 NPC::NPC(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, const FactionData& data, SpawnMgr* spawnMgr)
 : DynamicSpaceEntity(self, services, system),
 m_AI(new NPCAI(this)),
-m_spawnMgr(spawnMgr),
 m_squad(nullptr),
-m_hauler(false),
+m_spawnMgr(spawnMgr),
+m_orbitingID(0),
+m_rank(Rank::None),
 m_moduleCount(0),
-m_orbitingID(0)
+m_hauler(false)
 {
     m_allyID = data.allianceID;
     m_warID = data.factionID;
@@ -88,8 +90,7 @@ bool NPC::Load() {
     // load data for AI
     m_AI->Init();
 
-    // load data for destiny
-    // fixme m_destiny->UpdateShipVariables();
+    CreateMoveData();
 
     //dSE::Load() just returns true for now (no code)
     return DynamicSpaceEntity::Load();
@@ -168,6 +169,35 @@ void NPC::UseArmorRepairer() {
     UpdateDamage();
 }
 
+// do npcs warpto anything other than a point?
+void NPC::WarpTo(Vector3d destPoint, int32 distance) {
+    MoveData* mData = GetMoveData();
+    if (mData == nullptr)
+        mData = SpaceEntity::CreateMoveData();
+
+    if (destPoint.isZero()) {
+        BallPark::Stop(mData);
+        sLog.Error("Destiny::WarpTo()", "DestPoint is zero and pSE is null.");
+        return;
+    }
+
+    mData->massive = false;
+    mData->warpState.Reset();
+    mData->targetPoint = destPoint;
+
+    Vector3d warp_vector = destPoint - mData->mySE->GetPosition();
+    mData->desiredDistance = distance;
+    mData->targetDistance = warp_vector.Length();
+    mData->targetDistance -= distance;
+
+    BallPark::WarpTo(mData);
+
+    if (is_log_enabled(NPC__MESSAGE))
+        _log(NPC__MESSAGE, "Destiny::WarpTo() NPC %s(%u) %u -> %u, targetPoint: %0.2f,%0.2f,%0.2f  stop distance: %i  targetDistance: %llim", \
+                GetName(), GetID(), SysBubble()->GetID(), mData->warpState.targBubble->GetID(), \
+                mData->targetPoint.x, mData->targetPoint.y, mData->targetPoint.z, distance, mData->targetDistance);
+}
+
 void NPC::SetResists() {
     /* fix for missing resist attribs -allan 18April16  */
     // Shield Resonance
@@ -199,12 +229,10 @@ void NPC::SetResists() {
         m_self->SetAttribute(AttrThermalDamageResonance, EvilOne, false);
 }
 
-void NPC::EncodeDestiny(Buffer& into)
-{
+void NPC::EncodeStateData(Buffer& into) {
+    MoveData* mData = GetMoveData();
     using namespace Destiny;
-
-    // fixme uint8 mode = m_destiny->GetBallMode(); //Ball::Mode::STOP;
-
+    uint8 mode = mData->GetBallMode(); //Ball::Mode::STOP;
     BallHeader head = BallHeader();
         head.entityID = GetID();
         head.mode = 0;
@@ -213,40 +241,41 @@ void NPC::EncodeDestiny(Buffer& into)
         head.posY = y();
         head.posZ = z();
         head.flags = Ball::Flag::IsFree;
-        //if (mode != Ball::Mode::WARP)
-        //    head.flags = Ball::Flag::IsFree | Ball::Flag::IsMassive;
-/*
+        if (mode != Ball::Mode::WARP)
+            head.flags = head.flags | Ball::Flag::IsMassive;
     into.Append(head);
     MassSector mass = MassSector();
         mass.mass = m_self->mass();
-        mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
+        mass.cloak = mData->IsCloaked();
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
         mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
     into.Append(mass);
+    Vector3d& velocity = mData->myVelocity;
     DataSector data = DataSector();
-        data.maxSpeed = m_destiny->GetMaxVelocity();
-        data.velX = m_destiny->GetVelocity().x;
-        data.velY = m_destiny->GetVelocity().y;
-        data.velZ = m_destiny->GetVelocity().z;
+        data.velX = velocity.x;
+        data.velY = velocity.y;
+        data.velZ = velocity.z;
+        data.maxSpeed = mData->GetMaxSpeed();
         data.inertia = m_self->GetAttribute(AttrInertiaMod).get_float();
-        data.speedfraction = m_destiny->GetSpeedFraction();
-    into.Append(data);*/
-    switch (0) {/*
+        data.speedfraction = mData->GetASF();
+    into.Append(data);
+    switch (mode) {
         case Ball::Mode::WARP: {
-            Vector3d target = m_destiny->GetTargetPoint();
+            const Vector3d& target = mData->GetTargetPoint();
             WARP_Struct warp;
-            warp.formationID = -1;
+            warp.formationID = -1;  // fixme after squads implemented
             warp.targX = target.x;
             warp.targY = target.y;
             warp.targZ = target.z;
-            warp.warpFactor = m_destiny->GetWarpSpeed();
-            // warp timing and data.   see Ship::EncodeDestiny() for notes
-            if (m_destiny->IsWarping()) {
-                warp.effectStamp    = m_destiny->GetTicStamp();
-                warp.warpDistance   = m_destiny->GetTargetDistance();
-                warp.minRange       = m_destiny->GetFollowDistance();
+            warp.warpFactor = mData->warpState.warpSpeedAU * 10;    //ship warp speed in AU x10  (x * 0.1 in client)
+            // warp timing and data.   see Ship::EncodeStateData() for notes
+            if (mData->warpState.active) {
+                warp.effectStamp    = mData->GetTicStamp();
+                warp.warpDistance   = mData->GetTargetDistance();
+                warp.minRange       = mData->GetDesiredDistance();
             } else {
+                // these are correct 14Nov26
                 warp.effectStamp    = -1;
                 warp.warpDistance   = -1.0;
                 warp.minRange       = 0.0;
@@ -255,27 +284,27 @@ void NPC::EncodeDestiny(Buffer& into)
         }  break;
         case Ball::Mode::FOLLOW: {
             FOLLOW_Struct follow;
-            follow.followID = m_destiny->GetTargetID();
-            follow.followRange = m_destiny->GetTargetDistance();
+            follow.followID = mData->GetTargetSE()->GetID();
+            follow.followRange = mData->GetDesiredDistance();
             follow.formationID = -1;
             into.Append(follow);
         }  break;
         case Ball::Mode::ORBIT: {
             ORBIT_Struct orbit;
-            orbit.targetID = m_destiny->GetTargetID();
-            orbit.followRange = m_destiny->GetTargetDistance();
+            orbit.targetID = mData->GetTargetSE()->GetID();
+            orbit.followRange = mData->GetDesiredDistance();
             orbit.formationID = -1;
             into.Append(orbit);
         }  break;
         case Ball::Mode::GOTO: {
-            Vector3d target = m_destiny->GetTargetPoint();
+            Vector3d targPt = mData->GetTargetPoint();
             GOTO_Struct go;
-            go.formationID = -1;
-            go.x = target.x;
-            go.y = target.y;
-            go.z = target.z;
+                go.x = targPt.x;
+                go.y = targPt.y;
+                go.z = targPt.z;
+                go.formationID = -1;
             into.Append(go);
-        }  break;*/
+        }  break;
         case Ball::Mode::FORMATION: {
             // this implies squad
             assert (m_squad != nullptr);
@@ -293,24 +322,9 @@ void NPC::EncodeDestiny(Buffer& into)
         } break;
     }
 
-    std::string modeStr = "Goto";
-    switch (0) {
-        case 1: modeStr = "Follow"; break;
-        case 2: modeStr = "Stop"; break;
-        case 3: modeStr = "Warp"; break;
-        case 4: modeStr = "Orbit"; break;
-        case 5: modeStr = "Missile"; break;
-        case 6: modeStr = "Mushroom"; break;
-        case 7: modeStr = "Boid"; break;
-        case 8: modeStr = "Troll"; break;
-        case 9: modeStr = "Miniball"; break;
-        case 10: modeStr = "Field"; break;
-        case 11: modeStr = "Rigid"; break;
-        case 12: modeStr = "Formation"; break;
-    }
-/*
-    _log(SE__DESTINY, "NPC::EncodeDestiny(): %s - id:%lli, mode:%s, flags:0x%X, Vel:%.1f, %.1f, %.1f", \
-            GetName(), head.entityID, modeStr.c_str(), head.flags, data.velX, data.velY, data.velZ);*/
+    if (is_log_enabled(SE__DESTINY))
+        _log(SE__DESTINY, "NPC::EncodeStateData(): %s - id:%lli, mode:%s, flags:0x%X, Vel:%.1f, %.1f, %.1f", \
+                GetName(), head.entityID, sDataMgr.GetBallModeName(mode), head.flags, data.velX, data.velY, data.velZ);
 }
 
 void NPC::Killed(Damage &fatal_blow) {
@@ -384,7 +398,7 @@ void NPC::Killed(Damage &fatal_blow) {
     std::string wreck_name = m_self->itemName();
     wreck_name += " Wreck";
     ItemData wreckItemData(wreckTypeID, killerID, locationID, flagAutoFit, wreck_name.c_str(), wreckPosition, itoa(m_allyID));
-    WreckContainerRef wreckItemRef = sItemFactory.SpawnWreckContainer( wreckItemData );
+    WreckContainerRef wreckItemRef = sItemFactory.SpawnWreckContainer(wreckItemData);
     if (wreckItemRef.get() == nullptr) {
         sLog.Error("NPC::Killed()", "Creating Wreck Item Failed for %s of type %u", wreck_name.c_str(), wreckTypeID);
         return;

@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "eve-compat.h"
+#include "../eve-server.h"
 
 
 // common variables to denote acceptable alignment deviations
@@ -47,39 +47,39 @@ public:
     /* Main Call */
     static void Process(SpaceEntity* pSE=nullptr);
 
-    /* Local Movement */
-    static void OrbitBall(SpaceEntity* pSE, SpaceEntity* targetSE, int32 distance=0);
-    static void FollowBall(SpaceEntity* pSE, SpaceEntity* targetSE, int32 distance=0);
-    static void ApproachBall(SpaceEntity* pSE, SpaceEntity* targetSE);
-    static void AlignTo(SpaceEntity* pSE, SpaceEntity* targetSE);
-    static void GotoPoint(SpaceEntity* pSE, const Vector3d& point);
-    static void GotoDirection(SpaceEntity* pSE, const Vector3d& direction);
+    /* Beyonce Calls */
+    static void AlignTo(MoveData* mData);
+    static void GotoPoint(MoveData* mData);
+    static void ApproachBall(MoveData* mData);
+    static void GotoDirection(MoveData* mData);
+    static void OrbitBall(MoveData* mData);
+    static void FollowBall(MoveData* mData);
+    static void WarpTo(MoveData* mData, bool autoPilot=false);
 
-    /* Larger movement */
-    static void WarpTo(SpaceEntity* pSE, const Vector3d& destPoint, int32 distance = 0, bool autoPilot = false, SpaceEntity* targetSE = nullptr );
-
-    /* special */
-    static void Stop(SpaceEntity* pSE);
-    static void Halt(SpaceEntity* pSE, bool commanded=false);                    // puts entity at 0 velocity
-    static bool ValidTarget(SpaceEntity* pSE, SpaceEntity* targetSE);                 //performs common target checks
-    static void IsAligned(MoveData* data, Vector3d& targHeading);
-    // for 'ship pulling' idea (not implemented yet)
-    static void ApplyVortexGravityTug(SpaceEntity* pSE, const Vector3d& vortexCenterAxis);
+    /* Ship Calls */
+    static void Stop(MoveData* mData);
+    static void Halt(MoveData* mData, bool commanded=false);                    // puts entity at 0 velocity
+    static bool ValidTarget(MoveData* mData);                 //performs common target checks
+    static bool IsAligned(MoveData* mData);
+    // desired Velocity setter
+    static void SetSpeedFraction(MoveData* mData, float fraction);
+    // for gravity-based 'ship drifting' idea (not implemented yet)
+    static void ApplyVortexGravityTug(ShipSE* pShipSE, const Vector3d& vortexCenterAxis);
     static void SetTrollData(/*unknown args yet*/);  // as stated.
 
     /* bump code */
-    static void Bump(SpaceEntity* seA, SpaceEntity* seB);
+    static void Bump(SpaceEntity* mySE, SpaceEntity* herSE);
     static void ProcessBubbleBumps(SystemBubble* bubble);
 
 private:
-    // movement methods
+    // Internal wub-warp methods
     static void BeginMovement(MoveData* mData);               //set initial variables for all movement (common code)
     static void Integrate(MoveData* mData);
     static void CalculateFollowPoint(MoveData* mData);
     static void CalculateFormationPoint(MoveData* mData);
     static void GotoVelocity(MoveData* mData);
-    static void OrbitVelocity(MoveData* mData);
-    static Vector3d& RotateVectorByEntityOrientation(SpaceEntity* pSE, const Vector3d& localVec, SpaceEntity* leader);
+    static void OrbitVelocity(MoveData* mData, double ticCount);
+    static Vector3d RotateVectorByEntityOrientation( SpaceEntity* pSE, const Vector3d& localVec, SpaceEntity* leader );
 
     // Internal Warp Methods
     static void InitWarp(MoveData* mData);

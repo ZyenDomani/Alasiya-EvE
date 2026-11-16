@@ -135,7 +135,7 @@ public:
 
     /* SpaceEntity interface */
     virtual void                Process();
-    virtual void                EncodeDestiny(Buffer& into);
+    virtual void                EncodeStateData(Buffer& into);
     virtual PyDict*             MakeSlimItem();
 
     /* virtual functions default to base class and overridden as needed */

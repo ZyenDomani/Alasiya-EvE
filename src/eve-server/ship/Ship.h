@@ -313,7 +313,7 @@ public:
 
     /* SpaceEntity interface */
     virtual void                Process();
-    virtual void                EncodeDestiny(Buffer& into);
+    virtual void                EncodeStateData(Buffer& into);
     virtual void                MakeDamageState(DoDestinyDamageState &into);
     virtual PyDict*             MakeSlimItem();
 
@@ -351,6 +351,7 @@ public:
     virtual void                ShipTakingDamage(SpaceEntity* pSourceSE);
 
     /* specific functions handled here. */
+    void Eject();
     void Dock();
     void Jump(int32 fromGateID, bool showCloak=true);        // this also sets ship cloak
     void Warp();
@@ -404,6 +405,9 @@ public:
 
     bool GetFleetSMBUsage()                             { return m_allowFleetSMBUsage; }
     void SetFleetSMBUsage(bool set=false)               { m_allowFleetSMBUsage = set; }
+
+    void Cloak();
+    void UnCloak();
 
 protected:
     ShipItemRef m_shipRef;

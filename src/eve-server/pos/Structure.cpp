@@ -749,7 +749,7 @@ void StructureSE::SetAnchor(Client* pClient, Vector3d &pos)
             sbr.entityID = m_self->itemID();
             sbr.radius = m_self->radius();
         updates.push_back(sbr.Encode());
-        // fixme m_destiny->SendDestinyUpdates(updates); //consumed
+        m_system->SendDestinyUpdates(this, updates); //consumed
         // fixme m_destiny->SendGFX14(m_data.itemID, m_data.itemID, m_self->typeID(), 0, 0, "effects.AnchorDrop", 0, 1, 1, -1, 0);
     }
 }
@@ -1024,7 +1024,7 @@ void StructureSE::SendEffectUpdate(int16 effectID, bool active)
     // fixme m_destiny->SendSingleDestinyEvent(&event); // consumed
 }
 
-void StructureSE::EncodeDestiny(Buffer &into)
+void StructureSE::EncodeStateData(Buffer &into)
 {
     using namespace Destiny;
     //const uint16 miniballsCount = GetMiniBalls();
@@ -1106,8 +1106,8 @@ void StructureSE::EncodeDestiny(Buffer &into)
         into.Append(main);
     }
 
-    _log(SE__DESTINY, "StructureSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
-    _log(POS__DESTINY, "StructureSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "StructureSE::EncodeStateData(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(POS__DESTINY, "StructureSE::EncodeStateData(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 PyDict *StructureSE::MakeSlimItem()
@@ -1321,7 +1321,7 @@ void StructureSE::Killed(Damage &damage)
             AwardSecurityStatus(m_self, pClient->GetChar().get()); // this awards secStatusChange for npcs in empire space
     }
 
-    Vector3d wreckPosition = m_destiny->GetPosition();
+    Vector3d wreckPosition = GetPosition();
     if (wreckPosition.isNaN()) {
         sLog.Error("StructureSE::Killed()", "Wreck Position is NaN");
         return;

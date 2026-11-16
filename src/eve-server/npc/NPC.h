@@ -88,7 +88,7 @@ public:
 
     /* SpaceEntity interface */
     void        Process();
-    void        EncodeDestiny(Buffer& into);
+    void        EncodeStateData(Buffer& into);
 
     /* functions default to base class and overridden as needed */
     void        Killed(Damage &fatal_blow);
@@ -135,13 +135,15 @@ public:
     Squad*              GetSquad()                      { return m_squad; }
     uint8               GetRank()                       { return m_rank; }
 
-protected:
+    //  helper method to set new warp data for npcs
+    void                WarpTo(Vector3d destPoint, int32 distance);
+
     void                SetHauler()                     { m_hauler = true; }
 
 private:
     NPCAI*              m_AI;
-    SpawnMgr*           m_spawnMgr;
     Squad*              m_squad;
+    SpawnMgr*           m_spawnMgr;
 
     uint32              m_orbitingID;
     uint8               m_moduleCount;

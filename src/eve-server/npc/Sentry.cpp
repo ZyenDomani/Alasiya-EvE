@@ -82,7 +82,7 @@ void Sentry::TargetedAdd(SpaceEntity *who) {
     m_AI->Targeted(who);
 }
 
-void Sentry::EncodeDestiny(Buffer& into)
+void Sentry::EncodeStateData(Buffer& into)
 {
     using namespace Destiny;
 
@@ -106,7 +106,7 @@ void Sentry::EncodeDestiny(Buffer& into)
         main.formationID = -1;
     into.Append(main);
 
-    _log(SE__DESTINY, "Sentry::EncodeDestiny: %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "Sentry::EncodeStateData: %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 void Sentry::SaveSentry()

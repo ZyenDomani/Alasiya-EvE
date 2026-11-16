@@ -24,8 +24,8 @@
     Author:        Zhur
 */
 
-#ifndef __HEADERGENERATOR_H_INCL__
-#define __HEADERGENERATOR_H_INCL__
+#pragma once
+
 
 #include "Generator.h"
 
@@ -91,6 +91,3 @@ private:
 
 
 };
-
-#endif
-

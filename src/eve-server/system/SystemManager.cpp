@@ -752,7 +752,7 @@ void SystemManager::AddMarker(SpaceEntity* pSE, bool sendBall/*false*/, bool add
 
         Buffer* destinyBuffer = new Buffer();
         //create AddBalls header
-        Destiny::AddBall_header head = Destiny::AddBall_header();
+        Destiny::AddBall_header head = {};
             head.packet_type = 1;   // 0 = full state   1 = balls
             head.stamp = sEntityMgr.GetStamp();
         destinyBuffer->Append( head );
@@ -766,7 +766,7 @@ void SystemManager::AddMarker(SpaceEntity* pSE, bool sendBall/*false*/, bool add
             balls->SetItem(1, pSE->MakeDamageState());
         addballs2.extraBallData->AddItem(balls);
 
-        pSE->EncodeDestiny(*destinyBuffer);
+        pSE->EncodeStateData(*destinyBuffer);
 
         addballs2.state = new PyBuffer(&destinyBuffer); //consumed
         SafeDelete( destinyBuffer );
@@ -977,90 +977,6 @@ uint32 SystemManager::GetRandBeltID() {
     return m_beltVector.at(MakeRandomUInt(0, m_beltCount - 1));
 }
 
-void SystemManager::MakeSetState(const SystemBubble* pBubble,  SetState& into) const {
-    using namespace Destiny;
-    Buffer* stateBuffer = new Buffer();
-
-    AddBall_header head = AddBall_header();
-        head.packet_type = 0;   // 0 = full state   1 = balls
-        head.stamp = into.stamp;
-    stateBuffer->Append( head );
-
-    // use map as it automagically orders by itemID
-    std::map<uint32, SpaceEntity*> visibleEntities;
-
-    // get all static entities for this system
-    for (auto &cur : m_staticEntities)
-        visibleEntities.emplace(cur.first, cur.second);
-
-    // get our ship.  bubble->GetEntities() does not include cloaked items
-    std::map<uint32, SpaceEntity*>::const_iterator itr = m_ticEntities.find(into.ego);
-    if (itr != m_ticEntities.end())
-       visibleEntities.emplace(itr->first, itr->second);
-
-    // query bubble to get dynamic entities
-    pBubble->GetEntities(visibleEntities);
-
-    into.slims = new PyList();
-    //into.slims->clear();
-    into.effectStates = new PyList();
-    //into.effectStates->clear();
-    into.allianceBridges = new PyList();
-    //into.allianceBridges->clear();  //activeBeacon and activeBridge data found in fleetSvc.py
-
-    //go through all visible entities and gather the info we need...
-    for (auto &cur : visibleEntities) {
-        if (!cur.second->IsMissileSE() or !cur.second->IsFieldSE())
-            into.damageState[ cur.first ] = cur.second->MakeDamageState();
-
-        into.slims->AddItem( new PyObject( "foo.SlimItem", cur.second->MakeSlimItem()));
-
-        //append the destiny binary data...
-        cur.second->EncodeDestiny(*stateBuffer);
-
-        // get tower effect state (if applicable)
-        if (cur.second->IsTowerSE())
-            cur.second->GetTowerSE()->GetEffectState(*(into.effectStates));
-
-        /**  @todo (allan)  this needs more work.  should be done same as damageState.  28.2.16
-        //ss.aggressors is for players undocking/jumping with aggression (uses GetCriminalTimeStamps)  ** see notes in Client::GetAggressors()
-        if (cur.second->HasPilot() and cur.second->HasAggression())
-            ss.aggressors[ cur.first ] = cur.second->GetAggressors());
-        */
-
-        /** @todo (allan)  to be written   -jumpbridges is a PyList */
-        //  if (cur.second->IsJumpBridgeSE)
-        //ss.allianceBridges -- jumpbridges et al.
-        //  [for shipID, toSolarsystemID, toBeaconID in bag.allianceBridges:]
-    }
-
-    into.destiny_state = new PyBuffer( &stateBuffer );
-    into.droneState = pBubble->GetDroneState(); //SystemDB::GetSolDroneState( m_data.systemID );
-
-    /* SolarSystem info.  this avoids the old way of a DB hit for every call.  */
-    PyPackedRow* row = new PyPackedRow(sDataMgr.CreateHeader());
-        row->SetFieldC("itemID",        new PyLong(m_data.systemID));
-        row->SetFieldC("typeID",        PyStatic.NewFive());
-        row->SetFieldC("ownerID",       PyStatic.NewOne());  // should this be owning factionID?  yes
-        row->SetFieldC("locationID",    new PyInt(m_data.constellationID));
-        row->SetFieldC("flagID",        PyStatic.NewZero());
-        row->SetFieldC("quantity",      PyStatic.NewNegOne());
-        row->SetFieldC("groupID",       PyStatic.NewFive());
-        row->SetFieldC("categoryID",    PyStatic.NewTwo());
-        row->SetFieldC("customInfo",    new PyString(""));
-    into.solItem = row;
-
-    if (is_log_enabled(DESTINY__SETSTATE)) {
-        _log( DESTINY__SETSTATE, "Current State of %s", m_data.name.c_str() );
-        into.Dump( DESTINY__SETSTATE, "    " );
-    }
-
-    if (is_log_enabled(DESTINY__SETSTATE_DECODE)) {
-        _log( DESTINY__SETSTATE_DECODE, "    Decoded:" );
-        Destiny::DumpUpdate( DESTINY__SETSTATE_DECODE, &( into.destiny_state->content() )[0], (uint32)into.destiny_state->content().size() );
-    }
-}
-
 void SystemManager::SendStaticBall(SpaceEntity* pSE)
 {
     if (m_clients.empty())
@@ -1077,7 +993,7 @@ void SystemManager::SendStaticBall(SpaceEntity* pSE)
 
     Buffer* destinyBuffer = new Buffer();
     //create AddBalls header
-    Destiny::AddBall_header head = Destiny::AddBall_header();
+    Destiny::AddBall_header head = {};
         head.packet_type = 1;   // 0 = full state   1 = balls
         head.stamp = m_ticStamp;
     destinyBuffer->Append( head );
@@ -1100,7 +1016,7 @@ void SystemManager::SendStaticBall(SpaceEntity* pSE)
         return;
     }
 
-    pSE->EncodeDestiny(*destinyBuffer);
+    pSE->EncodeStateData(*destinyBuffer);
     addballs2.state = new PyBuffer(&destinyBuffer); //consumed
 
     if (is_log_enabled(DESTINY__BALL_DUMP))
@@ -1273,7 +1189,7 @@ void SystemManager::DScan(int64 range, const Vector3d& position, std::vector<Spa
                 continue;
         }/*
         if (cur.second->DestinyMgr() != nullptr)
-            if (cur.second->DestinyMgr()->IsCloaked())
+            if (cur.second->GetMoveData()->IsCloaked())
                 continue;*/
         // made it this far.  add item to scan list
         delta = cur.second->GetPosition() - position;
@@ -1525,21 +1441,483 @@ void SystemManager::GetPlayerCount()
     int64 pod24DateTime;
     */
 
+/* relocated ex-destiny methods and calls */
 
-bool SystemManager::IsNull(std::map<uint32, SpaceEntity*>::iterator& i)
+void SystemManager::CreateShipMarker(SpaceEntity* pSE) {
+    // create jetcan to visualize movement
+    std::string str = pSE->GetName();
+    str += " ";
+    str += sDataMgr.GetBallModeName(pSE->GetMoveData()->GetBallMode());
+    str += " " + std::to_string(pSE->GetMoveData()->GetTicStamp() - m_ticStamp);
+    MarkPoint(pSE, str, str);
+}
+
+void SystemManager::MarkPoint(SpaceEntity* pSE, std::string& name, std::string& desc, bool orbit/*false*/) {
+    // create jetcan to visualize point in space
+    ItemData idata(23, ownerSystem, pSE->GetLocationID(), flagAutoFit, name.c_str(), pSE->GetPosition(), desc.c_str());
+    CargoContainerRef cRef = CargoContainerRef::StaticCast(InventoryItem::SpawnTemp(idata));
+    if (cRef.get() == nullptr) {
+        _log(DESTINY__WARNING, "MarkPoint() could not create Item for %s (%s)", name.c_str(), desc.c_str());
+        return;
+    }
+
+    // create new container
+    FactionData data = FactionData();
+    ContainerSE* cSE = new ContainerSE(cRef, m_services, this, data);
+    if (cSE == nullptr) {
+        _log(DESTINY__WARNING, "MarkPoint() could not create SE for %s (%s)", name.c_str(), desc.c_str());
+        return;
+    }
+    cRef->SetMySE(cSE);
+    cSE->AnchorContainer();
+    AddMarker(cSE);
+    m_shipMarkers.emplace(cRef->itemID(), cSE);
+}
+
+void SystemManager::RemoveAllMarkers() {
+    RemoveShipMarkers();
+}
+
+void SystemManager::RemoveShipMarkers() {
+    SpaceEntity* pSE = nullptr;
+    for (auto &cur : m_shipMarkers) {
+        pSE = cur.second;
+        if (pSE == nullptr)
+            continue;
+        pSE->Delete();
+        SafeDelete(pSE);
+    }
+    m_shipMarkers.clear();
+}
+
+/* update and event queue methods */
+void SystemManager::SendDestinyUpdates(SpaceEntity* mySE, std::vector<PyTuple*>& updates, bool self_only/*false*/) const {
+    // this check shouldnt be needed...
+    if ((mySE == nullptr) or !m_loaded) {
+        for (auto &cur : updates)
+            PySafeDecRef(cur);
+        return;
+    }
+    if (self_only) {
+        if (!mySE->HasPilot()) {
+            // this entity is NOT a player ship...change to BubbleCast (or silently fail)
+            if (mySE->SysBubble() != nullptr) {
+                if (is_log_enabled(DESTINY__UPDATES))
+                    _log( DESTINY__UPDATES, "[%u] DM::SendUpdates() - BubbleCasting %zu DestinyUpdates as Self-Only to bubbleID %u from %s(%u)", \
+                            m_ticStamp, updates.size(), mySE->SysBubble()->GetID(), mySE->GetName(), mySE->GetID() );
+                mySE->SysBubble()->BubblecastDestinyUpdate(updates, "DestinyUpdates");
+            } else {
+                for (auto &cur : updates)
+                    PySafeDecRef(cur);
+            }
+            return;
+        }
+        if (is_log_enabled(PLAYER__MESSAGE))
+            _log(PLAYER__MESSAGE, "[%u] DM::SendUpdates() called as 'self_only' for %s(%i)", \
+                    m_ticStamp, mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
+
+        for (auto& cur : updates) {
+            PyIncRef(cur);
+            mySE->GetPilot()->QueueDestinyUpdate(&cur);
+        }
+    } else if (mySE->IsOperSE()) { //These are global entities, so we have to send update to all bubbles in a system
+        if (is_log_enabled(DESTINY__UPDATES))
+            _log(DESTINY__UPDATES, "[%u] DM::SendUpdates() - BubbleCasting Structure DestinyUpdates in %s from %s(%u)", \
+                    m_ticStamp, GetName(), mySE->GetName(), mySE->GetID());
+
+        //Get all clients in our system
+        for (auto const& cur : m_clients)
+            if (cur.second->IsInSpace())
+                cur.second->QueueDestinyUpdates(updates);
+    } else if (mySE->SysBubble() != nullptr) {
+        if (is_log_enabled(DESTINY__UPDATES))
+            _log(DESTINY__UPDATES, "[%u] DM::SendUpdates() - BubbleCasting %zu DestinyUpdates to bubbleID %u from %s(%u)", \
+                    m_ticStamp, updates.size(), mySE->SysBubble()->GetID(),   \
+                    (mySE->HasPilot()?mySE->GetPilot()->GetName():mySE->GetName()), \
+                    (mySE->HasPilot()?mySE->GetPilot()->GetCharID():mySE->GetID()) );
+        mySE->SysBubble()->BubblecastDestinyUpdate(updates, "DestinyUpdates");
+    } else {
+        _log(DESTINY__WARNING, "[%u] DM::SendUpdates() - Cannot BubbleCast %zu DestinyUpdates; entity (%u) is not in any bubble. (mySE->SysBubble() == nullptr)", \
+                m_ticStamp, updates.size(), mySE->GetID() );
+        for (auto &cur : updates)
+            PySafeDecRef(cur);
+        if (sConfig.debug.IsTestServer)
+            EvE::traceStack();
+    }
+}
+
+void SystemManager::SendSingleEvent(SpaceEntity* mySE, PyTuple** ev, bool self_only/*false*/) const {
+    // this check shouldnt be needed...
+    if ((mySE == nullptr) or !m_loaded) {
+        PySafeDecRef(*ev);
+        return;
+    }
+    if (self_only) {
+        if (!mySE->HasPilot()) {
+            // this entity is NOT a player ship...change to BubbleCast (or silently fail)
+            if (mySE->SysBubble() != nullptr) {
+                if (is_log_enabled(DESTINY__UPDATES))
+                    _log( DESTINY__UPDATES, "[%u] DM::SingleEvent() - Self-Only to bubbleID %u from %s(%u)", \
+                            m_ticStamp, mySE->SysBubble()->GetID(), mySE->GetName(), mySE->GetID() );
+                mySE->SysBubble()->BubblecastDestinyEvent(ev, "DestinyEvent");
+            }
+            return;
+        }
+        if (is_log_enabled(PLAYER__MESSAGE))
+            _log(PLAYER__MESSAGE, "[%u] DM::SingleEvent() - Self-Only' for %s(%i)", \
+                    m_ticStamp, mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
+
+        mySE->GetPilot()->QueueDestinyEvent(ev);
+    } else if (mySE->IsOperSE()) { //These are global entities, so we have to send update to all players in a system
+        if (is_log_enabled(DESTINY__UPDATES))
+            _log(DESTINY__UPDATES, "[%u] DM::SingleEvent() - BubbleCasting Structure DestinyEvent in %s from %s(%u)", \
+                    m_ticStamp, mySE->SystemMgr()->GetName(), mySE->GetName(), mySE->GetID());
+
+        //Get all clients in our system
+        for (auto const& cur : m_clients)
+            if (cur.second->IsInSpace()) {
+                PyIncRef(*ev);
+                cur.second->QueueDestinyEvent(ev);
+            }
+    } else if (mySE->SysBubble() != nullptr) {
+        if (is_log_enabled(DESTINY__UPDATES))
+            _log(DESTINY__UPDATES, "[%u] DM::SingleEvent() to bubbleID %u from %s(%u)", \
+                    m_ticStamp, mySE->SysBubble()->GetID(),   \
+                    (mySE->HasPilot()?mySE->GetPilot()->GetName():mySE->GetName()),\
+                    (mySE->HasPilot()?mySE->GetPilot()->GetCharID():mySE->GetID()) );
+        mySE->SysBubble()->BubblecastDestinyEvent(ev, "Single DestinyEvent" );
+    } else {
+        _log(DESTINY__WARNING, "[%u] DM::SingleEvent() - Cannot BubbleCast: entity %s(%u) is not in any bubble. (mySE->SysBubble() == nullptr)", \
+                m_ticStamp, mySE->GetName(), mySE->GetID() );
+        if (sConfig.debug.IsTestServer)
+            EvE::traceStack();
+    }
+}
+
+void SystemManager::SendSingleUpdate(SpaceEntity* mySE, PyTuple **up, bool self_only/*false*/) const {
+    // this check shouldnt be needed...
+    if ((mySE == nullptr) or !m_loaded)
+        return;
+    if (self_only) {
+        if (!mySE->HasPilot()) {
+            // this entity is NOT a player ship...change to BubbleCast (or silently fail)
+            if (mySE->SysBubble() != nullptr) {
+                if (is_log_enabled(DESTINY__UPDATES))
+                    _log( DESTINY__UPDATES, "[%u] DM::SingleUpdate() Self-Only to bubbleID %u from %s(%u)", \
+                            m_ticStamp, mySE->SysBubble()->GetID(), mySE->GetName(), mySE->GetID() );
+                mySE->SysBubble()->BubblecastDestinyUpdate(up, "Single Self-Only DestinyUpdate");
+            }
+            return;
+        }
+        if (is_log_enabled(PLAYER__MESSAGE))
+            _log(PLAYER__MESSAGE, "[%u] DM::SingleUpdate() Self-Only' for %s(%i)", \
+                    m_ticStamp, mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
+
+        mySE->GetPilot()->QueueDestinyUpdate(up);
+    } else if (mySE->IsOperSE()) { //These are global entities, so we have to send update to all players in a system
+        if (is_log_enabled(DESTINY__UPDATES))
+            _log(DESTINY__UPDATES, "[%u] DM::SingleUpdate() - BubbleCasting Structure DestinyUpdate in %s from %s(%u)", \
+                    m_ticStamp, mySE->SystemMgr()->GetName(), mySE->GetName(), mySE->GetID());
+
+        //Get all clients in our system
+        std::vector<Client*> cv;
+        mySE->SystemMgr()->GetClientList(cv);
+        for (auto const& player : cv)
+            if (player->IsInSpace()) {
+                //PyIncRef(*up);
+                player->QueueDestinyUpdate(up);
+            }
+    } else if (mySE->SysBubble() != nullptr) {
+        if (is_log_enabled(DESTINY__UPDATES))
+            _log(DESTINY__UPDATES, "[%u] DM::SingleUpdate() to bubbleID %u from %s(%u)", \
+                    m_ticStamp, mySE->SysBubble()->GetID(),   \
+                    (mySE->HasPilot()?mySE->GetPilot()->GetName():mySE->GetName()),\
+                    (mySE->HasPilot()?mySE->GetPilot()->GetCharID():mySE->GetID()) );
+        mySE->SysBubble()->BubblecastDestinyUpdate(up, "Single DestinyUpdate" );
+    } else {
+        _log(DESTINY__WARNING, "[%u] DM::SingleUpdate() - Cannot BubbleCast: entity %s(%u) is not in any bubble. (mySE->SysBubble() == nullptr)", \
+                m_ticStamp, mySE->GetName(), mySE->GetID() );
+        if (sConfig.debug.IsTestServer)
+            EvE::traceStack();
+    }
+}
+
+// helper functions for SendGFX calls
+void SystemManager::SendJumpOut(SpaceEntity* mySE) const {
+    if (mySE == nullptr)
+        return;
+    SendGFX10(mySE, "effects.JumpOut", mySE->GetID());
+}
+
+void SystemManager::SendJettisonPacket(SpaceEntity* mySE) const {
+    if (mySE == nullptr)
+        return;
+    SendGFX10(mySE, "effects.Jettison");
+}
+
+void SystemManager::SendGateActivity(SpaceEntity* mySE) const {
+    if (mySE == nullptr)
+        return;
+    SendGFX10(mySE, "effects.GateActivity");
+}
+
+void SystemManager::SendJumpOutWormhole(SpaceEntity* mySE) const {
+    if (mySE == nullptr)
+        return;
+    /** @todo  this should also send otherTypeID - data is u/k at this time */
+    SendGFX10(mySE, "effects.JumpOutWormhole", mySE->GetID());
+}
+
+void SystemManager::SendWormholeActivity(SpaceEntity* mySE) const {
+    if (mySE == nullptr)
+        return;
+    SendGFX10(mySE, "effects.WormholeActivity");
+}
+
+void SystemManager::SendJumpOutEffect(SpaceEntity* mySE, std::string JumpEffect, uint32 shipID) const {
+    SendGFX10(mySE, JumpEffect);
+    /*
+     *    sLog.Error("SendGFX", "SendJumpOutEffect - fix this");
+     *    OnSpecialFX14 effect;
+     *        effect.entityID = mySE->GetID();
+     *        effect.targetID = new PyInt(shipID);
+     *        effect.guid = "effects.JumpDriveOut";   // JumpDriveInBO
+     *        effect.isOffensive = 0;
+     *        effect.start = 1;
+     *        effect.active = 1;
+     *        effect.duration = 5000;
+     *        effect.repeat = 0;
+     *        effect.startTime = GetFileTimeNow();
+     *        effect.otherTypeID= 0;
+     *        effect.graphicInfo = 0;
+     *    PyTuple *up(effect.Encode());
+     *    SendSingleUpdate(mySE, &up);
+     */
+}
+
+void SystemManager::SendJumpInEffect(SpaceEntity* mySE, std::string JumpEffect) const {
+    SendGFX10(mySE, JumpEffect);
+    /*
+     *    sLog.Error("SendGFX", "SendJumpInEffect - fix this");
+     *    OnSpecialFX14 effect;
+     *        effect.guid = "effects.JumpDriveIn";
+     *        effect.entityID = mySE->GetID();
+     *        effect.isOffensive = 0;
+     *        effect.start = 1;
+     *        effect.active = 1;
+     *        effect.duration = 2000;
+     *        effect.repeat = 0;
+     *        effect.startTime = GetFileTimeNow();
+     *        effect.targetID = new PyInt(mySE->GetID());
+     *    PyTuple *up(effect.Encode());
+     *    SendSingleUpdate(mySE, &up);
+     */
+}
+
+// GFX method for space effects
+
+// only used by UpdateShip calls
+void SystemManager::SendBallInteractive(SpaceEntity* mySE, bool set/*false*/) const {
+    // interactive means "ship has pilot"
+    // NOTE:  updating here should also update balldata
+    SetBallInteractive sbi;
+        sbi.entityID = mySE->GetID();
+        sbi.interactive = set;
+    PyTuple* up = sbi.Encode();
+    SendSingleUpdate(mySE, &up);
+}
+
+void SystemManager::SendTerminalExplosion(SpaceEntity* mySE, uint32 shipID, uint32 bubbleID, bool isGlobal/*false*/) const {
+    //exploders = [ x[1][1][0] for x in state if x[1][0] == 'TerminalExplosion' ]
+    /*
+     *                  [PyTuple 2 items]                         x
+     *                    [PyInt 62609]                           x[0]
+     *                    [PyTuple 2 items]                       x[1]
+     *                      [PyString "TerminalExplosion"]        x[1][0]
+     *                      [PyTuple 3 items]                     x[1][1]
+     *                        [PyIntegerVar 9000000000001190702]  x[1][1][0]
+     *                        [PyInt 39]
+     *                        [PyBool False]
+     */
+    //send an explosion special effects update...
+    TerminalExplosion du;
+    du.shipID = shipID;
+    du.bubbleID = bubbleID;
+    du.ballIsGlobal = isGlobal;
+    PyTuple* up = du.Encode();
+    SendSingleEvent(mySE, &up);
+}
+
+// TODO:  FIXME:  update these two SendGFX* to use se and movedata as needed
+// update this to use start/stop and repeat=0
+// may have to switch this to gfx14 to enable other vars...
+void SystemManager::SendGFX10(SpaceEntity* mySE, std::string guid, int32 targetID/*0*/, int32 otherTypeID/*0*/) const {
+    // verify there is someone to send this to before we create it
+    if (mySE == nullptr)
+        return;
+    if (!mySE->HasPilot() and !mySE->SysBubble()->HasPlayers())
+        return;
+
+    OnSpecialFX10 effect;
+        effect.entityID = mySE->GetID();
+        effect.targetID = (targetID == 0 ? PyStatic.NewNone() : new PyInt(targetID));
+        effect.otherTypeID = (otherTypeID == 0 ? PyStatic.NewNone() : new PyInt(otherTypeID));
+        effect.area = PyStatic.mtList();
+        effect.guid = std::move(guid);
+        effect.isOffensive = 0;
+        effect.start = 1;
+        effect.active = 0;
+    PyTuple *up = effect.Encode();
+    if (is_log_enabled(EFFECTS__DUMP))
+        up->Dump(EFFECTS__DUMP, "");
+    SendSingleUpdate(mySE, &up);
+}
+
+// def OnSpecialFX(shipID, moduleID, moduleTypeID, targetID, otherTypeID, area, guid, isOffensive, start, active, duration = -1, repeat = None, startTime = None, graphicInfo = None):
+// GFX method for graphics effects
+void SystemManager::SendGFX14(SpaceEntity* mySE, int32 moduleID, int32 moduleTypeID, int32 targetID,
+                               int32 chargeTypeID, std::string guid, bool isOffensive, bool start,
+                               bool isActive, int32 duration, int32 repeat, int64 startTime/*0*/,
+                               int32 graphicInfo/*0*/, Client* pClient/*nullptr*/) const
 {
-    /* you have to change this parameter to the type of the container
-     * you are using and the type of the element inside the container.
-     *   if this finds use again, it should be changed to a template.
-     */
+    // verify there is someone to send this to before we create it
+    if (mySE == nullptr)
+        return;
+    if (!mySE->HasPilot() and !mySE->SysBubble()->HasPlayers())
+        return;
 
-    uint8 buffer[sizeof(i)];
-    memset(buffer, 0, sizeof(i));
-    memcpy(buffer, &i, sizeof(i));
-    return *buffer == 0;
-    /* I found that the size of any iterator is 12 bytes long.
-     * I also found that if the first byte of the iterator that
-     * is copy to the buffer is zero, then the iterator is invalid.
-     * Otherwise it is valid. I like to call invalid iterators also as "null iterators".
-     */
+    OnSpecialFX14 effect;
+        effect.entityID = mySE->GetID();
+        effect.moduleID = moduleID;             // npc UID for npc's
+        effect.moduleTypeID = moduleTypeID;     // npc typeID for npc's
+        effect.targetID = (targetID == 0 ? PyStatic.NewNone() : new PyInt(targetID));
+        effect.otherTypeID = (chargeTypeID == 0 ? PyStatic.NewNone() : new PyInt(chargeTypeID));
+        effect.area = PyStatic.mtList();
+        /** --- POPULATING THE AREA FIELD ---
+        PyList* areaBounds = new PyList();
+        // Element 0: Primitive Type (1.0 = Sphere, 2.0 = Cylinder, 3.0 = Cone, 4.0 = Box/Cube)
+        areaBounds->AddItem(new PyFloat(1.0f));
+        // Element 1: Spatial Radius Constraint (e.g., 50000.0f meters)
+        areaBounds->AddItem(new PyFloat(effectRadius));
+        effect.area = areaBounds;
+        */
+        effect.guid = std::move(guid);
+        effect.isOffensive = isOffensive;       // bool
+        effect.start = start;                   // int bool
+        effect.active = isActive;               // int bool
+        effect.duration = duration;             // in ms
+        effect.repeat = repeat;
+        effect.startTime = (startTime > 0 ? startTime : GetFileTimeNow());
+        effect.graphicInfo = (graphicInfo == 0 ? PyStatic.NewNone() : new PyInt(graphicInfo));
+    PyTuple *up = effect.Encode();
+    if (mySE->IsNPCSE() and is_log_enabled(EFFECTS__DUMP_NPC)) {
+        up->Dump(EFFECTS__DUMP_NPC, "");
+    } else if (is_log_enabled(EFFECTS__DUMP)) {
+        up->Dump(EFFECTS__DUMP, "");
+    }
+    if (pClient == nullptr) {
+        SendSingleUpdate(mySE, &up);
+    } else {
+        // this is to update new ship in bubble with active gfx
+        pClient->QueueDestinyUpdate(&up);
+    }
+}
+
+// this sends current state data of this solar system to requesting player (using player's shipSE)
+void SystemManager::SendBallPark(SpaceEntity* mySE) const {
+    if (mySE == nullptr or !mySE->HasPilot())
+        return;
+
+    if (is_log_enabled(DESTINY__MESSAGE))
+        _log(DESTINY__MESSAGE, "DM::SendSetState() Called for Ship:%s(%u) Pilot:%s(%u)", \
+            mySE->GetName(), mySE->GetID(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
+
+    BallParkData into;
+    into.stamp = m_ticStamp;
+    into.ego = mySE->GetID();
+
+    //using namespace Destiny;
+    Buffer* stateBuffer = new Buffer();
+
+    Destiny::AddBall_header head = {};
+        head.packet_type = 0;   // 0 = full state   1 = balls
+        head.stamp = into.stamp;
+    stateBuffer->Append(head);
+
+    // use map as it automagically orders by itemID
+    std::map<uint32, SpaceEntity*> visibleEntities;
+
+    // get all static entities for this system
+    for (auto &cur : m_staticEntities)
+        visibleEntities.emplace(cur.first, cur.second);
+
+    // add our ship
+    std::map<uint32, SpaceEntity*>::const_iterator itr = m_ticEntities.find(into.ego);
+    if (itr != m_ticEntities.end())
+        visibleEntities.emplace(itr->first, itr->second);
+
+    // query our current bubble to get all dynamic, visible entities
+    mySE->SysBubble()->GetEntities(visibleEntities);
+
+    into.slims = new PyList();
+    into.effectStates = new PyList();
+    into.allianceBridges = new PyList();
+    //activeBeacon and activeBridge data found in fleetSvc.py
+
+    //go through all visible entities and gather the info we need...
+    for (auto &cur : visibleEntities) {
+        if (!cur.second->IsMissileSE() and !cur.second->IsFieldSE())
+            into.damageState.emplace(cur.first, cur.second->MakeDamageState());
+
+        into.slims->AddItem( new PyObject("foo.SlimItem", cur.second->MakeSlimItem()));
+
+        //append the state binary data...
+        cur.second->EncodeStateData(*stateBuffer);
+
+        // get tower effect state (if applicable)
+        if (cur.second->IsTowerSE())
+            cur.second->GetTowerSE()->GetEffectState(*(into.effectStates));
+
+        /**  @todo (allan)  this needs more work.  should be done same as damageState.  28.2.16
+         *        //ss.aggressors is for players undocking/jumping with aggression (uses GetCriminalTimeStamps)  ** see notes in Client::GetAggressors()
+         *        if (cur.second->HasPilot() and cur.second->HasAggression())
+         *            ss.aggressors[ cur.first ] = cur.second->GetAggressors());
+         */
+
+        /** @todo (allan)  to be written   -jumpbridges is a PyList */
+        //  if (cur.second->IsJumpBridgeSE)
+        //ss.allianceBridges -- jumpbridges et al.
+        //  [for shipID, toSolarsystemID, toBeaconID in bag.allianceBridges:]
+    }
+
+    into.ballState = new PyBuffer(&stateBuffer);
+    into.droneState = mySE->SysBubble()->GetDroneState();
+
+    /* SolarSystem info.  this avoids the old way of a DB hit for every call.  */
+    PyPackedRow* row = new PyPackedRow(sDataMgr.CreateHeader());
+        row->SetFieldC("itemID",        new PyLong(m_data.systemID));
+        row->SetFieldC("typeID",        PyStatic.NewFive());
+        row->SetFieldC("ownerID",       PyStatic.NewOne());  // should this be owning factionID?  yes
+        row->SetFieldC("locationID",    new PyInt(m_data.constellationID));
+        row->SetFieldC("flagID",        PyStatic.NewZero());
+        row->SetFieldC("quantity",      PyStatic.NewNegOne());
+        row->SetFieldC("groupID",       PyStatic.NewFive());
+        row->SetFieldC("categoryID",    PyStatic.NewTwo());
+        row->SetFieldC("customInfo",    new PyString(""));
+    into.solItem = row;
+
+    if (is_log_enabled(DESTINY__SETSTATE)) {
+        _log( DESTINY__SETSTATE, "Current State of %s", m_data.name.c_str() );
+        into.Dump( DESTINY__SETSTATE, "    " );
+    }
+
+    if (is_log_enabled(DESTINY__SETSTATE_DECODE)) {
+        _log( DESTINY__SETSTATE_DECODE, "    Decoded:" );
+        Destiny::DumpUpdate( DESTINY__SETSTATE_DECODE, &(into.ballState->content())[0], (uint32)into.ballState->content().size());
+    }
+
+    PyTuple* state = into.Encode();
+    //setstate should be alone and immediate.  send directly
+    mySE->GetPilot()->QueueDestinyUpdate(&state, false, true);   // consumed
+    mySE->GetPilot()->SetStateSent(true);
 }

@@ -102,7 +102,7 @@ PyDict* AsteroidSE::MakeSlimItem() {
     return slim;
 }
 
-void AsteroidSE::EncodeDestiny(Buffer& into) {
+void AsteroidSE::EncodeStateData(Buffer& into) {
     using namespace Destiny;
 
     BallHeader head = BallHeader();
@@ -118,7 +118,7 @@ void AsteroidSE::EncodeDestiny(Buffer& into) {
         main.formationID = -1;
     into.Append(main);
 
-    _log(SE__DESTINY, "AsteroidSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "AsteroidSE::EncodeStateData(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 void AsteroidSE::MakeDamageState(DoDestinyDamageState &into) {

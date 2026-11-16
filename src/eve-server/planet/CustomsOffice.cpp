@@ -353,7 +353,7 @@ void CustomsSE::SetAnchor(Client* pClient, Vector3d& pos)
             sbr.entityID = m_self->itemID();
             sbr.radius = m_self->radius();
         updates.push_back(sbr.Encode());
-        // fixme m_destiny->SendDestinyUpdates(updates); //consumed
+        m_system->SendDestinyUpdates(this, updates); //consumed
 
         //SendEffectUpdate(anchorDropForOrbitals, true);
         // this also needs a timestamp
@@ -380,7 +380,7 @@ void CustomsSE::PullAnchor()
     // fixme     m_destiny->SendGFX14(m_cData.itemID, m_cData.itemID, m_self->typeID(),0,0,"effects.AnchorLift",0,1,1,-1,0);
 }
 
-void CustomsSE::EncodeDestiny(Buffer& into)
+void CustomsSE::EncodeStateData(Buffer& into)
 {
     using namespace Destiny;
     //const uint16 miniballsCount = GetMiniBalls();
@@ -424,7 +424,7 @@ void CustomsSE::EncodeDestiny(Buffer& into)
 [Offset: (0, 2598, 1)]
 */
 
-    _log(SE__DESTINY, "CustomsSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "CustomsSE::EncodeStateData(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 PyDict *CustomsSE::MakeSlimItem() {

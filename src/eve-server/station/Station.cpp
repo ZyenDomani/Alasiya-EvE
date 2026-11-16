@@ -307,7 +307,7 @@ StationSE::StationSE(StationItemRef station, PyServiceMgr &services, SystemManag
     station->SetAttribute(AttrVolume,             station->type().volume(), false);
 }
 
-void StationSE::EncodeDestiny(Buffer& into)
+void StationSE::EncodeStateData(Buffer& into)
 {
     using namespace Destiny;
 
@@ -334,7 +334,7 @@ void StationSE::EncodeDestiny(Buffer& into)
         miniball.radius = 1639.241;
     into.Append( miniball );
  */
-    _log(SE__DESTINY, "StationSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "StationSE::EncodeStateData(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 PyDict *StationSE::MakeSlimItem() {

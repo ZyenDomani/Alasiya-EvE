@@ -126,14 +126,6 @@
 // Boost.Asio
 #include <boost/asio.hpp>
 
-/*************************************************************************/
-/* MMGR - Memory Manager                                                 */
-/*  Memory managing & tracking software                                  */
-/*  This code is designed to track and log memory leaks                  */
-/*************************************************************************/
-/* note...this code causes free() errors in xmlpacketgenerator.o */
-//#include "memory/mmgr.h"
-
 
 /************************************************************************/
 /* Project-specific includes for files using ONLY eve-core.h            */

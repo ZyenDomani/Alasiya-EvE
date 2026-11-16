@@ -316,7 +316,7 @@ void ContainerSE::AnchorContainer()
     m_contRef->SetAnchor(true);
 }
 
-void ContainerSE::EncodeDestiny(Buffer& into)
+void ContainerSE::EncodeStateData(Buffer& into)
 {
     using namespace Destiny;
     // fixme uint8 mode = m_destiny->GetBallMode(); //Ball::Mode::STOP;
@@ -338,7 +338,7 @@ void ContainerSE::EncodeDestiny(Buffer& into)
         mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
     into.Append(mass);/*
     DataSector data = DataSector();
-        data.maxSpeed = m_destiny->GetMaxVelocity();
+        data.maxSpeed = m_destiny->GetMaxSpeed();
         data.velX = m_destiny->GetVelocity().x;
         data.velY = m_destiny->GetVelocity().y;
         data.velZ = m_destiny->GetVelocity().z;
@@ -367,7 +367,7 @@ void ContainerSE::EncodeDestiny(Buffer& into)
         } break;
     }
 
-    _log(SE__DESTINY, "ContainerSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "ContainerSE::EncodeStateData(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 void ContainerSE::MakeDamageState(DoDestinyDamageState &into)
@@ -569,7 +569,7 @@ void WreckSE::Process() {
     }
 }
 
-void WreckSE::EncodeDestiny(Buffer& into) {
+void WreckSE::EncodeStateData(Buffer& into) {
     using namespace Destiny;
     // fixme uint8 mode = m_destiny->GetBallMode(); //Ball::Mode::TROLL;
     BallHeader head = BallHeader();
@@ -589,7 +589,7 @@ void WreckSE::EncodeDestiny(Buffer& into) {
         mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
     into.Append(mass);/*
     DataSector data = DataSector();
-        data.maxSpeed = m_destiny->GetMaxVelocity();
+        data.maxSpeed = m_destiny->GetMaxSpeed();
         data.velX = m_destiny->GetVelocity().x;
         data.velY = m_destiny->GetVelocity().y;
         data.velZ = m_destiny->GetVelocity().z;
@@ -617,7 +617,7 @@ void WreckSE::EncodeDestiny(Buffer& into) {
             into.Append(main);
         } break;
     }
-    _log(SE__DESTINY, "WreckSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "WreckSE::EncodeStateData(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 PyDict *WreckSE::MakeSlimItem() {

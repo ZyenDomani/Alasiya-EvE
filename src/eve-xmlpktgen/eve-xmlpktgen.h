@@ -33,8 +33,6 @@
 /* eve-core includes                                                    */
 /************************************************************************/
 #include "eve-core.h"
-/* undefine the memory manager defines for the xmlpacketgenerator */
-//#include "memory/nommgr.h"
 // log
 #include "log/logsys.h"
 #include "log/LogNew.h"

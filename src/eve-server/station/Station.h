@@ -188,7 +188,7 @@ public:
     /* virtual functions to be overridden in derived classes */
     //virtual void Process();
     virtual PyDict* MakeSlimItem();
-    virtual void EncodeDestiny(Buffer& into);
+    virtual void EncodeStateData(Buffer& into);
 
     /* specific functions handled here. */
     void UnloadStation();

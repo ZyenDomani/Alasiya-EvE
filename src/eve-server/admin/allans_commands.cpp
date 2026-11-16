@@ -1153,6 +1153,8 @@ PyResult Command_bubblewarp(Client* pClient, CommandDB* db, PyServiceMgr* servic
         throw CustomError("Cannot warp to bubble %u because it is in %s and you are in %s", \
                     bubbleID, pBubble->GetSystem()->GetName(), pClient->GetSystemName().c_str());
 
+        //    NOTE:  see new datasets in beyonce to add here (or call warp command)
+        
     // fixme pClient->GetShipSE()->DestinyMgr()->WarpTo(pBubble->GetCenter());
 
     int size(50);

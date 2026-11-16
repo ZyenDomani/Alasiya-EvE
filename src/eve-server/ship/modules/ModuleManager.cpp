@@ -705,10 +705,10 @@ void ModuleManager::Activate(int32 itemID, uint16 effectID, int32 targetID, int3
         SpaceEntity* pSE = pShipItem->GetPilot()->SystemMgr()->GetSE(targetID);
         if (pSE == nullptr)
             throw UserError("DeniedActivateTargetNotPresent");
-        if (pSE->IsTractored()) {
-            pShipItem->GetPilot()->SendNotifyMsg("Your %s cannot engage the %s, which is already being tractor beamed by something else.", pMod->GetSelf()->name(), pSE->GetName());
-            return;
-        }
+//         if (pSE->IsTractored()) {
+//             pShipItem->GetPilot()->SendNotifyMsg("Your %s cannot engage the %s, which is already being tractor beamed by something else.", pMod->GetSelf()->name(), pSE->GetName());
+//             return;
+//         }
     }
 
     if (!pMod->IsLinked() or pMod->IsMaster())

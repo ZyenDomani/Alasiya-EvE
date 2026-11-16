@@ -34,8 +34,8 @@
 DroneAI::DroneAI(DroneSE* pdSE)
 : m_heading(NULL_ORIGIN),
 m_velocity(NULL_ORIGIN),
-targSE(nullptr),
-fTargSE(nullptr),
+targetSE(nullptr),
+ftargetSE(nullptr),
 mySE(pdSE),
 shipSE(nullptr),
 m_ore(nullptr),
@@ -247,10 +247,10 @@ void DroneAI::Process() {
     double shipDistance = delta.Length();
     shipDistance -= shipSE->GetRadius();
     // should we check for targDistance==0 in here?
-    if (targSE != nullptr) {
-        delta = targSE->GetPosition() - mySE->GetPosition();
+    if (targetSE != nullptr) {
+        delta = targetSE->GetPosition() - mySE->GetPosition();
         targDistance = delta.Length();
-        targDistance -= targSE->GetRadius();
+        targDistance -= targetSE->GetRadius();
     }
 
     switch(m_state) {
@@ -412,7 +412,7 @@ void DroneAI::Process() {
                     move = false;
                     if (targDistance > m_orbitDistance) {
                         // has target moved any?  not used yet, but special belts will have orbiting asteroids
-                        MoveDrone(targSE);
+                        MoveDrone(targetSE);
                         _log(DRONE__AI_TRACE, "Mining(Engaged) - outside orbit distance.");
                     }
                     // has mining cycle finished?
@@ -492,7 +492,7 @@ void DroneAI::Process() {
                     move = false;
                     // has target moved any?
                     if (targDistance > m_orbitDistance) {
-                        MoveDrone(targSE);
+                        MoveDrone(targetSE);
                         _log(DRONE__AI_TRACE, "Proc(Repairing) - outside orbit distance.");
                         // cannot return from here.
                     }
@@ -667,7 +667,7 @@ void DroneAI::Process() {
                     move = false;
                     if (targDistance > m_orbitDistance) {
                         // has target moved any?
-                        MoveDrone(targSE);
+                        MoveDrone(targetSE);
                         _log(DRONE__AI_TRACE, "Proc(Engaged) - outside orbit distance.");
                         // cannot return from here.
                     }
@@ -735,7 +735,7 @@ void DroneAI::Process() {
                 case DroneAI::Action::Engaged: {
                     if (shipDistance > m_orbitDistance) {
                         // has target moved any?
-                        MoveDrone(targSE);
+                        MoveDrone(targetSE);
                         _log(DRONE__AI_TRACE, "Proc(Engaged) - outside orbit distance.");
                         // cannot return from here.
                     }
@@ -754,7 +754,7 @@ void DroneAI::Process() {
                     }
                     if (targDistance > m_orbitDistance) {
                         // has target moved any?
-                        MoveDrone(targSE);
+                        MoveDrone(targetSE);
                         _log(DRONE__AI_TRACE, "Proc(Engaged) - outside orbit distance.");
                         // cannot return from here.
                     } else if (targDistance < m_engageDistance) {
@@ -967,7 +967,7 @@ void DroneAI::Engage(PyDict* dict, int8 state/*0*/, bool repeat/*0*/) {
             SetState(DroneAI::State::Mining);
 
             // determine target distance to set action
-            if (InOrbitDistance(targSE)) {
+            if (InOrbitDistance(targetSE)) {
                 SetAction(DroneAI::Action::OrbitTarget);
                 SendTrueState(DroneAI::State::Mining);
             } else {
@@ -999,7 +999,7 @@ void DroneAI::Engage(PyDict* dict, int8 state/*0*/, bool repeat/*0*/) {
             m_sendCmd = true;
             SetState(DroneAI::State::Combat);
             // determine target distance to set action
-            if (InOrbitDistance(targSE)) {
+            if (InOrbitDistance(targetSE)) {
                 SetAction(DroneAI::Action::OrbitTarget);
                 SendTrueState(DroneAI::State::Combat);
             } else {
@@ -1036,7 +1036,7 @@ void DroneAI::Engage(PyDict* dict, int8 state/*0*/, bool repeat/*0*/) {
             m_sendCmd = true;
             SetState(DroneAI::State::Repairing);
             // determine target distance to set action
-            if (InOrbitDistance(targSE)) {
+            if (InOrbitDistance(targetSE)) {
                 SetAction(DroneAI::Action::OrbitTarget);
             } else {
                 SetAction(DroneAI::Action::AccelToTarget);
@@ -1051,12 +1051,12 @@ void DroneAI::Engage(PyDict* dict, int8 state/*0*/, bool repeat/*0*/) {
             mySE->GetSelf()->SetAttribute(AttrDroneIsAgressive, 0, false);
             // engage assigned ship's active target
             m_sendCmd = true;
-            targSE = shipSE->TargetMgr()->GetFirstTarget();
+            targetSE = shipSE->TargetMgr()->GetFirstTarget();
             SetState(DroneAI::State::Assisting);
-            if (targSE == nullptr) {
+            if (targetSE == nullptr) {
                 // no current target...set idle
                 SetAction(DroneAI::Action::Idle);
-            } else if (InEngageDistance(targSE)) {
+            } else if (InEngageDistance(targetSE)) {
                 m_startTime = GetFileTimeNow();
                 SetAction(DroneAI::Action::Engaged);
                 SendTrueState(DroneAI::State::Combat);
@@ -1133,7 +1133,7 @@ void DroneAI::Engage(PyDict* dict, int8 state/*0*/, bool repeat/*0*/) {
             m_sendCmd = true;
             SetState(DroneAI::State::Operating);
             // determine target distance to set action
-            if (InOrbitDistance(targSE)) {
+            if (InOrbitDistance(targetSE)) {
                 SetAction(DroneAI::Action::OrbitTarget);
                 SendTrueState(DroneAI::State::Operating);
             } else {
@@ -1258,7 +1258,7 @@ void DroneAI::SetIdle() {
 
 void DroneAI::Target(SpaceEntity* pTargetSE) {
     // check for changing targets first
-    if (targSE == pTargetSE) {
+    if (targetSE == pTargetSE) {
         // same target.  do nothing
         return;
     }
@@ -1270,7 +1270,7 @@ void DroneAI::Target(SpaceEntity* pTargetSE) {
             mySE->GetName(), mySE->GetID(), GetStateName(m_state), GetActionName(m_action));
 
     // all is good, set new target
-    targSE = pTargetSE;
+    targetSE = pTargetSE;
     bool chase = false;  // chase ref isnt used for drones
     if (!mySE->TargetMgr()->StartTargeting(pTargetSE,
                                             mySE->GetSelf()->GetAttribute(AttrScanSpeed).get_uint32(),
@@ -1291,16 +1291,16 @@ void DroneAI::Target(SpaceEntity* pTargetSE) {
 }
 
 void DroneAI::ClearTarget() {
-    mySE->TargetMgr()->ClearTarget(targSE);
+    mySE->TargetMgr()->ClearTarget(targetSE);
     //mySE->TargetMgr()->OnTarget(pSE, TargMgr::Mode::Lost);
 
-    targSE = nullptr;
+    targetSE = nullptr;
     SetIdle();
 }
 
 void DroneAI::RepairTarget() {
     _log(DRONE__AI_TRACE, "Drone %s(%u): RepairTarget: %s(%u) begin engaging.",
-            mySE->GetName(), mySE->GetID(), targSE->GetName(), targSE->GetID());
+            mySE->GetName(), mySE->GetID(), targetSE->GetName(), targetSE->GetID());
 
     // determine drone type, perform appropriate action
     switch (mySE->GetGroupID()) {
@@ -1308,20 +1308,20 @@ void DroneAI::RepairTarget() {
             //Logistic_Drone  - either shield or armor
             if (mySE->GetSelf()->HasAttribute(AttrEntityShieldBoostAmount)) {
                 // shield repper
-                float shieldHP = targSE->GetSelf()->GetAttribute(AttrShieldCharge).get_float();
+                float shieldHP = targetSE->GetSelf()->GetAttribute(AttrShieldCharge).get_float();
                 shieldHP += mySE->GetSelf()->GetAttribute(AttrEntityShieldBoostAmount).get_float();
                 // verify we're not going over...
-                if (shieldHP > targSE->GetSelf()->GetAttribute(AttrShieldCapacity).get_float())
-                    shieldHP = targSE->GetSelf()->GetAttribute(AttrShieldCapacity).get_float();
-                targSE->GetSelf()->SetAttribute(AttrShieldCharge, shieldHP);
+                if (shieldHP > targetSE->GetSelf()->GetAttribute(AttrShieldCapacity).get_float())
+                    shieldHP = targetSE->GetSelf()->GetAttribute(AttrShieldCapacity).get_float();
+                targetSE->GetSelf()->SetAttribute(AttrShieldCharge, shieldHP);
             } else if (mySE->GetSelf()->HasAttribute(AttrEntityArmorRepairAmount)) {
                 // armor repper
-                float armorHP = targSE->GetSelf()->GetAttribute(AttrArmorDamage).get_float();
+                float armorHP = targetSE->GetSelf()->GetAttribute(AttrArmorDamage).get_float();
                 armorHP -= mySE->GetSelf()->GetAttribute(AttrEntityArmorRepairAmount).get_float();
                 // verify we're not going over...
                 if (armorHP < 0)
                     armorHP = 0;
-                targSE->GetSelf()->SetAttribute(AttrArmorDamage, armorHP);
+                targetSE->GetSelf()->SetAttribute(AttrArmorDamage, armorHP);
             }
         } break;
         default: {
@@ -1354,11 +1354,11 @@ void DroneAI::AttackTarget() {
             // damage attack here...
             Damage dam(mySE,
                        mySE->GetSelf(),
-                       TurretMath::GetDroneToHit(mySE, targSE)
+                       TurretMath::GetDroneToHit(mySE, targetSE)
                       );
 
             dam *= mySE->GetSelf()->GetAttribute(AttrDamageMultiplier).get_float();
-            targSE->ApplyDamage(dam);
+            targetSE->ApplyDamage(dam);
         } break;
         //  testing...should these 2 even be here?  isnt this a constant till reassigned?
         case EVEDB::invGroups::Electronic_Warfare_Drone: {
@@ -1376,9 +1376,9 @@ void DroneAI::AttackTarget() {
 
         case EVEDB::invGroups::Cap_Drain_Drone: {
             // drain cap for this round
-            float capCharge = targSE->GetSelf()->GetAttribute(AttrCapacitorCharge).get_float();
+            float capCharge = targetSE->GetSelf()->GetAttribute(AttrCapacitorCharge).get_float();
             capCharge -= mySE->GetSelf()->GetAttribute(AttrEnergyDestabilizationAmount).get_float();
-            targSE->GetSelf()->SetAttribute(AttrCapacitorCharge, capCharge);
+            targetSE->GetSelf()->SetAttribute(AttrCapacitorCharge, capCharge);
         } break;
         default: {
             _log(DRONE__WARNING, "DroneAI::RepairTarget() - %s(%u) of %s is %s(%s) and calling RepairTarget()", \
@@ -1393,7 +1393,7 @@ void DroneAI::MineTarget() {
     // when mining drone's target is depleted, drone will get half cycle and not count in ore removed for module count
     float cycleVol(mySE->GetSelf()->GetAttribute(AttrMiningAmount).get_float());
 
-    InventoryItemRef roidRef(targSE->GetSelf());
+    InventoryItemRef roidRef(targetSE->GetSelf());
     float oreAmount(cycleVol / (roidRef->GetAttribute(AttrVolume).get_float()));
     if (oreAmount <= 0) {
         // drone cannot mine this heavy ore
@@ -1471,10 +1471,10 @@ void DroneAI::OrbitTarget() {
                 case DroneAI::State::Operating:
                 case DroneAI::State::Repairing:
                 case DroneAI::State::Approaching: {     // im gonna go with "Approaching Target" here....
-                    delta = targSE->GetPosition() - mySE->GetPosition();
+                    delta = targetSE->GetPosition() - mySE->GetPosition();
                     distance = delta.Length();
-                    distance -= targSE->GetRadius();
-                    targetID = targSE->GetID();
+                    distance -= targetSE->GetRadius();
+                    targetID = targetSE->GetID();
                     // update heading
                     m_heading = delta.Normalize();
                 } break;
@@ -1489,17 +1489,17 @@ void DroneAI::OrbitTarget() {
         case DroneAI::Action::AccelToTarget:
         case DroneAI::Action::DecelToTarget: {
             // target is target
-            delta = targSE->GetPosition() - mySE->GetPosition();
+            delta = targetSE->GetPosition() - mySE->GetPosition();
             distance = delta.Length();
-            distance -= targSE->GetRadius();
-            targetID = targSE->GetID();
+            distance -= targetSE->GetRadius();
+            targetID = targetSE->GetID();
             // update heading
             m_heading = delta.Normalize();
         } break;
         case DroneAI::Action::AccelToShip:
         case DroneAI::Action::DecelToShip: {
             // target is assigned ship
-            delta = targSE->GetPosition() - mySE->GetPosition();
+            delta = targetSE->GetPosition() - mySE->GetPosition();
             distance = delta.Length();
             distance -= shipSE->GetRadius();
             targetID = shipSE->GetID();
@@ -1616,10 +1616,10 @@ void DroneAI::FindTarget() {
 
     if (focus and !m_focusfire) {
         // ok, so we have focus fire set.  see if any other drone has a valid target and assist
-        if (fTargSE != nullptr) {
-            targSE = fTargSE;
+        if (ftargetSE != nullptr) {
+            targetSE = ftargetSE;
             m_focusfire = true;
-            mySE->Engage(targSE);
+            mySE->Engage(targetSE);
             return;
         }
     }
@@ -1685,22 +1685,22 @@ void DroneAI::FindTarget() {
         }
 
         // pick smallest and engage
-        targSE = sizeMap.begin()->second;
+        targetSE = sizeMap.begin()->second;
 
         // just in case....
-        if (targSE == nullptr) {
+        if (targetSE == nullptr) {
             // holyshit...all that work and we still dont have a target...back to idle it is.
             SetIdle();
             return;
         }
         // combine efforts
         if (focus /* and !m_focusfire */)
-            shipSE->FocusFire(mySE, targSE);
+            shipSE->FocusFire(mySE, targetSE);
 
-        Target(targSE);
+        Target(targetSE);
 
         SetState(DroneAI::State::Combat);
-        if (InEngageDistance(targSE)) {
+        if (InEngageDistance(targetSE)) {
             m_startTime = GetFileTimeNow();
             SetAction(DroneAI::Action::Engaged);
             SendTrueState(m_state); // sending actual state (either Combat or Operating)
@@ -1776,8 +1776,8 @@ void DroneAI::Abandon() {
         shipSE->ReleaseBandwidth(mySE);
 
     shipSE = nullptr;
-    targSE = nullptr;
-    fTargSE = nullptr;
+    targetSE = nullptr;
+    ftargetSE = nullptr;
 }
 
 void DroneAI::ModuleActivated(SpaceEntity* pTargetSE) {
@@ -1839,7 +1839,7 @@ void DroneAI::ModuleActivated(SpaceEntity* pTargetSE) {
 void DroneAI::ShipAddedTarget(SpaceEntity* pTargetSE) {
     // our ship has added a new target...whatever shall we do??
     // see if focus has added this target already
-    if (fTargSE == pTargetSE)
+    if (ftargetSE == pTargetSE)
         return;  // yep.
 
     /* so we have already checked for idle and autoattack in drone, and previous focus here.
@@ -1861,7 +1861,7 @@ void DroneAI::ShipAddedTarget(SpaceEntity* pTargetSE) {
         // well alright alright...lets pewpew sommfin
         Target(pTargetSE);
         SetState(DroneAI::State::Combat);
-        if (InEngageDistance(targSE)) {
+        if (InEngageDistance(targetSE)) {
             m_startTime = GetFileTimeNow();
             SetAction(DroneAI::Action::Engaged);
             SendTrueState(DroneAI::State::Combat);
@@ -1879,7 +1879,7 @@ void DroneAI::ShipAddedTarget(SpaceEntity* pTargetSE) {
 
         // are we soloing this shit or what?
         if (mySE->GetSelf()->GetAttribute(AttrDroneFocusFire).get_bool())
-            shipSE->FocusFire(mySE, targSE);
+            shipSE->FocusFire(mySE, targetSE);
     }
 }
 
@@ -1909,7 +1909,7 @@ void DroneAI::ShipTargeted(SpaceEntity* pSourceSE) {
 
     if (mySE->GetSelf()->GetAttribute(AttrDroneFocusFire).get_bool() and !m_focusfire) {
         // woot!  we've been instructed to gangbang this bitch
-        shipSE->FocusFire(mySE, targSE);
+        shipSE->FocusFire(mySE, targetSE);
     }
 }
 
@@ -1947,18 +1947,18 @@ void DroneAI::Targeted(SpaceEntity* pAgressor) {
 }
 
 bool DroneAI::ValidTarget() {
-    if (targSE == nullptr)
+    if (targetSE == nullptr)
         return false;
-    if (targSE->SysBubble() == nullptr)
+    if (targetSE->SysBubble() == nullptr)
         return false;
-    if (targSE->IsDead())
+    if (targetSE->IsDead())
         return false;
 
     return true;
 }
 
 void DroneAI::TargetDestroyed(SpaceEntity* pTargetSE) {
-    if (targSE != pTargetSE) {
+    if (targetSE != pTargetSE) {
         // not current target...dont care
         return;
     }
@@ -1968,7 +1968,7 @@ void DroneAI::TargetDestroyed(SpaceEntity* pTargetSE) {
 }
 
 void DroneAI::TargetLost(SpaceEntity* pTargetSE) {
-    if (targSE != pTargetSE) {
+    if (targetSE != pTargetSE) {
         // not current target...dont care
         return;
     }
@@ -2010,12 +2010,12 @@ void DroneAI::TargetLost(SpaceEntity* pTargetSE) {
         case DroneAI::State::Guarding:
         case DroneAI::State::Assisting:
         case DroneAI::State::Approaching: {
-            if (targSE == nullptr) {
+            if (targetSE == nullptr) {
                 // we dont have a target?  odd...
-                sLog.Warning("DroneAI::TargetDestroyed()", "%s's targSE=null", mySE->GetName());
+                sLog.Warning("DroneAI::TargetDestroyed()", "%s's targetSE=null", mySE->GetName());
             }
 
-            if (fTargSE == nullptr) {
+            if (ftargetSE == nullptr) {
                 // no targets, return to momma and wait
                 SetState(DroneAI::State::ReturnHome);
                 if (InActionDistance(shipSE)) {
@@ -2029,13 +2029,13 @@ void DroneAI::TargetLost(SpaceEntity* pTargetSE) {
                 OrbitTarget();
             } else {
                 if (m_focusfire) {
-                    if (targSE == fTargSE)
+                    if (targetSE == ftargetSE)
                         return;
-                    mySE->TargetMgr()->ClearTarget(targSE);
-                    targSE = fTargSE;
-                    Target(targSE);
+                    mySE->TargetMgr()->ClearTarget(targetSE);
+                    targetSE = ftargetSE;
+                    Target(targetSE);
                     SetState(DroneAI::State::Combat);
-                    if (InEngageDistance(targSE)) {
+                    if (InEngageDistance(targetSE)) {
                         SetAction(DroneAI::Action::OrbitTarget);
                         SendTrueState(DroneAI::State::Combat);
                     } else {
@@ -2058,9 +2058,9 @@ void DroneAI::FocusFire(DroneSE* pFromSE, SpaceEntity* pTargetSE) {
         return;
 
     m_focusfire = true;
-    fTargSE = pTargetSE;
+    ftargetSE = pTargetSE;
     // are we already targeting this
-    if (targSE == pTargetSE)
+    if (targetSE == pTargetSE)
         return;
 
     // choot em
@@ -2071,7 +2071,7 @@ void DroneAI::ClearTargets() {
     m_repeat = false;
     m_focusfire = false;
     mySE->TargetMgr()->ClearTargets();
-    targSE = nullptr;
+    targetSE = nullptr;
 }
 
 void DroneAI::ClearAllTargets() {
@@ -2079,7 +2079,7 @@ void DroneAI::ClearAllTargets() {
     m_focusfire = false;
     mySE->TargetMgr()->ClearAllTargets();
     //mySE->TargetMgr()->OnTarget(nullptr, TargMgr::Mode::Clear, TargMgr::Msg::ClientReq);
-    targSE = nullptr;
+    targetSE = nullptr;
 }
 
 void DroneAI::SendTrueState(int8 state) {
@@ -2196,8 +2196,8 @@ uint32 DroneAI::GetTargetID() {
         case DroneAI::Action::OrbitTarget:
         case DroneAI::Action::AccelToTarget:
         case DroneAI::Action::DecelToTarget: {
-            if (targSE != nullptr)
-                return targSE->GetID();
+            if (targetSE != nullptr)
+                return targetSE->GetID();
         } break;
         case DroneAI::Action::OrbitShip:
         case DroneAI::Action::AccelToShip:
@@ -2220,7 +2220,7 @@ SpaceEntity* DroneAI::GetTargetSE() {
         case DroneAI::Action::OrbitTarget:
         case DroneAI::Action::AccelToTarget:
         case DroneAI::Action::DecelToTarget: {
-            return targSE;
+            return targetSE;
         } break;
         case DroneAI::Action::OrbitShip:
         case DroneAI::Action::AccelToShip:
@@ -2379,10 +2379,10 @@ void DroneAI::Move(double timeStamp) {
     Vector3d delta = shipSE->GetPosition() - mySE->GetPosition();
     double shipDistance = delta.Length();
     shipDistance -= shipSE->GetRadius();
-    if (targSE != nullptr) {
-        delta = targSE->GetPosition() - mySE->GetPosition();
+    if (targetSE != nullptr) {
+        delta = targetSE->GetPosition() - mySE->GetPosition();
         targDistance = delta.Length();
-        targDistance -= targSE->GetRadius();
+        targDistance -= targetSE->GetRadius();
     }
 
     _log(DRONE__AI_TRACE, "Move() - %s(%u):  %s(%s) - targDistance: %u, shipDistance: %0.1f", \
@@ -2493,9 +2493,9 @@ void DroneAI::Move(double timeStamp) {
                 accel = true;
             } else if (targDistance < m_orbitDistance) {
                 // we're within orbit.  set position and stop movement
-                Vector3d head = targSE->GetPosition() - mySE->GetPosition();
+                Vector3d head = targetSE->GetPosition() - mySE->GetPosition();
                 head.Normalize();
-                Vector3d pos = targSE->GetPosition();
+                Vector3d pos = targetSE->GetPosition();
                 pos.x += (head.x * m_orbitDistance);
                 pos.y += (head.y * m_orbitDistance);
                 pos.z += (head.z * m_orbitDistance);
@@ -2522,9 +2522,9 @@ void DroneAI::Move(double timeStamp) {
                 accel = true;
             } else if (targDistance < m_orbitDistance) {
                 // we're within orbit.  set position and stop movement
-                Vector3d head = targSE->GetPosition() - mySE->GetPosition();
+                Vector3d head = targetSE->GetPosition() - mySE->GetPosition();
                 head.Normalize();
-                Vector3d pos = targSE->GetPosition();
+                Vector3d pos = targetSE->GetPosition();
                 pos.x += (head.x * m_orbitDistance);
                 pos.y += (head.y * m_orbitDistance);
                 pos.z += (head.z * m_orbitDistance);
@@ -2695,7 +2695,7 @@ void DroneAI::SendGFX(Client* pClient/*nullptr*/) {
         effect.entityID = iRef->itemID();
         effect.moduleID = iRef->itemID();               // npc UID for npc's/drones
         effect.moduleTypeID = iRef->typeID();           // npc typeID for npc's/drones
-        effect.targetID = (targSE == nullptr ? PyStatic.NewNone() : new PyInt(targSE->GetID()));
+        effect.targetID = (targetSE == nullptr ? PyStatic.NewNone() : new PyInt(targetSE->GetID()));
         effect.otherTypeID = PyStatic.NewNone();
         effect.area = PyStatic.mtList();                // no data.  not used in client
         effect.guid = std::move(guidStr);
@@ -2830,12 +2830,12 @@ const char* DroneAI::GetActionName(int8 stateID) {
  * mining drone orbit ~200m where others dont have orbit defined, use m_maxDistance as orbit, ~1km max
  *
  *            // action, orbit, falloff, engage, chase, max
- *            if (InActionDistance(targSE)) {               600
- *            } else if (InOrbitDistance(targSE)) {
- *            } else if (InFalloffDistance(targSE)) {
- *            } else if (InEngageDistance(targSE)) {
- *            } else if (InChaseDistance(targSE)) {
- *            } else if (InMaxDistance(targSE)) {
+ *            if (InActionDistance(targetSE)) {               600
+ *            } else if (InOrbitDistance(targetSE)) {
+ *            } else if (InFalloffDistance(targetSE)) {
+ *            } else if (InEngageDistance(targetSE)) {
+ *            } else if (InChaseDistance(targetSE)) {
+ *            } else if (InMaxDistance(targetSE)) {
  *            } else {
  *                // outside max distance
  *            }

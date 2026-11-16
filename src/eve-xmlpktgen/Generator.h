@@ -24,8 +24,8 @@
     Author:        Zhur
 */
 
-#ifndef __GENERATOR_H_INCL__
-#define __GENERATOR_H_INCL__
+#pragma once
+
 
 /**
  * @brief Generic class for eve-xmlpktgen's generators.
@@ -122,6 +122,3 @@ private:
     /** Encode type map. */
     static std::map<std::string, std::string> smEncTypes;
 };
-
-#endif
-

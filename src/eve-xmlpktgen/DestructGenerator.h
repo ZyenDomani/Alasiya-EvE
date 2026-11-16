@@ -24,8 +24,8 @@
     Author:        Zhur
 */
 
-#ifndef __DESTRUCTGENERATOR_H_INCL__
-#define __DESTRUCTGENERATOR_H_INCL__
+#pragma once
+
 
 #include "Generator.h"
 
@@ -84,7 +84,3 @@ protected:
     bool ProcessSubStructInline( const TiXmlElement* field );
 
 };
-
-
-#endif
-

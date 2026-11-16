@@ -95,11 +95,6 @@ struct AddBall_header {
     uint32 stamp;                 /* Monotonic server execution baseline tick stamp */
 };
 
-struct NameSector {
-    uint8  name_len;              // Size of payload scaled in 16-bit word lengths
-    uint16 name[1];               // UTF-16 representation array allocation boundary
-};
-
 struct BallHeader {
     int64 entityID;               // Unique database entity descriptor (0x08 Memory Offset)
     uint8 mode;                   // Target movement execution mode enum (0x198 Memory Offset)
@@ -109,7 +104,6 @@ struct BallHeader {
     double posZ;
     uint8 flags;                  // Status logic switches bitfield mask (Ball::Flag)
 };
-
 
 /**
  * @brief Dynamic Mass Parameter Tracking Sector
@@ -233,16 +227,17 @@ struct FORMATION_Struct {	   // ONLY used by slaves with no other mode structure
     int64  leaderID;               // formation leader (focus entity) tracking index
     float  spacing;                // how much 'extra' padding between form points
     int32  slotID;
-};
-
-#pragma pack()
-
-
+    
 /*  spacing notes:
   group separation spacing in meters in addition to <formation> outline spacing
    Tighter spacing for small rat combat units: 400.0
    Civilian suggestion:  500.0 - 1500.0
 */
+
+};
+
+#pragma pack()
+
 
 
 } //end Destiny

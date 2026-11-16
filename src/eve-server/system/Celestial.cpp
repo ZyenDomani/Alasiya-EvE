@@ -114,7 +114,7 @@ AnomalySE::AnomalySE(CelestialObjectRef self, PyServiceMgr& services, SystemMana
     // nothing to do here
 }
 
-void AnomalySE::EncodeDestiny(Buffer& into)
+void AnomalySE::EncodeStateData(Buffer& into)
 {
     using namespace Destiny;
     BallHeader head = BallHeader();
@@ -137,7 +137,7 @@ void AnomalySE::EncodeDestiny(Buffer& into)
         main.formationID = -1;
     into.Append(main);
 
-    _log(SE__DESTINY, "AnomalySE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "AnomalySE::EncodeStateData(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 PyDict* AnomalySE::MakeSlimItem()
@@ -164,7 +164,7 @@ WormholeSE::WormholeSE(CelestialObjectRef self, PyServiceMgr& services, SystemMa
     m_dunSpawnID = 0;
 }
 
-void WormholeSE::EncodeDestiny(Buffer& into)
+void WormholeSE::EncodeStateData(Buffer& into)
 {
     using namespace Destiny;
     BallHeader head = BallHeader();
@@ -186,7 +186,7 @@ void WormholeSE::EncodeDestiny(Buffer& into)
     STOP_Struct main;
         main.formationID = -1;
     into.Append(main);
-    _log(SE__DESTINY, "WormholeSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "WormholeSE::EncodeStateData(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 PyDict* WormholeSE::MakeSlimItem()

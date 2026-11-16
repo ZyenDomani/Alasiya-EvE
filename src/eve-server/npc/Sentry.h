@@ -32,7 +32,7 @@ public:
     virtual void Process();
     virtual void TargetLost(SpaceEntity* who);
     virtual void TargetedAdd(SpaceEntity* who);
-    virtual void EncodeDestiny(Buffer& into);
+    virtual void EncodeStateData(Buffer& into);
 
     /* virtual functions default to base class and overridden as needed */
     virtual void Killed(Damage &fatal_blow);

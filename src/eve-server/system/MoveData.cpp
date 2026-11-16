@@ -10,16 +10,18 @@
 
 #include "MoveData.h"
 
-#include "eve-common/utils/EvilNumber.h"
+#include "utils/EvilNumber.h"
 #include "npc/NPC.h"
+#include "Client.h"
 #include "SpaceEntity.h"
+#include "SystemManager.h"
+#include "EVEServerConfig.h"
 
 
-MoveData::MoveData(SpaceEntity* pSE, int32 currTic)
+MoveData::MoveData(SpaceEntity* pSE)
 : mySE(pSE),
-targSE(nullptr),
-warpState(nullptr),
-targPoint(NULL_ORIGIN),
+targetSE(nullptr),
+targetPoint(NULL_ORIGIN),
 myVelocity(NULL_ORIGIN),
 desiredHeading(NULL_ORIGIN),
 desiredVelocity(NULL_ORIGIN),
@@ -33,8 +35,8 @@ warpSpeed(0.0),
 speedToLeaveWarp(0.0),
 warpCapNeed(0.0),
 targetDistance(0),
-followDistance(0),
-ticStamp(currTic),
+desiredDistance(0),
+ticStamp(0),
 maxSpeed(0.0f),
 userSpeedFraction(0.0f),
 activeSpeedFraction(0.0f),
@@ -45,16 +47,19 @@ alignTo(false),
 paused(false),
 posHack(false),
 sentUpdates(false),
-stop(false),
+stop(true),
 tractored(false),
 tractorPause(false),
+massive(true),
 autoPilot(false)
 {
     // defaults above are for creation.  actual values calculated once object is fully created
 }
 
-MoveData::Init() {
+void MoveData::Init() {
     UpdateShipVariables();
+    // this is tricky.  client's destiny tics are based on when ballpark was created with ref to solar system tics
+    ticStamp = mySE->SystemMgr()->GetTicCount();
 }
 
 void MoveData::SetAgilityInertia() {
@@ -178,7 +183,7 @@ void MoveData::UpdateShipVariables() {
             sbspeed.entityID = mySE->GetID();
             sbspeed.speed = maxSpeed;
         updates.push_back(sbspeed.Encode());
-        SendDestinyUpdates(updates); //consumed
+        mySE->SystemMgr()->SendDestinyUpdates(mySE, updates); //consumed
         mySE->GetMoveData()->sentUpdates = true;
     }
 }

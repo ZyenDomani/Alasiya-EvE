@@ -65,6 +65,7 @@
 #include "Drone.h"
 #include "ship/Missile.h"
 #include "ship/Ship.h"
+#include "ship/modules/TurretMath.h"
 #include "system/Damage.h"
 #include "system/SystemBubble.h"
 

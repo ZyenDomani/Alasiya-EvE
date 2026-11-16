@@ -151,7 +151,7 @@ public:
 
     /* SpaceEntity interface */
     virtual void Process();
-    virtual void EncodeDestiny(Buffer& into);
+    virtual void EncodeStateData(Buffer& into);
     virtual PyDict* MakeSlimItem();
     virtual void MakeDamageState(DoDestinyDamageState &into);
 
@@ -252,7 +252,7 @@ public:
 
     /* SpaceEntity interface */
     virtual void                Process();
-    virtual void                EncodeDestiny(Buffer& into);
+    virtual void                EncodeStateData(Buffer& into);
     virtual PyDict*             MakeSlimItem();
 
     /* specific functions handled in this class. */

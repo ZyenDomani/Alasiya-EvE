@@ -324,6 +324,8 @@ PyResult KeeperService::Handle_ActivateAccelerationGate(PyCallArgs &call) {
     warpToPoint.y = MakeRandomFloat(-1.0, 1.0) * distance;
     warpToPoint.z = MakeRandomFloat(-2.0, 2.0) * ONE_AU_IN_METERS;
 
+    //    NOTE:  see new datasets in beyonce to add here (or call warp command)
+    
     //pClient->GetShipSE()->DestinyMgr()->WarpTo(warpToPoint);
 
     /* return error msg from this call, if applicable, else nodeid and timestamp */

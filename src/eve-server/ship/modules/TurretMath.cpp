@@ -20,7 +20,7 @@
 #include "npc/Drone.h"
 #include "npc/Sentry.h"
 #include "ship/modules/TurretMath.h"
-
+#include "ship/modules/TurretModule.h"
 
 float TurretMath::GetToHit(ShipItemRef shipRef, TurretModule* pMod, SpaceEntity* pTarget) {
     if (pTarget == nullptr)
@@ -181,7 +181,7 @@ TurretMath::HitResult TurretMath::ComputeHitChance(const HitInputs& in) {
      *     d =  max(0, distance - optimal range)
      *     e =  (d / falloff) ^ 2
      */
-    const Vector3d relativeVelocity = in.targetVel - in.shooterVel;
+    Vector3d relativeVelocity = in.targetVel - in.shooterVel;
     // Isolate radial velocity component (along the line of sight)
     res.radialV = relativeVelocity.dotProduct(lineOfSight);
     // Transversal velocity vector is total relative velocity minus the radial component

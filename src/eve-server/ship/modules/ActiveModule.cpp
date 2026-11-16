@@ -557,7 +557,7 @@ void ActiveModule::SetSlaveData(ShipSE* pShip) {
     m_bubble = pShip->SysBubble();
     m_sysMgr = pShip->SystemMgr();
     m_targMgr = pShip->TargetMgr();
-    m_destinyMgr = pShip->DestinyMgr();
+    // fixme m_destinyMgr = pShip->DestinyMgr();
 }
 
 void ActiveModule::Overload() {
@@ -570,12 +570,12 @@ void ActiveModule::DeOverload() {
     m_overLoaded = false;
 }
 
-uint32 ActiveModule::DoCycle() {
+uint32 ActiveModule::DoCycle() {/*
     if (m_destinyMgr == nullptr) {
         // make error for no destiny/bubble
         AbortCycle();
         return 0;
-    }
+    }*/
 
     // Check for (13) modules which consume items per-cycle (they only consume single type)
     if (m_modRef->HasAttribute(AttrConsumptionType)) {
@@ -779,7 +779,7 @@ void ActiveModule::DeactivateCycle(bool abortCycle/*false*/)
         ApplyEffect(FX::State::Target, false);
         /*
     else if (m_needsTarget) {
-        _log(MODULE__INFO, "%s - DeactivateCycle() - need target = true and targetID: %u, targSE: %x", \
+        _log(MODULE__INFO, "%s - DeactivateCycle() - need target = true and targetID: %u, targetSE: %x", \
                 m_modRef->name(), m_targetID, m_targetSE);
     } */
 
@@ -1316,9 +1316,9 @@ void ActiveModule::SendGFX(bool abortCycle/*false*/, Client* pClient/*nullptr*/)
     std::string guidStr = sFxDataMgr.GetEffectGuid(m_effectID);
 
     uint16 chgTypeID(((m_chargeRef.get() != nullptr) ? m_chargeRef->typeID() : 0));
-
+/*
     if (m_destinyMgr != nullptr)
-        m_destinyMgr->SendGFX14(
+        // fixme m_destinyMgr->SendGFX14(
                 m_shipRef->itemID(),
                 m_modRef->itemID(),
                 m_modRef->typeID(),
@@ -1331,14 +1331,14 @@ void ActiveModule::SendGFX(bool abortCycle/*false*/, Client* pClient/*nullptr*/)
                  * start and !active - start ONE-SHOT event of (duration) - SuperWeapon only
                  * repeat > 0 - start REPEAT event of <duration>
                  * !repeat - start TOGGLE event (turn off with !start)
-                 */
+                 *
                 start,          // start
                 active,         // active
                 cycleTime,      // duration in ms
                 m_repeat,       // repeat
                 (useStartTime ? m_startTime : 0),
                 m_modRef->GetAttribute(AttrGfxTurretID).get_uint32(),
-                pClient);
+                pClient);*/
 }
 
 void ActiveModule::SendShipEffect(bool start/*false*/, bool abortCycle/*false*/) {

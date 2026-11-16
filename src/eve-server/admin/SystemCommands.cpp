@@ -758,10 +758,9 @@ PyResult Command_syncpos(Client* pClient, CommandDB* db, PyServiceMgr* services,
 
 PyResult Command_update(Client* pClient, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
     if (!pClient->IsInSpace())
-        throw CustomError("You're not in space.");/*
-    if (pClient->GetShipSE()->DestinyMgr() == nullptr)
-        pClient->SetDestiny(NULL_ORIGIN);*/
-    if (pClient->GetShipSE()->SysBubble() == nullptr)
+        throw CustomError("You're not in space.");
+    ShipSE* pShipSE = pClient->GetShipSE();
+    if (pShipSE->SysBubble() == nullptr)
         pClient->EnterSystem(pClient->GetSystemID());
     if (pClient->IsSessionChange()) {
         pClient->SendInfoModalMsg("Session Change Active.  Wait %u seconds before issuing another command.",
@@ -769,27 +768,24 @@ PyResult Command_update(Client* pClient, CommandDB *db, PyServiceMgr *services, 
         return new PyString("SessionChange Active.  Request Denied.");
     }
 
-    //pClient->GetShipSE()->DestinyMgr()->SetPosition(pClient->GetShipSE()->GetPosition(), true);
-
-    SystemBubble *pBubble = pClient->GetShipSE()->SysBubble();
+    SystemBubble *pBubble = pShipSE->SysBubble();
     if (pBubble == nullptr) {
-        sBubbleMgr.Add(pClient->GetShipSE());
-        pBubble = pClient->GetShipSE()->SysBubble();
+        sBubbleMgr.Add(pShipSE);
+        pBubble = pShipSE->SysBubble();
     }
-    pBubble->SendAddBalls(pClient->GetShipSE());
+    pBubble->SendAddBalls(pShipSE);
 
     pClient->SetStateSent(false);
-    //pClient->GetShipSE()->DestinyMgr()->SendSetState();
+    pShipSE->SystemMgr()->SendBallPark(pShipSE);
     pClient->SetSessionTimer();
     return new PyString("Update sent.");
 }
 
 PyResult Command_sendstate(Client* pClient, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
     if (!pClient->IsInSpace())
-        throw CustomError("You're not in space.");/*
-    if (pClient->GetShipSE()->DestinyMgr() == nullptr)
-        pClient->SetDestiny(NULL_ORIGIN);*/
-    if (pClient->GetShipSE()->SysBubble() == nullptr)
+        throw CustomError("You're not in space.");
+    ShipSE* pShipSE = pClient->GetShipSE();
+    if (pShipSE->SysBubble() == nullptr)
         pClient->EnterSystem(pClient->GetSystemID());
     if (pClient->IsSessionChange()) {
         pClient->SendInfoModalMsg("Session Change Active.  Wait %u seconds before issuing another command.",
@@ -797,9 +793,9 @@ PyResult Command_sendstate(Client* pClient, CommandDB *db, PyServiceMgr *service
         return new PyString("SessionChange Active.  Request Denied.");
     }
 
-    pClient->SetStateSent(false);/*
-    pClient->GetShipSE()->DestinyMgr()->SendSetState();
-    pClient->SetSessionTimer();*/
+    pClient->SetStateSent(false);
+    pShipSE->SystemMgr()->SendBallPark(pShipSE);
+    pClient->SetSessionTimer();
     return new PyString("Update sent.");
 }
 
@@ -843,7 +839,7 @@ PyResult Command_cloak(Client* pClient, CommandDB* db, PyServiceMgr* services, c
 {
     if (args.argCount() == 1) {
         if (pClient->IsInSpace()) {/*
-            if (pClient->GetShipSE()->DestinyMgr()->IsCloaked()) {
+            if (pClient->GetShipSE()->GetMoveData()->IsCloaked()) {
                 pClient->GetShipSE()->DestinyMgr()->UnCloak();
             } else {
                 pClient->GetShipSE()->DestinyMgr()->Cloak();

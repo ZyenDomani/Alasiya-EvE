@@ -342,7 +342,8 @@ void TowerSE::UpdatePassword()
             sbh.mass = -1;      // always -1
             sbh.harmonic = m_harmonic;
         updates.push_back(sbh.Encode());
-        // fixme  m_destiny->SendDestinyUpdates(updates); //consumed
+        // TODO:  look into this...do all local player get updated when password changes?
+        m_system->SendDestinyUpdates(this, updates); //consumed
     } else {
         m_harmonic = EVEPOS::Harmonic::Online;
         m_tdata.harmonic = m_harmonic;

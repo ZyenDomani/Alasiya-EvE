@@ -75,12 +75,12 @@ public:
 protected:
     void 		Undock();
     void 		Add(SystemBubble* pBubble);
-    void 		Warp(SpaceEntity* ptargSE);
+    void 		Warp(SpaceEntity* ptargetSE);
     void 		Remove(SystemBubble* pBubble);
     void 		SendGateActivity(SpaceEntity* pGateSE) const;
 
     /* (fake) SpaceEntity interface */
-    void                EncodeDestiny(Buffer& into);
+    void                EncodeStateData(Buffer& into);
     PyTuple*            MakeDamageState();
     PyDict*             MakeSlimItem();
     void                SendShipVars(SystemBubble* pBubble);

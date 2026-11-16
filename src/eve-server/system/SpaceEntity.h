@@ -277,7 +277,7 @@ public:
     /* generic functions handled here, but set elsewhere */
     bool                        IsDead()                { return m_killed; }
     void                        SetDead()               { m_killed = true; }
-    void                        CreateMoveData();
+    MoveData*                   CreateMoveData();
 
     // this is virtual to allow drones to override it (they dont have DestinyMgr)
     // fixme
@@ -285,7 +285,7 @@ public:
 
     /* virtual functions default to base class and overridden as needed */
     virtual void                Killed(Damage &damage);
-    virtual void                EncodeDestiny(Buffer& into);
+    virtual void                EncodeStateData(Buffer& into);
     virtual void                MakeDamageState(DoDestinyDamageState &into);
     virtual PyDict*             MakeSlimItem();
 
@@ -379,7 +379,7 @@ public:
     /* Static */
     virtual bool                IsStaticEntity()        { return true; }
     /* SpaceEntity interface */
-    virtual void                EncodeDestiny(Buffer& into);
+    virtual void                EncodeStateData(Buffer& into);
     virtual PyDict*             MakeSlimItem();
 
     /* virtual functions to be overridden in derived classes */
@@ -495,7 +495,7 @@ public:
     virtual bool                isGlobal()              { return false; }
     virtual bool                IsInanimateSE()         { return true; }
     /* SpaceEntity interface */
-    virtual void                EncodeDestiny(Buffer& into);
+    virtual void                EncodeStateData(Buffer& into);
     virtual PyDict*             MakeSlimItem();
 };
 
@@ -527,7 +527,7 @@ public:
     /* Base */
     virtual bool                isGlobal()              { return false; }
     /* SpaceEntity interface */
-    virtual void                EncodeDestiny(Buffer& into);
+    virtual void                EncodeStateData(Buffer& into);
     virtual PyDict*             MakeSlimItem();
 };
 
@@ -559,7 +559,7 @@ public:
     /* Base */
     virtual bool                isGlobal()              { return true; }
     /* SpaceEntity interface */
-    //virtual void                EncodeDestiny(Buffer& into);
+    //virtual void                EncodeStateData(Buffer& into);
     //virtual PyDict*             MakeSlimItem();
 };
 
@@ -587,7 +587,7 @@ public:
     virtual bool                IsDungeonEditSE()       { return true; }
     Dungeon::RoomObject         GetData()               { return m_data; }
     /* SpaceEntity interface */
-    //virtual void                EncodeDestiny( Buffer& into );
+    //virtual void                EncodeStateData( Buffer& into );
     virtual PyDict*             MakeSlimItem();
 
 private:
@@ -627,7 +627,7 @@ public:
     //virtual bool                isGlobal()              { return false; }
     virtual bool                IsInanimateSE()         { return true; }
     /* SpaceEntity interface */
-    virtual void                EncodeDestiny(Buffer& into);
+    virtual void                EncodeStateData(Buffer& into);
     virtual void                MakeDamageState(DoDestinyDamageState &into);
     virtual PyDict*             MakeSlimItem();
 
@@ -668,7 +668,7 @@ public:
     virtual bool                IsInanimateSE()         { return true; }
     /* SpaceEntity interface */
     virtual void                UpdateDamage();
-    virtual void                EncodeDestiny(Buffer& into);
+    virtual void                EncodeStateData(Buffer& into);
     virtual void                MakeDamageState(DoDestinyDamageState &into);
     virtual PyDict*             MakeSlimItem();
     /* virtual functions default to base class and overridden as needed */
@@ -742,7 +742,7 @@ public:
     //virtual bool                isGlobal()              { return false; }
     /* SpaceEntity interface */
     virtual void                UpdateDamage();
-    virtual void                EncodeDestiny(Buffer& into);
+    virtual void                EncodeStateData(Buffer& into);
     virtual void                MakeDamageState(DoDestinyDamageState &into);
     virtual PyDict*             MakeSlimItem();
     /* virtual functions default to base class and overridden as needed */

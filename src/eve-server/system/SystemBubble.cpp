@@ -404,7 +404,7 @@ void SystemBubble::RemoveActiveModule(ActiveModule* pMod) {
 
 void SystemBubble::GetEntities(std::map<uint32, SpaceEntity*> &into) const {
     /* updated to send non-cloaked dynamic entities to the following:         -allan 14Feb15
-     *    SystemManager::MakeSetState()   --for player entering new system
+     *    SystemManager::SendBallPark()   --for player entering new system
      *    Command_killallnpcs()           --GM command
      *    StructureSE::InitData()         --Get TowerSE for pos items
      *    DroneAI::FindTarget()           --Drone AI target finding
@@ -414,13 +414,13 @@ void SystemBubble::GetEntities(std::map<uint32, SpaceEntity*> &into) const {
         return;
 
     for (auto &cur : m_dynamicEntities) {
-        if (cur.second->IsShipSE()->IsCloaked())
+        if (cur.second->GetMoveData()->IsCloaked())
             continue;
         into.emplace(cur.first, cur.second);
     }
 }
 
-void SystemBubble::GetAllEntities(std::map< uint32, SpaceEntity* >& into) const {
+void SystemBubble::GetAllEntities(std::map<uint32, SpaceEntity*>& into) const {
     if (m_dynamicEntities.empty())
         return;
 
@@ -430,7 +430,7 @@ void SystemBubble::GetAllEntities(std::map< uint32, SpaceEntity* >& into) const 
 }
 
 
-void SystemBubble::GetEntityVec(std::vector< SpaceEntity* >& into) const {
+void SystemBubble::GetEntityVec(std::vector<SpaceEntity*>& into) const {
     if (m_players.empty())
         return;
 
@@ -537,7 +537,7 @@ void SystemBubble::PrintEntityList() {
             }
         }
         if (cur->IsShipSE()) {
-            if (cur->IsShipSE()->IsCloaked()) {
+            if (cur->GetMoveData()->IsCloaked()) {
                 sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Cloaked Ship.", cur->GetName(), cur->GetID()); found = true;
             } else if (cur->HasPilot()) {
                 sLog.Warning("SysBubble::PrintEntityList()", "entity %s(%u) is Player Ship.", cur->GetName(), cur->GetID()); found = true;
@@ -613,7 +613,7 @@ void SystemBubble::SendAddBalls(SpaceEntity* to_who) {
 
     Buffer* destinyBuffer = new Buffer();
 
-    Destiny::AddBall_header head = Destiny::AddBall_header();
+    Destiny::AddBall_header head = {};
         head.packet_type = 1;   // 0 = full state   1 = balls
         head.stamp = m_system->GetTicCount();
     destinyBuffer->Append(head);
@@ -622,12 +622,12 @@ void SystemBubble::SendAddBalls(SpaceEntity* to_who) {
     addballs.slims = new PyList();
 
     for (auto &cur : m_dynamicEntities) {
-            //if (cur.second->DestinyMgr()->IsCloaked())
+            //if (cur.second->GetMoveData()->IsCloaked())
             //    continue;
         if (!cur.second->IsMissileSE() or !cur.second->IsFieldSE())
             addballs.damageDict[cur.first] = cur.second->MakeDamageState();
         addballs.slims->AddItem(new PyObject("foo.SlimItem", cur.second->MakeSlimItem()));
-        cur.second->EncodeDestiny(*destinyBuffer);
+        cur.second->EncodeStateData(*destinyBuffer);
     }
 
     if (addballs.slims->empty()) {
@@ -663,7 +663,7 @@ void SystemBubble::SendAddBalls2(SpaceEntity* to_who) {
 
     Buffer* destinyBuffer = new Buffer();
 
-    Destiny::AddBall_header head = Destiny::AddBall_header();
+    Destiny::AddBall_header head = {};
         head.packet_type = 1;   // 0 = full state   1 = balls
         head.stamp = m_system->GetTicCount();
     destinyBuffer->Append(head);
@@ -681,7 +681,7 @@ void SystemBubble::SendAddBalls2(SpaceEntity* to_who) {
                 balls->SetItem(1, cur.second->MakeDamageState());
             addballs2.extraBallData->AddItem(balls);
         }
-        cur.second->EncodeDestiny(*destinyBuffer);
+        cur.second->EncodeStateData(*destinyBuffer);
     }
 
     if (addballs2.extraBallData->size() < 1) {
@@ -711,20 +711,20 @@ void SystemBubble::SendAddBalls2(SpaceEntity* to_who) {
 void SystemBubble::AddBallExclusive(SpaceEntity* pSE) {
     if (!m_system->IsLoaded())
         return;
-    //if ((pSE->DestinyMgr() != nullptr) and (pSE->DestinyMgr()->IsCloaked()))
+    //if ((pSE->DestinyMgr() != nullptr) and (pSE->GetMoveData()->IsCloaked()))
     //    return;
 
     Buffer* destinyBuffer = new Buffer();
 
     //create AddBalls header
-    Destiny::AddBall_header head = Destiny::AddBall_header();
+    Destiny::AddBall_header head = {};
         head.packet_type = 1;   // 0 = full state   1 = balls
         head.stamp = m_system->GetTicCount();
     destinyBuffer->Append(head);
 
     AddBalls addballs;
     //encode destiny binary
-    pSE->EncodeDestiny(*destinyBuffer);
+    pSE->EncodeStateData(*destinyBuffer);
     addballs.state = new PyBuffer(&destinyBuffer);
     //SafeDelete(destinyBuffer);
     //encode damage state

@@ -686,6 +686,8 @@ PyResult PosMgrBound::Handle_AnchorStructure(PyCallArgs &call) {
     // auto warp to new POS position?  config option?
     if (pTSE->IsTowerSE()) {
         uint32 dist = pTSE->GetSelf()->radius() + call.client->GetShip()->radius();
+        //    NOTE:  see new datasets in beyonce to add here (or call warp command)
+        
         // fixme call.client->GetShipSE()->DestinyMgr()->WarpTo(pos, dist);
         /** @todo add tower anchor position to bookmark */
     }

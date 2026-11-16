@@ -100,7 +100,7 @@ PyDict* SpaceEntity::MakeSlimItem() {
     return slim;
 }
 
-void SpaceEntity::EncodeDestiny(Buffer& into)
+void SpaceEntity::EncodeStateData(Buffer& into)
 {
     using namespace Destiny;
 
@@ -116,7 +116,7 @@ void SpaceEntity::EncodeDestiny(Buffer& into)
     RIGID_Struct main;
         main.formationID = -1;
     into.Append(main);
-    _log(SE__DESTINY, "SE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "SE::EncodeStateData(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 void SpaceEntity::Killed(Damage& fatal_blow) {
@@ -280,9 +280,12 @@ void SpaceEntity::Abandon() {
     /** @todo  should this have a slimupdate or bubblecast or something?  */
 }
 
-void SpaceEntity::CreateMoveData() {
-    m_moveData = new MoveData(this);
-    m_moveData->Init();
+MoveData* SpaceEntity::CreateMoveData() {
+    if (m_moveData == nullptr) {
+        m_moveData = new MoveData(this);
+        m_moveData->Init();
+    }
+    return m_moveData;
 }
 
 
@@ -308,7 +311,7 @@ PyDict* StaticSpaceEntity::MakeSlimItem() {
     return slim;
 }
 
-void StaticSpaceEntity::EncodeDestiny(Buffer& into) {
+void StaticSpaceEntity::EncodeStateData(Buffer& into) {
     using namespace Destiny;
     BallHeader head = BallHeader();
         head.entityID = m_self->itemID();
@@ -322,7 +325,7 @@ void StaticSpaceEntity::EncodeDestiny(Buffer& into) {
     RIGID_Struct main;
         main.formationID = -1;
     into.Append(main);
-    _log(SE__DESTINY, "SSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X, radius:%.1f", GetName(), head.entityID, head.mode, head.flags, head.radius);
+    _log(SE__DESTINY, "SSE::EncodeStateData(): %s - id:%lli, mode:%u, flags:0x%X, radius:%.1f", GetName(), head.entityID, head.mode, head.flags, head.radius);
 }
 
 BeltSE::BeltSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
@@ -398,7 +401,7 @@ FieldSpaceEntity::FieldSpaceEntity(InventoryItemRef self, PyServiceMgr& services
 
 }
 
-void FieldSpaceEntity::EncodeDestiny(Buffer& into) {
+void FieldSpaceEntity::EncodeStateData(Buffer& into) {
     using namespace Destiny;
     BallHeader head = BallHeader();
     head.entityID = m_self->itemID();
@@ -427,7 +430,7 @@ void FieldSpaceEntity::EncodeDestiny(Buffer& into) {
         into.Append(main);
     }
 
-    _log(SE__DESTINY, "FSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "FSE::EncodeStateData(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 
 }
 
@@ -445,7 +448,7 @@ FieldSE::FieldSE(InventoryItemRef self, PyServiceMgr &services, SystemManager *s
     m_ownerID = data.ownerID;
 }
 
-void FieldSE::EncodeDestiny(Buffer& into)
+void FieldSE::EncodeStateData(Buffer& into)
 {
     using namespace Destiny;
     BallHeader head = BallHeader();
@@ -475,7 +478,7 @@ void FieldSE::EncodeDestiny(Buffer& into)
         into.Append(main);
     }
 
-    _log(SE__DESTINY, "FSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "FSE::EncodeStateData(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 PyDict *FieldSE::MakeSlimItem()
@@ -572,7 +575,7 @@ PyDict* ItemSpaceEntity::MakeSlimItem() {
     return slim;
 }
 
-void ItemSpaceEntity::EncodeDestiny(Buffer& into)
+void ItemSpaceEntity::EncodeStateData(Buffer& into)
 {
     using namespace Destiny;
     BallHeader head = BallHeader();
@@ -588,7 +591,7 @@ void ItemSpaceEntity::EncodeDestiny(Buffer& into)
         main.formationID = -1;
     into.Append(main);
 
-    _log(SE__DESTINY, "ISE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "ISE::EncodeStateData(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 void ItemSpaceEntity::MakeDamageState(DoDestinyDamageState &into) {
@@ -626,7 +629,7 @@ ObjectSpaceEntity::~ObjectSpaceEntity()
     SafeDelete(m_targMgr);
 }
 
-void ObjectSpaceEntity::EncodeDestiny(Buffer& into)
+void ObjectSpaceEntity::EncodeStateData(Buffer& into)
 {
     using namespace Destiny;
     BallHeader head = BallHeader();
@@ -642,7 +645,7 @@ void ObjectSpaceEntity::EncodeDestiny(Buffer& into)
         main.formationID = -1;
     into.Append(main);
 
-    _log(SE__DESTINY, "OSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "OSE::EncodeStateData(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 PyDict* ObjectSpaceEntity::MakeSlimItem() {
@@ -750,7 +753,7 @@ PyDict *DynamicSpaceEntity::MakeSlimItem() {
     return (slim);
 }
 
-void DynamicSpaceEntity::EncodeDestiny(Buffer& into)
+void DynamicSpaceEntity::EncodeStateData(Buffer& into)
 {
     using namespace Destiny;
     BallHeader head = BallHeader();
@@ -771,7 +774,7 @@ void DynamicSpaceEntity::EncodeDestiny(Buffer& into)
     into.Append(mass);
     DataSector data = DataSector();
         data.inertia = m_self->GetAttribute(AttrInertiaMod).get_float();
-        data.maxSpeed = m_destiny->GetMaxVelocity();
+        data.maxSpeed = m_destiny->GetMaxSpeed();
         data.velX = m_destiny->GetVelocity().x;
         data.velY = m_destiny->GetVelocity().y;
         data.velZ = m_destiny->GetVelocity().z;
@@ -781,7 +784,7 @@ void DynamicSpaceEntity::EncodeDestiny(Buffer& into)
         main.formationID = -1;
     into.Append(main);
 
-    _log(SE__DESTINY, "DSE::EncodeDestiny(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
+    _log(SE__DESTINY, "DSE::EncodeStateData(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
 void DynamicSpaceEntity::MakeDamageState(DoDestinyDamageState &into) {
