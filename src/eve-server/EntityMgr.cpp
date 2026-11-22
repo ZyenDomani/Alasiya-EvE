@@ -34,6 +34,7 @@
 #include "EntityMgr.h"
 #include "EVEServerConfig.h"
 #include "ServiceDB.h"
+#include "StressTestMgr.h"
 #include "agents/Agent.h"
 #include "exploration/Probes.h"
 #include "map/MapDB.h"
@@ -216,11 +217,11 @@ void EntityMgr::Process() {
         }
     }
     //if (sConfig.debug.UseProfiling)
-    //    sProfiler.AddTime(Profile::entityP, GetTimeUSeconds() - m_profileTime);
+    //    sProfiler.AddTime(Profile::Type::entityP, GetTimeUSeconds() - m_profileTime);
 
     /* check for 1Hz timer tic */
     if (m_stampTimer.Check()) {
-        m_profileTime = GetTimeUSeconds();
+        m_profileTime = (sConfig.debug.UseProfiling ? GetProfileTime() : 0.0);
 
         ++m_stamp;
 
@@ -247,6 +248,10 @@ void EntityMgr::Process() {
         sBubbleMgr.Process();
 
         sCivMgr.Process();
+        
+        // new stresstest class
+        if (sStressTest.HasActiveFleet())
+            sStressTest.Process();
 
         // these minute tics do not need to be precise
         if (m_minuteTimer.Check()) {
@@ -274,7 +279,7 @@ void EntityMgr::Process() {
         }
 
         if (sConfig.debug.UseProfiling)
-            sProfiler.AddTime(Profile::entityS, GetTimeUSeconds() - m_profileTime);
+            sProfiler.AddTime(Profile::Type::entityS, GetProfileTime() - m_profileTime);
     }
 }
 

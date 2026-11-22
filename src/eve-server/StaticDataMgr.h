@@ -73,7 +73,7 @@ public:
     const char*         GetSkillName(uint16 skillID);
 
     bool                GetNPCTypes(uint16 groupID, std::vector<uint16>& typeVec);
-    bool                GetNPCGroups(uint32 factionID, std::map<uint8, uint16>& groupMap);
+    bool                GetNPCGroups( uint32 factionID, std::unordered_map< uint8, uint16 >& groupMap );
     bool                GetNPCClasses(uint8 sClass, std::vector<RatSpawnClass>& classMap);
     uint16              GetRandRatType(uint8 sClass, uint16 groupID);
     uint32              GetWreckID(uint32 typeID);  // returns wreck typeID based on given shipTypeID (incomplete, most ships done.)

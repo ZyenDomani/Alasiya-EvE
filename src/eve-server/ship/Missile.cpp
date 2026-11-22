@@ -39,22 +39,14 @@
 
 Missile::Missile( InventoryItemRef self, PyServiceMgr& services, SystemManager* pSystem, InventoryItemRef modRef, SpaceEntity* tSE, SpaceEntity* pSE, GenericModule* pMod)
 : DynamicSpaceEntity(self, services, pSystem),
-  m_targetSE(tSE),
   m_fromSE(pSE),
   m_modRef(modRef),
   m_hitTimer(0),
   m_lifeTimer(0),
   m_alive(true),
   m_damageMod(1),
-  m_speed(0),
   m_hullHP(self->GetAttribute(AttrHP).get_uint32())
 {
-    if (pSE->HasPilot()) {
-        m_ownerID = pSE->GetPilot()->GetChar()->itemID();
-    } else {
-        m_ownerID = self->ownerID();
-    }
-
     m_warID = pSE->GetWarFactionID();
     m_allyID = pSE->GetAllianceID();
     m_corpID = pSE->GetCorporationID();
@@ -63,6 +55,7 @@ Missile::Missile( InventoryItemRef self, PyServiceMgr& services, SystemManager* 
 
     // missile skills do not apply correctly in fx processor.  not sure why yet.
     if (pSE->HasPilot()) {
+        m_ownerID = pSE->GetPilot()->GetCharID();
         Character* pChar = pSE->GetPilot()->GetChar().get();
         flightTime *= (1 + (0.1f * (pChar->GetSkillLevel(EvESkill::MissileBombardment, true)))); // 10% increase in flightTime
 
@@ -121,29 +114,48 @@ Missile::Missile( InventoryItemRef self, PyServiceMgr& services, SystemManager* 
                 m_damageMod *= (1 + (0.05f * (pChar->GetSkillLevel(EvESkill::CitadelTorpedoes, true)))); // 5% increase in damage
             } break;
         }
-    }
 
-    /** @todo update this when rack overloading is implemented... */
-    if (IsOverloaded())
-        m_damageMod *= (1 + self->GetAttribute(AttrOverloadDamageModifier).get_float());
+        /** @todo update this when rack overloading is implemented... */
+        if (IsOverloaded())
+            m_damageMod *= (1 + self->GetAttribute(AttrOverloadDamageModifier).get_float());
+
+        // if linked, update appropriate attributes
+        if (pMod != nullptr)
+            if (pMod->IsLinked()) {
+                uint8 mod = m_fromSE->GetShipSE()->GetShipItemRef()->GetLinkedCount(pMod);
+                m_damageMod *= mod;
+                flightTime *= mod;
+                m_hullHP *= mod;
+            }
+
+    } else if (pSE->IsNPCSE()) {
+        m_ownerID = pSE->GetID();
+        flightTime *= 1.2f; //sConfig.rates.missileTimeNPC;
+    }
+    // are there any others that launch missiles?
+
+    // modify missile based on launcher/npc attribs
+    if (m_modRef->HasAttribute(AttrMissileEntityVelocityMultiplier))
+        self->MultiplyAttribute(AttrMaxVelocity, m_modRef->GetAttribute(AttrMissileEntityVelocityMultiplier));
+    if (m_modRef->HasAttribute(AttrMissileEntityFlightTimeMultiplier))    // this may be wrong
+        self->MultiplyAttribute(AttrExplosionDelay, m_modRef->GetAttribute(AttrMissileEntityFlightTimeMultiplier));
+    if (m_modRef->HasAttribute(AttrMissileEntityAoeVelocityMultiplier))
+        self->MultiplyAttribute(AttrAoeVelocity, m_modRef->GetAttribute(AttrMissileEntityAoeVelocityMultiplier));
+    if (m_modRef->HasAttribute(AttrMissileEntityAoeCloudSizeMultiplier))
+        self->MultiplyAttribute(AttrAoeCloudSize, m_modRef->GetAttribute(AttrMissileEntityAoeCloudSizeMultiplier));
+    if (m_modRef->HasAttribute(AttrMissileEntityAoeFalloffMultiplier))
+        self->MultiplyAttribute(AttrAoeFalloff, m_modRef->GetAttribute(AttrMissileEntityAoeFalloffMultiplier));
 
     flightTime *= sConfig.rates.missileTime;
 
-    // if linked, update appropriate attributes
-    if (pMod != nullptr)
-        if (pMod->IsLinked()) {
-            uint8 mod = m_fromSE->GetShipSE()->GetShipItemRef()->GetLinkedCount(pMod);
-            m_damageMod *= mod;
-            flightTime *= mod;
-            m_hullHP *= mod;
-        }
-
     m_lifeTimer.Start(flightTime);
-
+    CreateMoveData();
+    m_moveData->SetTargetSE(tSE);
     //_log(DAMAGE__MESSAGE, "Created Missile object for %s (%u)", self.get()->name(), self.get()->itemID());
 }
 
 void Missile::Process() {
+    const double profileStartTime = (sConfig.debug.UseProfiling ? GetProfileTime() : 0.0);
     if (!m_alive) {
         Delete();
         return;
@@ -152,10 +164,6 @@ void Missile::Process() {
         EndOfLife();
         return;
     }
-    double profileStartTime = GetTimeUSeconds();
-
-    /*   Base call to Process Movement  */
-    SpaceEntity::Process();
 
     //TODO:  this is never set?!?!?
     if (m_hitTimer.Check(false)) {
@@ -163,11 +171,11 @@ void Missile::Process() {
         HitTarget();
     }
     if (sConfig.debug.UseProfiling)
-        sProfiler.AddTime(Profile::missile, GetTimeUSeconds() - profileStartTime);
+        sProfiler.AddTime(Profile::Type::missile, GetProfileTime() - profileStartTime);
 }
 
-void Missile::EncodeStateData(Buffer& into)
-{
+void Missile::EncodeStateData(Buffer& into) {
+    MoveData* mData = GetMoveData();
     using namespace Destiny;
     BallHeader head = BallHeader();
         head.entityID = GetID();
@@ -184,25 +192,26 @@ void Missile::EncodeStateData(Buffer& into)
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
         mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
-    into.Append(mass);/*
+    into.Append(mass);
+    const Vector3d& velocity = mData->GetVelocity();
     DataSector data = DataSector();
-        data.maxSpeed = m_speed;
-        data.velX = m_destiny->GetVelocity().x;
-        data.velY = m_destiny->GetVelocity().y;
-        data.velZ = m_destiny->GetVelocity().z;
+        data.velX = velocity.x;
+        data.velY = velocity.y;
+        data.velZ = velocity.z;
+        data.maxSpeed = mData->GetMaxSpeed();
+        data.speedfraction = mData->GetSpeedFraction();
         data.inertia = m_self->GetAttribute(AttrInertiaMod).get_float();
-        data.speedfraction = m_destiny->GetSpeedFraction();
     into.Append(data);
     MISSILE_Struct miss;
         miss.ownerID = m_ownerID;
         miss.formationID = -1;
-        miss.effectStamp = m_destiny->GetTicStamp();
-        miss.targetID = m_targetSE->GetID();
-        miss.followRange = m_destiny->GetTargetDistance();
+        miss.effectStamp = mData->GetTicStamp();
+        miss.targetID = mData->GetTargetSE()->GetID();
+        miss.followRange = mData->GetDesiredDistance();
         miss.x = x();
         miss.y = y();
         miss.z = z();
-    into.Append(miss);*/
+    into.Append(miss);
 
     _log(SE__DESTINY, "Missile::EncodeStateData(): %s id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
@@ -222,7 +231,7 @@ PyDict* Missile::MakeSlimItem() {
         slim->SetItemString("securityStatus",           new PyFloat(0/*pChar->GetSecurityRating()*/)); /** @todo (allan) fix this */
         slim->SetItemString("ownerID",                  new PyInt(m_ownerID)); // this is corp ID??
         slim->SetItemString("numLaunchers",             PyStatic.NewOne());  /** @todo (allan) fix this */
-        slim->SetItemString("nameID",                   new PyInt(0));  /** @todo (allan) fix this */
+        slim->SetItemString("nameID",                   PyGetNameID());
     return(slim);
 }
 
@@ -235,10 +244,13 @@ void Missile::MakeDamageState(DoDestinyDamageState &into) {
 }
 
 void Missile::HitTarget() {
+    SpaceEntity* pTargetSE = m_moveData->GetTargetSE();
     // check for defender missile and blow up target missile when it hits
     if (m_self->typeID() == EVEDB::invTypes::DefenderI) {
-        // fixme m_destiny->SendTerminalExplosion(m_targetSE->GetID(), m_bubble->GetID());
-        m_targetSE->GetMissileSE()->Delete();
+        m_system->SendTerminalExplosion(this, pTargetSE->GetID(), m_bubble->GetID());
+        pTargetSE->GetMissileSE()->Delete();
+        m_alive = false;
+        return;
     }
 
     // Create Damage object:
@@ -257,13 +269,13 @@ void Missile::HitTarget() {
      * MIN being a function that chooses the lower of the given vaules,
      * ln is natural logarithm.
      */
-    double Sr = m_targetSE->GetSelf()->GetAttribute(AttrSignatureRadius).get_float();    // this is a default number, based on itemtype
+    double Sr = pTargetSE->GetSelf()->GetAttribute(AttrSignatureRadius).get_float();    // this is a default number, based on itemtype
     double Er = m_self->GetAttribute(AttrAoeCloudSize).get_float(); // Explosion Radius
     double Ev = m_self->GetAttribute(AttrAoeVelocity).get_float(); // Explosion Velocity
     double DRF = m_self->GetAttribute(AttrAoeDamageReductionFactor).get_float(); // Damage Reduction Factor
     double DRS = m_self->GetAttribute(AttrAoeDamageReductionSensitivity).get_float(); // Damage Reduction Sensitivity
 
-    Vector3d Vel = m_targetSE->GetVelocity();
+    Vector3d Vel = pTargetSE->GetVelocity();
     double V = Vel.Length();
     if (V <= 0.0)
         V = 1.0;
@@ -279,7 +291,7 @@ void Missile::HitTarget() {
     double damageMultiplier = EvE::min1(EvE::min1(v1, v2), 1.0);
     d *= damageMultiplier;
 
-    m_targetSE->ApplyDamage(d);
+    pTargetSE->ApplyDamage(d);
     m_alive = false;
 }
 
@@ -294,4 +306,10 @@ void Missile::Delete() {
         return;
     // do we need to do anything else here?
     SpaceEntity::Delete();
+}
+
+PyRep* Missile::PyGetNameID() {
+    // TODO:  fixme
+    // this will return a python return type (PyRep) of the missile's nameID based on missile type...eventually
+    return PyStatic.NewZero();
 }

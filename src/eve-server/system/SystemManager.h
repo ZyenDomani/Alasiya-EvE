@@ -63,11 +63,11 @@ public:
     // main c'tor
     SystemManager(uint32 systemID, PyServiceMgr &svc);//, ItemData idata);
     // copy c'tor
-    SystemManager(const SystemManager* oth) =delete;
+    SystemManager(const SystemManager& oth) =delete;
     // move c'tor
     SystemManager(SystemManager&& oth) noexcept =default;
     // copy assignment
-    SystemManager& operator=(SystemManager& oth) =delete;
+    SystemManager& operator=(const SystemManager& oth) =delete;
     // move assignment
     SystemManager& operator=(SystemManager&& oth) =default;
     // d'tor
@@ -102,7 +102,7 @@ public:
     Inventory* GetSystemInv()                           { return m_solarSystemRef->GetMyInventory(); }
     SolarSystemRef GetSystemRef()                       { return m_solarSystemRef; }
 
-    // for spawn system     -allan 15July15     (not complete)
+    // for spawn system     -allan 15July15     (not complete - still not complete 18Nov26)
     typedef std::map<uint32, SystemBubble*> SpawnBubbleMap;
     void RemoveSpawnBubble(SystemBubble* pBubble);
     void GetSpawnBubbles( SystemManager::SpawnBubbleMap& bubbleMap );    // not used
@@ -163,7 +163,6 @@ public:
     // this returns entities in system for display on ship scanner when enabled.
     void GetAllEntities(std::vector<CosmicSignature>& vector);
 
-    std::map<uint32, SpaceEntity*> GetOperationalStatics() { return m_opStaticEntities; }
     std::map<uint32, SpaceEntity*> GetGates()          { return m_gateMap; }
 
     SpaceEntity* GetEntityByID(uint32 itemID);
@@ -181,6 +180,8 @@ public:
 
     // find all cans and wrecks in this system owned by calling char and set new fleetID
     void UpdateContainerFleetID(uint32 ownerID, uint32 fleetID);           // this will allow fleet salvagers to tractor wrecks and cans
+
+    void MakeMissile(MoveData* mData);
 
     // for new Civilian System
     void AddCiv(Civilian* pCiv)                         { m_civilians.push_back(pCiv); }
@@ -259,7 +260,6 @@ private:
     std::map<uint32, SpaceEntity*>  m_entities;         // all entities in this system. we own these.
     std::map<uint32, SpaceEntity*>  m_ticEntities;      // entities that need process tics
     std::map<uint32, SpaceEntity*>  m_staticEntities;   // static entities to send in setstate
-    std::map<uint32, SpaceEntity*>  m_opStaticEntities; // operational static entities
     std::map<uint32, SpaceEntity*>  m_deleteLater;      // SEs deferred for deletion
     std::map<uint32, SpaceEntity*>  m_shipMarkers;      // ship position marker cans. we do own these.
 
@@ -305,7 +305,6 @@ private:
     void        ManipulateTimeData();
     void        SpawnCivilian();
     bool        SystemActivity();
-    bool        SafeToUnload();
 
 };
 

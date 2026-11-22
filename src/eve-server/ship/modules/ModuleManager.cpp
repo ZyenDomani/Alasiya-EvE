@@ -180,7 +180,7 @@ void ModuleManager::LoadOnline() {
 
 void ModuleManager::Process()
 {
-    double profileStartTime = GetTimeUSeconds();
+    const double profileStartTime = (sConfig.debug.UseProfiling ? GetProfileTime() : 0.0);
 
     // proc modules in order of (low -> mid -> high) for proper fx application
     // NOTE: rigs and subsystems dont need proc tic.
@@ -193,7 +193,7 @@ void ModuleManager::Process()
     }
 
     if (sConfig.debug.UseProfiling)
-        sProfiler.AddTime(Profile::modules, GetTimeUSeconds() - profileStartTime);
+        sProfiler.AddTime(Profile::Type::modules, GetProfileTime() - profileStartTime);
 }
 
 bool ModuleManager::IsSlotOccupied(EVEItemFlags flag)

@@ -83,3 +83,4 @@ protected:
     bool ProcessSubStreamInline( const TiXmlElement* field );
     bool ProcessSubStructInline( const TiXmlElement* field );
 };
+

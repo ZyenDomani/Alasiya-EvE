@@ -66,7 +66,9 @@ void ModuleItem::SetOnline(bool online/*false*/, bool isRig/*false*/) {
     if (!isRig)   // rigs DO NOT get isOnline attrib set.
         SetAttribute(AttrOnline, (online?1:0), !pClient->IsDocked());
 
-    if (pClient->IsDocked() or pClient->IsUndock())
+    if (pClient->IsDocked() or pClient->IsLogin())
+        return;
+    if ((pClient->GetShipSE() != nullptr) and (pClient->IsUndock()))
         return;
 
     GodmaEnvironment ge;

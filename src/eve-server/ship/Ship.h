@@ -146,9 +146,7 @@ public:
     void AbortCycle()                                   { m_ModuleManager->AbortCycle(); }
     bool IsActive()                                     { return m_isActive; }
     bool IsDocking()                                    { return m_isDocking; }
-    bool IsUndocking()                                  { return m_isUndocking; }
-    void SetDocked()                                    { m_isDocking = false; m_isUndocking = false; }
-    void SetUndocking(bool set=false)                   { m_isUndocking = set; }
+    void SetDocked()                                    { m_isDocking = false; }
     InventoryItemRef GetTargetRef()                     { return m_targetRef; }
     void ClearTargetRef()                               { m_targetRef = InventoryItemRef(); }
     // this is for repairing modules with nanite paste
@@ -271,6 +269,8 @@ protected:
     void LinkWeaponLoop(std::list< GenericModule* >& moduleVec);
 
 private:
+    void ProcessShipEffects(bool update=false);
+
     Client* m_pilot;
 
     //the ship's module manager.  We own this
@@ -281,12 +281,9 @@ private:
     std::vector<uint32> m_onlineModuleVec;      // for onlining modules when undocking
     std::map<GenericModule*, std::list<GenericModule*>> m_linkedWeapons; // masterID/data (slaveIDs)
 
-    void ProcessShipEffects(bool update=false);
-
-    bool m_isActive :1;
-    bool m_isPopped :1;
-    bool m_isDocking :1;
-    bool m_isUndocking :1;
+    bool m_isActive;
+    bool m_isPopped;
+    bool m_isDocking;
 };
 
 /**

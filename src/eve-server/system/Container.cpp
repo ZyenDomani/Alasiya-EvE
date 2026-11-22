@@ -278,8 +278,6 @@ ContainerSE::~ContainerSE()
 }
 
 void ContainerSE::Process() {
-    /*   Base call to Process Movement  */
-    SpaceEntity::Process();
     if (m_deleteTimer.Check(false)) {
         m_deleteTimer.Disable();
         sLog.Magenta( "ContainerSE::Process()", "Garbage Collection is removing Cargo Container %u.", m_contRef->itemID() );
@@ -318,8 +316,11 @@ void ContainerSE::AnchorContainer()
 
 void ContainerSE::EncodeStateData(Buffer& into)
 {
+    MoveData* mData = GetMoveData();
+    if (mData == nullptr)
+        mData = CreateMoveData();
     using namespace Destiny;
-    // fixme uint8 mode = m_destiny->GetBallMode(); //Ball::Mode::STOP;
+    uint8 mode = mData->GetBallMode(); //Ball::Mode::STOP;
 
     BallHeader head = BallHeader();
         head.entityID = GetID();
@@ -336,24 +337,24 @@ void ContainerSE::EncodeStateData(Buffer& into)
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
         mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
-    into.Append(mass);/*
+    into.Append(mass);
+    Vector3d& velocity = mData->GetVelocity();
     DataSector data = DataSector();
-        data.maxSpeed = m_destiny->GetMaxSpeed();
-        data.velX = m_destiny->GetVelocity().x;
-        data.velY = m_destiny->GetVelocity().y;
-        data.velZ = m_destiny->GetVelocity().z;
-        data.speedfraction = m_destiny->GetSpeedFraction();
+        data.velX = velocity.x;
+        data.velY = velocity.y;
+        data.velZ = velocity.z;
+        data.maxSpeed = mData->GetMaxSpeed();
+        data.speedfraction = mData->GetASF();
         data.inertia = 1.0f;
-    into.Append(data);*/
-    // fixme
-    switch (0) {/*
+    into.Append(data);
+    switch (mode) {
         case Ball::Mode::FOLLOW: {
             FOLLOW_Struct follow;
                 follow.formationID = -1;
-                follow.followID = m_destiny->GetTargetID();
-                follow.followRange = m_destiny->GetTargetDistance();
+                follow.followID = mData->GetTargetSE()->GetID();
+                follow.followRange = mData->GetDesiredDistance();
             into.Append(follow);
-        }  break;*/
+        }  break;
         case Ball::Mode::TROLL: {
             TROLL_Struct troll;
                 troll.formationID = -1;
@@ -553,14 +554,11 @@ m_launchedByID(0)
 }
 
 WreckSE::~WreckSE() {
-    // these are cleared in base class
+    // cleared in base class
     //SafeDelete(m_targMgr);
-    //SafeDelete(m_destiny);
 }
 
 void WreckSE::Process() {
-    /*   Base call to Process Movement  */
-    SpaceEntity::Process();
     if (m_deleteTimer.Check(false)) {
         m_deleteTimer.Disable();
         sLog.Magenta( "WreckSE::Process()", "Garbage Collection is removing Wreck %u.", m_contRef->itemID() );
@@ -570,15 +568,18 @@ void WreckSE::Process() {
 }
 
 void WreckSE::EncodeStateData(Buffer& into) {
+    MoveData* mData = GetMoveData();
+    if (mData == nullptr)
+        mData = CreateMoveData();
     using namespace Destiny;
-    // fixme uint8 mode = m_destiny->GetBallMode(); //Ball::Mode::TROLL;
+    uint8 mode = mData->GetBallMode(); //Ball::Mode::TROLL;
     BallHeader head = BallHeader();
         head.entityID = GetID();
         head.radius = GetRadius();
         head.posX = x();
         head.posY = y();
         head.posZ = z();
-        head.mode = 0;
+        head.mode = mode;
         head.flags = Ball::Flag::IsFree | Ball::Flag::IsInteractive;
     into.Append(head);
     MassSector mass = MassSector();
@@ -587,22 +588,23 @@ void WreckSE::EncodeStateData(Buffer& into) {
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
         mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
-    into.Append(mass);/*
+    into.Append(mass);
+    Vector3d& velocity = mData->GetVelocity();
     DataSector data = DataSector();
-        data.maxSpeed = m_destiny->GetMaxSpeed();
-        data.velX = m_destiny->GetVelocity().x;
-        data.velY = m_destiny->GetVelocity().y;
-        data.velZ = m_destiny->GetVelocity().z;
-        data.speedfraction = m_destiny->GetSpeedFraction();
-        data.inertia = 1.0f;
-    into.Append(data);*/
-    switch (0) {
-        case Ball::Mode::FOLLOW: {/*
+        data.velX = velocity.x;
+        data.velY = velocity.y;
+        data.velZ = velocity.z;
+        data.maxSpeed = mData->GetMaxSpeed();
+        data.inertia = m_self->GetAttribute(AttrInertiaMod).get_float();
+        data.speedfraction = mData->GetASF();
+    into.Append(data);
+    switch (mode) {
+        case Ball::Mode::FOLLOW: {
             FOLLOW_Struct follow;
                 follow.formationID = -1;
-                follow.followID = m_destiny->GetTargetID();
-                follow.followRange = m_destiny->GetTargetDistance();
-            into.Append(follow);*/
+                follow.followID = mData->GetTargetSE()->GetID();
+                follow.followRange = mData->GetDesiredDistance();
+            into.Append(follow);
         }  break;
         case Ball::Mode::TROLL: {
             // preliminary implementation:

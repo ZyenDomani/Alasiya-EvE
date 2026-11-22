@@ -8,21 +8,10 @@
           <int name="missileID" />
           <int name="targetID" />
           <int name="shipID" />
-          <int name="unk1" />
-          <int name="unk2" />
+          <int name="start" />
+          <int name="active" />
         </tupleInline>
       </tupleInline>
   </elementDef>
 
 </elements>
-
-<!--
-  [PyTuple 2 items]
-    [PyString "LaunchMissile"]
-    [PyTuple 5 items]
-      [PyInt missileEntityID]
-      [PyInt targetID]
-      [PyInt shipID]
-      [PyInt 1] ?
-      [PyInt 1] ?
-      -->

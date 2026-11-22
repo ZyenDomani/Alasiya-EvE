@@ -100,11 +100,6 @@ protected:
     SystemBubble* MakeBubble( SystemManager* sysMgr, Vector3d position );
 
 private:
-    Timer m_wanderTimer;
-
-    uint32 m_bubbleID;
-    int64 m_profileStartTime;
-
     /* map of bubbleID, spawnID */
     std::map<uint16, uint32> m_spawnIDs;
 
@@ -114,6 +109,12 @@ private:
     std::map<uint32, SystemBubble*> m_bubbleIDMap;     // bubbleID/bubble*
 
     std::unordered_multimap<uint32, SystemBubble*> m_sysBubbleMap;  // systemID/bubble*
+
+    double m_profileStartTime;
+
+    uint32 m_bubbleID;
+
+    Timer m_wanderTimer;
 };
 
 //Singleton

@@ -50,6 +50,7 @@
 //#include "npc/DroneAI.h"
 #include "station/StationDataMgr.h"
 #include "station/StationOffice.h"
+#include "system/BallPark.h"
 #include "system/SystemManager.h"
 #include "system/SystemBubble.h"
 #include "system/cosmicMgrs/AnomalyMgr.h"
@@ -61,68 +62,70 @@
 
 static const uint32 PING_INTERVAL_MS = 600000; //10m
 
-Client::Client(PyServiceMgr &services, EVETCPConnection** con)
+Client::Client(PyServiceMgr& services, EVETCPConnection** con)
 : EVEClientSession(con),
-  m_TS(nullptr),
-  m_pod(ShipItemRef(nullptr)),
-  m_ship(ShipItemRef(nullptr)),
-  m_char(CharacterRef(nullptr)),
-  m_scan(nullptr),
-  pShipSE(nullptr),
-  pSession(new ClientSession()),
-  m_shipId(0),
-  m_system(nullptr),
-  m_services(services),
-  m_movePoint(NULL_ORIGIN),
-  m_systemData(SystemData()),
-  m_stationData(StationData()),
-  m_clientState(Player::State::Idle),
-  m_stateTimer(0),
-  m_ballparkTimer(0),
-  m_pingTimer(PING_INTERVAL_MS),
-  m_scanTimer(0),
-  m_cloakTimer(0),
-  m_fleetTimer(0),
-  m_invulTimer(0),
-  m_clientTimer(0),
-  m_logoutTimer(0),
-  m_jetcanTimer(0),
-  m_sessionTimer(0),
-  m_uncloakTimer(0),
-  m_EventQueue(new PyList()),
-  m_UpdateQueue(new PyList()),
-  m_nextNotifySequence(0),
-  m_scanProbe(false),
-  pPacket(nullptr),
-  m_profileStartTime(0)
+// --- 8-byte aligned group ---
+m_stationData(),
+m_systemData(),
+m_ship(ShipItemRef(nullptr)),
+m_pod(ShipItemRef(nullptr)),
+m_char(CharacterRef(nullptr)),
+m_services(services),
+m_scan(nullptr),
+pShipSE(nullptr),
+m_TS(nullptr),
+pSession(new ClientSession()),
+m_system(nullptr),
+pPacket(nullptr),
+m_EventQueue(new PyList()),
+m_UpdateQueue(new PyList()),
+m_movePoint(NULL_ORIGIN),
+m_dockPoint(NULL_ORIGIN),
+m_skillTimer(0),
+m_profileStartTime(0.0),
+// --- 4-byte aligned group ---
+m_stateTimer(0),
+m_pingTimer(PING_INTERVAL_MS),
+m_scanTimer(0),
+m_cloakTimer(0),
+m_uncloakTimer(0),
+m_invulTimer(0),
+m_fleetTimer(0),
+m_clientTimer(0),
+m_jetcanTimer(0),
+m_logoutTimer(0),
+m_sessionTimer(0),
+m_ballparkTimer(0),
+m_wing(0),
+m_squad(0),
+m_toGateID(0),
+m_fleet(0),
+m_shipId(0),
+m_locationID(0),
+m_moveSystemID(0),
+m_dockStationID(0),
+m_nextNotifySequence(0),
+// --- 1-byte aligned group ---
+m_clientState(Player::State::Idle),
+m_afk(false),
+m_invul(true),
+m_login(true),
+m_loaded(false),
+m_beyonce(false),
+m_uncloak(false),
+m_showall(false),
+m_autoStop(false),
+m_autoAttack(false),
+m_packaged(false),
+m_portrait(false),
+m_scanProbe(false),
+m_bubbleWait(false),
+m_setStateSent(false),
+m_sessionChangeActive(false),
+m_canThrow(false),
+m_validSession(false),
+m_charCreation(false)
 {
-    m_afk = false;
-    m_login = true;
-    m_invul = true;
-    m_wing = false;
-    m_fleet = false;
-    m_squad = false;
-    m_loaded = false;
-    m_showall = false;
-    m_uncloak = false;
-    m_beyonce = false;
-    m_autoStop = false;
-    m_canThrow = false;
-    m_packaged = false;
-    m_portrait = false;
-    m_autoAttack = false;
-    m_bubbleWait = false;     // more updates this tic?
-    m_charCreation = false;
-    m_setStateSent = false;
-    m_validSession = false;
-    m_sessionChangeActive = false;
-
-    m_toGateID = 0;
-    m_locationID = 0;
-    m_moveSystemID = 0;
-    m_skillTimer = 0;
-    m_dockStationID = 0;
-
     // Start handshake
     Reset();
 }
@@ -268,6 +271,8 @@ bool Client::SelectCharacter(int32 charID/*0*/) {
     if (sDataMgr.IsStation(m_locationID))
         m_char->ApplyImplantFX();
 
+    SetStateTimer(Player::State::Login, Player::Timer::Login);
+
     // register with our system manager AFTER character is constructed and initialized
     m_system->AddClient(this, true);
 
@@ -305,7 +310,7 @@ bool Client::SelectCharacter(int32 charID/*0*/) {
         UpdateNewShip();
         WarpIn();
         // if we are in space, everything is set up at this point, so set ballpark
-        pShipSE->SystemMgr()->SendBallPark(pShipSE);
+       // pShipSE->SystemMgr()->SendBallPark(pShipSE);
     } else {
         if (m_ship->typeID() == EVEDB::invTypes::Capsule) {
             if (sConfig.server.NoobShipCheck) {
@@ -334,7 +339,7 @@ bool Client::SelectCharacter(int32 charID/*0*/) {
     CharacterDB::SetCharacterOnlineStatus(charID, true);
     sItemFactory.UnsetUsingClient();
 
-    SetStateTimer(Player::State::Login, Player::Timer::Login);
+    //SetStateTimer(Player::State::Login, Player::Timer::Login);
 
     // set ship cap and shields to full
     m_ship->SetShipShield(1.0);
@@ -354,7 +359,7 @@ void Client::ProcessClient() {
     //NOTE:  all the *Timers are actually SetTime +1s
     // ...reason being is one tic to check (current tic +0), next tic to set (=1),  then another tic to hit (+2)
 
-    m_profileStartTime = GetTimeUSeconds();
+    m_profileStartTime = GetProfileTime();
 
     // client connection keepalive
     if (m_pingTimer.Check()) {
@@ -401,7 +406,7 @@ void Client::ProcessClient() {
                 _log(AUTOPILOT__TRACE, "ProcessClient()::IsDocked() - m_clientState set to Idle");
             }
         if (sConfig.debug.UseProfiling)
-            sProfiler.AddTime(Profile::client, GetTimeUSeconds() - m_profileStartTime);
+            sProfiler.AddTime(Profile::Type::client, GetProfileTime() - m_profileStartTime);
         return;
     }
 
@@ -416,7 +421,7 @@ void Client::ProcessClient() {
             _log(CLIENT__TIMER, "ProcessClient():  SetInvul to false for %s(%u)", m_char->name(), m_char->itemID());
             m_invulTimer.Disable();
             m_invul = false;
-            m_ship->SetUndocking(false);
+            pShipSE->GetMoveData()->SetUndocking(false);
         }
 
     if (m_scanTimer.Enabled())
@@ -464,8 +469,15 @@ void Client::ProcessClient() {
                 } break;
                 case Player::State::Undock: {
                     _log(CLIENT__TIMER, "ProcessClient()::CheckState():  case: Undock");
+                    MoveData* mData = pShipSE->GetMoveData();
+                    mData->SetUndocking(true);
+                    mData->SetBallMode(Ball::Mode::GOTO);
+                    mData->SetHeading(m_movePoint);
+                    mData->SetMyVelocity(m_movePoint * mData->GetMaxSpeed());
+                    mData->SetDesiredVelocity(mData->GetVelocity());
+                    mData->SetUSF(1.0f);
+                    mData->SetASF(1.0f);
                     SetBallPark();
-                    // fixme pShipSE->DestinyMgr()->Undock(m_movePoint);
                     m_clientState = Player::State::Idle;
                 } break;
                 case Player::State::Killed: {
@@ -483,8 +495,8 @@ void Client::ProcessClient() {
                 } break;
                 case Player::State::Login: {
                     _log(CLIENT__TIMER, "ProcessClient()::CheckState():  case: Login");
-                    m_login = false;
                     SetBallPark();
+                    m_login = false;
                     m_clientState = Player::State::Idle;
                     m_ship->GetModuleManager()->UpdateChargeQty();  //  <<<< huge hack here....cant find another way to do it yet.
                     } break;
@@ -546,7 +558,7 @@ void Client::ProcessClient() {
         }
 
     if (sConfig.debug.UseProfiling)
-        sProfiler.AddTime(Profile::client, GetTimeUSeconds() - m_profileStartTime);
+        sProfiler.AddTime(Profile::Type::client, GetProfileTime() - m_profileStartTime);
 }
 
 void Client::WarpIn() {
@@ -591,8 +603,7 @@ void Client::WarpOut() {
 bool Client::IsAutoPilot() {
     if (pShipSE == nullptr)
         return false;
-    // fixme return pShipSE->DestinyMgr()->IsAutoPilot();
-    return false;
+    return pShipSE->GetMoveData()->IsAutoPilot();
 }
 
 void Client::SetAutoPilot(bool set/*false*/)
@@ -601,7 +612,7 @@ void Client::SetAutoPilot(bool set/*false*/)
     if (pShipSE == nullptr)
         return;
 
-    // fixme pShipSE->DestinyMgr()->SetAutoPilot(set);
+    pShipSE->GetMoveData()->SetAutoPilot(set);
     _log(AUTOPILOT__MESSAGE, "%s called SetAutoPilot to %s", GetName(), (set ? "true" : "false"));
 }
 
@@ -624,8 +635,8 @@ void Client::MoveToLocation(uint32 locationID, const Vector3d& pt) {
         return;
     }
 
-    bool count(m_login);
-    bool wasDocked(sDataMgr.IsStation(m_locationID));
+    bool count = m_login;
+    bool wasDocked = sDataMgr.IsStation(m_locationID);
     m_locationID = locationID;
     // get data for new system.  this checks for stationID sent as locationID, so is safe here.
     sDataMgr.GetSystemData(m_locationID, m_systemData);
@@ -718,7 +729,7 @@ void Client::MoveToLocation(uint32 locationID, const Vector3d& pt) {
         }
 
         // if docked, update guestlist
-        if (wasDocked and m_ship->IsUndocking())
+        if (wasDocked)
             CharNoLongerInStation();
 
         if (IsFleetID(m_fleet)) {
@@ -780,20 +791,16 @@ void Client::SetDestiny(const Vector3d& pt, bool update/*false*/) {
     m_bubbleWait = false;
     m_setStateSent = false;
 
-    bool updateShip = false;
     if (pShipSE == nullptr) {
-        updateShip = true;
         CreateShipSE();
+        UpdateNewShip();
     }
 
     m_system->AddEntity(pShipSE);
 
-    _log(PLAYER__AP_TRACE, "Client::SetDestiny(): %s:%u - shipSystemID: %u, SystemID: %u, update: %s, updateShip: %s, jump: %s, cloak: %s", \
+    _log(PLAYER__AP_TRACE, "Client::SetDestiny(): %s:%u - shipSystemID: %u, SystemID: %u, updateShip: %s, jump: %s, cloak: %s", \
             GetName(), GetCharID(),  pShipSE->SystemMgr()->GetID(), m_system->GetID(), update?"true":"false", \
-            updateShip?"true":"false", IsJump()?"true":"false", "false"); // fixme
-
-    if (updateShip)
-        UpdateNewShip();
+            IsJump()?"true":"false", "false"); // fixme
 }
 
 void Client::SetBallPark() {
@@ -802,9 +809,9 @@ void Client::SetBallPark() {
     m_bubbleWait = false;
     if (pShipSE->SysBubble() == nullptr)
         m_system->AddEntity(pShipSE);
-    if (!m_beyonce and !m_login and !m_ship->IsUndocking()) {
+    if (!m_beyonce and !m_login and !pShipSE->GetMoveData()->IsUndocking()) {
         m_bubbleWait = false;
-        CheckBallparkTimer();
+        //CheckBallparkTimer();
         SetBallParkTimer(Player::Timer::Default);    // set timer 1s to wait for beyonce
         return;
     }
@@ -816,7 +823,7 @@ void Client::SetBallPark() {
             // dont use settimer method here...(jumping ship will flash at destination)
             m_cloakTimer.Start(Player::Timer::JumpCloak);
             m_clientState = Player::State::Idle;
-            // fixme pShipSE->DestinyMgr()->SendGateActivity(m_toGateID);
+            pShipSE->SystemMgr()->SendGateActivity(m_system->GetEntityByID(m_toGateID));
             m_toGateID = 0;
         }
         if (IsDriveJump()) {
@@ -874,8 +881,27 @@ void Client::DockToStation() {
     m_setStateSent = false;
     m_clientState = Player::State::Idle;
     _log(AUTOPILOT__TRACE, "DockToStation() - m_clientState set to Idle");
-    // fixme pShipSE->DestinyMgr()->DockingAccepted();
     m_bubbleWait = false;
+
+    Vector3d& pos = m_ship->position();
+    MoveToLocation(m_dockStationID, NULL_ORIGIN);
+
+    OnDockingAccepted oda;
+        oda.ship_x = pos.x;
+        oda.ship_y = pos.y;
+        oda.ship_z = pos.z;
+        oda.station_x = m_stationData.position.x;
+        oda.station_y = m_stationData.position.y;
+        oda.station_z = m_stationData.position.z;
+        oda.stationID = m_dockStationID;
+    PyTuple* ev = oda.Encode();
+    SendNotification("OnDockingAccepted", "charid", &ev);
+
+    // client doesn't automatically apply implants when docked
+    m_char->ApplyImplantFX();
+
+    SetSessionTimer();
+    m_ship->SetDocked();
 
     //Check if player is in pod and have no ships in hangar, in which case they get a rookie ship for free
     //  on live, SCC sends mail about the loss of the players ship, and offers a shiny, new, fully-fitted ship as replacement.  we dont....yet
@@ -893,14 +919,6 @@ void Client::DockToStation() {
             SpawnNewRookieShip(m_dockStationID);
         }
     }
-
-    MoveToLocation(m_dockStationID, NULL_ORIGIN);
-
-    // client doesn't automatically apply implants when docked
-    m_char->ApplyImplantFX();
-
-    SetSessionTimer();
-    m_ship->SetDocked();
 }
 
 void Client::UndockFromStation() {
@@ -914,16 +932,9 @@ void Client::UndockFromStation() {
     m_dockPoint = m_stationData.dockPosition;
     m_movePoint = m_stationData.dockOrientation;
 
+    MoveToLocation(m_systemData.systemID, m_dockPoint);
     m_ship->Undock();   // fx processed here
 
-    /** @todo  this needs a bit of work to match live....
-     * @update we are really close now.  02Jan19
-     *  Undock Request -> GetCriminalTimeStamps -> Undock -> OnItemsChanged (Undocking:xxxxxxxx) -> OnCharNoLongerInStation ->
-     *  GetAllInfo -> GetNPCStandings -> GetFormations -> AddBalls2 (slim, not ball, wait=true)
-     * -> GotoDirection(etc, etc) -> SetState (dmg, ego, ball, slim)
-     *  ***** 9sec from hitting undock to space view on live. *****
-     */
-    MoveToLocation(m_systemData.systemID, m_dockPoint);
     SetInvulTimer(Player::Timer::UndockInvul);
     SetStateTimer(Player::State::Undock, Player::Timer::Undock);
     SetSessionTimer();
@@ -936,7 +947,7 @@ void Client::CreateShipSE() {
         data.factionID = GetWarFactionID();
         data.ownerID = GetCharacterID();
     pShipSE = new ShipSE(m_ship, *(m_system->GetServiceMgr()), m_system, data);
-        //pShipSE->DestinyMgr()->UpdateShipVariables();
+    pShipSE->CreateMoveData();
     _log(PLAYER__MESSAGE, "CreateShipSE() - pShipSE %p created for %s(%u)", pShipSE, m_char->name(), m_char->itemID());
 }
 
@@ -955,7 +966,6 @@ void Client::UpdateNewShip() {
     sItemFactory.SetUsingClient(this);
     pShipSE->SetPilot(this);
     pShipSE->CreateMoveData();
-    //pShipSE->DestinyMgr()->UpdateNewShip(m_ship);
 
     sItemFactory.UnsetUsingClient();
 
@@ -1107,7 +1117,9 @@ void Client::Eject()
     m_ship->SetFlag(flagShipOffline);
     m_ship->Eject();
 
-    // fixme pShipSE->DestinyMgr()->Eject();
+    //UpdateOldShip(mySE->GetShipSE());
+    m_system->SendJettisonPacket(pShipSE);
+    BallPark::Stop(pShipSE->GetMoveData());
 
     Vector3d capsulePosition(pShipSE->GetPosition());
     capsulePosition.MakeRandomPointOnSphere(m_ship->radius() + m_pod->radius() + MakeRandomInt(30, 120));
@@ -1161,8 +1173,8 @@ void Client::ResetAfterPopped(Vector3d& position)
         throw CustomError("There was a problem creating your pod in space.<br>You have been transfered to your home station.");
     }
 
+    m_system->SendJettisonPacket(pShipSE);
     newShipSE->SetLauncherID(pShipSE->GetID());
-    // fixme pShipSE->DestinyMgr()->Eject();
     // nullify pilot before removing from bubble, which removes player from bubble map
     pShipSE->SetPilot(nullptr);
     // remove dead ship from bubble before calling SetShip() (it deletes pShipSE)
@@ -2604,7 +2616,7 @@ void Client::_SendPingResponse(const PyAddress& source, int64 callID, int64 rece
 /************************************************************************/
 bool Client::Handle_CallReq(PyPacket* packet, PyCallStream* req)
 {
-    double profileStartTime = GetTimeUSeconds();
+    const double profileStartTime = (sConfig.debug.UseProfiling ? GetProfileTime() : 0.0);
 
     PyCallable* dest(nullptr);
     if (packet->dest.service == "") {
@@ -2654,7 +2666,7 @@ bool Client::Handle_CallReq(PyPacket* packet, PyCallStream* req)
     _SendCallReturn(packet->dest, packet->source.callID, result);
 
     if (sConfig.debug.UseProfiling)
-        sProfiler.AddTime(Profile::clientCall, GetTimeUSeconds() - profileStartTime);
+        sProfiler.AddTime(Profile::Type::clientCall, GetProfileTime() - profileStartTime);
 
     SafeDelete(req);
     return true;

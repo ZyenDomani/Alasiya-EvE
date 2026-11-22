@@ -279,20 +279,14 @@ void SentryAI::Attack(SpaceEntity* pTarget)
             ClearTarget(pTarget);
             return;
         }
-        /*// fixme
-        if (!pTarget->DestinyMgr()) {
-            _log(NPC__AI_TRACE, "%s(%u): Target %s(%u) has no destiny manager.  Clear target and move on",
-                 m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
-            ClearTarget(pTarget);
-            return;
-        }
+
         // Check to see if the target is not cloaked:
         if (pTarget->GetMoveData()->IsCloaked()) {
             _log(NPC__AI_TRACE, "%s(%u): Target %s(%u) is cloaked.  Clear target and move on",
                  m_npc->GetName(), m_npc->GetID(), pTarget->GetName(), pTarget->GetID());
             ClearTarget(pTarget);
             return;
-        }*/
+        }
         if (m_npc->TargetMgr()->CanAttack())
             AttackTarget(pTarget);
     }
@@ -306,13 +300,12 @@ void SentryAI::AttackTarget(SpaceEntity* pTarget) {
     std::string guid = "effects.Laser";
     // sentry does NOT have a destiny manager...use target's destiny manager for sending fx
     // TODO:  fix this for recent updates
-    // fixme
-    /*pTarget->DestinyMgr()->SendGFX14(m_npc->GetSelf()->itemID(),
+    m_npc->SystemMgr()->SendGFX14(m_npc,
                                      m_npc->GetSelf()->itemID(),
                                      m_npc->GetSelf()->typeID(), //m_npc->GetSelf()->GetAttribute(AttrGfxTurretID).get_int(),
                                      pTarget->GetID(),
                                      0,std::move(guid),1,1,1,m_attackSpeed,0);
-*/
+
     Damage d(m_npc,
              m_npc->GetSelf(),
              m_npc->GetKinetic(),

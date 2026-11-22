@@ -4,114 +4,106 @@
  *   this code is very basic, and very specific.
  * @Author:         Allan
  * @date:   13 April 2015
- */
-
-/**   Allan's EvEmu Profiler
- * simple singleton profiler using std::vector<double> being simple mem object storage.
- * vector object denotes call type, (db, client, map, etc.)
- * double precision float holds elapsed time for that particular call
- * output functions use size() to count calls, and give readouts as
- *     CALL_TYPE: called N times, hi: Xus, lo: Yus, avg: Zus
- *  Times are measured in microseconds via GetTimeUSeconds() from core/utils/utils_time.cpp
- *
+ * @update: Allan 17Nov26
  */
 
 
-#ifndef EVEMU_EVESERVER_PROFILER_H_
-#define EVEMU_EVESERVER_PROFILER_H_
-
+#pragma once
 
 #include "eve-common.h"
 
-namespace Profile {
-    enum {          // implemented?  (* = yes)
-        destiny     = 1,    //*
-        map         = 2,    //
-        client      = 3,    //*
-        npc         = 4,    //*
-        bubbles     = 5,    //*
-        items       = 6,    //*
-        modules     = 7,    //*
-        functions   = 8,    //
-        db          = 9,    //*
-        ship        = 10,   //*
-        targets     = 11,   //*
-        server      = 12,   //
-        missile     = 13,   //*
-        system      = 14,   //*
-        entityS     = 15,   //*
-        loot        = 16,   //*
-        salvage     = 17,   //*
-        spawn       = 18,   //*
-        collision   = 19,   //*
-        drone       = 20,   //*
-        itemload    = 21,   //*
-        concord     = 22,   //
-        colony      = 23,   //*
-        damage      = 24,   //*
-        parseFX     = 25,   //*
-        applyFX     = 26,   //*
-        onTarg      = 27,   //
-        clientCall  = 28,   //*
-        civilians   = 29,   //
-        entityP     = 30    //*
-    };
-}
-
-class Profiler
-: public Singleton<Profiler>
+class Profile
+: public Singleton<Profile>
 {
 public:
-    // let compiler create c'tor/d'tor
+    struct Type {
+        enum {          // implemented?  (* = yes)
+            destiny     = 1,    //*
+            map         = 2,    //
+            client      = 3,    //*
+            npc         = 4,    //*
+            bubbles     = 5,    //*
+            items       = 6,    //*
+            modules     = 7,    //*
+            functions   = 8,    //
+            db          = 9,    //*
+            ship        = 10,   //*
+            targets     = 11,   //*
+            server      = 12,   //
+            missile     = 13,   //*
+            system      = 14,   //*
+            entityS     = 15,   //*
+            loot        = 16,   //*
+            salvage     = 17,   //*
+            spawn       = 18,   //*
+            collision   = 19,   //*
+            drone       = 20,   //*
+            itemload    = 21,   //*
+            concord     = 22,   //
+            colony      = 23,   //*
+            damage      = 24,   //*
+            parseFX     = 25,   //*
+            applyFX     = 26,   //*
+            onTarg      = 27,   //
+            clientCall  = 28,   //*
+            civilians   = 29,   //
+            entityP     = 30,    //*
+            Max         = 31
+        };
+    };
 
-    int Initialize();
+    struct Stat {
+        double total = 0.0;
+        double hi    = 0.0;
+        double lo    = 0.0;
+        uint32 count = 0;
+        uint32 over  = 0;
 
-    void AddTime(uint8 key, double value);
+        void Reset() {
+            total = 0.0;
+            hi    = 0.0;
+            lo    = 0.0;
+            count = 0;
+            over  = 0;
+        }
+    };
+
+    inline void AddTime(uint8 key, double value) {
+        if (key >= Profile::Type::Max)
+            return;
+        Stat& s = m_stats[key];
+        if (value > 1000000.0) {
+            ++s.over;
+            return;
+        }
+        if (s.count == 0) {
+            s.hi = value;
+            s.lo = value;
+        } else {
+            if (value > s.hi) s.hi = value;
+            if (value < s.lo) s.lo = value;
+        }
+        s.total += value;
+        ++s.count;
+    }
+
+    void Initialize();
+    
+    void ClearAll();
+
     void PrintProfile();
     void PrintStartUpData();
-    void ClearAll();
+    void PrintLine(const char* label, uint8 key);
 
     void GetSize(size_t cSize, std::string& ret);
 
-    void GetRunTimes(std::vector<double>& container, double& h, double& l, double& a);
-
 protected:
-    std::string GetKeyName(uint8& key);
+    const char* GetKeyName(uint8 key) const;
 
 private:
-    std::vector<double> m_server{0};
-    std::vector<double> m_functions;
-    std::vector<double> m_db;
-    std::vector<double> m_client;
-    std::vector<double> m_clientCall;
-    std::vector<double> m_map;
-    std::vector<double> m_destiny;
-    std::vector<double> m_system;
-    std::vector<double> m_entityS;
-    std::vector<double> m_entityP;
-    std::vector<double> m_npc;
-    std::vector<double> m_drone;
-    std::vector<double> m_bubbles;
-    std::vector<double> m_items;
-    std::vector<double> m_itemload;
-    std::vector<double> m_modules;
-    std::vector<double> m_ship;
-    std::vector<double> m_targets;
-    std::vector<double> m_ontarget;
-    std::vector<double> m_missile;
-    std::vector<double> m_loot;
-    std::vector<double> m_salvage;
-    std::vector<double> m_spawn;
-    std::vector<double> m_collision;
-    std::vector<double> m_concord;
-    std::vector<double> m_colony;
-    std::vector<double> m_damage;
-    std::vector<double> m_effects1;
-    std::vector<double> m_effects2;
-    std::vector<double> m_civilians;
+    Stat m_stats[Profile::Type::Max]; // 31 * 32 bytes = 992 bytes total (fits in 16 cache lines!)
 };
 
 #define sProfiler \
-    ( Profiler::get() )
+( Profile::get() )
 
-#endif  // EVEMU_EVESERVER_PROFILER_H_

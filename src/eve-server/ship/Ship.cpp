@@ -29,8 +29,7 @@ m_ModuleManager(new ModuleManager(this)),
 m_loaded(false),
 m_isActive(false),
 m_isPopped(false),
-m_isDocking(false),
-m_isUndocking(false)
+m_isDocking(false)
 {
     pInventory = new Inventory(InventoryItemRef(this));
 
@@ -388,7 +387,10 @@ void ShipItem::Dock() {
 }
 
 void ShipItem::Undock() {
-    m_isUndocking = true;
+    // online modules sent from client (these are onlined in fit window while docked)
+    m_ModuleManager->UpdateModules(m_onlineModuleVec);
+    m_onlineModuleVec.clear();
+    //FailedToOnlineModulesOnUndock
 
     //HorribleFittingProblems
 
@@ -1806,15 +1808,8 @@ void ShipItem::ProcessShipEffects(bool update/*false*/)
         sFxProc.ParseExpression(this, sFxDataMgr.GetExpression(cur.second.preExpression), data);
     }
 
-    if (m_isUndocking) {
-        // online modules sent from client (these are onlined in fit window while docked)
-        m_ModuleManager->UpdateModules(m_onlineModuleVec);
-        m_onlineModuleVec.clear();
-        //FailedToOnlineModulesOnUndock
-    } else {
-        // this will set module to last saved online state in the case of BoardShip() and Login()
-        m_ModuleManager->LoadOnline();
-    }
+    // this will set module to last saved online state in the case of BoardShip() and Login()
+    m_ModuleManager->LoadOnline();
 
     // apply processed effects
     sFxProc.ApplyEffects(this, m_pilot->GetChar().get(), this, update);
@@ -2406,9 +2401,6 @@ void ShipSE::Process() {
     if (m_killed)
         return;
 
-    /*  Enable base call to Process Movement  */
-    SpaceEntity::Process();
-
     // check to see if this is an empty ship, and return if so.
     //  we're not worried about recharge and modules for empty ships (segfaults)
     /** @todo m_self is NOT being populated for non-piloted ships...check later */
@@ -2416,7 +2408,7 @@ void ShipSE::Process() {
         return;
 
     if (m_processTimer.Check()) {
-        double profileStartTime = GetTimeUSeconds();
+        const double profileStartTime = (sConfig.debug.UseProfiling ? GetProfileTime() : 0.0);
         // shield
         float Charge = m_self->GetAttribute(AttrShieldCharge).get_float();
         float Capacity = m_self->GetAttribute(AttrShieldCapacity).get_float();
@@ -2447,7 +2439,7 @@ void ShipSE::Process() {
         }
         // profile timer for the ship recharge shit
         if (sConfig.debug.UseProfiling)
-            sProfiler.AddTime(Profile::ship, GetTimeUSeconds() - profileStartTime);
+            sProfiler.AddTime(Profile::Type::ship, GetProfileTime() - profileStartTime);
 
         // proc heat on the 5s cap/shield tic, if enabled
         if (sConfig.testing.ShipHeat)
@@ -2522,6 +2514,8 @@ void ShipSE::Dock() {
 
     // if any drones are out, abandon them
     AbandonDrones();
+    // stop ship
+    BallPark::Stop(GetMoveData());
 }
 
 void ShipSE::Jump(int32 fromGateID, bool showCloak/*true*/) {
@@ -2622,7 +2616,6 @@ void ShipSE::UnCloak() {
 void ShipSE::EncodeStateData(Buffer& into) {
     MoveData* mData = GetMoveData();
     using namespace Destiny;
-
     uint8 mode = mData->GetBallMode(); //Ball::Mode::STOP;
     BallHeader head = BallHeader();
         head.entityID = GetID();
@@ -2808,8 +2801,7 @@ void ShipSE::RemoveBoost()
     m_shipRef->SetAttribute(AttrScanResolution, m_oldScanRes);
     m_shipRef->SetAttribute(AttrMaxTargetRange, m_oldTargetRange);
 
-    // fixme m_destiny->UpdateShipVariables();
-
+    m_moveData->UpdateShipVariables();
     ClearBoostData();
 }
 
@@ -2842,7 +2834,7 @@ void ShipSE::ApplyBoost(BoostData& bData)
     m_shipRef->SetAttribute(AttrShieldCapacity, shieldHP);
     m_shipRef->SetAttribute(AttrMaxTargetRange, targRange);
 
-    // fixme m_destiny->UpdateShipVariables();
+    m_moveData->UpdateShipVariables();
     /** @todo anything that is currently using targRange or inertia will have to be reset after this */
 
     m_boosted = true;

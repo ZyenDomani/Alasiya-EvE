@@ -105,14 +105,29 @@ void Inventory::Unload() {
     ItemDB::SaveItems(items);
 }
 
+/* TODO FIXME  note:  this pulls list of itemIDs for given owner
+ * then LoadContents sends those id's serially to itemfactor for loading complete data
+ *   see if we can create a map of <itemID, data> and load everything once here.  maybe send data to itemfactory?
+ */
+
 bool Inventory::GetItems(OwnerData &od, std::vector< uint32 >& into ) {
     return m_db.GetItemIDs(od, into);
+    // ItemDB::GetItemsData(od, std::vector<ItemData>& outData)
 }
 
 bool Inventory::LoadContents() {
     if (IsAgent(m_myID))
         return true;
-    m_profileStartTime = GetTimeUSeconds();
+    // check if the contents has already been loaded
+    if (mContentsLoaded) {
+        _log(INV__INFO, "Inventory::LoadContents() - inventory %u(%p) already loaded.", m_myID, this);
+        if (sConfig.debug.UseProfiling)
+            sProfiler.AddTime(Profile::Type::itemload, GetProfileTime() - m_profileStartTime);
+
+        return true;
+    }
+
+    m_profileStartTime = GetProfileTime();
     /* rewrote logic, optimized, and fixed "empty inventory" for new chars in existing systems  -allan 22.2.16 */
     Client* loadClient = sItemFactory.GetUsingClient();
 
@@ -127,21 +142,12 @@ bool Inventory::LoadContents() {
         mContentsLoaded = false;
     }
 
-    // check if the contents has already been loaded
-    if (mContentsLoaded) {
-        _log(INV__INFO, "Inventory::LoadContents() - inventory %u(%p) already loaded.", m_myID, this);
-        if (sConfig.debug.UseProfiling)
-            sProfiler.AddTime(Profile::itemload, GetTimeUSeconds() - m_profileStartTime);
-
-        return true;
-    }
-
     OwnerData od = OwnerData();
         od.ownerID = 1;
         od.locID = m_myID;
 
     std::vector<uint32> items;
-	// get owner data
+    // get owner data
     if (loadClient != nullptr) {
         if (loadClient->IsValidSession())
             od.corpID = loadClient->GetCorporationID();
@@ -182,7 +188,7 @@ bool Inventory::LoadContents() {
         if ((loadClient != nullptr) and sDataMgr.IsStation(m_myID))
             loadClient->RemoveStationHangar(m_myID);
         if (sConfig.debug.UseProfiling)
-            sProfiler.AddTime(Profile::itemload, GetTimeUSeconds() - m_profileStartTime);
+            sProfiler.AddTime(Profile::Type::itemload, GetProfileTime() - m_profileStartTime);
 
         return false;
     }
@@ -196,7 +202,7 @@ bool Inventory::LoadContents() {
     }
 
     if (sConfig.debug.UseProfiling)
-        sProfiler.AddTime(Profile::itemload, GetTimeUSeconds() - m_profileStartTime);
+        sProfiler.AddTime(Profile::Type::itemload, GetProfileTime() - m_profileStartTime);
 
     return (mContentsLoaded = true);
 }
@@ -208,7 +214,7 @@ void Inventory::AddItem(InventoryItemRef iRef) {
 
     std::map<uint32, InventoryItemRef>::iterator itr = mContents.find(iRef->itemID());
     if (itr == mContents.end()) {
-        mContents[iRef->itemID()] = iRef;
+        mContents.emplace(iRef->itemID(), iRef);
     } else if (m_self->categoryID() == EVEDB::invCategories::Orbitals) {
         // item found...update qty for certain containers...customs offices for now
         itr->second->AlterQuantity(iRef->quantity());

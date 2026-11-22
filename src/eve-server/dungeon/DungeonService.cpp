@@ -300,7 +300,7 @@ PyResult DungeonService::Handle_EditObjectRadius( PyCallArgs& call )
 
     double radius(PyRep::FloatValue(call.byname["radius"]));
 
-    // fixme dungeonEntity->DestinyMgr()->SetRadius(radius, true);
+    // fixme dungeonEntity->SetRadius(radius, true);
 
     // save the position to the database
     DungeonDB::EditObjectRadius(itemID, radius);
@@ -335,7 +335,7 @@ PyResult DungeonService::Handle_EditObjectXYZ( PyCallArgs& call )
     int64 z = PyRep::IntegerValue(call.byname["z"]);
     Vector3d roomPos = call.client->GetShipSE()->GetPosition();
     const Vector3d pos(roomPos.x + x, roomPos.y + y, roomPos.z + z);
-    // fixme dSE->DestinyMgr()->SetPosition(pos, true);
+    dSE->SetPosition(pos);
 
     // save the position to the database
     DungeonDB::EditObjectXYZ(itemID, x, y, z);

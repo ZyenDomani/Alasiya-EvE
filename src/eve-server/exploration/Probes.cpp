@@ -475,13 +475,13 @@ const char* ProbeSE::GetStateName(uint8 state)
 float ProbeSE::GetDeviation()
 {
     // % of current range based on bonuses
-    return m_scanRange *m_scanDeviation;
+    return m_scanRange * m_scanDeviation;
 }
 
 float ProbeSE::GetScanStrength()
 {
     // factor of range
-    return m_scanStrength /pow(2, (m_rangeStep -1));
+    return m_scanStrength / std::pow(2, (m_rangeStep -1));
 }
 
 float ProbeSE::GetRangeModifier(float dist) {
@@ -542,7 +542,7 @@ void ProbeSE::SendSlimChange()
     PyTuple* updates = new PyTuple(2);
         updates->SetItem(0, new PyString("OnSlimItemChange"));
         updates->SetItem(1, probeData);
-    // fixme m_destiny->SendSingleDestinyUpdate(&updates, true);
+    m_system->SendSingleUpdate(m_client->GetShipSE(), &updates, true);
     //PyDecRef(updates);
 }
 

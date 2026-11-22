@@ -26,8 +26,10 @@
 
 #include "../eve-server.h"
 
+#include "BallPark.h"
 #include "Client.h"
 #include "EVEServerConfig.h"
+#include "StatisticMgr.h"
 #include "account/AccountService.h"
 #include "chat/LSCService.h"
 #include "exploration/Probes.h"
@@ -38,6 +40,7 @@
 #include "npc/NPC.h"
 #include "npc/Sentry.h"
 #include "packets/Destiny.h"
+#include "packets/Missile.h"
 #include "planet/Planet.h"
 #include "planet/Moon.h"
 #include "planet/CustomsOffice.h"
@@ -120,7 +123,6 @@ SystemManager::~SystemManager() {
 
 bool SystemManager::BootSystem() {
     // dont fuck with this order...
-
     m_solarSystemRef = sItemFactory.GetSolarSystemRef(m_data.systemID);
     assert(m_solarSystemRef.get() != nullptr);
 
@@ -140,7 +142,7 @@ bool SystemManager::BootSystem() {
     }
 
     if (!LoadPlayerDynamics()) {
-        _log(SERVICE__ERROR, "Unable to load System Dynamics during boot of system %u.", m_data.systemID);
+        _log(SERVICE__ERROR, "Unable to load Player Dynamics during boot of system %u.", m_data.systemID);
         return false;
     }
 
@@ -206,7 +208,7 @@ bool SystemManager::LoadCosmicMgrs()
 
 //called on 1Hz tic from EntityMgr.
 bool SystemManager::ProcessTic() {
-    double profileStartTime = GetTimeUSeconds();
+    const double profileStartTime = (sConfig.debug.UseProfiling ? GetProfileTime() : 0.0);
 
     if (!m_deleteLater.empty()) {
         for (auto &cur : m_deleteLater)
@@ -218,14 +220,14 @@ bool SystemManager::ProcessTic() {
     while (itr != end) {
         const uint32 curID = itr->first;
         /* main process call. */
+        BallPark::Process(itr->second, m_ticStamp);
+        /* object process call for ai and/or modules */
         itr->second->Process();
-        //BallPark::Process(itr->second, m_ticStamp);
 
     /* the idea here is entities map NEVER has invalid items in it, but our iterator may become invalid
-     * when SE->Process() returns because it will add/remove from the map as needed for
-     * new objects, destroyed objects, moved objects, etc
-     *  std::map internally orders items by key(itemID here)
-     * when map changes, reset itr & end for new map and continue (much faster than old way of iteration)
+     *   when SE->Process() returns because it will add/remove from the map as needed for
+     *   new objects, destroyed objects, moved objects, etc.
+     * when map changes, reset itr & end for new map layout then continue (much faster than old way of iteration)
      */
         if (m_entityChanged) {
             m_entityChanged = false;
@@ -268,7 +270,7 @@ bool SystemManager::ProcessTic() {
     ++m_ticStamp;
 
     if (sConfig.debug.UseProfiling)
-        sProfiler.AddTime(Profile::system, GetTimeUSeconds() - profileStartTime);
+        sProfiler.AddTime(Profile::Type::system, GetProfileTime() - profileStartTime);
 
     return SystemActivity();
 }
@@ -373,7 +375,6 @@ void SystemManager::UnloadSystem() {
     m_deleteLater.clear();
     m_ticEntities.clear();
     m_staticEntities.clear();
-    m_opStaticEntities.clear();
 
     // remove solar system item from ItemFactory
     sItemFactory.RemoveItem(m_data.systemID);
@@ -541,10 +542,10 @@ bool SystemManager::BuildDynamicEntity(const DBSystemDynamicEntity& data, uint32
                 pWE->SetFleetID(pClient->GetFleetID());
         }
 
-        // set wreck speed based on killed object
-        SpaceEntity* pSE = GetSE(launcherID);
-        if (pSE != nullptr) {
-            //pWE->DestinyMgr()->SetTrollData(pSE->DestinyMgr());
+        // set wreck speed based on killed object data
+        SpaceEntity* lSE = GetSE(launcherID);
+        if (lSE != nullptr) {
+            pWE->GetMoveData()->SetTrollData(lSE->GetMoveData());
         }
     }
 
@@ -680,14 +681,13 @@ void SystemManager::AddEntity(SpaceEntity* pSE, bool addSignal/*true*/) {
     }
 
     _log(ITEM__TRACE, "%s(%u): Added to system manager for %s(%u)", pSE->GetName(), itemID, m_data.name.c_str(), m_data.systemID);
-    m_entities[itemID] = pSE;
+    m_entities.emplace(itemID, pSE);
 
     if ((pSE->IsCOSE())
     or  (pSE->isGlobal())) {
-        m_staticEntities[itemID] = pSE;
+        m_staticEntities.emplace(itemID, pSE);
         if (pSE->IsOperSE())
-            //m_opStaticEntities[itemID] = pSE;
-            m_ticEntities[itemID] = pSE;
+            m_ticEntities.emplace(itemID, pSE);
         if (m_loaded)   // only update when system is already loaded
             SendStaticBall(pSE);
     } else if (pSE->IsProbeSE()) {
@@ -696,10 +696,12 @@ void SystemManager::AddEntity(SpaceEntity* pSE, bool addSignal/*true*/) {
     } else if (!IsStaticItem(itemID)) {
         // *most* dynamic items need proc tics.  add to proc list
         m_entityChanged = true;
-        m_ticEntities[itemID] = pSE;
+        m_ticEntities.emplace(itemID, pSE);
     } else {
         addSignal = false;
     }
+
+    // check for and map any sbu
 
     // Add Entity's Item Ref to Solar System Dynamic Inventory:
     m_solarSystemRef->AddItemToInventory(pSE->GetSelf());
@@ -712,7 +714,7 @@ void SystemManager::AddEntity(SpaceEntity* pSE, bool addSignal/*true*/) {
 
 void SystemManager::AddTicEntity(SpaceEntity* pSE) {
     m_entityChanged = true;
-    m_ticEntities[pSE->GetID()] = pSE;
+    m_ticEntities.emplace(pSE->GetID(), pSE);
 }
 
 void SystemManager::RemoveEntity(SpaceEntity* pSE) {
@@ -741,7 +743,7 @@ void SystemManager::AddMarker(SpaceEntity* pSE, bool sendBall/*false*/, bool add
     if (pSE == nullptr)
         return;
 
-    m_entities[pSE->GetID()] = pSE;
+    m_entities.emplace(pSE->GetID(), pSE);
     sBubbleMgr.Add(pSE);
     if (addSignal)
         m_anomMgr->AddSignal(pSE);
@@ -949,6 +951,66 @@ void SystemManager::DoSpawnForBubble(SystemBubble* pBubble, uint8 type/*normal*/
         _log(SPAWN__TRACE, "SystemManager::DoSpawnForBubble() returned false for bubble %u.  %s", \
                 pBubble->GetID(), msg.c_str());
     }
+}
+
+void SystemManager::MakeMissile(MoveData* mData) {
+    // just in case...
+    if (!mData->GetMySE()->IsMissileSE())
+        return;
+
+    SpaceEntity* pTargetSE = mData->GetTargetSE();
+    Missile* pMissile = mData->GetMySE()->GetMissileSE();
+    Vector3d targetVec = pTargetSE->GetPosition() - pMissile->GetPosition();
+    double distance = targetVec.Length();
+    float missileSpeed = pMissile->GetSelf()->GetAttribute(AttrMaxVelocity).get_float();
+    float travelTime = (distance / missileSpeed);
+    if (travelTime < 1.0f) {
+        // min 1s
+        pMissile->SetHitTimer(EvE::Timer::Second);
+    } else {
+        // if this is a defender missile, update timer for combined missiles' speed  (this may not be checked in <missile> code)
+        pMissile->SetHitTimer(static_cast<uint32>(std::ceil(travelTime)) * EvE::Timer::Second);
+    }
+
+    // expand normal to avoid dupe sqrt since we have dist already
+    const double invDist = 1.0 / distance;
+    Vector3d head = targetVec * invDist;
+    mData->SetHeading(head);
+    mData->SetMyVelocity(head * missileSpeed);
+    mData->SetSpeed(missileSpeed);
+    mData->SetBallMode(Ball::Mode::MISSILE);
+    mData->SetTicStamp(m_ticStamp);
+
+    /* set move variables for max velocity */
+    mData->SetASF(1.0f);
+    BallPark::SetSpeedFraction(mData, 1.0f);
+
+    AddEntity(pMissile, false); // we are not adding missiles to anomaly map
+
+    // tell target a missile has been launched at them.. (defender missile trigger for ship, tower, pos, npc, others?)
+    if (pMissile->GetSelf()->typeID() != EVEDB::invTypes::DefenderI)  // but only if it's NOT a defender missile  (their target is another missile)
+        pTargetSE->MissileLaunched(pMissile);
+
+    // add data to StatisticMgr
+    if (pMissile->GetLauncherSE()->IsNPCSE()) {
+        sStatMgr.Increment(Stat::pcMissiles);  //npcMissiles currently not tracked
+    } else if (pMissile->GetLauncherSE()->IsShipSE()) {
+        sStatMgr.Increment(Stat::pcMissiles);
+    }
+
+    std::vector<PyTuple*> updates;
+    SetBallSpeed maxspeed;
+        maxspeed.entityID = pMissile->GetID();
+        maxspeed.speed = missileSpeed;
+    updates.push_back(maxspeed.Encode());
+    Rsp_LaunchMissile miss;
+        miss.missileID = pMissile->GetID();
+        miss.targetID = pTargetSE->GetID();
+        miss.shipID = pMissile->GetLauncherID();
+        miss.start = 1;
+        miss.active = 1;
+    updates.push_back(miss.Encode());
+    SendDestinyUpdates(pMissile, updates); //consumed
 }
 
 // not used
@@ -1297,25 +1359,13 @@ void SystemManager::UpdateData() {
     //MapDB::UpdateJumps(m_data.systemID, jumps);
 
     // if system and jumpmap are both empty, set activity time for unload timer
-    if (SafeToUnload())
-        if (m_activityTime == 0)
-            if (m_clients.empty())
-                if (m_jumpMap.empty())
-                    m_activityTime = sEntityMgr.GetStamp() - 50;
+    if (m_activityTime == 0)
+        if (m_clients.empty())
+            if (m_jumpMap.empty())
+                m_activityTime = sEntityMgr.GetStamp() - 50;
 
     // this needs work....current profile shows ~2s time on current code
     ManipulateTimeData();
-}
-
-// checks for if it is safe to mark the system for unloading
-bool SystemManager::SafeToUnload() {
-    for (auto &cur: GetOperationalStatics()) {
-        //If there are any ongoing operations by operational static structures, we don't want to unload the system until this is complete
-        if (cur.second->IsPOSSE())
-            if (cur.second->GetPOSSE()->GetProcState() < EVEPOS::ProcState::Online)
-                return false;
-    }
-    return true; //by default, its always safe to unload
 }
 
 void SystemManager::ResetAsteroids() {

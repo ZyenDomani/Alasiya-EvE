@@ -240,7 +240,7 @@ void Prospector::DropSalvage() {
             if (IsFleetID(m_targetSE->GetFleetID()))
                 cSE->SetFleetID(m_targetSE->GetFleetID());
             m_sysMgr->AddEntity(cSE);
-           // fixme  m_targetSE->DestinyMgr()->SendJettisonPacket();
+            m_sysMgr->SendJettisonPacket(m_targetSE);
         }
     }
 

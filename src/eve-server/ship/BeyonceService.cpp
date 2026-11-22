@@ -153,12 +153,12 @@ PyResult BeyonceBound::Handle_CmdStop(PyCallArgs &call) {
             (call.client->IsAutoPilot() ? "true" : "false"), (call.client->IsInvul()?"true":"false"), \
             (call.client->IsJump()?"true":"false"));
 
-    call.client->SetUndock(false);
-
     ShipSE* sSE = call.client->GetShipSE();
     MoveData* mData = sSE->GetMoveData();
     if (mData == nullptr)
         mData = sSE->CreateMoveData();
+
+    mData->SetUndocking(false);
 
     BallPark::Stop(mData);
 
@@ -175,7 +175,6 @@ PyResult BeyonceBound::Handle_CmdGotoDirection(PyCallArgs &call) {
     }
 
     call.client->SetInvul(false);
-    call.client->SetUndock(false);
 
     ShipSE* sSE = call.client->GetShipSE();
     MoveData* mData = sSE->GetMoveData();
@@ -183,6 +182,7 @@ PyResult BeyonceBound::Handle_CmdGotoDirection(PyCallArgs &call) {
         mData = sSE->CreateMoveData();
 
     mData->SetAutoPilot(false);
+    mData->SetUndocking(false);
 
     Vector3d direction(arg.x, arg.y, arg.z);
     mData->SetHeading(direction);
@@ -236,7 +236,6 @@ PyResult BeyonceBound::Handle_CmdAlignTo(PyCallArgs &call) {
     }
 
     call.client->SetInvul(false);
-    call.client->SetUndock(false);
 
     ShipSE* sSE = call.client->GetShipSE();
     MoveData* mData = sSE->GetMoveData();
@@ -244,6 +243,7 @@ PyResult BeyonceBound::Handle_CmdAlignTo(PyCallArgs &call) {
         mData = sSE->CreateMoveData();
 
     mData->SetAutoPilot(false);
+    mData->SetUndocking(false);
     mData->SetTargetSE(pSE);
     mData->SetTargetPoint(pSE->GetPosition());
     BallPark::AlignTo(mData);
@@ -349,6 +349,7 @@ PyResult BeyonceBound::Handle_CmdFollowBall(PyCallArgs &call) {
     if (mData == nullptr)
         mData = sSE->CreateMoveData();
 
+    mData->SetUndocking(false);
     mData->SetTargetSE(targetSE);
     if (!BallPark::ValidTarget(mData)) {
         BallPark::Stop(mData);
@@ -356,7 +357,6 @@ PyResult BeyonceBound::Handle_CmdFollowBall(PyCallArgs &call) {
     }
 
     call.client->SetInvul(false);
-    call.client->SetUndock(false);
 
     // ap sends distance as float.  all others use int
     if (args.distance->IsFloat())
@@ -395,8 +395,8 @@ PyResult BeyonceBound::Handle_CmdGotoBookmark(PyCallArgs &call) {
         mData = sSE->CreateMoveData();
 
     call.client->SetInvul(false);
-    call.client->SetUndock(false);
 
+    mData->SetUndocking(false);
     mData->SetAutoPilot(false);
     pBMSvc->LookupBookmark(arg.arg, itemID, typeID, locationID, x, y, z);
 
@@ -475,9 +475,9 @@ PyResult BeyonceBound::Handle_CmdOrbit(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
+    mData->SetUndocking(false);
     mData->SetAutoPilot(false);
     call.client->SetInvul(false);
-    call.client->SetUndock(false);
 
     // not sure if i wanna use desired or target here...currently orbit calc's use desired
     mData->SetDistance(PyRep::IntegerValueU32(args.range) + mData->GetMySE()->GetRadius() + targetSE->GetRadius());
@@ -514,13 +514,6 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
         codelog(CLIENT__ERROR, "%s: Client has no system manager!", pClient->GetName());
         return PyStatic.NewNone();
     }
-
-    ShipSE* sSE = call.client->GetShipSE();
-    MoveData* mData = sSE->GetMoveData();
-    if (mData == nullptr)
-        mData = sSE->CreateMoveData();
-
-    mData->SetAutoPilot(false);
 
     bool fleet = false;
     if (call.byname.find("fleet") != call.byname.end())
@@ -699,7 +692,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             // fudge the distance a bit for these... its' a lil close by default
             Vector3d vectorFromOrigin = warpToPoint - pClient->GetShipSE()->GetPosition();
             vectorFromOrigin.Normalize();   //we now have a direction
-            Vector3d stopPoint = (vectorFromOrigin * (radius + 2000 + pClient->GetShip()->radius()));
+            Vector3d stopPoint = (vectorFromOrigin * (radius + 2500 + pClient->GetShip()->radius()));
             warpToPoint.x -= stopPoint.x;
             warpToPoint.z -= stopPoint.z;
             // this makes ship warp to station dock elevation (y), instead of warping to stations "center point" position (where icon is)
@@ -708,7 +701,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             // fudge the distance a bit for these... its' a lil close by default
             Vector3d vectorFromOrigin = warpToPoint - pClient->GetShipSE()->GetPosition();
             vectorFromOrigin.Normalize();   //we now have a direction
-            Vector3d stopPoint = (vectorFromOrigin * (radius + 500 + pClient->GetShip()->radius()));
+            Vector3d stopPoint = (vectorFromOrigin * (radius + 1500 + pClient->GetShip()->radius()));
             warpToPoint.x -= stopPoint.x;
             warpToPoint.y -= stopPoint.y;
             warpToPoint.z -= stopPoint.z;
@@ -735,7 +728,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             // move warpin point -20km from center of wh.
             Vector3d vectorFromOrigin = warpToPoint - pClient->GetShipSE()->GetPosition();
             vectorFromOrigin.Normalize();   //we now have a direction
-            Vector3d stopPoint = (vectorFromOrigin * 20000 + radius);
+            Vector3d stopPoint = (vectorFromOrigin * (20000 + radius));
             warpToPoint.x -= stopPoint.x;
             warpToPoint.y -= stopPoint.y;
             warpToPoint.z -= stopPoint.z;
@@ -763,81 +756,100 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
         throw UserError("WarpDestinationGone");
     }
 
-    pClient->SetInvul(false);
-    pClient->SetUndock(false);
+    ShipSE* shipSE = call.client->GetShipSE();
+    MoveData* mData = shipSE->GetMoveData();
+    if (mData == nullptr)
+        mData = shipSE->CreateMoveData();
 
     mData->warpState.Reset();
-    mData->SetTargetPoint(warpToPoint);
+    mData->SetUndocking(false);
+    mData->SetAutoPilot(false);
+    mData->SetTargetSE(targetSE);
 
-    Vector3d warp_vector = warpToPoint - mData->GetMySE()->GetPosition();
+    Vector3d warp_vector = warpToPoint - shipSE->GetPosition();
+    // i dont think this should be sent after altering warpToPoint to account for distance.
     mData->SetDistance(distance);
     mData->SetTargetDistance(warp_vector.Length());
+    if (mData->GetTargetDistance() < MIN_WARP_DISTANCE) {
+        // warp distance too close.  cancel warp and return
+        if (targetSE != nullptr) {
+            //TooCloseToWarp
+            pClient->SetInvul(false);
+            pClient->SendErrorMsg("That is too close for your Warp Drive.  Approaching %s.", targetSE->GetName());
+            BallPark::ApproachBall(mData);
+        } else {
+            pClient->SendErrorMsg("That is too close for your Warp Drive.  Stopping Ship.");
+            BallPark::Stop(mData);
+        }
+        return PyStatic.NewNone();
+    }
+
     // expand normal to avoid dupe sqrt since we have dist already
     const double invDist = 1.0 / mData->GetTargetDistance();
-    mData->SetHeading(warp_vector * invDist);
+    Vector3d head = (warp_vector * invDist);
+    mData->SetHeading(head);
 
-    if (sSE->HasPilot()) {
-        if (mData->GetTargetDistance() < MIN_WARP_DISTANCE) {
-            // warp distance too close.  cancel warp and return
-            if (targetSE != nullptr) {
-                //TooCloseToWarp
-                pClient->SendErrorMsg("That is too close for your Warp Drive.  Approaching Target.");
-                BallPark::ApproachBall(mData);
-            } else {
-                pClient->SendErrorMsg("That is too close for your Warp Drive.  Stopping Ship.");
-                BallPark::Stop(mData);
-            }
+    // warp point configured.  adjust for distance
+    if ((targetSE != nullptr) and (targetSE->IsStationSE())) {
+        // do not change y here; it is set to station dock elevation (vs 'middle' as on live)
+        warpToPoint.x -= (head.x * distance);
+        warpToPoint.z -= (head.z * distance);
+    } else {
+        warpToPoint -= (head * distance);
+    }
+
+    mData->SetTargetPoint(warpToPoint);
+
+    // check for enough cap to warp.
+
+    /*  capacitor for warp formulas from https://oldforums.eveonline.com/?a=topic&threadID=332116
+     *  Energy to warp = warpCapacitorNeed * mass(kG) * au * (1 - warp_drive_operation_skill_level * 0.10)
+     ** @note:  warpCapacitorNeed is type double...max ive seen is shuttles @ 0.00000134771  and indys @ 0.000000108911
+     */
+
+    double dist = ((double)mData->GetTargetDistance() / ONE_AU_IN_METERS);
+    double currentShipCap = pClient->GetShip()->GetAttribute(AttrCapacitorCharge).get_double();
+    double capNeeded = shipSE->GetSelf()->mass() * mData->GetWarpCapNeed() * dist;
+    capNeeded *= (1.0 - (0.1 * pClient->GetChar()->GetSkillLevel(EvESkill::WarpDriveOperation)));
+
+    _log(DESTINY__WARNING, "Warp Cap need for %s(%u) for %.0fm (%0.3f AU) is %0.5f GJ", \
+    shipSE->GetName(), shipSE->GetID(), mData->GetTargetDistance(), dist, capNeeded);
+
+    // set min cap need to 10.0  (config option?)
+    if (capNeeded < 10.0)
+        capNeeded = 10.0;
+
+    //  check if ship has enough capacitor to warp full distance
+    if (capNeeded > currentShipCap) {
+        // not enough cap.  reset everything based on available cap
+        double capHas = currentShipCap / (shipSE->GetSelf()->mass() * mData->GetWarpCapNeed());
+        if (capHas > 1.0f) {
+            mData->SetWarpCapNeed(0.1);
+            double targDist = capHas * ONE_AU_IN_METERS;
+            Vector3d warp_direction = mData->GetTargetPoint() - shipSE->GetPosition();
+            // make heading
+            warp_direction.Normalize();
+            mData->SetHeading(warp_direction);
+            mData->SetTargetPoint(shipSE->GetPosition() + (warp_direction * targDist));
+            mData->SetTargetDistance(targDist);
+            pClient->SendErrorMsg("Your commanded warp of %0.3f AU requires %0.1f GJ of capacitor charge, but you only have %0.1f GJ available.<br>This is enough for %0.3f AU.<br><br>Setting course for available capacitor charge.", \
+            dist, capNeeded,  currentShipCap, capHas );
+        } else {
+            // if not enough cap to do min warp. cancel and return
+            //WarpingWithAvailablePowerBody
+            pClient->SendErrorMsg("You don't have enough capacitor charge to warp.");
+            _log(DESTINY__WARNING, "Destiny::InitWarp() - %s(%u): Capacitor needed vs current  %f / %0.5f",
+                 shipSE->GetName(), shipSE->GetID(), capNeeded, currentShipCap);
+
+            BallPark::Stop(mData);
             return PyStatic.NewNone();
         }
-
-        // check for enough cap to warp.
-
-        /*  capacitor for warp formulas from https://oldforums.eveonline.com/?a=topic&threadID=332116
-         *  Energy to warp = warpCapacitorNeed * mass(kG) * au * (1 - warp_drive_operation_skill_level * 0.10)
-         ** @note:  warpCapacitorNeed is type double...max ive seen is shuttles @ 0.00000134771  and indys @ 0.000000108911
-         */
-
-        double dist = ((double)mData->GetTargetDistance() / ONE_AU_IN_METERS);
-        double currentShipCap = pClient->GetShip()->GetAttribute(AttrCapacitorCharge).get_double();
-        double capNeeded = sSE->GetSelf()->mass() * mData->GetWarpCapNeed() * dist;
-        capNeeded *= (1.0 - (0.1 * pClient->GetChar()->GetSkillLevel(EvESkill::WarpDriveOperation)));
-
-        _log(DESTINY__WARNING, "Warp Cap need for %s(%u) for %.0fm (%0.3f AU) is %0.5f GJ", \
-                sSE->GetName(), sSE->GetID(), mData->GetTargetDistance(), dist, capNeeded);
-
-        // set min cap need to 1.0
-        if (capNeeded < 1.0f)
-            capNeeded = 1.0;
-
-        //  check if ship has enough capacitor to warp full distance
-        if (capNeeded > currentShipCap) {
-            // not enough cap.  reset everything based on available cap
-            double capHas = currentShipCap / (sSE->GetSelf()->mass() * mData->GetWarpCapNeed());
-            if (capHas > 1.0f) {
-                mData->SetWarpCapNeed(0.1);
-                double targDist = capHas * ONE_AU_IN_METERS;
-                Vector3d warp_direction = mData->GetTargetPoint() - sSE->GetPosition();
-                // make heading
-                warp_direction.Normalize();
-                mData->SetHeading(warp_direction);
-                mData->SetTargetPoint(warp_direction * targDist);
-                mData->SetTargetDistance(targDist);
-                pClient->SendErrorMsg("Your commanded warp of %0.3f AU requires %0.1f GJ of capacitor charge, but you only have %0.1f GJ available.<br>This is enough for %0.3f AU.<br><br>Setting course for available capacitor charge.", \
-                        dist, capNeeded,  currentShipCap, capHas );
-            } else {
-                // if not enough cap to do min warp. cancel and return
-                //WarpingWithAvailablePowerBody
-                pClient->SendErrorMsg("You don't have enough capacitor charge to warp.");
-                _log(DESTINY__WARNING, "Destiny::InitWarp() - %s(%u): Capacitor needed vs current  %f / %0.5f",
-                     sSE->GetName(), sSE->GetID(), capNeeded, currentShipCap);
-
-                BallPark::Stop(mData);
-                return PyStatic.NewNone();
-            }
-        } else {
-            mData->SetWarpCapNeed(currentShipCap - capNeeded);
-        }
+    } else {
+        mData->SetWarpCapNeed(currentShipCap - capNeeded);
     }
+
+    pClient->SetInvul(false);
+
 
     //You will always exit warp at a random point 2,500 meters from your actual exit point - per EveUni
     //  this will need update for formation warp...leader will have random offset, others follow per formation
@@ -846,8 +858,8 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
      *   mData->targetPoint.MakeRandomPointOnSphereLayer(-2500, 2500);   disabled for testing
      */
 
-    // get targ bubble.  this will create bubble if needed, so never returns null
-    mData->warpState.targBubble = sBubbleMgr.GetBubble(sSE->SystemMgr(), mData->GetTargetPoint());
+    // get targ bubble; this will create bubble if needed, so never returns null
+    mData->warpState.targBubble = sBubbleMgr.GetBubble(pSystem, mData->GetTargetPoint());
 
     /*supercap warp modifiers
      * these will go here, and modify distance, target, and range accordingly
@@ -876,8 +888,9 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
      *
      * IDEA:  ...nope, lost it.
      */
+    assert(mData->warpState.targBubble != nullptr);
     if (mData->warpState.targBubble->HasWarpBubble())
-        if (!targetSE->GetSelf()->HasAttribute(AttrWarpBubbleImmune)) {
+        if (!shipSE->GetSelf()->HasAttribute(AttrWarpBubbleImmune)) {
             /*  there is a bubble here and ship isnt immune.
              * at this point, determine where the bubble is
              * then set ship targetPoint to random point 2500m(?) from center of bubble
@@ -895,12 +908,12 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
         BallPark::SetSpeedFraction(mData, 1.0f);
 
     BallPark::WarpTo(mData, false);
-
     return PyStatic.NewNone();
 }
 
 /** @todo THIS is how we know client is using AP...it needs to be updated   */
 PyResult BeyonceBound::Handle_CmdWarpToStuffAutopilot(PyCallArgs &call) {
+    // this call shouldnt need all the checks player warp uses; ap warps to station or gate (others?)
     SystemManager* pSystem = call.client->SystemMgr();
     if (pSystem == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
@@ -915,23 +928,23 @@ PyResult BeyonceBound::Handle_CmdWarpToStuffAutopilot(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
-    SpaceEntity* pSE = pSystem->GetSE(arg.destID);
-    if (pSE == nullptr) {
+    SpaceEntity* targetSE = pSystem->GetSE(arg.destID);
+    if (targetSE == nullptr) {
         codelog(CLIENT__ERROR, "%s: unable to find destination Entity for ID %u", call.client->GetName(), arg.destID);
         return PyStatic.NewNone();
     }
 
     call.client->SetInvul(false);
-    call.client->SetUndock(false);
 
     ShipSE* sSE = call.client->GetShipSE();
     MoveData* mData = sSE->GetMoveData();
     if (mData == nullptr)
         mData = sSE->CreateMoveData();
 
+    mData->SetUndocking(false);
     mData->SetAutoPilot(true);
 
-    Vector3d warpToPoint = pSE->GetPosition();
+    Vector3d warpToPoint = targetSE->GetPosition();
     Vector3d warp_vector = warpToPoint - sSE->GetPosition();
 
     double targDist = warp_vector.Length();
@@ -948,29 +961,29 @@ PyResult BeyonceBound::Handle_CmdWarpToStuffAutopilot(PyCallArgs &call) {
 
     mData->warpState.Reset();
     mData->SetTargetPoint(warpToPoint);
-    mData->SetTargetSE(pSE);
-    mData->SetDistance(sSE->GetRadius());
+    mData->SetTargetSE(targetSE);
+    mData->SetDistance(radius); // this may not be right...
 
-    /*
-    _log(AUTOPILOT__MESSAGE, "%s called WarpToStuffAutopilot. AP: %s  Target:%s(%u)", \
-            call.client->GetName(), (pDestiny->IsAutoPilot() ? "true" : "false"), \
-            pSE->GetName(), pSE->GetID());*/
+    mData->warpState.targBubble = sBubbleMgr.GetBubble(targetSE->SystemMgr(), mData->GetTargetPoint());
+
+    _log(AUTOPILOT__MESSAGE, "%s called WarpToStuffAutopilot. Target:%s(%u), BubbleID: %u", \
+        call.client->GetName(), targetSE->GetName(), targetSE->GetID(), mData->warpState.targBubble->GetID());
 
     BallPark::WarpTo(mData, true);
-
     return PyStatic.NewNone();
 }
 
 // CmdTurboDock (in client code)
 PyResult BeyonceBound::Handle_CmdDock(PyCallArgs &call) {
-    _log(AUTOPILOT__MESSAGE, "%s called Dock. AP: %s", call.client->GetName(), (call.client->IsAutoPilot() ? "true" : "false"));
-    if (call.client->IsSessionChange()) {
-        call.client->SendNotifyMsg("Session Change currently active.");
+    Client* pClient = call.client;
+    _log(AUTOPILOT__MESSAGE, "%s called Dock. AP: %s", pClient->GetName(), (pClient->IsAutoPilot() ? "true" : "false"));
+    if (pClient->IsSessionChange()) {
+        pClient->SendNotifyMsg("Session Change currently active.");
         return PyStatic.NewNone();
     }
-    SystemManager* pSystem = call.client->SystemMgr();
+    SystemManager* pSystem = pClient->SystemMgr();
     if (pSystem == nullptr) {
-        codelog(CLIENT__ERROR, "%s: Client has no system manager.", call.client->GetName());
+        codelog(CLIENT__ERROR, "%s: Client has no system manager.", pClient->GetName());
         return PyStatic.NewNone();
     }
     Call_TwoIntegerArgs args;  //sends stationID, shipID
@@ -980,11 +993,35 @@ PyResult BeyonceBound::Handle_CmdDock(PyCallArgs &call) {
     }
 
     //  this sets m_dockStationID for radius checks and other things
-    call.client->SetDockStationID( args.arg1 );
+    pClient->SetDockStationID(args.arg1);
+    SpaceEntity* stationSE = pClient->SystemMgr()->GetSE(args.arg1);
+    if (stationSE == nullptr) {
+        codelog(CLIENT__ERROR, "%s: Station %u not found.", pClient->GetName(), args.arg1);
+        pClient->SendErrorMsg("Station Not Found, Docking Aborted.");
+        return PyStatic.NewNone();
+    }
 
+    ShipSE* pShipSE = pClient->GetShipSE();
+    MoveData* mData = pShipSE->GetMoveData();
+    mData->SetTargetSE(stationSE);
+
+    //get the station Docking Perimeter
+    Vector3d delta =  stationSE->GetPosition() - pShipSE->GetPosition();
+    double distance = delta.Length() - (pShipSE->GetRadius() + stationSE->GetRadius());
+
+    // Verify range to station is within docking perimeter of 2500 meters:
+    _log(DESTINY__TRACE, "Destiny::AttemptDockOperation() rangeToStationPerimiter is %0.2fm", distance);
+    if (distance > 2500.0) {
+        // Turn ship and move toward docking point - client will usually call Dock() automatically...sometimes
+        BallPark::ApproachBall(mData);
+        throw UserError("DockingApproach");
+    }
+
+    pClient->SetStateTimer(Player::State::Dock, sConfig.world.StationDockDelay * 1000); // default @ 4sec();
+    pClient->SetAutoPilot(false);
 
     /* return error msg from this call, if applicable, else nodeid and timestamp */
-    return nullptr; // fixme  pDestinypDestiny->AttemptDockOperation();
+    return new PyLong(GetFileTimeNow());
 }
 
 PyResult BeyonceBound::Handle_CmdAbandonLoot(PyCallArgs &call) {

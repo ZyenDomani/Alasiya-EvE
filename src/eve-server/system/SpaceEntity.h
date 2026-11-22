@@ -280,8 +280,7 @@ public:
     MoveData*                   CreateMoveData();
 
     // this is virtual to allow drones to override it (they dont have DestinyMgr)
-    // fixme
-    virtual const Vector3d&      GetVelocity()           { return  NULL_ORIGIN; }
+    virtual const Vector3d&      GetVelocity()           { return  m_moveData->GetVelocity(); }
 
     /* virtual functions default to base class and overridden as needed */
     virtual void                Killed(Damage &damage);
@@ -331,10 +330,6 @@ protected:
 
     InventoryItemRef            m_self;
 
-    bool                        m_killed;
-    bool                        m_abandoned;
-    bool                        m_damageReported;
-
     /* this is POS ForceField status/value */
     int32                       m_harmonic;
 
@@ -344,6 +339,10 @@ protected:
     uint32                      m_corpID;
     uint32                      m_fleetID;
     uint32                      m_ownerID;
+
+    bool                        m_killed;
+    bool                        m_abandoned;
+    bool                        m_damageReported;
 };
 
 
@@ -358,11 +357,11 @@ public:
     // main c'tor
     StaticSpaceEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
     // copy c'tor
-    StaticSpaceEntity(const StaticSpaceEntity* oth) =delete;
+    StaticSpaceEntity(const StaticSpaceEntity& oth) =delete;
     // move c'tor
     StaticSpaceEntity(StaticSpaceEntity&& oth) noexcept =default;
     // copy assignment
-    StaticSpaceEntity& operator=(StaticSpaceEntity& oth) =delete;
+    StaticSpaceEntity& operator=(const StaticSpaceEntity& oth) =delete;
     // move assignment
     StaticSpaceEntity& operator=(StaticSpaceEntity&& oth) =default;
     // d'tor
@@ -395,11 +394,11 @@ public:
     // main c'tor
     BeltSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
     // copy c'tor
-    BeltSE(const BeltSE* oth) =delete;
+    BeltSE(const BeltSE& oth) =delete;
     // move c'tor
     BeltSE(BeltSE&& oth) noexcept =default;
     // copy assignment
-    BeltSE& operator=(BeltSE& oth) =delete;
+    BeltSE& operator=(const BeltSE& oth) =delete;
     // move assignment
     BeltSE& operator=(BeltSE&& oth) =default;
     // d'tor
@@ -433,11 +432,11 @@ public:
     // main c'tor
     StargateSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
     // copy c'tor
-    StargateSE(const StargateSE* oth) =delete;
+    StargateSE(const StargateSE& oth) =delete;
     // move c'tor
     StargateSE(StargateSE&& oth) noexcept =default;
     // copy assignment
-    StargateSE& operator=(StargateSE& oth) =delete;
+    StargateSE& operator=(const StargateSE& oth) =delete;
     // move assignment
     StargateSE& operator=(StargateSE&& oth) =default;
     // d'tor
@@ -475,11 +474,11 @@ public:
     // main c'tor
     FieldSpaceEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
     // copy c'tor
-    FieldSpaceEntity(const FieldSpaceEntity* oth) =delete;
+    FieldSpaceEntity(const FieldSpaceEntity& oth) =delete;
     // move c'tor
     FieldSpaceEntity(FieldSpaceEntity&& oth) noexcept =default;
     // copy assignment
-    FieldSpaceEntity& operator=(FieldSpaceEntity& oth) =delete;
+    FieldSpaceEntity& operator=(const FieldSpaceEntity& oth) =delete;
     // move assignment
     FieldSpaceEntity& operator=(FieldSpaceEntity&& oth) =default;
     // d'tor
@@ -509,11 +508,11 @@ public:
     // main c'tor
     FieldSE(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, const FactionData& data);
     // copy c'tor
-    FieldSE(const FieldSE* oth) =delete;
+    FieldSE(const FieldSE& oth) =delete;
     // move c'tor
     FieldSE(FieldSE&& oth) noexcept =default;
     // copy assignment
-    FieldSE& operator=(FieldSE& oth) =delete;
+    FieldSE& operator=(const FieldSE& oth) =delete;
     // move assignment
     FieldSE& operator=(FieldSE&& oth) =default;
     // d'tor
@@ -541,11 +540,11 @@ public:
     // main c'tor
     CynoSE(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, const FactionData& data);
     // copy c'tor
-    CynoSE(const CynoSE* oth) =delete;
+    CynoSE(const CynoSE& oth) =delete;
     // move c'tor
     CynoSE(CynoSE&& oth) noexcept =default;
     // copy assignment
-    CynoSE& operator=(CynoSE& oth) =delete;
+    CynoSE& operator=(const CynoSE& oth) =delete;
     // move assignment
     CynoSE& operator=(CynoSE&& oth) =default;
     // d'tor
@@ -571,11 +570,11 @@ public:
     // main c'tor
     DungeonEditSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system, Dungeon::RoomObject data);
     // copy c'tor
-    DungeonEditSE(const DungeonEditSE* oth) =delete;
+    DungeonEditSE(const DungeonEditSE& oth) =delete;
     // move c'tor
     DungeonEditSE(DungeonEditSE&& oth) noexcept =default;
     // copy assignment
-    DungeonEditSE& operator=(DungeonEditSE& oth) =delete;
+    DungeonEditSE& operator=(const DungeonEditSE& oth) =delete;
     // move assignment
     DungeonEditSE& operator=(DungeonEditSE&& oth) =default;
     virtual ~DungeonEditSE()                            { /* Do nothing here */ }
@@ -607,11 +606,11 @@ public:
     // main c'tor
     ItemSpaceEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
     // copy c'tor
-    ItemSpaceEntity(const ItemSpaceEntity* oth) =delete;
+    ItemSpaceEntity(const ItemSpaceEntity& oth) =delete;
     // move c'tor
     ItemSpaceEntity(ItemSpaceEntity&& oth) noexcept =default;
     // copy assignment
-    ItemSpaceEntity& operator=(ItemSpaceEntity& oth) =delete;
+    ItemSpaceEntity& operator=(const ItemSpaceEntity& oth) =delete;
     // move assignment
     ItemSpaceEntity& operator=(ItemSpaceEntity&& oth) =default;
     // d'tor
@@ -647,11 +646,11 @@ public:
     // main c'tor
     ObjectSpaceEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
     // copy c'tor
-    ObjectSpaceEntity(const ObjectSpaceEntity* oth) =delete;
+    ObjectSpaceEntity(const ObjectSpaceEntity& oth) =delete;
     // move c'tor
     ObjectSpaceEntity(ObjectSpaceEntity&& oth) noexcept =default;
     // copy assignment
-    ObjectSpaceEntity& operator=(ObjectSpaceEntity& oth) =delete;
+    ObjectSpaceEntity& operator=(const ObjectSpaceEntity& oth) =delete;
     // move assignment
     ObjectSpaceEntity& operator=(ObjectSpaceEntity&& oth) =default;
     // d'tor
@@ -692,11 +691,11 @@ public:
     // main c'tor
     DeployableSE(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, const FactionData& data);
     // copy c'tor
-    DeployableSE(const DeployableSE* oth) =delete;
+    DeployableSE(const DeployableSE& oth) =delete;
     // move c'tor
     DeployableSE(DeployableSE&& oth) noexcept =default;
     // copy assignment
-    DeployableSE& operator=(DeployableSE& oth) =delete;
+    DeployableSE& operator=(const DeployableSE& oth) =delete;
     // move assignment
     DeployableSE& operator=(DeployableSE&& oth) =default;
     // d'tor
@@ -722,11 +721,11 @@ public:
     // main c'tor
     DynamicSpaceEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
     // copy c'tor
-    DynamicSpaceEntity(const DynamicSpaceEntity* oth) =delete;
+    DynamicSpaceEntity(const DynamicSpaceEntity& oth) =delete;
     // move c'tor
     DynamicSpaceEntity(DynamicSpaceEntity&& oth) noexcept =default;
     // copy assignment
-    DynamicSpaceEntity& operator=(DynamicSpaceEntity& oth) =delete;
+    DynamicSpaceEntity& operator=(const DynamicSpaceEntity& oth) =delete;
     // move assignment
     DynamicSpaceEntity& operator=(DynamicSpaceEntity&& oth) =default;
     // d'tor

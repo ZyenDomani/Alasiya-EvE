@@ -58,7 +58,7 @@ m_canAttack(false)
 }
 
 bool TargetManager::Process() {
-    double profileStartTime = GetTimeUSeconds();
+    const double profileStartTime = (sConfig.debug.UseProfiling ? GetProfileTime() : 0.0);
 
     if (m_targets.empty())
         return false;
@@ -92,7 +92,7 @@ bool TargetManager::Process() {
     }
 
     if (sConfig.debug.UseProfiling)
-        sProfiler.AddTime(Profile::targets, GetTimeUSeconds() - profileStartTime);
+        sProfiler.AddTime(Profile::Type::targets, GetProfileTime() - profileStartTime);
 
     return true;
 }

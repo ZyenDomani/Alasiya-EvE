@@ -424,7 +424,6 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     m_bubble = pShip->SysBubble();
     m_sysMgr = pShip->SystemMgr();
     m_targMgr = pShip->TargetMgr();
-    // fixme m_destinyMgr = pShip->DestinyMgr();
 
     // Do initial cycle immediately while we start timer
     SetTimer(DoCycle());
@@ -447,9 +446,8 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     m_startTime = GetFileTimeNow();
 
     //add module to targMgr
-    if (m_targetSE != nullptr)
-        if (m_targetSE->TargetMgr() != nullptr)
-            m_targetSE->TargetMgr()->AddTargetModule(this);
+    if ((m_targetSE != nullptr) and (m_targetSE->TargetMgr() != nullptr))
+        m_targetSE->TargetMgr()->AddTargetModule(this);
 
     ApplyEffect(FX::State::Active, true);
     if (IsValidTarget(targetID))
@@ -476,17 +474,17 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     } else {
         SendShipEffect(true, false);
     }
-/*
+
     switch (groupID()) {
         case EVEDB::invGroups::Afterburner:
         case EVEDB::invGroups::Microwarpdrive: {
-            m_destinyMgr->SpeedBoost();
+            pShip->GetMoveData()->SpeedBoost();
         } break;
         case EVEDB::invGroups::Stasis_Web: {
             if (m_targetSE != nullptr)
-                m_targetSE->DestinyMgr()->WebbedMe();
+                m_targetSE->GetMoveData()->WebbedMe();
         } break;
-    }*/
+    }
     /*def OnSpecialFX
      *     if start and guid == 'effects.WarpScramble*':
      *     if settings.user.ui.Get('notifyMessagesEnabled', 1) or eve.session.shipid in (shipID, targetID):
@@ -557,7 +555,6 @@ void ActiveModule::SetSlaveData(ShipSE* pShip) {
     m_bubble = pShip->SysBubble();
     m_sysMgr = pShip->SystemMgr();
     m_targMgr = pShip->TargetMgr();
-    // fixme m_destinyMgr = pShip->DestinyMgr();
 }
 
 void ActiveModule::Overload() {
@@ -570,13 +567,7 @@ void ActiveModule::DeOverload() {
     m_overLoaded = false;
 }
 
-uint32 ActiveModule::DoCycle() {/*
-    if (m_destinyMgr == nullptr) {
-        // make error for no destiny/bubble
-        AbortCycle();
-        return 0;
-    }*/
-
+uint32 ActiveModule::DoCycle() {
     // Check for (13) modules which consume items per-cycle (they only consume single type)
     if (m_modRef->HasAttribute(AttrConsumptionType)) {
         uint16 typeID(m_modRef->GetAttribute(AttrConsumptionType).get_uint32());
@@ -783,19 +774,19 @@ void ActiveModule::DeactivateCycle(bool abortCycle/*false*/)
                 m_modRef->name(), m_targetID, m_targetSE);
     } */
 
-    switch (groupID()) {/*
+    switch (groupID()) {
         case EVEDB::invGroups::Tractor_Beam: {
             if (m_targetSE != nullptr)
-                m_targetSE->DestinyMgr()->TractorBeamStop();
+                m_targetSE->GetMoveData()->TractorBeamStop();
         } break;
         case EVEDB::invGroups::Afterburner:
         case EVEDB::invGroups::Microwarpdrive: {
-            m_destinyMgr->SpeedBoost(true);
+            m_shipRef->GetPilot()->GetShipSE()->GetMoveData()->SpeedBoost(true);
         } break;
         case EVEDB::invGroups::Stasis_Web: {
             if (m_targetSE != nullptr)
-                m_targetSE->DestinyMgr()->WebbedMe();
-        } break;*/
+                m_targetSE->GetMoveData()->WebbedMe();
+        } break;
         case EVEDB::invGroups::Survey_Scanner: {
             if (abortCycle) {
                 Clear();
@@ -1146,7 +1137,7 @@ bool ActiveModule::CanActivate() {
             return true;
 
         // test for specific targets and distance here
-        float range(0.0f);
+        float range = 0.0f;
         using namespace EVEDB::invGroups;
         switch (groupID()) {
             case Tractor_Beam: {
@@ -1185,7 +1176,7 @@ bool ActiveModule::CanActivate() {
                         allowed = true;
 
                 if (allowed) {
-                    // fixme m_targetSE->DestinyMgr()->TractorBeamStart(m_shipRef->GetPilot()->GetShipSE(), GetAttribute(AttrMaxTractorVelocity));
+                    m_targetSE->GetMoveData()->TractorBeamStart(m_shipRef->GetPilot()->GetShipSE(), GetAttribute(AttrMaxTractorVelocity));
                 } else {
                     Clear();
                     m_shipRef->GetPilot()->SendNotifyMsg("The %s cannot engage a tractor beam on that object as it is not owned by you, a fellow fleet member or another member of a player corporation you belong to.",
@@ -1278,9 +1269,10 @@ void ActiveModule::SendGFX(bool abortCycle/*false*/, Client* pClient/*nullptr*/)
         //EvE::traceStack();
         return;
     }
+    if (m_shipRef->GetPilot() == nullptr)
+        return;
 
     bool active = false, start = false;
-
     if (m_modRef->groupID() == EVEDB::invGroups::Super_Weapon) {
         // this will enable a ONE-SHOT event in client.  is the only one that uses this
         start = true;
@@ -1316,10 +1308,8 @@ void ActiveModule::SendGFX(bool abortCycle/*false*/, Client* pClient/*nullptr*/)
     std::string guidStr = sFxDataMgr.GetEffectGuid(m_effectID);
 
     uint16 chgTypeID(((m_chargeRef.get() != nullptr) ? m_chargeRef->typeID() : 0));
-/*
-    if (m_destinyMgr != nullptr)
-        // fixme m_destinyMgr->SendGFX14(
-                m_shipRef->itemID(),
+
+    m_sysMgr->SendGFX14(m_shipRef->GetPilot()->GetShipSE(),
                 m_modRef->itemID(),
                 m_modRef->typeID(),
                 IsValidTarget(m_targetID) ? m_targetID : m_shipRef->itemID(),
@@ -1331,14 +1321,14 @@ void ActiveModule::SendGFX(bool abortCycle/*false*/, Client* pClient/*nullptr*/)
                  * start and !active - start ONE-SHOT event of (duration) - SuperWeapon only
                  * repeat > 0 - start REPEAT event of <duration>
                  * !repeat - start TOGGLE event (turn off with !start)
-                 *
+                 */
                 start,          // start
                 active,         // active
                 cycleTime,      // duration in ms
                 m_repeat,       // repeat
                 (useStartTime ? m_startTime : 0),
                 m_modRef->GetAttribute(AttrGfxTurretID).get_uint32(),
-                pClient);*/
+                pClient);
 }
 
 void ActiveModule::SendShipEffect(bool start/*false*/, bool abortCycle/*false*/) {
@@ -1462,9 +1452,6 @@ void ActiveModule::SendShipEffect(bool start/*false*/, bool abortCycle/*false*/)
     PyTuple* tuple = shipEff.Encode();
     if (is_log_enabled(EFFECTS__DUMP))
         tuple->Dump(EFFECTS__DUMP, "");
-    // fixme
-//     if ((m_destinyMgr == nullptr)
-//     or   m_destinyMgr->IsWarping()
     if  (m_bubble == nullptr) {
         m_shipRef->GetPilot()->QueueDestinyEvent(&tuple);
     } else {
@@ -1541,24 +1528,10 @@ void ActiveModule::LaunchMissile()
         return;
     }
 
-    Vector3d delta =  m_targetSE->GetPosition() - pMissile->GetPosition();
-    double distance = delta.Length();
-    float missileSpeed = pMissile->GetSelf()->GetAttribute(AttrMaxVelocity).get_float();
-    float travelTime = (distance/missileSpeed);
-    if (travelTime < 1)
-        travelTime = 1;
-    pMissile->SetSpeed(missileSpeed);
-    pMissile->SetHitTimer(travelTime *1000);
-    // fixme pMissile->DestinyMgr()->MakeMissile(pMissile);
+    pSystem->MakeMissile(pMissile->GetMoveData());
 
     // Reduce ammo charge by 1 unit:
     ConsumeCharge();
-
-    // tell target a missile has been launched at them.. (defender missile trigger for ship, tower, pos, npc, others?)
-    m_targetSE->MissileLaunched(pMissile);
-
-    // add data to StatisticMgr
-    sStatMgr.Increment(Stat::pcMissiles);
 }
 
 void ActiveModule::LaunchProbe()

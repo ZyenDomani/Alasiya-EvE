@@ -1,5 +1,5 @@
 /**
- * @name Profiler.cpp
+ * @name Profile.cpp
  *   lightweight profiling code specifically for timing sections of running EvEmu application
  *   this code is very basic, and very specific.
  * @Author:         Allan
@@ -11,412 +11,152 @@
 #include "../eve-core/utils/misc.h"
 
 
-int Profiler::Initialize() {
-    //ClearAll();
+void Profile::Initialize() {
     sLog.Blue("  Profile Manager", "Profiling initialized.");
-    return 1;
 }
 
-void Profiler::AddTime(uint8 key, double value) {
-    if (sConfig.debug.ProfileTraceTime > 0)
-        if (value > sConfig.debug.ProfileTraceTime * 1000) {
-            sLog.Warning("  Profile Manager", "Long Profile Time on key %s, time %.3fms.", GetKeyName(key).c_str(), value / 1000);
-            EvE::traceStack();
-        }
-    /*
-    Profile::destiny     = 1,    *
-    Profile::map         = 2,
-    Profile::client      = 3,    *
-    Profile::npc         = 4,    *
-    Profile::bubbles     = 5,    *
-    Profile::items       = 6,
-    Profile::modules     = 7,    *
-    Profile::functions   = 8,
-    Profile::db          = 9,    *
-    Profile::ship        = 10,   *
-    Profile::targets     = 11,
-    Profile::server      = 12,
-    Profile::missile     = 13,
-    Profile::system      = 14,
-    Profile::entityS     = 15,   *
-    Profile::loot        = 16,   *
-    Profile::salvage     = 17,
-    Profile::spawn       = 18,   *
-    Profile::collision   = 19,   *
-    Profile::drone       = 20,   *
-    Profile::itemload    = 21,   *
-    Profile::concord     = 22,   *
-    Profile::colony      = 23,   *
-    Profile::damage      = 24,   *
-    Profile::parseFX     = 25,   *
-    Profile::applyFX     = 26,   *
-    Profile::onTarg      = 27
-    */
-    switch(key) {
-        case 1:
-            m_destiny.push_back(value);
-            break;
-        case 2:
-            m_map.push_back(value);
-            break;
-        case 3:
-            m_client.push_back(value);
-            break;
-        case 4:
-            m_npc.push_back(value);
-            break;
-        case 5:
-            m_bubbles.push_back(value);
-            break;
-        case 6:
-            m_items.push_back(value);
-            break;
-        case 7:
-            m_modules.push_back(value);
-            break;
-        case 8:
-            m_functions.push_back(value);
-            break;
-        case 9:
-            m_db.push_back(value);
-            break;
-        case 10:
-            m_ship.push_back(value);
-            break;
-        case 11:
-            m_targets.push_back(value);
-            break;
-        case 12:
-            m_server.push_back(value);
-            break;
-        case 13:
-            m_missile.push_back(value);
-            break;
-        case 14:
-            m_system.push_back(value);
-            break;
-        case 15:
-            m_entityS.push_back(value);
-            break;
-        case 16:
-            m_loot.push_back(value);
-            break;
-        case 17:
-            m_salvage.push_back(value);
-            break;
-        case 18:
-            m_spawn.push_back(value);
-            break;
-        case 19:
-            m_collision.push_back(value);
-            break;
-        case 20:
-            m_drone.push_back(value);
-            break;
-        case 21:
-            m_itemload.push_back(value);
-            break;
-        case 22:
-            m_concord.push_back(value);
-            break;
-        case 23:
-            m_colony.push_back(value);
-            break;
-        case 24:
-            m_damage.push_back(value);
-            break;
-        case 25:
-            m_effects1.push_back(value);
-            break;
-        case 26:
-            m_effects2.push_back(value);
-            break;
-        case 27:
-            m_ontarget.push_back(value);
-            break;
-        case 28:
-            m_clientCall.push_back(value);
-            break;
-        case 29:
-            m_civilians.push_back(value);
-            break;
-        case 30:
-            m_entityP.push_back(value);
-            break;
-        default:
-            sLog.Error("Profile::AddTime()", "Default reached on key %u.", key );
-            break;
-    }
+void Profile::ClearAll() {
+    for (uint8 i = 0; i < Profile::Type::Max; ++i)
+        m_stats[i].Reset();
 }
 
-void Profiler::ClearAll()
-{
-    m_server.clear();
-    m_destiny.clear();
-    m_map.clear();
-    m_client.clear();
-    m_clientCall.clear();
-    m_npc.clear();
-    m_bubbles.clear();
-    m_items.clear();
-    m_modules.clear();
-    m_functions.clear();
-    m_db.clear();
-    m_ship.clear();
-    m_targets.clear();
-    m_ontarget.clear();
-    m_missile.clear();
-    m_system.clear();
-    m_entityS.clear();
-    m_entityP.clear();
-    m_loot.clear();
-    m_salvage.clear();
-    m_spawn.clear();
-    m_collision.clear();
-    m_drone.clear();
-    m_itemload.clear();
-    m_concord.clear();
-    m_colony.clear();
-    m_damage.clear();
-    m_effects1.clear();
-    m_effects2.clear();
-    m_civilians.clear();
-}
 
-void Profiler::PrintProfile()
-{
-    /** @todo figure out how to color this based on times....R,Y,G,M,B,W  */
-
-    //TODO:  switch from
-
+void Profile::PrintProfile() {
     double startTime = GetTimeUSeconds();
-    std::string fSize;
-    double h(0.0), l(0.0), a(0.0);
     sLog.Green("   Server Profile", " Current Process Profile times for this run:");
-    //std::printf("\n");     // spacer
-    std::printf("\t\tLoop Calls\n");
-    //GetRunTimes(m_entityP, h, l, a);
-    //GetSize(m_entityP.size(), fSize);
-    //std::printf("  EntList Proc   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
-    GetRunTimes(m_entityS, h, l, a);
-    GetSize(m_entityS.size(), fSize);
-    std::printf("    EntMgr Tic   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
-    GetRunTimes(m_client, h, l, a);
-    GetSize(m_client.size(), fSize);
-    std::printf("Client Network   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
-    GetRunTimes(m_system, h, l, a);
-    GetSize(m_system.size(), fSize);
-    std::printf("     SystemMgr   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
-    GetRunTimes(m_bubbles, h, l, a);
-    GetSize(m_bubbles.size(), fSize);
-    std::printf("       Bubbles   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
-    GetRunTimes(m_destiny, h, l, a);
-    GetSize(m_destiny.size(), fSize);
-    std::printf("       Destiny   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
-    GetRunTimes(m_npc, h, l, a);
-    GetSize(m_npc.size(), fSize);
-    std::printf("           NPC   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
-    GetRunTimes(m_modules, h, l, a);
-    GetSize(m_modules.size(), fSize);
-    std::printf("       Modules   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
-    GetRunTimes(m_ship, h, l, a);
-    GetSize(m_ship.size(), fSize);
-    std::printf("          Ship   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
-    //GetRunTimes(m_ontarget, h, l, a);
-    //GetSize(m_ontarget.size(), fSize);
-    //std::printf("      OnTarget   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
-    GetRunTimes(m_targets, h, l, a);
-    GetSize(m_targets.size(), fSize);
-    std::printf("    TargetProc   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
-    GetRunTimes(m_missile, h, l, a);
-    GetSize(m_missile.size(), fSize);
-    std::printf("       Missile   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
-    GetRunTimes(m_damage, h, l, a);
-    GetSize(m_damage.size(), fSize);
-    std::printf("        Damage   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
+
+    std::printf("\t\tProcess Loop Calls\n");
+    PrintLine("EntMgr Tic",     Profile::Type::entityS);
+    PrintLine("Client Network", Profile::Type::client);
+    PrintLine("SystemMgr",      Profile::Type::system);
+    PrintLine("Bubbles",        Profile::Type::bubbles);
+    PrintLine("BallPark",       Profile::Type::destiny);
+    PrintLine("NPC",            Profile::Type::npc);
+    PrintLine("Modules",        Profile::Type::modules);
+    PrintLine("Ship",           Profile::Type::ship);
+    PrintLine("TargetProc",     Profile::Type::targets);
+    PrintLine("Missile",        Profile::Type::missile);
+    PrintLine("Damage",         Profile::Type::damage);
+
     if (sConfig.npc.RoamingSpawns or sConfig.npc.StaticSpawns) {
-        GetRunTimes(m_spawn, h, l, a);
-        GetSize(m_spawn.size(), fSize);
-        std::printf("        Spawns   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
+        PrintLine("Spawns", Profile::Type::spawn);
     } else {
         std::printf("        Spawns   Disabled.\n");
     }
+
     if (sConfig.cosmic.BumpEnabled) {
-        GetRunTimes(m_collision, h, l, a);
-        GetSize(m_collision.size(), fSize);
-        std::printf("    Collisions   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
+        PrintLine("Collisions", Profile::Type::collision);
     } else {
         std::printf("    Collisions   Disabled.\n");
     }
+
     if (sConfig.testing.EnableDrones) {
-        GetRunTimes(m_drone, h, l, a);
-        GetSize(m_drone.size(), fSize);
-        std::printf("        Drones   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
+        PrintLine("Drones", Profile::Type::drone);
     } else {
         std::printf("        Drones   Disabled.\n");
     }
 
-    //std::printf("\n");     // spacer
     std::printf("\t\tPeriodic Calls\n");
-    GetRunTimes(m_itemload, h, l, a);
-    GetSize(m_itemload.size(), fSize);
-    std::printf("  Item Loading   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
-    GetRunTimes(m_clientCall, h, l, a);
-    GetSize(m_clientCall.size(), fSize);
-    std::printf("  Client Calls   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
-    GetRunTimes(m_db, h, l, a);
-    GetSize(m_db.size(), fSize);
-    std::printf("            DB   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
-    GetRunTimes(m_effects1, h, l, a);
-    GetSize(m_effects1.size(), fSize);
-    std::printf(" Parse Effects   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
-    GetRunTimes(m_effects2, h, l, a);
-    GetSize(m_effects2.size(), fSize);
-    std::printf(" Apply Effects   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
-    GetRunTimes(m_loot, h, l, a);
-    GetSize(m_loot.size(), fSize);
-    std::printf("          Loot   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
-    GetRunTimes(m_salvage, h, l, a);
-    GetSize(m_salvage.size(), fSize);
-    std::printf("       Salvage   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
+    PrintLine("Item Loading",   Profile::Type::itemload);
+    PrintLine("Client Calls",   Profile::Type::clientCall);
+    PrintLine("DB",             Profile::Type::db);
+    PrintLine("Parse Effects",  Profile::Type::parseFX);
+    PrintLine("Apply Effects",  Profile::Type::applyFX);
+    PrintLine("Loot",           Profile::Type::loot);
+    PrintLine("Salvage",        Profile::Type::salvage);
+
     if (sConfig.cosmic.PIEnabled) {
-        GetRunTimes(m_colony, h, l, a);
-        GetSize(m_colony.size(), fSize);
-        std::printf("        Colony   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
+        PrintLine("Colony", Profile::Type::colony);
     } else {
         std::printf("        Colony   Disabled.\n");
     }
+
     if (sConfig.crime.Enabled) {
-        GetRunTimes(m_concord, h, l, a);GetSize(m_concord.size(), fSize);
-        std::printf("       Concord   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
+        PrintLine("Concord", Profile::Type::concord);
     } else {
         std::printf("       Concord   Disabled.\n");
     }
+
     if (sConfig.cosmic.CiviliansEnabled) {
-        GetRunTimes(m_civilians, h, l, a);GetSize(m_civilians.size(), fSize);
-        std::printf("Civilian Ships   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
+        PrintLine("Civilian Ships", Profile::Type::civilians);
     } else {
         std::printf("Civilian Ships   Disabled.\n");
     }
-/*
-    //std::printf("\n");     // spacer
-    std::printf("\t\tUnimplemented Calls\n");
-    GetRunTimes(m_server, h, l, a);
-    std::printf("        *Main()  %zu times.   \tHi: %.4f   \tLo: %8.3fus   \tAvg: %8.2fus\n", m_server.size(), h, l, a );
-    GetRunTimes(m_map, h, l, a);
-    std::printf("          *Map   %zu times.   \tHi: %.4f   \tLo: %8.3fus   \tAvg: %8.2fus\n", m_map.size(), h, l, a );
-    GetRunTimes(m_items, h, l, a);
-    std::printf("        *Items   %zu times.   \tHi: %.4f   \tLo: %8.3fus   \tAvg: %8.2fus\n", m_items.size(),  h, l, a );
-    GetRunTimes(m_functions, h, l, a);
-    std::printf("    *Functions   %zu times.   \tHi: %.4f   \tLo: %8.3fus   \tAvg: %8.2fus\n", m_functions.size(), h, l, a );
-*/
-    std::printf(" Profile Times Compiled in %.2fus\n", (GetTimeUSeconds() -startTime) );
+
+    std::printf(" Profile Times Compiled in %.2fus\n", (GetTimeUSeconds() - startTime));
 }
 
-void Profiler::PrintStartUpData()
-{
+void Profile::PrintStartUpData() {
     double startTime = GetTimeUSeconds();
-    std::string fSize;
-    double h(0.0), l(0.0), a(0.0);
     sLog.Green("   Server Profile", " Current Process Profile times for this run:");
 
-    GetRunTimes(m_db, h, l, a);
-    GetSize(m_db.size(), fSize);
-    std::printf("            DB   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
-    GetRunTimes(m_itemload, h, l, a);
-    GetSize(m_itemload.size(), fSize);
-    std::printf("  Item Loading   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n", fSize.c_str(), h, l, a );
-    /*
-    std::printf("\n");     // spacer
-    std::printf("\t\tUnimplemented Calls\n");
-    GetRunTimes(m_server, h, l, a);
-    std::printf("        *Main()  %zu times.   \tHi: %.4f   \tLo: %8.3fus   \tAvg: %8.2fus\n", m_server.size(), h, l, a );
-    GetRunTimes(m_map, h, l, a);
-    std::printf("          *Map   %zu times.   \tHi: %.4f   \tLo: %8.3fus   \tAvg: %8.2fus\n", m_map.size(), h, l, a );
-    GetRunTimes(m_items, h, l, a);
-    std::printf("        *Items   %zu times.   \tHi: %.4f   \tLo: %8.3fus   \tAvg: %8.2fus\n", m_items.size(),  h, l, a );
-    GetRunTimes(m_functions, h, l, a);
-    std::printf("    *Functions   %zu times.   \tHi: %.4f   \tLo: %8.3fus   \tAvg: %8.2fus\n", m_functions.size(), h, l, a );
-    */
-    std::printf(" Profile Times Compiled in %.2fus\n", (GetTimeUSeconds() -startTime) );
+    PrintLine("DB",           Profile::Type::db);
+    PrintLine("Item Loading", Profile::Type::itemload);
+
+    std::printf(" Profile Times Compiled in %.2fus\n", (GetTimeUSeconds() - startTime));
 }
 
-void Profiler::GetRunTimes(std::vector< double >& container, double& h, double& l, double& a) {
-    if (container.empty()) {
-        h = 0.0;
-        l = 0.0;
-        a = 0.0;
+void Profile::PrintLine(const char* label, uint8 key) {
+    if (key >= Profile::Type::Max)
         return;
-    }
+    const Stat& s = m_stats[key];
+    std::string fSize;
+    GetSize(static_cast<size_t>(s.count), fSize);
 
-    uint32 size(container.size()), over = 0;
-    double total(0.0), lo(0.0), hi(0.0);
-    for (uint32 i = 0; i < size; ++i) {
-        if (container[i] > 1000000.0) {
-            std::printf("hi time %.3f\n", container[i]);
-            ++over;
-            continue;
-        }
-        total += container[i];
-        if ((lo > container[i]) or (lo < 0.0001))
-            lo = container[i];
-        if (hi < container[i])
-            hi = container[i];
-    }
-
-    h = hi;
-    l = lo;
-    a = total / size;
-
-    if (over)
-        std::printf("%u over 1s.\n", over);
+    double a = (s.count > 0) ? (s.total / static_cast<double>(s.count)) : 0.0;
+    std::printf("%14s   %4s times.   \tHi: %10.2fus   \tLo: %8.3fus   \tAvg: %8.2fus\n",
+                label, fSize.c_str(), s.hi, s.lo, a);
+    if (s.over > 0)
+        std::printf("%14s: %u over 1s.\n", label, s.over);
 }
 
-void Profiler::GetSize(size_t cSize, std::string& fSize)
+
+void Profile::GetSize(size_t cSize, std::string& ret)
 {
     if (cSize > 999999) {
-        fSize = std::to_string(cSize / 1000000);
-        fSize += "m";
+        ret = std::to_string(cSize / 1000000);
+        ret += "m";
     } else if (cSize > 9999) {
-        fSize = std::to_string(cSize / 1000);
-        fSize += "k";
+        ret = std::to_string(cSize / 1000);
+        ret += "k";
     } else {
-        fSize = std::to_string(cSize);
+        ret = std::to_string(cSize);
     }
 }
 
-std::string Profiler::GetKeyName(uint8& key)
-{
+const char* Profile::GetKeyName(uint8 key) const {
     switch (key) {
-        case Profile::destiny:       return "Destiny";   //  1,
-        case Profile::map:           return "Map";       //  2,
-        case Profile::client:        return "Client";    //  3,
-        case Profile::npc:           return "NPC";       //  4,
-        case Profile::bubbles:       return "Bubble";    //  5,
-        case Profile::items:         return "Item";      //  6,
-        case Profile::modules:       return "Module";    //  7,
-        case Profile::functions:     return "Function";  //  8,
-        case Profile::db:            return "DB";        //  9,
-        case Profile::ship:          return "Ship";      //  10,
-        case Profile::targets:       return "Target";    //  11,
-        case Profile::server:        return "Server";    //  12,
-        case Profile::missile:       return "Missile";   //  13,
-        case Profile::system:        return "System";    //  14,
-        case Profile::entityS:       return "EntityTic"; //  15,
-        case Profile::loot:          return "Loot";      //  16,
-        case Profile::salvage:       return "Salvage";   //  17,
-        case Profile::spawn:         return "Spawn";     //  18,
-        case Profile::collision:     return "Collision"; //  19,
-        case Profile::drone:         return "Drone";     //  20,
-        case Profile::itemload:      return "ItemLoad";  //  21,
-        case Profile::concord:       return "Concord";   //  22,
-        case Profile::colony:        return "Colony";    //  23,
-        case Profile::damage:        return "Damage";    //  24,
-        case Profile::parseFX:       return "ParseFX";   //  25,
-        case Profile::applyFX:       return "ApplyFX";   //  26,
-        case Profile::onTarg:        return "OnTarget";  //  27,
-        case Profile::clientCall:    return "Client Calls"; // 28
-        default:                     return "Invalid Key";
+        case Profile::Type::destiny:       return "Destiny";      //  1,
+        case Profile::Type::map:           return "Map";          //  2,
+        case Profile::Type::client:        return "Client";       //  3,
+        case Profile::Type::npc:           return "NPC";          //  4,
+        case Profile::Type::bubbles:       return "Bubble";       //  5,
+        case Profile::Type::items:         return "Item";         //  6,
+        case Profile::Type::modules:       return "Module";       //  7,
+        case Profile::Type::functions:     return "Function";     //  8,
+        case Profile::Type::db:            return "DB";           //  9,
+        case Profile::Type::ship:          return "Ship";         //  10,
+        case Profile::Type::targets:       return "Target";       //  11,
+        case Profile::Type::server:        return "Server";       //  12,
+        case Profile::Type::missile:       return "Missile";      //  13,
+        case Profile::Type::system:        return "System";       //  14,
+        case Profile::Type::entityS:       return "EntityTic";    //  15,
+        case Profile::Type::loot:          return "Loot";         //  16,
+        case Profile::Type::salvage:       return "Salvage";      //  17,
+        case Profile::Type::spawn:         return "Spawn";        //  18,
+        case Profile::Type::collision:     return "Collision";    //  19,
+        case Profile::Type::drone:         return "Drone";        //  20,
+        case Profile::Type::itemload:      return "ItemLoad";     //  21,
+        case Profile::Type::concord:       return "Concord";      //  22,
+        case Profile::Type::colony:        return "Colony";       //  23,
+        case Profile::Type::damage:        return "Damage";       //  24,
+        case Profile::Type::parseFX:       return "ParseFX";      //  25,
+        case Profile::Type::applyFX:       return "ApplyFX";      //  26,
+        case Profile::Type::onTarg:        return "OnTarget";     //  27,
+        case Profile::Type::clientCall:    return "Client Calls"; //  28,
+        case Profile::Type::civilians:     return "Civilian";     //  29,
+        case Profile::Type::entityP:       return "EntitySubTic"; //  30
+        default:                           return "Invalid Key";
     }
 }
 

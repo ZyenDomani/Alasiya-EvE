@@ -641,8 +641,12 @@ void AttributeMgr::ResetAttribute(uint16 attrID, bool notify/*false*/) {
 
 void AttributeMgr::CopyAttributes(std::map< uint16, EvilNumber >& attrMap)
 {
-    for (auto &cur : mAttributes)
-        attrMap[cur.first] =  cur.second;
+    if (attrMap.empty()) {
+        attrMap = mAttributes;
+        return;
+    }
+
+   attrMap.insert(mAttributes.begin(), mAttributes.end());
 }
 
 void AttributeMgr::SaveShipState() {

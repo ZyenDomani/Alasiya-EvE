@@ -80,10 +80,6 @@ m_beltID(0)
 }
 
 void AsteroidSE::Process() {
-    /* called by EntityMgr::Process on every loop */
-    /*   Base call to Process Movement  */
-    SpaceEntity::Process();
-
     if (m_growTimer.Check())
         if (!m_system->GetBeltMgr()->IsActive(m_bubble->GetID()))
             Grow();

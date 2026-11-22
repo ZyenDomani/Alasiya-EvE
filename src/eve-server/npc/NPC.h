@@ -70,15 +70,15 @@ public:
     // main c'tor
     NPC(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, const FactionData& data, SpawnMgr* spawnMgr = nullptr);
     // copy c'tor
-    NPC(const NPC* oth) =delete;
+    NPC(const NPC& oth) =delete;
     // move c'tor
     NPC(NPC&& oth) noexcept =default;
     // copy assignment
-    NPC& operator=(NPC& oth) =delete;
+    NPC& operator=(const NPC& oth) =delete;
     // move assignment
     NPC& operator=(NPC&& oth) =default;
     // d'tor
-    ~NPC();
+    virtual ~NPC();
 
     /* class type pointer querys. */
     const char*         GetSEType()             { return "NPC SE"; }
@@ -136,7 +136,7 @@ public:
     uint8               GetRank()                       { return m_rank; }
 
     //  helper method to set new warp data for npcs
-    void                WarpTo(Vector3d destPoint, int32 distance);
+    void                WarpTo(SystemBubble* pBubble, Vector3d destPoint, int32 distance);
 
     void                SetHauler()                     { m_hauler = true; }
 

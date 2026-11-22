@@ -291,7 +291,7 @@ void CustomsSE::SendEffectUpdate(int16 effectID, bool active)
         events->AddItem(shipEff.Encode());
     PyTuple* event = new PyTuple(1);
         event->SetItem(0, events);
-    // fixme m_destiny->SendSingleDestinyEvent(&event);   // consumed
+    m_system->SendSingleEvent(this, &event);   // consumed
 }
 
 void CustomsSE::SendSlimUpdate()
@@ -314,7 +314,7 @@ void CustomsSE::SendSlimUpdate()
     PyTuple* sItem = new PyTuple(2);
         sItem->SetItem(0,                               new PyString("OnSlimItemChange"));
         sItem->SetItem(1,                               shipData);
-    // fixme m_destiny->SendSingleDestinyUpdate(&sItem);
+    m_system->SendSingleUpdate(this, &sItem);
     PyDecRef(sItem);
 }
 
@@ -326,13 +326,12 @@ void CustomsSE::SetAnchor(Client* pClient, Vector3d& pos)
         return;  // make error here?
     }
 
-    // fixme m_destiny->SetPosition(pos);
+    SetPosition(pos);
     sBubbleMgr.Add(this);
 
     if (is_log_enabled(POS__TRACE))
         _log(POS__TRACE, "CustomsSE::Anchor() - TowerSE %s(%u) new position %.2f, %.2f, %.2f", GetName(), m_cData.itemID, pos.x, pos.y, pos.z);
 
-    // fixme m_destiny->SetPosition(pos);
     m_self->SaveItem();
 
     m_cData.state = EVEPOS::EntityState::Anchoring;
@@ -355,9 +354,9 @@ void CustomsSE::SetAnchor(Client* pClient, Vector3d& pos)
         updates.push_back(sbr.Encode());
         m_system->SendDestinyUpdates(this, updates); //consumed
 
-        //SendEffectUpdate(anchorDropForOrbitals, true);
+        SendEffectUpdate(EvE::GFXID::anchorDropForOrbitals, true);
         // this also needs a timestamp
-        // fixme m_destiny->SendGFX14(m_cData.itemID, m_cData.itemID, m_self->typeID(),0,0,"effects.AnchorDrop",0,1,1,-1,0);
+        m_system->SendGFX14(this, m_cData.itemID, m_self->typeID(),0,0,"effects.AnchorDrop",0,1,1,-1,0);
     }
 }
 
@@ -374,10 +373,10 @@ void CustomsSE::PullAnchor()
 
     SendSlimUpdate();
 
-    //SendEffectUpdate(anchorLiftForOrbitals, true);
+    SendEffectUpdate(EvE::GFXID::anchorLiftForOrbitals, true);
     // this also needs a timestamp
-    // fixme if (m_bubble->HasPlayers())
-    // fixme     m_destiny->SendGFX14(m_cData.itemID, m_cData.itemID, m_self->typeID(),0,0,"effects.AnchorLift",0,1,1,-1,0);
+    if (m_bubble->HasPlayers())
+        m_system->SendGFX14(this, m_cData.itemID, m_self->typeID(),0,0,"effects.AnchorLift",0,1,1,-1,0);
 }
 
 void CustomsSE::EncodeStateData(Buffer& into)
@@ -588,7 +587,8 @@ void CustomsSE::Killed(Damage &fatal_blow) {
         wreckItemRef->Delete();
         return;
     }
-    // fixme m_destiny->SendJettisonPacket();
+
+    m_system->SendJettisonPacket(this);
 
     DropLoot(wreckItemRef, m_self->groupID(), killerID);
 

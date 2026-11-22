@@ -62,7 +62,7 @@ void BubbleManager::clear() {
 }
 
 void BubbleManager::Process() {
-    m_profileStartTime = GetTimeUSeconds();
+    m_profileStartTime = GetProfileTime();
 
     bool bump = sConfig.cosmic.BumpEnabled;
     // this needs to be fast
@@ -121,7 +121,7 @@ void BubbleManager::Process() {
     }
 
     if (sConfig.debug.UseProfiling)
-        sProfiler.AddTime(Profile::bubbles, GetTimeUSeconds() - m_profileStartTime);
+        sProfiler.AddTime(Profile::Type::bubbles, GetProfileTime() - m_profileStartTime);
 }
 
 void BubbleManager::CheckBubble(SpaceEntity* pSE) {

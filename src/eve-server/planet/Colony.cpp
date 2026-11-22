@@ -1433,7 +1433,7 @@ PyRep* Colony::GetColony() {
 }
 
 void Colony::Update() {
-    double profileStartTime = GetTimeUSeconds();
+    const double profileStartTime = (sConfig.debug.UseProfiling ? GetProfileTime() : 0.0);
 
     /* loop thru process calls to update each pin to simulate production and logistics
      *  this will have to be fast, as there may/will be large time deltas between updates
@@ -1477,7 +1477,7 @@ void Colony::Update() {
 
     // profile timer for the colony updates
     if (sConfig.debug.UseProfiling)
-        sProfiler.AddTime(Profile::colony, GetTimeUSeconds() - profileStartTime);
+        sProfiler.AddTime(Profile::Type::colony, GetProfileTime() - profileStartTime);
 }
 
 void Colony::ProcessECUs() {

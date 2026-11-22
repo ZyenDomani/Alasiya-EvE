@@ -359,8 +359,8 @@ PyResult ShipBound::Handle_Undock(PyCallArgs &call) {
             onlineModules->Dump(MODULE__INFO, "   ");
         }
         PyDict::const_iterator cur = onlineModules->begin(), end = onlineModules->end();
-        for (; cur != end; cur++)
-            pShip->AddModuleToOnlineVec(cur->second->AsInt()->value());
+        for (; cur != end; ++cur)
+            pShip->AddModuleToOnlineVec(PyRep::IntegerValueU32(cur->second));
     }
 
     pClient->UndockFromStation();
@@ -556,12 +556,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
                     case EVEDB::invGroups::Sovereignty_Blockade_Units: {
                         // Make sure SBU is deployed in the same bubble as a gate
                         std::vector<uint16> gateBubbles;
-                        for (auto &cur: pSysMgr->GetOperationalStatics()) {
-                            if (cur.second->IsGateSE())
-                            {
-                                gateBubbles.push_back(cur.second->SysBubble()->GetID());
-                            }
-                        }
+                        // fix this
                         if (!(std::find(gateBubbles.begin(), gateBubbles.end(),pClient->GetShipSE()->SysBubble()->GetID())!=gateBubbles.end()))
                         {
                             pClient->SendErrorMsg("Sovereignty blockade units must be deployed near a stargate.");
@@ -587,29 +582,12 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
                             return nullptr;
                         }
 
-                        // Check if there is already an unanchored SBU in the current bubble
-                        for (auto &cur: pSysMgr->GetOperationalStatics()) {
-                            if (cur.second->IsSBUSE())
-                            {
-                                if (cur.second->SysBubble()->GetID() == pClient->GetShipSE()->SysBubble()->GetID())
-                                {
-                                    pClient->SendErrorMsg("There is already a Sovereignty Blockade Unit on this stargate.  Aborting Drop.");
-                                    return nullptr;
-                                }
-                            }
-                        }
+                        // todo:  Check if there is already an unanchored SBU in the current bubble
                     } break;
                     //verify only one TCU or IHub is deployed in the system.
                     // todo:  check Structure.h  - these can be dropped and anchored, but not onlined if >1 in system
                     case EVEDB::invGroups::Territorial_Claim_Units: {
                         // Only one can be launched in a system
-                        for (auto &cur: pSysMgr->GetOperationalStatics()) {
-                            if (cur.second->IsTCUSE())
-                            {
-                                pClient->SendErrorMsg("There is already a Territorial Claim Unit in this system.  Aborting Drop.");
-                                return nullptr;
-                            }
-                        }
 
                         //This should never hit as there should always be a TCU in a claimed system
                         if (svDataMgr.GetSystemAllianceID(pClient->GetSystemID()) != 0 ) {
@@ -619,13 +597,6 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
                     } break;
                     case EVEDB::invGroups::Infrastructure_Hubs: {
                         // Only one can be launched in a system
-                        for (auto &cur: pSysMgr->GetOperationalStatics()) {
-                            if (cur.second->IsIHubSE())
-                            {
-                                pClient->SendErrorMsg("There is already an Infrastructure Hub this system.  Aborting Drop.");
-                                return nullptr;
-                            }
-                        }
 
                         // Check if this system is not claimed by your alliance
                         if (svDataMgr.GetSystemAllianceID(pClient->GetSystemID()) != pClient->GetAllianceID()) {
@@ -898,9 +869,10 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
         return nullptr;
     }
 
-    SystemManager* pSysMgr(pClient->SystemMgr());
-    //Get location of our ship
-    Vector3d location = pClient->GetShipSE()->GetPosition();
+    SystemManager* pSysMgr = pClient->SystemMgr();
+    SpaceEntity* mySE = pClient->GetShipSE();
+    //Get position of our ship
+    Vector3d& position = mySE->GetPositionRef();
 
     InventoryItemRef cRef(nullptr), iRef(nullptr);
     CargoContainerRef jcRef(nullptr), ccRef(nullptr);
@@ -940,11 +912,11 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
 		//  m_system->GetClosestGateSE(GetPosition());
                 sRef->Move(pClient->GetLocationID(), flagAutoFit, true);
                 StructureSE* sSE(new StructureSE(sRef, *m_manager, pSysMgr, data));
-                location.MakeRandomPointOnSphere(1500.0 + sRef->type().radius());
-                sSE->SetPosition(location);
+                position.MakeRandomPointOnSphere(1500.0 + sRef->type().radius());
+                sSE->SetPosition(position);
                 sRef->SaveItem();
                 pSysMgr->AddEntity(sSE);
-                // fixme  pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
+                pSysMgr->SendJettisonPacket(mySE);
                 itr = args.ints.erase(itr);
             } break;
             case EVEDB::invCategories::Orbitals: {
@@ -955,7 +927,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                     throw CustomError("Unable to spawn Structure item of type %u.", sRef->typeID());
 
                 // get planet
-                PlanetSE* pPlanet = pSysMgr->GetClosestPlanetSE(location);
+                PlanetSE* pPlanet = pSysMgr->GetClosestPlanetSE(position);
                 // verify distance
                 Vector3d delta =  pPlanet->GetPosition() - sRef->position();
                 double distance = delta.Length();
@@ -991,7 +963,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                 sRef->SaveItem();
                 CustomsSE* sSE(new CustomsSE(sRef, *m_manager, pSysMgr, data));
                 pSysMgr->AddEntity(sSE);
-                // fixme  pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
+                pSysMgr->SendJettisonPacket(mySE);
                 itr = args.ints.erase(itr);
             } break;
             case EVEDB::invCategories::Deployable: {
@@ -1003,11 +975,11 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                 //flagUnanchored: for some DUMB reason, this flag, 1023 yields a PyNone when notifications
                 // are created inside InventoryItem::Move() from passing it into a PyInt() constructor...WTF?
                 DeployableSE* dSE(new DeployableSE(cRef, *m_manager, pSysMgr, data));
-                location.MakeRandomPointOnSphere(1500.0 + cRef->type().radius());
-                dSE->SetPosition(location);
+                position.MakeRandomPointOnSphere(1500.0 + cRef->type().radius());
+                dSE->SetPosition(position);
                 cRef->SaveItem();
                 pSysMgr->AddEntity(dSE);
-                // fixme  pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
+                pSysMgr->SendJettisonPacket(mySE);
                 itr = args.ints.erase(itr);
             } break;
             /** @todo  Handle other cargo */
@@ -1027,12 +999,11 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
 
                         ccRef->Move(pClient->GetLocationID(), flagAutoFit, true);
                         ContainerSE* cSE(new ContainerSE(ccRef, *m_manager, pSysMgr, data));
-                        location.MakeRandomPointOnSphere(500.0);
-                        cSE->SetPosition(location);
+                        position.MakeRandomPointOnSphere(500.0);
+                        cSE->SetPosition(position);
                         ccRef->SaveItem();
                         pSysMgr->AddEntity(cSE);
-                        // fixme  pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
-
+                        pSysMgr->SendJettisonPacket(mySE);
                         // container found.  remove this item from list, then break out of here and use to contain all other non-pos items
                         args.ints.erase(itr);
                         itr = args.ints.end();
@@ -1069,14 +1040,14 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
                     .AddTimeShort("eta", pClient->JetcanTime() * EvE::Time::Second);
 
             // Spawn jetcan then continue loop
-            location.MakeRandomPointOnSphere(500.0);
+            position.MakeRandomPointOnSphere(500.0);
             ItemData p_idata(
                             Item::Type::JetCan,
                             pClient->GetCharacterID(),  //owner is Character?  figure out how to test for corp owner
                             pClient->GetLocationID(),
                             flagAutoFit,
                             "Jettisoned Cargo Container",
-                            location);
+                            position);
 
             jcRef = sItemFactory.SpawnCargoContainer(p_idata);
             if (jcRef.get() == nullptr)
@@ -1087,7 +1058,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
             // set anchored to avoid deletion when empty...no, this disables tractoring
             //jcRef->SetAnchor(true);
             pSysMgr->AddEntity(cSE);
-            // fixme  pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
+            pSysMgr->SendJettisonPacket(mySE);
             pClient->StartJetcanTimer();
         }
         // check current can for capacity limits.

@@ -242,7 +242,8 @@ bool Character::_Load() {
     if (IsAgent(m_itemID))
         return true;
 
-    // verify this order...
+    // load attribs
+    m_loaded = InventoryItem::_Load();
 
     if (!pInventory->LoadContents()) {
         sLog.Error("Character::_Load","LoadContents returned false for char %u", m_itemID);
@@ -252,8 +253,6 @@ bool Character::_Load() {
         sLog.Error("Character::_Load","LoadSkillQueue returned false for char %u", m_itemID);
         return (m_loaded = false);
     }
-
-    m_loaded = InventoryItem::_Load();
 
     if (!m_cdb.LoadCertificates(m_itemID, m_certificates))
         sLog.Warning("Character::_Load","LoadCertificates returned false for char %u", m_itemID);

@@ -997,7 +997,7 @@ bool StaticDataMgr::GetNPCTypes(uint16 groupID, std::vector< uint16 >& typeVec) 
     return false;
 }
 
-bool StaticDataMgr::GetNPCGroups(uint32 factionID, std::map< uint8, uint16 >& groupMap) {
+bool StaticDataMgr::GetNPCGroups(uint32 factionID, std::unordered_map< uint8, uint16 >& groupMap) {
     auto range = m_npcGroups.equal_range(factionID);
     for (auto it = range.first; it != range.second; ++it)
         groupMap.emplace(it->second.shipClass, it->second.groupID);
@@ -1193,7 +1193,7 @@ void StaticDataMgr::GetLootFinal(float trueSec, uint32 shipClassID, std::vector<
 
 void StaticDataMgr::GetLoot(float secValue, uint32 groupID, std::vector<LootList>& lootList) {
     // called by SE::DropLoot()
-    double profileStartTime = GetTimeUSeconds();
+    const double profileStartTime = (sConfig.debug.UseProfiling ? GetProfileTime() : 0.0);
 
     float randChance(0.0f);
     uint8 metaLevel = 0;
@@ -1293,7 +1293,7 @@ void StaticDataMgr::GetLoot(float secValue, uint32 groupID, std::vector<LootList
     }
 
     if (sConfig.debug.UseProfiling)
-        sProfiler.AddTime(Profile::loot, GetTimeUSeconds() - profileStartTime);
+        sProfiler.AddTime(Profile::Type::loot, GetProfileTime() - profileStartTime);
 }
 
 void StaticDataMgr::ProcessLootModifiers(uint8 classID, LootPool& pool) {
@@ -2319,6 +2319,7 @@ const char* StaticDataMgr::GetProcStateName(int8 state) {
 
 const char* StaticDataMgr::GetBallModeName(uint8 mode) {
     switch (mode) {
+        case 0: return "Goto"; break;
         case 1: return "Follow"; break;
         case 2: return "Stop"; break;
         case 3: return "Warp"; break;

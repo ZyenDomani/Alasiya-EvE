@@ -46,12 +46,10 @@
 #include "system/SystemManager.h"
 
 
-
 SpaceEntity::SpaceEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
-:m_self(self),m_services(services),m_system(system),m_bubble(nullptr),
-m_targMgr(nullptr),m_moveData(nullptr),m_killed(false),m_abandoned(false),m_damageReported(false),
-m_harmonic(EVEPOS::Harmonic::Inactive),m_warID(0),m_allyID(0),m_corpID(0),
-m_fleetID(0),m_ownerID(1)
+:m_bubble(nullptr),m_system(system),m_targMgr(nullptr),m_moveData(nullptr),m_services(services),
+m_self(self),m_harmonic(EVEPOS::Harmonic::Inactive),m_warID(0),m_allyID(0),m_corpID(0),
+m_fleetID(0),m_ownerID(1),m_killed(false),m_abandoned(false),m_damageReported(false)
 {
     assert(m_system != nullptr);
     assert(m_self.get() != nullptr);
@@ -64,6 +62,7 @@ SpaceEntity::~SpaceEntity() {
 }
 
 void SpaceEntity::Process() {
+    // this is no longer used
     if (m_killed) {
         _log(SE__DEBUG, "SE::Process() - %s(%u) is dead but still in system.", m_self->name(), m_self->itemID());
         return;
@@ -192,7 +191,7 @@ void SpaceEntity::DropLoot(WreckContainerRef wreckRef, uint32 groupID, uint32 ow
         return;
     }
 
-    uint8 secModX10(m_system->GetSecValue() * 10);   //[1, 20]
+    uint8 secModX10 = (m_system->GetSecValue() * 10);   //[1, 20]
     uint32 quantity = 0;
     InventoryItemRef iRef(nullptr);
     std::vector<LootList>::iterator itr = lootList.begin();
@@ -719,7 +718,6 @@ m_invul(false),
 m_frozen(false)
 {
     m_targMgr = new TargetManager(this);
-
     assert(m_targMgr != nullptr);
 }
 
@@ -755,35 +753,57 @@ PyDict *DynamicSpaceEntity::MakeSlimItem() {
 
 void DynamicSpaceEntity::EncodeStateData(Buffer& into)
 {
+    MoveData* mData = GetMoveData();
+    if (mData == nullptr)
+        mData = CreateMoveData();
     using namespace Destiny;
+    uint8 mode = mData->GetBallMode();  //Ball::Mode::STOP;
     BallHeader head = BallHeader();
         head.entityID = m_self->itemID();
-        head.mode = Ball::Mode::STOP;
+        head.mode = mode;
         head.radius = m_self->radius();
         head.posX = x();
         head.posY = y();
         head.posZ = z();
         head.flags = Ball::Flag::IsFree;
-    into.Append(head);/*
+    into.Append(head);
     MassSector mass = MassSector();
-        mass.mass = m_self->mass();
-        mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
+        mass.mass = m_self->type().mass();
+        mass.cloak = 0;
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
         mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
     into.Append(mass);
+    Vector3d& velocity = mData->GetVelocity();
     DataSector data = DataSector();
+        data.velX = velocity.x;
+        data.velY = velocity.y;
+        data.velZ = velocity.z;
+        data.maxSpeed = mData->GetMaxSpeed();
         data.inertia = m_self->GetAttribute(AttrInertiaMod).get_float();
-        data.maxSpeed = m_destiny->GetMaxSpeed();
-        data.velX = m_destiny->GetVelocity().x;
-        data.velY = m_destiny->GetVelocity().y;
-        data.velZ = m_destiny->GetVelocity().z;
-        data.speedfraction = m_destiny->GetSpeedFraction();
-    into.Append(data);*/
-    STOP_Struct main;
-        main.formationID = -1;
-    into.Append(main);
-
+        data.speedfraction = mData->GetASF();
+    into.Append(data);
+    switch (mode) {
+        case Ball::Mode::FOLLOW: {
+            FOLLOW_Struct follow;
+                follow.formationID = -1;
+                follow.followID = mData->GetTargetSE()->GetID();
+                follow.followRange = mData->GetDesiredDistance();
+            into.Append(follow);
+        }  break;
+        case Ball::Mode::TROLL: {
+            // preliminary implementation:
+            TROLL_Struct troll;
+                troll.formationID = -1;
+                troll.delay = sConfig.rates.DestinyTrollTime;
+            into.Append(troll);
+        } break;
+        default: {
+            STOP_Struct main;
+                main.formationID = -1;
+            into.Append(main);
+        } break;
+    }
     _log(SE__DESTINY, "DSE::EncodeStateData(): %s - id:%lli, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 

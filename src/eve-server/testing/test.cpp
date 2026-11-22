@@ -228,7 +228,7 @@ void testing::WarpTest(uint8 type) {
 
     //sLog.Green("WarpTest", "actual accel distance: %lli.", m_accelDistance);
     //sLog.Green("WarpTest", "actual decel distance: %lli.", m_decelDistance);
-    sLog.Cyan("WarpTest", "runtime: %.3fus.", GetTimeUSeconds() - profileStartTime);
+    sLog.Cyan("WarpTest", "runtime: %.3fus.", GetProfileTime() - profileStartTime);
 }
 
 
@@ -447,7 +447,7 @@ void testing::TurnTest(uint8 type) {
     while (++m_turnTime < m_alignTime) {
         Turn();
     }
-    sLog.Cyan("TurnTest", "runtime: %.3fus.", GetTimeUSeconds() - profileStartTime);
+    sLog.Cyan("TurnTest", "runtime: %.3fus.", GetProfileTime() - profileStartTime);
 }
 
 void testing::InitTurn() {

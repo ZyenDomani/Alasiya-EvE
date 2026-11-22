@@ -152,6 +152,10 @@ inline int64 GetTimeNSeconds() noexcept {
     return delta.count();
 }
 
+inline double GetProfileTime() noexcept {
+    return GetTimeNSeconds() * 0.001;
+}
+
 // ============================================================================
 // PART 2: Wall-Clock File Timers (Unix Epoch to FILETIME format)
 // ============================================================================

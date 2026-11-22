@@ -34,7 +34,8 @@ SET( INCLUDE
      "${TARGET_INCLUDE_DIR}/PyServiceMgr.h"
      "${TARGET_INCLUDE_DIR}/ServiceDB.h"
      "${TARGET_INCLUDE_DIR}/StaticDataMgr.h"
-     "${TARGET_INCLUDE_DIR}/StatisticMgr.h")
+     "${TARGET_INCLUDE_DIR}/StatisticMgr.h"
+     "${TARGET_INCLUDE_DIR}/StressTestMgr.h")
 SET( SOURCE
      "${TARGET_SOURCE_DIR}/eve-server.cpp"
      "${TARGET_SOURCE_DIR}/Client.cpp"
@@ -52,7 +53,8 @@ SET( SOURCE
      "${TARGET_SOURCE_DIR}/PyServiceMgr.cpp"
      "${TARGET_SOURCE_DIR}/ServiceDB.cpp"
      "${TARGET_SOURCE_DIR}/StaticDataMgr.cpp"
-     "${TARGET_SOURCE_DIR}/StatisticMgr.cpp")
+     "${TARGET_SOURCE_DIR}/StatisticMgr.cpp"
+     "${TARGET_SOURCE_DIR}/StressTestMgr.cpp")
 
 SET( account_INCLUDE
      "${TARGET_INCLUDE_DIR}/account/AccountDB.h"

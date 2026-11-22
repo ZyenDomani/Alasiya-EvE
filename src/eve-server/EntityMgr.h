@@ -165,9 +165,9 @@ protected:
 
 private:
     Client* m_procClient;
-    Timer m_targTimer;
-    Timer m_stampTimer;
-    Timer m_minuteTimer;
+
+    int64 m_startFileTime;
+    double m_profileTime;
 
     // connected clients (incomplete client class data)
     //  use this to delete Client*
@@ -190,17 +190,18 @@ private:
     typedef std::map<Client*, int64> corpRole;
     std::map<uint32, corpRole> m_corpMembers;     //corpID/{Client*/corpRole}
 
-
-    bool m_shipTracking;
-
     uint32 m_npcs;
     uint32 m_stamp;
     uint32 m_minutes;
     uint32 m_connections;
+
     uint16 m_clientSeedID;
 
-    int64 m_startFileTime;
-    int64 m_profileTime;
+    Timer m_targTimer;
+    Timer m_stampTimer;
+    Timer m_minuteTimer;
+
+    bool m_shipTracking;
 };
 
 //Singleton

@@ -64,14 +64,12 @@ Sentry::~Sentry() {
 void Sentry::Process() {
     if (m_killed)
         return;
-    double profileStartTime = GetTimeUSeconds();
+    const double profileStartTime = (sConfig.debug.UseProfiling ? GetProfileTime() : 0.0);
 
     m_AI->Process();
-    /*   Base call to Process Movement  */
-    SpaceEntity::Process();
 
     if (sConfig.debug.UseProfiling)
-        sProfiler.AddTime(Profile::npc, GetTimeUSeconds() - profileStartTime);
+        sProfiler.AddTime(Profile::Type::npc, GetProfileTime() - profileStartTime);
 }
 
 void Sentry::TargetLost(SpaceEntity *who) {
@@ -212,7 +210,7 @@ void Sentry::Killed(Damage &fatal_blow) {
         return;
     }
 
-    // fixme m_destiny->SendJettisonPacket();
+    m_system->SendJettisonPacket(this);
 
     if (MakeRandomFloat() < sConfig.npc.LootDropChance)
         DropLoot(wreckItemRef, m_self->groupID(), killerID);

@@ -40,9 +40,7 @@ void SBUSE::Init()
     _log(SE__TRACE, "SBUSE %s(%u) is being initialised", m_self->name(), m_self->itemID());
     StructureSE::Init();
 
-    // check for valid bubble
-    if (m_bubble == nullptr)
-        assert(0);
+    assert(m_bubble != nullptr);
     m_bubble->SetSBUSE(this);
 
     // set global attribute
@@ -60,9 +58,11 @@ void SBUSE::SetOnline()
     if ((GetSBUs() / GetGates()) > 0.5)  {
         _log(SOV__DEBUG, "- STATE CHANGE - This system has %u SBUs installed in the total of %u stargates. The TCU is now vulnerable to attack.", (int)GetSBUs(), (int)GetGates());
         // Make the TCU vulnerable
+        /*
         for (auto &cur : m_system->GetOperationalStatics())
             if (cur.second->IsTCUSE())
                 cur.second->GetTCUSE()->SetVulnerable();
+            */
 
         // Mark the system as contested
         MarkContested(m_system->GetID(), true);
@@ -79,9 +79,11 @@ void SBUSE::SetOffline()
     if ((GetSBUs() / GetGates()) <= 0.5)  {
         _log(SOV__DEBUG, "- STATE CHANGE - This system has %u SBUs installed in the total of %u stargates. The TCU is no longer vulnerable to attack.", (int)GetSBUs(), (int)GetGates());
         // Make the TCU invulnerable
+        /*
         for (auto &cur : m_system->GetOperationalStatics())
             if (cur.second->IsTCUSE())
                 cur.second->GetTCUSE()->SetOnline();
+            */
 
         // Unmark the system as contested
         MarkContested(m_system->GetID(), false);
@@ -143,12 +145,14 @@ float SBUSE::GetGates()
 float SBUSE::GetSBUs()
 {
     int numberOfSBUs = 0;
+    /*
     for (auto &cur : m_system->GetOperationalStatics())
         if (cur.second->IsSBUSE())  {
             //Only increment the number of SBUs if they are online
             if (cur.second->GetSBUSE()->GetState() == EVEPOS::StructureState::Online)
                 ++numberOfSBUs;
         }
+        */
 
     return numberOfSBUs;
 }

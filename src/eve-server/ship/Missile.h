@@ -23,8 +23,7 @@
     Author:     Allan
 */
 
-#ifndef EVE_SHIP_MISSILE_H
-#define EVE_SHIP_MISSILE_H
+#pragma once
 
 #include "system/SpaceEntity.h"
 
@@ -37,53 +36,58 @@ class GenericModule;
 class Missile
 : public DynamicSpaceEntity {
 public:
+    // default c'tor
+    Missile() =delete;
+    // main c'tor
     Missile(InventoryItemRef self, PyServiceMgr& services, SystemManager* pSystem, InventoryItemRef modRef, SpaceEntity* tSE, SpaceEntity* pSE, GenericModule* pMod=nullptr);
+    // copy c'tor
+    Missile(const Missile& oth) =delete;
+    // move c'tor
+    Missile(Missile&& oth) noexcept =default;
+    // copy assignment
+    Missile& operator=(const Missile& oth) =delete;
+    // move assignment
+    Missile& operator=(Missile&& oth) =default;
+    // d'tor
     virtual ~Missile()                                  { /* do nothing here */ }
 
     /* class type pointer querys. */
     virtual const char*         GetSEType()             { return "Missle SE"; }
-    virtual Missile* GetMissileSE()                     { return this; }
+    virtual Missile*            GetMissileSE()          { return this; }
     /* Dynamic */
-    virtual bool IsMissileSE()                          { return true; }
+    virtual bool                IsMissileSE()           { return true; }
 
     /* SpaceEntity interface */
-    virtual void Delete();
-    virtual void Process();
-    virtual void EncodeStateData(Buffer& into);
-    virtual void MakeDamageState(DoDestinyDamageState &into);
-    virtual PyDict *MakeSlimItem();
+    virtual void                Delete();
+    virtual void                Process();
+    virtual void                EncodeStateData(Buffer& into);
+    virtual void                MakeDamageState(DoDestinyDamageState &into);
+    virtual PyDict*             MakeSlimItem();
 
     /* specific functions handled here. */
-    uint32 GetLauncherID()                              { return m_fromSE->GetID(); }
-    SpaceEntity* GetTargetSE()                         { return m_targetSE; }
+    SpaceEntity*                GetLauncherSE()         { return m_fromSE; }
+    uint32                      GetLauncherID()         { return m_fromSE->GetID(); }
 
-    void SetHitTimer(uint32 setTime)                    { m_hitTimer.Start(setTime); }
-    void SetSpeed(uint16 speed)                         { m_speed = speed; }
+    void                        SetHitTimer(uint32 setTime) { m_hitTimer.Start(setTime); }
 
-    bool IsAlive()                                      { return m_alive; }
-    bool IsOverloaded()                                 { return false; }
+    bool                        IsAlive()               { return m_alive; }
+    bool                        IsOverloaded()          { return false; }
 
-    uint16 GetSpeed()                                   { return m_speed; }
 
 protected:
-    SpaceEntity* m_targetSE;
-    SpaceEntity* m_fromSE;
-    InventoryItemRef m_modRef;
+    void                        HitTarget();
+    void                        EndOfLife();
+    PyRep*                      PyGetNameID();
 
-    void HitTarget();
-    void EndOfLife();
+    SpaceEntity*                m_fromSE;
+    InventoryItemRef            m_modRef;
 
-    Timer m_hitTimer;
-    Timer m_lifeTimer;
+    uint16                      m_hullHP;
+    float                       m_damageMod;
 
-    bool m_alive;
+    Timer                       m_hitTimer;
+    Timer                       m_lifeTimer;
 
-    float m_damageMod;
+    bool                        m_alive;
 
-    uint16 m_speed;
-    uint16 m_hullHP;
 };
-
-#endif  //EVE_SHIP_MISSILE_H
-
-

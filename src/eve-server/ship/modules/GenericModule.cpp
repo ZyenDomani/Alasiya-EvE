@@ -145,17 +145,26 @@ void GenericModule::Online() {
         }
     }
 
+    // verify player update with new data
+    bool update = false;
+    Client* pClient = m_shipRef->GetPilot();
+    if (pClient->IsInSpace() and !(pClient->IsLogin())) {
+        update = true;
+    } else if ((pClient->GetShipSE() != nullptr) and !(pClient->IsUndock())) {
+        update = true;
+    }
+
     // update available ship resources.
-    m_shipRef->SetAttribute(AttrCpuLoad, cpuNeed, !m_shipRef->IsUndocking());
-    m_shipRef->SetAttribute(AttrPowerLoad, pgNeed, !m_shipRef->IsUndocking());
-    sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), !m_shipRef->IsUndocking());
+    m_shipRef->SetAttribute(AttrCpuLoad, cpuNeed, update);
+    m_shipRef->SetAttribute(AttrPowerLoad, pgNeed, update);
+    sFxProc.ApplyEffects(m_modRef.get(), pClient->GetChar().get(), m_shipRef.get(), update);
 }
 
 void GenericModule::Offline() {
     /*
     if (m_shipRef->GetPilot()->IsDocked()) {
         m_ModuleState = Module::State::Offline;
-        SetAttribute(AttrOnline, EvilZero, !m_shipRef->IsUndocking());
+        SetAttribute(AttrOnline, EvilZero, !m_shipRef->GetPilot()->GetShipSE()->GetMoveData()->IsUndocking());
         return;
     } */
 

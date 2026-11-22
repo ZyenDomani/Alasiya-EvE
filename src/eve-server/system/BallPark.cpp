@@ -37,7 +37,7 @@
 // vector = (to - from)
 
 // called @1Hz for each entity in movemap by SystemManager::Process()
-void BallPark::Process(SpaceEntity* pSE) {
+void BallPark::Process(SpaceEntity* pSE, int32 tic) {
     if (pSE == nullptr)
         return;
     MoveData* mData = pSE->GetMoveData();
@@ -49,7 +49,7 @@ void BallPark::Process(SpaceEntity* pSE) {
         return;
     }
 
-    const double profileStartTime = (sConfig.debug.UseProfiling ? GetTimeUSeconds() : 0.0);
+    const double profileStartTime = (sConfig.debug.UseProfiling ? GetProfileTime() : 0.0);
     using namespace Ball::Mode;
     switch(mData->ballMode) {
         case RIGID:
@@ -74,7 +74,7 @@ void BallPark::Process(SpaceEntity* pSE) {
                 break;
             }
 
-            if (pSE->HasPilot() and pSE->GetSelf()->GetShipItem()->IsUndocking())
+            if (mData->IsUndocking())
                 break;
 
             GotoVelocity(mData); // Includes exponential homing zone
@@ -104,12 +104,12 @@ void BallPark::Process(SpaceEntity* pSE) {
                 return;
             }
 
-            OrbitVelocity(mData, pSE->SystemMgr()->GetTicCount() - mData->ticStamp);
+            OrbitVelocity(mData, tic - mData->ticStamp);
         } break;
         case WARP: {
             if (mData->warpState.active) {
                 //warp is in progress
-                uint16 sec_into_warp = (pSE->SystemMgr()->GetTicCount() - mData->warpState.startTime);
+                uint16 sec_into_warp = (tic - mData->warpState.startTic);
                 //  speed and distance formulas based on current warp distance
                 switch (mData->warpState.phase) {
                     case WarpState::Phase::Accel: {
@@ -137,7 +137,7 @@ void BallPark::Process(SpaceEntity* pSE) {
                 }
 
                 if (sConfig.debug.UseProfiling)
-                    sProfiler.AddTime(Profile::destiny, GetTimeUSeconds() - profileStartTime);
+                    sProfiler.AddTime(Profile::Type::destiny, GetProfileTime() - profileStartTime);
                 return;
             }
 
@@ -145,10 +145,12 @@ void BallPark::Process(SpaceEntity* pSE) {
             if (IsAligned(mData) and (mData->activeSpeedFraction > 0.749999f)) {
                 InitWarp(mData);
                 if (sConfig.debug.UseProfiling)
-                    sProfiler.AddTime(Profile::destiny, GetTimeUSeconds() - profileStartTime);
+                    sProfiler.AddTime(Profile::Type::destiny, GetProfileTime() - profileStartTime);
                 return;
             }
             //TODO:  put check here for stuck ship where (tic - stamp > stucktime)
+            // ForceWarp()  will set massive=false, align ship, then begin accel
+            //  will have to test against client to verify...not sure how this'll work yet.
 
             GotoVelocity(mData);
         } break;
@@ -159,14 +161,9 @@ void BallPark::Process(SpaceEntity* pSE) {
             //  check elapsed time here while object is moving, then switch to <mode_rigid> once stopped.
             // this elapsed check can/may change based on load in current bubble
             // 3. client uses 30-second window (Matches Ballpark Offset 0x7c)  may reduce this to 15-20s
-            uint32 elapsed = pSE->SystemMgr()->GetTicCount() - mData->ticStamp;
+            uint32 elapsed = tic - mData->ticStamp;
             if ((elapsed >= sConfig.rates.DestinyTrollTime) or (mData->myVelocity.LengthSq() < 0.001)) {
-                Halt(mData);
-                // Mutate state locally to a static rigid item...no, leave at stop to allow tractor
-                mData->ballMode = Ball::Mode::STOP;
                 mData->skipTic = true;
-                // may not want to do this...will remove movement from tractor
-                //pSE->SystemMgr()->RemoveTicEntity(pSE);
                 // client will automagically update <troll> to <rigid> after timer expires
                 return;
             }
@@ -203,7 +200,7 @@ void BallPark::Process(SpaceEntity* pSE) {
         pSE->SystemMgr()->CreateShipMarker(pSE);
 
     if (is_log_enabled(DESTINY__MOVE_TRACE)) {
-        int32 timeDelta = pSE->SystemMgr()->GetTicCount() - mData->ticStamp;
+        int32 timeDelta = tic - mData->ticStamp;
         _log(DESTINY__MOVE_TRACE, "Destiny::%s(%u) - %s(%i): Current Ship Velocity: %0.2f, %0.2f, %0.2f @ asf: %0.3f (speed: %0.1f)", \
                 sDataMgr.GetBallModeName(mData->ballMode), timeDelta, pSE->GetName(), pSE->GetID(), \
                 mData->myVelocity.x, mData->myVelocity.y, mData->myVelocity.z, \
@@ -220,7 +217,7 @@ void BallPark::Process(SpaceEntity* pSE) {
     }
 
     if (sConfig.debug.UseProfiling)
-        sProfiler.AddTime(Profile::destiny, GetTimeUSeconds() - profileStartTime);
+        sProfiler.AddTime(Profile::Type::destiny, GetProfileTime() - profileStartTime);
 }
 
 void BallPark::Integrate(MoveData* mData) {
@@ -469,7 +466,6 @@ Vector3d BallPark::RotateVectorByEntityOrientation(SpaceEntity* pSE, const Vecto
 void BallPark::InitWarp(MoveData* mData) {
     // these are the only vars that need to be set here right now
     mData->posHack = false;
-    mData->warpState.Reset();
 
     // warp time and distance math
     //   allan 1Nov14 - 14Nov14
@@ -478,90 +474,70 @@ void BallPark::InitWarp(MoveData* mData) {
     //  major destiny movement update/rewrite - allan Feb23  (wip)
     //  warp update complete.  MOE ~1-2m, scaling with ship size  -allan 7Mar23   **UPDATE**  this wasnt right.
     //  warp rewrite.  finally corrected deviations.  all ships within 12m   -allan 21Jan25
+    // update for new BallPark class  -allan 20Nov26
 
     // ONE_AU_IN_METERS = 149597870700
-
-    /*  my research into warp formulas, i have used these sites, with a few excerpts and ideas from each...
-     *     https://wiki.eveonline.com/en/wiki/Acceleration
-     *     http://oldforums.eveonline.com/?a=topic&threadID=1251486
-     *     http://gaming.stackexchange.com/questions/115271/how-does-one-calculate-a-ships-agility
-     *     http://eve-search.com/thread/1514884-0
-     *     http://www.eve-search.com/thread/478431-0/page/1
-     */
 
     //init warp:
     SpaceEntity* pSE = mData->mySE;
     if (is_log_enabled(DESTINY__WARP_TRACE))
         _log(DESTINY__WARP_TRACE, "Destiny::InitWarp(): %s(%u) is initializing warp.", pSE->GetName(), pSE->GetID());
 
-    /*  this is from http://community.eveonline.com/news/dev-blogs/warp-drive-active/
-     *         NOTE:  while this may be accurate now, it was not in crucible
-     * x = e^(k*t)
-     * v = k*e^(k*t)
-     *
-     * x = distance in meters
-     * t = time in seconds
-     * v = speed in m/s
-     * k = 3 for accel, -1 for decel
-     *
-     * this gives distances as functions of time.
-     */
-
     /* this is my version of how warp should be timed and followed by the server.
      * checks here for distance < warp speed and adjusts accel/decel times accordingly
-     *
-     *   accel/decel are logarithmic per ccp (see above).
      */
 
     //  150km - 15s, 1mkm - 23s, 1au - 29s base + ship's wsm
-    int64 warpSpeedInMeters = mData->warpSpeed * ONE_AU_IN_METERS;
+    int64 accelDist = mData->warpSpeed * ONE_AU_IN_METERS;
     // set times and distances based on target distance
-    if (mData->targetDistance < (warpSpeedInMeters * 3)) {
+    if (mData->targetDistance < (accelDist * 3)) {
         //  short warp....no cruise
-        // accel = 1/3 decel
-        mData->warpState.accelDist = (mData->targetDistance / 3);
-        warpSpeedInMeters = mData->warpState.accelDist;
-    } else {
-        mData->warpState.accelDist = warpSpeedInMeters;       // ship warp speed in meters
-        mData->warpState.cruiseDist = ((double)mData->targetDistance - (mData->warpState.accelDist * 3));
-        mData->warpState.cruiseTime = EvE::max(mData->warpState.cruiseDist / warpSpeedInMeters, 1);
+        // accel = 1/3 total distance
+        accelDist = (mData->targetDistance * 0.33334);
     }
 
-    mData->warpState.decelDist = mData->warpState.accelDist * 2;
-    mData->warpState.accelTime = std::log(mData->warpState.accelDist / 3) / 3;
-    mData->warpState.decelTime = std::log(mData->warpState.decelDist);
-    mData->warpState.warpSpeedAU = warpSpeedInMeters / ONE_AU_IN_METERS;
-
-    //  set total warp time based on above math.
-    mData->warpState.warpTime = mData->warpState.accelTime + mData->warpState.decelTime + mData->warpState.cruiseTime;
+    mData->warpState.accelTime = std::log(accelDist * 0.33334) * 0.33334;
+    mData->warpState.decelTime = std::log(accelDist * 2);
 
     // time decel ship speed to drop out of warp
     float speed = 0.0f;
-    bool run = true;
     uint8 step = 0;
-    while (run) {
+    while (true) {
         speed = std::exp(--(mData->warpState.decelTime));
         ++step;
         if (speed < mData->speedToLeaveWarp) {
-            run = false;
+            break;
         }
     }
 
     // reset to zero for proper time/dist calc
+    mData->warpState.decelDist = 0;
     mData->warpState.decelTime = 0.0f;
     while (step > 0) {
         mData->warpState.decelDist += std::exp(mData->warpState.decelTime++);
         --step;
     }
 
-    // hack to increase stop distance and *hopefully* make warp stop smoother
-    mData->warpState.decelDist += mData->speedToLeaveWarp;
+    // compute cruise distance, if applicable
+    if (mData->targetDistance > (accelDist + mData->warpState.decelDist)) {
+        mData->warpState.cruiseDist = (mData->targetDistance - (accelDist + mData->warpState.decelDist));
+        mData->warpState.cruiseTime = EvE::max(mData->warpState.cruiseDist / accelDist, 1);
+    } else {
+        mData->warpState.cruiseDist = 0;
+        mData->warpState.cruiseTime = 0;
+    }
+
+    mData->warpState.warpSpeed = accelDist;
+    mData->warpState.warpSpeedAU = accelDist / ONE_AU_IN_METERS;
+
+    //  set total warp time based on above math.
+    mData->warpState.warpTime = mData->warpState.accelTime + mData->warpState.decelTime + mData->warpState.cruiseTime;
 
     if (is_log_enabled(DESTINY__WARP_TRACE)) {
         _log(DESTINY__WARP_TRACE, "Destiny::InitWarp():Calculate - %s(%u): Warp will accelerate for %0.1fs, cruise for %0.1fs, then decelerate for %0.1fs, with total time of %0.1fs and warp speed of %lli m/s.", \
-                pSE->GetName(), pSE->GetID(), mData->warpState.accelTime, mData->warpState.cruiseTime, mData->warpState.decelTime, mData->warpState.warpTime, warpSpeedInMeters);
+                pSE->GetName(), pSE->GetID(), mData->warpState.accelTime, mData->warpState.cruiseTime, mData->warpState.decelTime, mData->warpState.warpTime, accelDist);
         _log(DESTINY__WARP_TRACE, "Destiny::InitWarp():Calculate - Accel distance is %lli  Cruise distance is %lli   Decel distance is %lli", \
-                mData->warpState.accelDist, mData->warpState.cruiseDist, mData->warpState.decelDist);
+                accelDist, mData->warpState.cruiseDist, mData->warpState.decelDist);
         _log(DESTINY__WARP_TRACE, "Destiny::InitWarp():Calculate - We will exit warp at %0.1f,%0.1f,%0.1f at a distance of %lli AU (%lli m).", \
                 mData->targetPoint.x, mData->targetPoint.y, mData->targetPoint.z, mData->targetDistance / ONE_AU_IN_METERS, mData->targetDistance);
     }
@@ -597,9 +573,8 @@ void BallPark::InitWarp(MoveData* mData) {
     //TODO:  determine if this ship has assigned drones in space and call drone:shipwarping
 
     // reset move times
-    mData->warpState.accelDist = 0;
-    mData->ticStamp = pSE->SystemMgr()->GetTicCount();
     mData->activeSpeedFraction = 1.0f;
+    mData->warpState.startTic  = pSE->SystemMgr()->GetTicCount();
 
     // all ships will completely stop before warp
     mData->myVelocity = NULL_ORIGIN;
@@ -609,33 +584,24 @@ void BallPark::InitWarp(MoveData* mData) {
 }
 
 void BallPark::WarpAccel(MoveData* mData, uint16 sec_into_warp) {
-    /* For acceleration, k = 3.
-     * distance = e^(k*s)
-     * speed = k*e^(k*s)
-     */
     float accelTime = (sec_into_warp + mData->warpState.accelFraction);
     int64 currentShipSpeed = std::exp(3 * accelTime);
 
     if (accelTime >= mData->warpState.accelTime) {
-        // fix this...
-        currentShipSpeed = mData->warpState.accelDist;
+        currentShipSpeed = mData->warpState.warpSpeed;
+        mData->targetDistance = mData->warpState.decelDist + mData->warpState.cruiseDist + currentShipSpeed;
 
         if (mData->warpState.cruiseDist > 0.0) {
             mData->warpState.phase = WarpState::Phase::Cruise;
         } else {
             mData->warpState.phase = WarpState::Phase::Decel;
-            mData->targetDistance = mData->warpState.decelDist + currentShipSpeed;
-            // update ship position to match decel target
-            Vector3d update(NULL_ORIGIN);
-            update.x = (mData->desiredHeading.x * mData->targetDistance);
-            update.y = (mData->desiredHeading.y * mData->targetDistance);
-            update.z = (mData->desiredHeading.z * mData->targetDistance);
-
-            Vector3d& posRef = mData->mySE->GetPositionRef();
-            posRef.x = mData->targetPoint.x - update.x;
-            posRef.y = mData->targetPoint.y - update.y;
-            posRef.z = mData->targetPoint.z - update.z;
         }
+
+        // update ship position to match cruise/decel targets
+        Vector3d& posRef = mData->mySE->GetPositionRef();
+        posRef.x = mData->targetPoint.x - (mData->desiredHeading.x * mData->targetDistance);
+        posRef.y = mData->targetPoint.y - (mData->desiredHeading.y * mData->targetDistance);
+        posRef.z = mData->targetPoint.z - (mData->desiredHeading.z * mData->targetDistance);
     }
 
     WarpUpdate(mData, currentShipSpeed, sec_into_warp, WarpState::Phase::Accel);
@@ -653,32 +619,23 @@ void BallPark::WarpAccel(MoveData* mData, uint16 sec_into_warp) {
 
 void BallPark::WarpCruise(MoveData* mData, uint16 sec_into_warp) {
     // in cruise...update position data and check for decel
-    WarpUpdate(mData, mData->warpState.warpSpeed, sec_into_warp, WarpState::Phase::Cruise);
-
-    if ((mData->targetDistance - mData->warpState.warpSpeed) < mData->warpState.decelDist) {
-        mData->targetDistance = mData->warpState.decelDist;
-        // update ship position to match decel target
-        Vector3d update;
-        update.x = (mData->desiredHeading.x * mData->targetDistance);
-        update.y = (mData->desiredHeading.y * mData->targetDistance);
-        update.z = (mData->desiredHeading.z * mData->targetDistance);
-        Vector3d& posRef = mData->mySE->GetPositionRef();
-        posRef.x = mData->targetPoint.x - update.x;
-        posRef.y = mData->targetPoint.y - update.y;
-        posRef.z = mData->targetPoint.z - update.z;
-
-        mData->warpState.phase = WarpState::Phase::Decel;
+    const int64 warpSpeed = mData->warpState.warpSpeed;
+    const int64 cruiseRemain = mData->targetDistance - mData->warpState.decelDist;
+    if (cruiseRemain > warpSpeed) {
+        // still cruising
+        WarpUpdate(mData, warpSpeed, sec_into_warp, WarpState::Phase::Cruise);
+        return;
     }
+
+    if (cruiseRemain > 0)
+        WarpUpdate(mData, cruiseRemain, sec_into_warp, WarpState::Phase::Cruise);
+
+    // cruise is less than warpSpeed.  switch to decel
+    mData->warpState.phase = WarpState::Phase::Decel;
 }
 
 void BallPark::WarpDecel(MoveData* mData, uint16 sec_into_warp) {
-    /* For deceleration, k = -1
-     * distance = e^(k*s)
-     * speed = k*e^(k*s)
-     */
-    //double decelTime = --mData->decelTime;
     int64 currentShipSpeed = std::exp(--mData->warpState.decelTime);
-
     WarpUpdate(mData, currentShipSpeed, sec_into_warp, WarpState::Phase::Decel);
 
     // how will this work for edge-case where dest is 5k inside bubble?
@@ -701,13 +658,11 @@ void BallPark::WarpUpdate(MoveData* mData, int64 currentShipSpeed, uint16 sec_in
     //  track position and velocity for all stages.
     mData->targetDistance -= currentShipSpeed;
 
-    Vector3d& pos = mData->mySE->GetPositionRef();
-    Vector3d& vel = mData->myVelocity;
-
     mData->myVelocity.x = (mData->desiredHeading.x * currentShipSpeed);
     mData->myVelocity.y = (mData->desiredHeading.y * currentShipSpeed);
     mData->myVelocity.z = (mData->desiredHeading.z * currentShipSpeed);
 
+    Vector3d& pos = mData->mySE->GetPositionRef();
     pos.x += mData->myVelocity.x;
     pos.y += mData->myVelocity.y;
     pos.z += mData->myVelocity.z;
@@ -751,9 +706,16 @@ void BallPark::WarpStop(MoveData* mData, int64 currentShipSpeed) {
 
     // is this needed?  yes, for proper sub-warp movement tracking
     mData->targetPoint += (mData->myVelocity * mData->agility);
-
+    mData->ballMode = Ball::Mode::STOP;
     mData->warpState.active = false;
-    Stop(mData);
+    mData->userSpeedFraction = 0.0f;
+
+    // warp not started yet; allow stop
+    if (mData->mySE->GetSelf()->HasAttribute(AttrWarpCapacitorNeed)) {
+        mData->warpCapNeed = mData->mySE->GetSelf()->GetAttribute(AttrWarpCapacitorNeed).get_double();
+    } else {
+        mData->warpCapNeed = 0.000000138;   // lowest value in db
+    }
 
     if ((mData->mySE->IsNPCSE()) and (mData->mySE->GetNPCSE()->GetAI() != nullptr))
         mData->mySE->GetNPCSE()->GetAI()->WarpOutComplete();
@@ -767,30 +729,6 @@ void BallPark::WarpStop(MoveData* mData, int64 currentShipSpeed) {
      *    SendSingleDestinyUpdate(&up);
      *    PyDecRef(up);
      */
-}
-
-// there may be more here im missing.  we can also target SEs for dock, jump, etc
-bool BallPark::ValidTarget(MoveData* mData) {
-    SpaceEntity* targetSE = mData->GetTargetSE();
-    if (__builtin_expect(targetSE == nullptr, 0))
-        return false;
-    if (targetSE->IsStationSE() or targetSE->IsGateSE() or targetSE->IsBeltSE()
-    or targetSE->IsPOSSE() or targetSE->IsItemEntity() or targetSE->IsObjectEntity())
-        return true;
-
-    if (targetSE->IsDead() or targetSE->IsInvul() or targetSE->IsFrozen())
-        return false;
-
-    if (targetSE->IsStaticEntity())
-        return false;
-    if (targetSE->HasPilot() and targetSE->GetPilot()->IsDocked())
-        return false;
-
-    MoveData* tMD = targetSE->GetMoveData();
-    if ((tMD == nullptr) or (tMD->IsWarping()))
-        return false;
-
-    return true;
 }
 
 // Basic Movement Call:
@@ -931,14 +869,14 @@ void BallPark::OrbitBall(MoveData* mData) {
 }
 
 // Fleet warps - on live, all ships use the warp profile of the slowest ship, here they warp per ship data
-//  look cool as shit to have larger ships slide in after smaller frigate class
+//  looks cool as shit to have larger ships slide in after smaller ships
 void BallPark::WarpTo(MoveData* mData, bool autoPilot) {
+    assert(mData->warpState.targBubble != nullptr);
     /* pc warp order..
      * pick destination -> align/accel -> aura "warp drive active" -> cap drain -> accel
      *      -> enter warp -> warp -> decel -> leave warp -> coast -> stop
      */
     SpaceEntity* mySE = mData->mySE;
-
     mData->ballMode = Ball::Mode::WARP;
     BeginMovement(mData);
 
@@ -947,15 +885,15 @@ void BallPark::WarpTo(MoveData* mData, bool autoPilot) {
         BallPark::SetSpeedFraction(mData, 1.0f);
 
     //set massive for warp.   self-only for players per client logs
-    // if we do this before align, ships will 'pass thru obstacles
+    // if we do this before align, ships will 'pass thru' obstacles
     if (mySE->HasPilot()) {
         if (is_log_enabled(DESTINY__WARP_DEBUG)) {
             // marker for ship's stop point
             std::string str = "Warp Stop Point - ";
             str += mySE->GetName();
             mySE->SystemMgr()->MarkPoint(mySE, str, str);
-            str.clear();
         /*
+            str.clear();
             // marker for ship's drop out of warp point
             Vector3d dropPos = (mData->desiredHeading * mData->speedToLeaveWarp * mData->agility);
             str = "Warp Drop Point - ";
@@ -1037,7 +975,7 @@ void BallPark::ApplyVortexGravityTug(ShipSE* pShipSE, const Vector3d& vortexCent
 }
 
 /* Ship Calls */
-
+// move this to system
 void BallPark::SetSpeedFraction(MoveData* mData, float fraction) {
     SpaceEntity* pSE = mData->mySE;
 
@@ -1050,14 +988,14 @@ void BallPark::SetSpeedFraction(MoveData* mData, float fraction) {
     if (pSE->HasPilot() or pSE->SysBubble()->HasPlayers()) {
         std::vector<PyTuple*> updates;
         CmdSetSpeedFraction du;
-        du.entityID = pSE->GetID();
-        du.fraction = fraction;
+            du.entityID = pSE->GetID();
+            du.fraction = fraction;
         updates.push_back(du.Encode());
 
         if (pSE->IsNPCSE() or pSE->IsMissileSE() or pSE->IsContainerSE() or pSE->IsWreckSE()) {
             SetBallSpeed ms;
-            ms.entityID = pSE->GetID();
-            ms.speed = mData->maxSpeed;
+                ms.entityID = pSE->GetID();
+                ms.speed = mData->maxSpeed;
             updates.push_back(ms.Encode());
             mData->sentUpdates = true;
         }
@@ -1083,8 +1021,7 @@ void BallPark::Stop(MoveData* mData) {
          * for this, we need to send a stop packet after stop vars are set.
          *  however,   sending stop packet while in warp does funny things...dont send it.
          */
-        // warp not started yet, reset warp vars and fall thru to allow stop
-        mData->warpState.Reset();
+        // warp not started yet; allow stop
         if (mySE->GetSelf()->HasAttribute(AttrWarpCapacitorNeed)) {
             mData->warpCapNeed = mySE->GetSelf()->GetAttribute(AttrWarpCapacitorNeed).get_double();
         } else {
@@ -1101,20 +1038,8 @@ void BallPark::Stop(MoveData* mData) {
             str += mySE->GetName();
             mySE->SystemMgr()->MarkPoint(marker, str, str);
         } */
+        return;
     }
-
-    mData->stop = true;
-    mData->alignTo = false;
-    mData->posHack = false;
-    mData->autoPilot = false;
-
-    mData->warpState.targBubble = nullptr;
-
-    mData->ticStamp = mySE->SystemMgr()->GetTicCount();
-
-    mData->desiredVelocity = NULL_ORIGIN;
-
-    SetSpeedFraction(mData, 0.0f);
 
     if (mData->ballMode != Ball::Mode::STOP) {
         mData->ballMode = Ball::Mode::STOP;
@@ -1124,30 +1049,15 @@ void BallPark::Stop(MoveData* mData) {
         mySE->SystemMgr()->SendSingleUpdate(mySE, &up);
         PyDecRef(up);
     }
+
+    mData->Clear();
+
+    // may not need this.  to test
+    //SetSpeedFraction(mData, 0.0f);
 }
 
 // calling this will set object to a COMPLETE and IMMEDIATE stop, update STATE and remove from system ticlist
 void BallPark::Halt(MoveData* mData, bool commanded/*false*/) {
-    //  reset ALL movement variables and states.
-    mData->warpState.Reset();
-
-    mData->ballMode = Ball::Mode::STOP;
-    mData->stop = true;
-    mData->alignTo = false;
-    mData->autoPilot = false;
-    mData->ticStamp = 0;
-    mData->targetDistance = 0;
-    mData->userSpeedFraction = 0.0f;
-
-    mData->targetPoint = NULL_ORIGIN;
-    mData->myVelocity = NULL_ORIGIN;
-    mData->desiredHeading = NULL_ORIGIN;
-    mData->desiredVelocity = NULL_ORIGIN;
-
-    mData->targetSE = nullptr;
-
-    mData->skipTic = true;
-
     SpaceEntity* mySE = mData->mySE;
     if (is_log_enabled(DESTINY__MOVE_TRACE))
         _log(DESTINY__MOVE_TRACE, "Destiny::Halt(%s) - %s(%u) Halted", \
@@ -1160,6 +1070,33 @@ void BallPark::Halt(MoveData* mData, bool commanded/*false*/) {
         PyTuple *up = du.Encode();
         mySE->SystemMgr()->SendSingleUpdate(mySE, &up);
     }
+
+    //  reset ALL movement variables and states.
+    mData->Clear();
+}
+
+// there may be more here im missing.  we can also target SEs for dock, jump, etc
+bool BallPark::ValidTarget(MoveData* mData) {
+    SpaceEntity* targetSE = mData->GetTargetSE();
+    if (__builtin_expect(targetSE == nullptr, 0))
+        return false;
+    if (targetSE->IsStationSE() or targetSE->IsGateSE() or targetSE->IsBeltSE()
+        or targetSE->IsPOSSE() or targetSE->IsItemEntity() or targetSE->IsObjectEntity())
+        return true;
+
+    if (targetSE->IsDead() or targetSE->IsInvul() or targetSE->IsFrozen())
+        return false;
+
+    if (targetSE->IsStaticEntity())
+        return false;
+    if (targetSE->HasPilot() and targetSE->GetPilot()->IsDocked())
+        return false;
+
+    MoveData* tMD = targetSE->GetMoveData();
+    if ((tMD == nullptr) or (tMD->IsWarping()))
+        return false;
+
+    return true;
 }
 
 // bump mechanics....

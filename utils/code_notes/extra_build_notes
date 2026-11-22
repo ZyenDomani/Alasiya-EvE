@@ -19,23 +19,46 @@ valgrind -- (full logging)
 liveupdates --
   ./liveupdategen -host "127.0.0.1:3306" -u allan -p none -db EvE_AlasiyaDev -dump
 
-  0.72.52-16feb23
-==16109== LEAK SUMMARY:
-==16109==    definitely lost: 4,138,352 bytes in 116,809 blocks
-==16109==    indirectly lost: 46,268,136 bytes in 1,296,189 blocks
-==16109==      possibly lost: 7,668 bytes in 213 blocks
-==16109==    still reachable: 3,280 bytes in 77 blocks
-==16109==         suppressed: 0 bytes in 0 blocks
-==16109==
-==16109== ERROR SUMMARY: 119 errors from 119 contexts (suppressed: 0 from 0)
-
 
  for reference.  not sure how/if this works, but is on the books for C++/11  (variadic maybe?)
 template <typename... Args> void test(const char* f, Args... args) {
     printf(f, args...);
 }
 
-
+-fmax-errors=x  where x= errors reported per file
+-k = continue on error
 
 cc1plus: error: -fsanitize=address and -fsanitize=kernel-address are incompatible with -fsanitize=thread
 Error: symbol `.Lubsan_type3' is already defined
+
+
+
+64-Bit C++ Member Ordering (Largest to Smallest)
+
+1. 8-Byte Aligned Group (Top of Class/Struct):
+    • Pointers & References: SpaceEntity*, Client*, SystemBubble*, PyServiceMgr&, function pointers (8 bytes)
+    • 8-Byte Primitives: double, int64, uint64, long, size_t (8 bytes)
+    • Math & Engine Structs with double/int64: Vector3d (24 bytes), WarpState (80 bytes), SystemData, SystemKillData
+    • STL Containers & Smart Pointers: std::map (48 bytes), std::vector (24 bytes), std::string (8 bytes on GCC 4.9.2 libstdc++), std::list, InventoryItemRef / SolarSystemRef (8 bytes)
+2. 4-Byte Aligned Group:
+    • 4-Byte Primitives: float, int32, uint32, standard enum (4 bytes)
+    • 4-Byte Aligned Structs: Timer (16 bytes, 4-byte aligned)
+3. 2-Byte Aligned Group:
+    • 2-Byte Primitives: int16, uint16, short (2 bytes)
+4. 1-Byte Aligned Group (Bottom of Class/Struct):
+    • 1-Byte Primitives: bool, uint8, int8, char, enum : uint8 (1 byte)
+
+⚡ Quick Rules of Thumb
+
+• Constructor Initializer Lists:
+Always keep your .cpp constructor initializer list in the exact same top-to-bottom order as the .h
+declarations to avoid GCC -Wreorder warnings.
+• Plain bool Over : 1 Bit-Fields:
+Stick with plain bool members at the bottom unless you're packing 8+ flags into a hot struct
+plain bool avoids bitwise read-modify-write instructions on GCC 4.9.2.
+• Nested Structs:
+A nested struct aligns to its largest internal member
+e.g., WarpState contains int64, so it belongs in the 8-byte group;
+Timer contains uint32, so it belongs in the 4-byte group
+
+zero-initalize structs and "pragma pack(1)" using <id> <name> = {};"

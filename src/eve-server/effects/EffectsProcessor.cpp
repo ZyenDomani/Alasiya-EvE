@@ -28,7 +28,7 @@
 
 void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData& data, GenericModule* pMod/*nullptr*/)
 {
-    double profileStartTime = GetTimeUSeconds();
+    const double profileStartTime = (sConfig.debug.UseProfiling ? GetProfileTime() : 0.0);
 
     if (is_log_enabled(EFFECTS__TRACE) and 0)
         _log(EFFECTS__TRACE, "FxProc::ParseExpression(): container: %s(%u) parsing %s ", \
@@ -296,12 +296,12 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
     }
 
     if (sConfig.debug.UseProfiling)
-        sProfiler.AddTime(Profile::parseFX, GetTimeUSeconds() - profileStartTime);
+        sProfiler.AddTime(Profile::Type::parseFX, GetProfileTime() - profileStartTime);
 }
 
 void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShip, bool update/*false*/)
 {
-    double profileStartTime = GetTimeUSeconds();
+    const double profileStartTime = (sConfig.debug.UseProfiling ? GetProfileTime() : 0.0);
 
     using namespace FX;
     //uint8 action = Action::dgmActInvalid;
@@ -574,7 +574,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
     pItem->ClearModifiers();
 
     if (sConfig.debug.UseProfiling)
-        sProfiler.AddTime(Profile::applyFX, GetTimeUSeconds() - profileStartTime);
+        sProfiler.AddTime(Profile::Type::applyFX, GetProfileTime() - profileStartTime);
 }
 
 EvilNumber FxProc::CalculateAttributeValue(EvilNumber val1/*targ*/, EvilNumber val2/*src*/, int8 method)

@@ -37,9 +37,9 @@
 #define COLUMN_BOUNDS_CHECKING
 
 // this is to enable profile tracking for db
-#define sProfiler (Profiler::get())
-class Profiler
-: public Singleton<Profiler>
+#define sProfiler (Profile::get())
+class Profile
+: public Singleton<Profile>
 {
 public:
     void AddTime(uint8 key, double value);
@@ -330,7 +330,7 @@ bool DBcore::RunQueryLID(DBerror &err, uint32 &last_insert_id, const char *query
 // FIX: Converted the dangerous infinite stack-recursion loop into a safe, flat iterative attempt sequence
 bool DBcore::DoQuery_locked(DBerror &err, const char *query, int querylen, bool retry)
 {
-    double profileStartTime = GetTimeUSeconds();
+    double profileStartTime = GetProfileTime();
     const size_t max_attempts = retry ? 2 : 1;
 
     if (is_log_enabled(DATABASE__QUERIES)) {
@@ -341,7 +341,7 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int querylen, bool 
         if (mysql_real_query(mysql, query, querylen) == 0) {
             err.ClearError();
             if (pProfile) {
-                sProfiler.AddTime(9, GetTimeUSeconds() - profileStartTime);
+                sProfiler.AddTime(9, GetProfileTime() - profileStartTime);
             }
             return true;
         }

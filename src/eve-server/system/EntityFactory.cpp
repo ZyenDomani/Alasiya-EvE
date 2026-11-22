@@ -72,7 +72,6 @@ SpaceEntity* EntityFactory::BuildEntity(SystemManager& sysMgr, const DBSystemDyn
             if (fData.ownerID == 1) {
                 // initialize abandoned ship here.
                 ship->Init();
-                // fixme sSE->DestinyMgr()->UpdateShipVariables();
             }
             sSE->CreateMoveData();
             return sSE;

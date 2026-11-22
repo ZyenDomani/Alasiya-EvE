@@ -30,6 +30,7 @@
 #include "pos/Structure.h"
 #include "pos/Tower.h"
 #include "pos/Weapon.h"
+#include "system/BallPark.h"
 #include "system/SystemManager.h"
 
 
@@ -663,7 +664,8 @@ PyResult PosMgrBound::Handle_UnanchorStructure(PyCallArgs &call) {
 PyResult PosMgrBound::Handle_AnchorStructure(PyCallArgs &call) {
     _log(POS__TRACE, "POS Mgr::Anchor()");
     if (is_log_enabled(POS__DUMP))
-    call.Dump(POS__DUMP);
+        call.Dump(POS__DUMP);
+
     SystemManager* pSystem = call.client->SystemMgr();
     if (pSystem == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
@@ -676,25 +678,54 @@ PyResult PosMgrBound::Handle_AnchorStructure(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
-    StructureSE* pTSE = pSystem->GetSE(args.structureID)->GetPOSSE();
-    if (pTSE == nullptr)
+    StructureSE* tSE = pSystem->GetSE(args.structureID)->GetPOSSE();
+    if (tSE == nullptr)
         return PyStatic.NewNone();
 
-    Vector3d pos(args.posX, args.posY, args.posZ);
-    pTSE->SetAnchor(call.client, pos);
+    Vector3d anchorPoint(args.posX, args.posY, args.posZ);
+    tSE->SetAnchor(call.client, anchorPoint);
 
     // auto warp to new POS position?  config option?
-    if (pTSE->IsTowerSE()) {
-        uint32 dist = pTSE->GetSelf()->radius() + call.client->GetShip()->radius();
-        //    NOTE:  see new datasets in beyonce to add here (or call warp command)
-        
-        // fixme call.client->GetShipSE()->DestinyMgr()->WarpTo(pos, dist);
+    if (tSE->IsTowerSE()) {
+        ShipSE* sSE = call.client->GetShipSE();
+        uint32 distance = tSE->GetSelf()->radius() + sSE->GetSelf()->radius();
+
+        MoveData* mData = sSE->GetMoveData();
+        if (mData == nullptr)
+            mData = sSE->CreateMoveData();
+
+        mData->warpState.Reset();
+        mData->SetAutoPilot(false);
+        mData->SetTargetPoint(anchorPoint);
+
+        Vector3d warp_vector = anchorPoint - mData->GetMySE()->GetPosition();
+        mData->SetDistance(distance);
+        mData->SetTargetDistance(warp_vector.Length());
+        // expand normal to avoid dupe sqrt since we have distance already
+        const double invDist = 1.0 / mData->GetTargetDistance();
+        mData->SetHeading(warp_vector * invDist);
+        mData->warpState.targBubble = sBubbleMgr.GetBubble(sSE->SystemMgr(), mData->GetTargetPoint());
+
+        if (mData->GetTargetDistance() < MIN_WARP_DISTANCE) {
+            // warp distance too close.  cancel warp and return
+            //TooCloseToWarp
+            call.client->SendErrorMsg("That is too close for your Warp Drive.  Approaching Target.");
+            BallPark::ApproachBall(mData);
+        } else {
+            // if usf < 75%, set usf for warp
+            if (mData->GetUSF() < 0.751)
+                BallPark::SetSpeedFraction(mData, 1.0f);
+
+            BallPark::WarpTo(mData, false);
+        }
+
         /** @todo add tower anchor position to bookmark */
     }
+    
     // returns nodeID and timestamp
     PyTuple* tuple = new PyTuple(2);
-    tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
-    tuple->SetItem(1, new PyLong(GetFileTimeNow()));
+        tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
+        tuple->SetItem(1, new PyLong(GetFileTimeNow()));
     return tuple;
 }
 

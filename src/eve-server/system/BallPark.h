@@ -45,7 +45,7 @@ public:
     ~BallPark() =delete;
 
     /* Main Call */
-    static void Process(SpaceEntity* pSE=nullptr);
+    static void Process(SpaceEntity* pSE, int32 tic);
 
     /* Beyonce Calls */
     static void AlignTo(MoveData* mData);
@@ -65,7 +65,6 @@ public:
     static void SetSpeedFraction(MoveData* mData, float fraction);
     // for gravity-based 'ship drifting' idea (not implemented yet)
     static void ApplyVortexGravityTug(ShipSE* pShipSE, const Vector3d& vortexCenterAxis);
-    static void SetTrollData(/*unknown args yet*/);  // as stated.
 
     /* bump code */
     static void Bump(SpaceEntity* mySE, SpaceEntity* herSE);

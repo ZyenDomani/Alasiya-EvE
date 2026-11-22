@@ -85,7 +85,7 @@ void SpawnMgr::Process() {
     if (!m_initalized)
         return;
 
-    double profileStartTime = GetTimeUSeconds();
+    const double profileStartTime = (sConfig.debug.UseProfiling ? GetProfileTime() : 0.0);
     // called by SystemManager::Process() for each system.  this will need to be fast.  (it is max 187us  feb25)
     //  check timers and call appropriate functions as needed.
 
@@ -132,7 +132,7 @@ void SpawnMgr::Process() {
         }
 
     if (sConfig.debug.UseProfiling)
-        sProfiler.AddTime(Profile::spawn, GetTimeUSeconds() - profileStartTime);
+        sProfiler.AddTime(Profile::Type::spawn, GetProfileTime() - profileStartTime);
 }
 
 bool SpawnMgr::FindSpawnForBubble(uint16 bubbleID) {
@@ -208,7 +208,7 @@ void SpawnMgr::WarpOutSpawn(NPC* pNPC, SystemBubble* pBubble) {
             continue;
         }
         rNPC->GetAI()->DisableWarpOutTimer();
-        rNPC->WarpTo(pBubble->GetCenter(), MakeRandomFloat(10, 30) * 100);
+        rNPC->WarpTo(pBubble, pBubble->GetCenter(), MakeRandomInt(10, 30) * 100);
         ratsToMove.emplace(pBubble->GetID(), itr->second);
         ++itr;
     }
@@ -924,7 +924,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
 
                 //}
 
-                pNPC->WarpTo(warpTo, (MakeRandomInt(-5, 10) * 1000));
+                pNPC->WarpTo(pBubble, warpTo, (MakeRandomInt(-5, 10) * 1000));
             }
 
             // increment live counter for this bubble
@@ -989,7 +989,7 @@ void SpawnMgr::ReSpawn(SystemBubble* pBubble, Spawn::Entry& spawnEntry) {
     }
 
     m_system->AddNPC(pNPC);
-    pNPC->WarpTo(warpToPoint, (MakeRandomInt(-5, 10) * 1000));
+    pNPC->WarpTo(pBubble, warpToPoint, (MakeRandomInt(-5, 10) * 1000));
 
     spawnEntry.stamp = 0;
     spawnEntry.respawn = false;
@@ -1011,7 +1011,7 @@ void SpawnMgr::ReSpawn(SystemBubble* pBubble, Spawn::Entry& spawnEntry) {
 
 uint16 SpawnMgr::GetRandTypeID(uint8 sClass) {
     uint16 groupID = 0;
-    std::map<uint8, uint16>::iterator itr = m_factionGroups.find(sClass);
+    std::unordered_map<uint8, uint16>::iterator itr = m_factionGroups.find(sClass);
     if (itr != m_factionGroups.end()) {
         groupID = itr->second;
         return sDataMgr.GetRandRatType(sClass, groupID);

@@ -37,12 +37,11 @@ struct WarpState {
     SystemBubble* targBubble = nullptr;
     int64 warpDistance   = 0;   // in m
     int64 warpSpeed      = 0;   // in m/s
-    int64 accelDist      = 0;   // in m
     int64 cruiseDist     = 0;   // in m
     int64 decelDist      = 0;   // in m
 
     // 4-byte aligned group (12 bytes)
-    int32 startTime      = 0;   // from sysMgr::GetStamp()
+    int32 startTic       = 0;   // from sysMgr::GetStamp()
     float warpSpeedAU    = 0.0f;// in AU
     float warpTime       = 0.0f;// in s
     float accelTime      = 0.0f;// in s
@@ -58,10 +57,10 @@ struct WarpState {
         targBubble     = nullptr;
         warpDistance   = 0;
         warpSpeed      = 0;
-        accelDist      = 0;
         cruiseDist     = 0;
         decelDist      = 0;
-        startTime      = 0;
+        startTic       = 0;
+        warpSpeedAU    = 0.0;
         warpTime       = 0.0f;
         accelTime      = 0.0f;// in s
         cruiseTime     = 0.0f;// in s
@@ -74,7 +73,7 @@ struct WarpState {
 
 class MoveData {
 public:
-    MoveData( SpaceEntity* pSE );
+    MoveData(SpaceEntity* pSE);
     ~MoveData() = default;
 
     void Init();
@@ -110,14 +109,19 @@ public:
     inline bool         IsAutoPilot() const             { return autoPilot; }
     inline bool         IsWarping() const               { return warpState.active; }
     inline bool         IsCloaked() const               { return cloaked; }
+    inline bool         IsUndocking() const             { return undocking; }
 
     // Setters
+    inline void         SetMySE(SpaceEntity* set)       { mySE = set; }
     inline void         SetTargetSE(SpaceEntity* set)   { targetSE = set; }
     inline void         SetHeading(const Vector3d& set) { desiredHeading = set; }
+    inline void         SetMyVelocity(const Vector3d& set){ myVelocity = set; }
+    inline void         SetDesiredVelocity(const Vector3d& set){ desiredVelocity = set; }
     inline void         SetDistance(int64 set)          { desiredDistance = set; }
     inline void         SetTargetDistance(int64 set)    { targetDistance = set; }
     inline void         SetWarpCapNeed(double set)      { warpCapNeed = set; }
-    inline void         SetTargetPoint(const Vector3d& set)   { targetPoint = set; }
+    inline void         SetWarpDropSpeed(double set)    { speedToLeaveWarp = set; }
+    inline void         SetTargetPoint(const Vector3d& set) { targetPoint = set; }
     inline void 	SetSkipTic(bool set=true) 	{ skipTic = set; }
     inline void         SetTractored(bool set=true)     { tractored = set; }
     inline void         SetTractorPause(bool set=true)  { tractorPause = set; }
@@ -125,20 +129,27 @@ public:
     inline void         SetStop(bool set=true)          { stop = set; }
     inline void         SetAutoPilot(bool set=true)     { autoPilot = set; }
     inline void         SetCloaked(bool set=true)       { cloaked = set; }
+    inline void         SetSpeed(float set=100.0f)      { maxSpeed = set; }
+    inline void         SetBallMode(uint8 set=0)        { ballMode = set; }
+    inline void         SetTicStamp(int32 set=0)        { ticStamp = set; }
+    inline void         SetUndocking(bool set=true)     { undocking = set; }
+    inline void         SentUpdates(bool set=true)      { sentUpdates = set; }
 
     inline void         SetUSF(float set)               { userSpeedFraction = set; }
     inline void         SetASF(float set)               { activeSpeedFraction = set; }
+
+    void                SetTrollData(MoveData* parentData);  // as stated.
 
     void                SetAgilityInertia();
     void                UpdateShipVariables();
 
     // --- Core Updaters & Modifiers ---
+    void                Clear();
     bool                ValidTarget();
     void                EntityRemoved(SpaceEntity* pSE);
 
     void                WebbedMe();
     void                SpeedBoost(bool deactivate = false);
-    void                SetNPCSpeedMass(uint16 newSpeed, uint16 maxSpeed, double mass);
 
     void                TractorBeamStart(SpaceEntity* pSE, EvilNumber speed);
     void                TractorBeamStop();
@@ -155,16 +166,16 @@ private:
     SpaceEntity*        targetSE;       // null or pointer to targetSE (8 bytes)
 
     // used for any preliminary 3d point or direction, but reset in CalculateFollowPoint
-    Vector3d            targetPoint;
+    Vector3d            targetPoint;    // required
     Vector3d            myVelocity;
     // used by BallPark *veloctiy methods to set desiredVelocity and used in alignTo checks (vs current heading)
-    Vector3d            desiredHeading;
+    Vector3d            desiredHeading; // required
     // used by blender to set actual movement and position
     Vector3d            desiredVelocity;
 
     double              expTerm;
     double              posScale;
-    double              timeFactor;
+    double              timeFactor;     // dont remember what this is for...currently not used
     double              agility;
     double              timeStamp;      // filetime command received
     double              alignTime;
@@ -177,7 +188,7 @@ private:
 
     // --- 4-byte aligned members ---
     int32               ticStamp;       // this is the state tic in which this client's ballpark was started
-    float               maxSpeed;
+    float               maxSpeed;       // required
     float               userSpeedFraction;
     float               activeSpeedFraction;
 
@@ -195,4 +206,5 @@ private:
     bool                massive;
     bool                autoPilot;
     bool                cloaked;
+    bool                undocking;
 };

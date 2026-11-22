@@ -100,18 +100,18 @@ void NPC::Process() {
     if (m_killed)
         return;
 
-    double profileStartTime = GetTimeUSeconds();
+    const double profileStartTime = (sConfig.debug.UseProfiling ? GetProfileTime() : 0.0);
 
-    /*   Base call to Process Movement  */
-    SpaceEntity::Process();
-
-    /*  Process AI after moving */
-    m_AI->Process();
+    // if npc is warping, do not call ai::process
+    if (m_moveData->GetBallMode() != Ball::Mode::WARP)
+        m_AI->Process();
 
     // make random chance to reset buffs (wip)
 
+    // do other shit later here if needed.
+
     if (sConfig.debug.UseProfiling)
-        sProfiler.AddTime(Profile::npc, GetTimeUSeconds() - profileStartTime);
+        sProfiler.AddTime(Profile::Type::npc, GetProfileTime() - profileStartTime);
 }
 
 void NPC::Orbit(SpaceEntity *pTargetSE) {
@@ -170,30 +170,34 @@ void NPC::UseArmorRepairer() {
 }
 
 // do npcs warpto anything other than a point?
-void NPC::WarpTo(Vector3d destPoint, int32 distance) {
+void NPC::WarpTo(SystemBubble* pBubble, Vector3d destPoint, int32 distance) {
     MoveData* mData = GetMoveData();
-    if (mData == nullptr)
-        mData = SpaceEntity::CreateMoveData();
-
     if (destPoint.isZero()) {
         BallPark::Stop(mData);
-        sLog.Error("Destiny::WarpTo()", "DestPoint is zero and pSE is null.");
+        sLog.Error("NPC::WarpTo()", "DestPoint is zero and pSE is null.");
         return;
     }
 
     mData->massive = false;
     mData->warpState.Reset();
-    mData->targetPoint = destPoint;
 
     Vector3d warp_vector = destPoint - mData->mySE->GetPosition();
-    mData->desiredDistance = distance;
-    mData->targetDistance = warp_vector.Length();
-    mData->targetDistance -= distance;
+    int64 dist = warp_vector.Length();
+    // expand normal to avoid dupe sqrt since we have dist already
+    const double invDist = 1.0 / dist;
+    Vector3d head = (warp_vector * invDist);
+
+    // required warp data
+    mData->SetHeading(head);
+    mData->SetDistance(distance);
+    mData->SetTargetDistance(dist);
+    mData->SetTargetPoint(destPoint);
+    mData->warpState.targBubble = pBubble;
 
     BallPark::WarpTo(mData);
 
     if (is_log_enabled(NPC__MESSAGE))
-        _log(NPC__MESSAGE, "Destiny::WarpTo() NPC %s(%u) %u -> %u, targetPoint: %0.2f,%0.2f,%0.2f  stop distance: %i  targetDistance: %llim", \
+        _log(NPC__MESSAGE, "NPC::WarpTo() %s(%u) %u -> %u, targetPoint: %0.2f,%0.2f,%0.2f  stop distance: %i  targetDistance: %llim", \
                 GetName(), GetID(), SysBubble()->GetID(), mData->warpState.targBubble->GetID(), \
                 mData->targetPoint.x, mData->targetPoint.y, mData->targetPoint.z, distance, mData->targetDistance);
 }
@@ -235,7 +239,7 @@ void NPC::EncodeStateData(Buffer& into) {
     uint8 mode = mData->GetBallMode(); //Ball::Mode::STOP;
     BallHeader head = BallHeader();
         head.entityID = GetID();
-        head.mode = 0;
+        head.mode = mode;
         head.radius = GetRadius();
         head.posX = x();
         head.posY = y();
@@ -284,25 +288,25 @@ void NPC::EncodeStateData(Buffer& into) {
         }  break;
         case Ball::Mode::FOLLOW: {
             FOLLOW_Struct follow;
+            follow.formationID = -1;
             follow.followID = mData->GetTargetSE()->GetID();
             follow.followRange = mData->GetDesiredDistance();
-            follow.formationID = -1;
             into.Append(follow);
         }  break;
         case Ball::Mode::ORBIT: {
             ORBIT_Struct orbit;
+            orbit.formationID = -1;
             orbit.targetID = mData->GetTargetSE()->GetID();
             orbit.followRange = mData->GetDesiredDistance();
-            orbit.formationID = -1;
             into.Append(orbit);
         }  break;
         case Ball::Mode::GOTO: {
             Vector3d targPt = mData->GetTargetPoint();
             GOTO_Struct go;
+                go.formationID = -1;
                 go.x = targPt.x;
                 go.y = targPt.y;
                 go.z = targPt.z;
-                go.formationID = -1;
             into.Append(go);
         }  break;
         case Ball::Mode::FORMATION: {
@@ -429,12 +433,12 @@ void NPC::Killed(Damage &fatal_blow) {
         wreckItemRef->Delete();
         return;
     }
-    // fixme m_destiny->SendJettisonPacket();
+    m_system->SendJettisonPacket(this);
 }
 
 void NPC::CmdDropLoot()
 {
-    // fixme m_destiny->SendJettisonPacket();
+    m_system->SendJettisonPacket(this);
     /** @todo finish this */
     //DropLoot(wreckItemRef, m_self->groupID());
 }

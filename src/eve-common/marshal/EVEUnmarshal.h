@@ -137,9 +137,9 @@ protected:
      *
      * @return Storage index.
      */
-    uint32 GetStorageIndex()
-    {
-        assert( mStoreIndexPtr != nullptr );
+    uint32 GetStorageIndex() {
+        if ((mStoreIndexPtr == nullptr) or (reinterpret_cast<const uint8_t*>(mStoreIndexPtr + 1) > mEndPtr))
+            return 0;
         return *mStoreIndexPtr++;
     }
 

@@ -76,11 +76,11 @@ public:
     // main c'tor
     NPCAI(NPC *who);
     // copy c'tor
-    NPCAI(const NPCAI* oth) =delete;
+    NPCAI(const NPCAI& oth) =delete;
     // move c'tor
     NPCAI(NPCAI&& oth) noexcept =default;
     // copy assignment
-    NPCAI& operator=(NPCAI& oth) =delete;
+    NPCAI& operator=(const NPCAI& oth) =delete;
     // move assignment
     NPCAI& operator=(NPCAI&& oth) =default;
     // d'tor
@@ -224,24 +224,14 @@ private:
     double              m_flyRange;                     //[1] preferred orbit distance
     double              m_flyRangeSq;
 
-    uint16              m_size;
-    uint16              m_effectID;
-    uint16              m_turretID;
-
     //these attributes are cached to reduce access times. (faster but uses more memory)
-
     int32               m_actionSpeed;
     int32               m_attackSpeed;
     int32               m_armorRepairDuration;
     int32               m_shieldBoosterDuration;
-
-    float               m_sigRadModifier;
-
-    float               m_switchTargChance;             //fuzzy logic
-    float               m_trackingSpeed;
-    float               m_damageMultiplier;
-    float               m_armorRepairDelayChance;
-    float               m_shieldBoosterDelayChance;
+    int32               m_attackDelayMin;
+    int32               m_attackDelayMax;
+    int32               m_missileLaunchSpeed;
 
     Timer               m_actionTimer;                  // action timer - module use, not lazors
     Timer               m_attackTimer;                  // main attack (lazer, tackle, ewar, etc)
@@ -252,12 +242,24 @@ private:
     Timer               m_warpOutTimer;                 // as stated
     Timer               m_retargetTimer;                // comfort breaker (allow npcs to change targets)
 
+    float               m_sigRadModifier;               // signature radius modifier.  used when ab/mwd engaged
+    float               m_switchTargChance;             //fuzzy logic
+    float               m_trackingSpeed;
+    float               m_damageMultiplier;
+    float               m_defenderChance;
+    float               m_armorRepairDelayChance;
+    float               m_shieldBoosterDelayChance;
+
+    uint16              m_size;
+    uint16              m_effectID;
+    uint16              m_turretID;
     uint16              m_maxSpeed;                     // mwd speed
     uint16              m_cruiseSpeed;                  // normal and orbit speed
+    uint16              m_missileTypeID;
 
     int8                m_state;
     int8                m_action;
-    uint8               m_maxLockedTargets;
+    int8                m_maxLockedTargets;
 
     bool                m_useSigRadius     :1;
     bool                m_useSecondTarget  :1;

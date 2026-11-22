@@ -120,7 +120,7 @@ void DroneSE::AssignTo(Client* pClient) {
 void DroneSE::Process() {
     if (m_killed)
         return;
-    double profileStartTime = GetTimeUSeconds();
+    const double profileStartTime = (sConfig.debug.UseProfiling ? GetProfileTime() : 0.0);
 
     if (m_online) {
         m_AI->Process();
@@ -130,7 +130,7 @@ void DroneSE::Process() {
     }
 
     if (sConfig.debug.UseProfiling)
-        sProfiler.AddTime(Profile::drone, GetTimeUSeconds() - profileStartTime);
+        sProfiler.AddTime(Profile::Type::drone, GetProfileTime() - profileStartTime);
 }
 
 void DroneSE::SaveDrone() {

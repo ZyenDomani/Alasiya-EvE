@@ -99,7 +99,7 @@ chargeRef(InventoryItemRef(nullptr))
 }
 
 bool SpaceEntity::ApplyDamage(Damage &damage) {
-    double profileStartTime = GetTimeUSeconds();
+    const double profileStartTime = (sConfig.debug.UseProfiling ? GetProfileTime() : 0.0);
     if ((damage.GetTotal() < 0.0f) or (damage.GetModifier() < 0.1f)) {
         // no damage. exit early
         if (HasPilot()) {
@@ -139,7 +139,7 @@ bool SpaceEntity::ApplyDamage(Damage &damage) {
         }
 
         if (sConfig.debug.UseProfiling)
-            sProfiler.AddTime(Profile::damage, GetTimeUSeconds() - profileStartTime);
+            sProfiler.AddTime(Profile::Type::damage, GetProfileTime() - profileStartTime);
 
         return false;
     }
@@ -341,13 +341,13 @@ bool SpaceEntity::ApplyDamage(Damage &damage) {
     if (killed) {
         if (m_killed) {
             if (sConfig.debug.UseProfiling)
-                sProfiler.AddTime(Profile::damage, GetTimeUSeconds() - profileStartTime);
+                sProfiler.AddTime(Profile::Type::damage, GetProfileTime() - profileStartTime);
 
             return true;
         }
 
         m_killed = true;
-        // fixme m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID(), isGlobal());
+        m_system->SendTerminalExplosion(this, m_self->itemID(), m_bubble->GetID(), isGlobal());
 
         //TODO: find a way to determine if this entity has missiles out and update missile for dead launcher
         Killed(damage);  // this must NOT remove dead SE from system. (except base class)
@@ -363,7 +363,7 @@ bool SpaceEntity::ApplyDamage(Damage &damage) {
         if ((damage.srcSE == nullptr) or (damage.srcSE->IsDead())) {
             SendDamageStateChanged();
             if (sConfig.debug.UseProfiling)
-                sProfiler.AddTime(Profile::damage, GetTimeUSeconds() - profileStartTime);
+                sProfiler.AddTime(Profile::Type::damage, GetProfileTime() - profileStartTime);
 
             return killed;
         }
@@ -420,7 +420,7 @@ bool SpaceEntity::ApplyDamage(Damage &damage) {
     }
 
     if (sConfig.debug.UseProfiling)
-        sProfiler.AddTime(Profile::damage, GetTimeUSeconds() - profileStartTime);
+        sProfiler.AddTime(Profile::Type::damage, GetProfileTime() - profileStartTime);
 
     return killed;
 }
@@ -510,11 +510,11 @@ void ShipSE::Killed(Damage &damage) {
             return;
         }
 
-        // fixme m_destiny->SendJettisonPacket();
+        m_system->SendJettisonPacket(this);
         return;
     }
 
-    Client* pPilot(m_self->GetPilot());
+    Client* pPilot = m_self->GetPilot();
     if (pPilot == nullptr)
         return;    //  make error here
 
@@ -657,9 +657,6 @@ void ShipSE::Killed(Damage &damage) {
         pPilot->ResetAfterPodded();
     } else {
         PayInsurance();
-
-        // fixme m_destiny->SendJettisonPacket();
-
         uint16 groupID = m_self->groupID();
         Vector3d podPosition = wreckPosition;
         podPosition.MakeRandomPointOnSphere(GetShipItemRef()->radius() + pPilot->GetPod()->radius() + MakeRandomFloat(100, 200));
@@ -701,4 +698,6 @@ void ShipSE::Killed(Damage &damage) {
 
         wreckItemRef->SaveItem();
     }
+
+    m_system->SendJettisonPacket(this);
 }

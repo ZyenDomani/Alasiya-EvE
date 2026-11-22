@@ -35,11 +35,11 @@ public:
     // main c'tor
     Squad(uint32 squadID);
     // copy c'tor
-    Squad(const Squad* oth) =delete;
+    Squad(const Squad& oth) =delete;
     // move c'tor
     Squad(Squad&& oth) noexcept =default;
     // copy assignment
-    Squad& operator=(Squad& oth) =delete;
+    Squad& operator=(const Squad& oth) =delete;
     // move assignment
     Squad& operator=(Squad&& oth) =default;
     // d'tor

@@ -244,8 +244,8 @@ void TowerSE::SetOnline()
 
     SendSlimUpdate();
 
-    // fixme if (m_bubble->HasPlayers())
-    // fixme     m_destiny->SendGFX14(m_self->itemID(),m_self->itemID(),m_self->typeID(),0,0,"effects.StructureOnline",0,1,1,-1,0);
+    if (m_bubble->HasPlayers())
+        m_system->SendGFX14(this, m_self->itemID(),m_self->typeID(),0,0,"effects.StructureOnline",0,1,1,-1,0);
 
     m_db.UpdateBaseData(m_data);
 

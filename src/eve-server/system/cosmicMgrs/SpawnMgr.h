@@ -97,7 +97,7 @@ private:
     std::map<uint32, uint8> m_liveCount;         // bubbleID/rats alive
     std::vector<NPC*> m_ratSpawns;                      //vector of NPC* to spawn
     std::vector<Spawn::toSpawn> m_toSpawn;
-    std::map<uint8, uint16> m_factionGroups;            //shipClass/groupID
+    std::unordered_map<uint8, uint16> m_factionGroups;            //shipClass/groupID
     std::vector<RatSpawnClass>  m_ratSpawnClass;               // spawn class for ?
     std::vector<RatFactionGroups> m_factionGroupVec;            // ?  not used
     std::multimap<uint16, Spawn::Entry> m_spawns;         //bubbleID/npc data  - each spawned npc has separate entry here
