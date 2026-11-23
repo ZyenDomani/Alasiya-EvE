@@ -61,7 +61,10 @@ undocking(false)
 
 void MoveData::Init() {
     assert(mySE != nullptr);
-    UpdateShipVariables();
+    
+    if (mySE->IsDynamicEntity() or mySE->IsNPCSE())
+        UpdateShipVariables();
+
     // this is tricky.  client's destiny tics are based on when ballpark was created with ref to solar system tics
     ticStamp = mySE->SystemMgr()->GetTicCount();
 }

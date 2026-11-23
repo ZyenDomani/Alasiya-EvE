@@ -113,6 +113,7 @@ public:
 
     // npcAI methods
     void                SendGFX(Client* pClient=nullptr);
+    void                SetWarpout()                    { m_state = State::WarpOut; }
     void                DisableWarpOutTimer()           { m_warpOutTimer.Disable(); }
     void                WarpOutComplete();
 

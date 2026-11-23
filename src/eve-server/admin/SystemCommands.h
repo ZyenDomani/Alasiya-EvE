@@ -38,3 +38,5 @@ COMMAND( pos, Acct::Role::PROGRAMMER,
          " - unknown at this time")
 COMMAND( hop, Acct::Role::CONTENT,
          " - unknown at this time")
+COMMAND( stresstest, Acct::Role::PROGRAMMER,
+         " - creates npcs to stress-test server systems")

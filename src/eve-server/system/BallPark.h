@@ -82,11 +82,10 @@ private:
 
     // Internal Warp Methods
     static void InitWarp(MoveData* mData);
-    static void WarpAccel(MoveData* mData, uint16 sec_into_warp);
-    static void WarpCruise(MoveData* mData, uint16 sec_into_warp);
-    static void WarpDecel(MoveData* mData, uint16 sec_into_warp);
+    static void WarpAccel(MoveData* mData, double sec_into_warp);
+    static void WarpCruise(MoveData* mData, double sec_into_warp);
+    static void WarpDecel(MoveData* mData, double sec_into_warp);
     static void WarpStop(MoveData* mData, int64 currentShipSpeed);
-    static void WarpUpdate(MoveData* mData, int64 currentShipSpeed, uint16 sec_into_warp, uint8 phase=0);      // 0=error, 1=accel, 2=cruise, 3=decel
+    static void WarpUpdate(MoveData* mData, int64 currentShipSpeed, double sec_into_warp, uint8 phase=0);      // 0=error, 1=accel, 2=cruise, 3=decel
 
 };
-

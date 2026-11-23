@@ -169,8 +169,11 @@ void NPC::UseArmorRepairer() {
     UpdateDamage();
 }
 
-// do npcs warpto anything other than a point?
+// do npcs warpto anything other than a point?  no.
 void NPC::WarpTo(SystemBubble* pBubble, Vector3d destPoint, int32 distance) {
+    // set ai state to avoid changing this warp command
+    m_AI->SetWarpout();
+
     MoveData* mData = GetMoveData();
     if (destPoint.isZero()) {
         BallPark::Stop(mData);
@@ -178,18 +181,25 @@ void NPC::WarpTo(SystemBubble* pBubble, Vector3d destPoint, int32 distance) {
         return;
     }
 
-    mData->massive = false;
+    mData->SetMassive(false);
     mData->warpState.Reset();
 
-    Vector3d warp_vector = destPoint - mData->mySE->GetPosition();
+    Vector3d warp_vector = destPoint - GetPosition();
     int64 dist = warp_vector.Length();
+    //in the off-chance dist < 1
+    if (dist < 25000) {
+        sLog.Warning("NPC::WarpTo", "warp dist < 25km for %s(%u)", GetName(), GetID());
+        return;
+    }
+
     // expand normal to avoid dupe sqrt since we have dist already
     const double invDist = 1.0 / dist;
     Vector3d head = (warp_vector * invDist);
+    destPoint -= (head * distance);
+    dist -= distance;
 
     // required warp data
     mData->SetHeading(head);
-    mData->SetDistance(distance);
     mData->SetTargetDistance(dist);
     mData->SetTargetPoint(destPoint);
     mData->warpState.targBubble = pBubble;
@@ -199,7 +209,23 @@ void NPC::WarpTo(SystemBubble* pBubble, Vector3d destPoint, int32 distance) {
     if (is_log_enabled(NPC__MESSAGE))
         _log(NPC__MESSAGE, "NPC::WarpTo() %s(%u) %u -> %u, targetPoint: %0.2f,%0.2f,%0.2f  stop distance: %i  targetDistance: %llim", \
                 GetName(), GetID(), SysBubble()->GetID(), mData->warpState.targBubble->GetID(), \
-                mData->targetPoint.x, mData->targetPoint.y, mData->targetPoint.z, distance, mData->targetDistance);
+                destPoint.x, destPoint.y, destPoint.z, distance, dist);
+}
+
+// idea taken from ccp's destiny code
+void NPC::EntityWarpIn(MoveData* mData, const Vector3d& origin) {
+/*    Pretty much sets srcId at max velocity, in effect faking that it has
+ *    already done all aligning and acceleration stuff and can go directly
+ *    into doing warpDistance.
+ */
+
+/*  get full warp distance, plug data into initwarp,
+ *  get decel time from 245km out;  t.decel = ln(s / 245000)
+ *  set position to <start = dest - (head * 245km)>
+ *  speed should be ~245km/s
+ * start tic = now - accelTime - cruiseTime - t.decel
+ *
+ */
 }
 
 void NPC::SetResists() {
@@ -255,7 +281,7 @@ void NPC::EncodeStateData(Buffer& into) {
         mass.corporationID = m_corpID;
         mass.allianceID = (IsAllianceID(m_allyID) ? m_allyID : -1);
     into.Append(mass);
-    Vector3d& velocity = mData->myVelocity;
+    Vector3d& velocity = mData->GetVelocity();
     DataSector data = DataSector();
         data.velX = velocity.x;
         data.velY = velocity.y;
@@ -272,11 +298,11 @@ void NPC::EncodeStateData(Buffer& into) {
             warp.targX = target.x;
             warp.targY = target.y;
             warp.targZ = target.z;
-            warp.warpFactor = mData->warpState.warpSpeedAU * 10;    //ship warp speed in AU x10  (x * 0.1 in client)
+            warp.warpFactor = mData->GetWarpSpeed() * 10;    //ship warp speed in AU x10  (x * 0.1 in client)
             // warp timing and data.   see Ship::EncodeStateData() for notes
             if (mData->warpState.active) {
-                warp.effectStamp    = mData->GetTicStamp();
-                warp.warpDistance   = mData->GetTargetDistance();
+                warp.effectStamp    = mData->warpState.startTic;
+                warp.warpDistance   = mData->warpState.warpDistance;
                 warp.minRange       = mData->GetDesiredDistance();
             } else {
                 // these are correct 14Nov26

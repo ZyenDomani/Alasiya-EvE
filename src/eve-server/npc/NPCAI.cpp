@@ -762,6 +762,7 @@ void NPCAI::WarpOut()
 
         m_homePoint = NULL_ORIGIN;
         m_state = NPCAI::State::WarpOut;
+        m_action = NPCAI::Action::Idle;
         myNPC->GetSpawnMgr()->WarpOutSpawn(myNPC, pBubble);
     }
 }
@@ -908,10 +909,10 @@ void NPCAI::SetEngaged(SpaceEntity* pTargetSE) {
     mData->SetTargetSE(m_attackTarget);
 
     if (sConfig.npc.UseOrbit) {
-        mData->SetDistance(m_flyRange);
+        mData->SetDesiredDistance(m_flyRange);
         BallPark::OrbitBall(mData);
     } else {
-        mData->SetDistance(m_optimalRange);
+        mData->SetDesiredDistance(m_optimalRange);
         BallPark::FollowBall(mData);
     }
 }
@@ -952,7 +953,7 @@ void NPCAI::SetFollowing(SpaceEntity* pTargetSE) {
     ChangeSpeed();
 
     mData->SetTargetSE(m_attackTarget);
-    mData->SetDistance(m_optimalRange);
+    mData->SetDesiredDistance(m_optimalRange);
     BallPark::FollowBall(mData);
 }
 
@@ -1029,7 +1030,7 @@ void NPCAI::SetChasing(SpaceEntity* pTargetSE) {
 
     // start chasing / still chasing
     mData->SetTargetSE(m_attackTarget);
-    mData->SetDistance(m_optimalRange);
+    mData->SetDesiredDistance(m_optimalRange);
     //head towards target
     BallPark::FollowBall(mData);
 }
@@ -1062,7 +1063,7 @@ void NPCAI::SetFleeing(SpaceEntity* pTargetSE) {
     ChangeSpeed();
 
     mData->SetTargetSE(m_attackTarget);
-    mData->SetDistance(m_attackRange);
+    mData->SetDesiredDistance(m_attackRange);
 
     // we will need a better direction here...like to local stronghold (which is not written yet)   (idea...warpout...see same pc...localchat "you again??")
     // for now, go opposite from target
@@ -1110,7 +1111,7 @@ void NPCAI::SetSignaling(SpaceEntity* pTargetSE) {
     ChangeSpeed();
     MoveData* mData = myNPC->GetMoveData();
     mData->SetTargetSE(m_attackTarget);
-    mData->SetDistance(m_attackRange);
+    mData->SetDesiredDistance(m_attackRange);
 
     if (sConfig.npc.UseOrbit) {
         BallPark::OrbitBall(mData);
@@ -1299,7 +1300,7 @@ void NPCAI::CheckHomePoint() {
         MoveData* mData = myNPC->GetMoveData();
         mData->Clear();
         mData->SetTargetPoint(m_homePoint);
-        mData->SetDistance(100);
+        mData->SetDesiredDistance(100);
         mData->SetSpeed(m_cruiseSpeed);
         BallPark::GotoPoint(mData);
     }
@@ -1382,7 +1383,8 @@ bool NPCAI::isValidTarget() {
         case NPCAI::Action::Passive:
         case NPCAI::Action::Idle: {
             // these should not have a target
-            sLog.Warning("NPCAI", "%s(%u) is calling isValidTarget()", myNPC->GetName(), myNPC->GetID());
+            sLog.Warning("NPCAI", "%s(%u) is calling isValidTarget() from action: %s", \
+                    myNPC->GetName(), myNPC->GetID(), GetActionName(m_action));
             if (m_attackTarget != nullptr)
                 ClearTarget(m_attackTarget);
             if (m_actionTarget != nullptr)

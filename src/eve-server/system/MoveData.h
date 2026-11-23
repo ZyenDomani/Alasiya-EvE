@@ -37,17 +37,19 @@ struct WarpState {
     SystemBubble* targBubble = nullptr;
     int64 warpDistance   = 0;   // in m
     int64 warpSpeed      = 0;   // in m/s
+    int64 accelDist      = 0;
     int64 cruiseDist     = 0;   // in m
     int64 decelDist      = 0;   // in m
 
+    double accelTime     = 0.0;// in s
+    double cruiseTime    = 0.0;// in s
+    double decelTime     = 0.0;// in s
+    double decelStartSec = 0.0;
+
     // 4-byte aligned group (12 bytes)
     int32 startTic       = 0;   // from sysMgr::GetStamp()
-    float warpSpeedAU    = 0.0f;// in AU
+
     float warpTime       = 0.0f;// in s
-    float accelTime      = 0.0f;// in s
-    float cruiseTime     = 0.0f;// in s
-    float decelTime      = 0.0f;// in s
-    float accelFraction  = 0.0f;
 
     // 1-byte aligned group (2 bytes + 2 bytes struct-end padding = 56 bytes total)
     uint8 phase          = Phase::None;
@@ -57,15 +59,15 @@ struct WarpState {
         targBubble     = nullptr;
         warpDistance   = 0;
         warpSpeed      = 0;
+        accelDist      = 0;
         cruiseDist     = 0;
         decelDist      = 0;
         startTic       = 0;
-        warpSpeedAU    = 0.0;
         warpTime       = 0.0f;
         accelTime      = 0.0f;// in s
         cruiseTime     = 0.0f;// in s
         decelTime      = 0.0f;// in s
-        accelFraction  = 0.0f;
+        decelStartSec  = 0.0;
         phase          = Phase::None;
         active         = false;
     }
@@ -89,12 +91,13 @@ public:
     inline double       GetAgility() const              { return agility; }
     inline uint8        GetBallMode() const             { return ballMode; }
     inline int32        GetTicStamp() const             { return ticStamp; }
+    inline double       GetWarpSpeed() const            { return warpSpeed; }
     inline double       GetWarpCapNeed() const          { return warpCapNeed; }
     inline SpaceEntity* GetMySE() const                 { return mySE; }
     inline SpaceEntity* GetTargetSE() const             { return targetSE; }
     inline const Vector3d& GetTargetPoint() const       { return targetPoint; }
     inline double       GetTargetDistance() const       { return static_cast<double>(targetDistance); }
-    inline double       GetDesiredDistance() const     { return static_cast<double>(desiredDistance); }
+    inline double       GetDesiredDistance() const      { return static_cast<double>(desiredDistance); }
     inline const float  GetUSF() const                  { return userSpeedFraction; }
     inline const float  GetASF() const                  { return activeSpeedFraction; }
 
@@ -110,6 +113,7 @@ public:
     inline bool         IsWarping() const               { return warpState.active; }
     inline bool         IsCloaked() const               { return cloaked; }
     inline bool         IsUndocking() const             { return undocking; }
+    inline bool         IsMassive() const               { return massive; }
 
     // Setters
     inline void         SetMySE(SpaceEntity* set)       { mySE = set; }
@@ -117,7 +121,7 @@ public:
     inline void         SetHeading(const Vector3d& set) { desiredHeading = set; }
     inline void         SetMyVelocity(const Vector3d& set){ myVelocity = set; }
     inline void         SetDesiredVelocity(const Vector3d& set){ desiredVelocity = set; }
-    inline void         SetDistance(int64 set)          { desiredDistance = set; }
+    inline void         SetDesiredDistance(int64 set)   { desiredDistance = set; }
     inline void         SetTargetDistance(int64 set)    { targetDistance = set; }
     inline void         SetWarpCapNeed(double set)      { warpCapNeed = set; }
     inline void         SetWarpDropSpeed(double set)    { speedToLeaveWarp = set; }
@@ -156,7 +160,6 @@ public:
 
     // Friend for BallPark's static math engine direct access
     friend class        BallPark;
-    friend class        NPC;
 
     WarpState           warpState;
 

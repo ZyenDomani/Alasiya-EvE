@@ -317,13 +317,12 @@ PyResult Command_shipvars(Client* pClient, CommandDB* db, PyServiceMgr* services
              "IsJump: %u<br>" //27
              "IsInvul: %u<br>" //27
              "IsLogin: %u<br>" //27
-             "IsUndock: %u<br>" //27
              "HasBeyonce: %u<br>" //27
              "IsBubbleWait: %u<br>" //27
              "IsSetStateSent: %u<br>", //27
                 pClient->GetShipSE()->GetName(), pClient->GetShipID(), // dm->IsCloaked(), dm->IsWarping(),
                 pClient->InPod(), pClient->IsInSpace(), pClient->IsDocked(), pClient->IsJump(), pClient->IsInvul(),
-                pClient->IsLogin(),  pClient->IsUndock(), pClient->HasBeyonce(), pClient->IsBubbleWait(),
+                pClient->IsLogin(),  pClient->HasBeyonce(), pClient->IsBubbleWait(),
                 pClient->IsSetStateSent()
             );
 
@@ -1154,7 +1153,7 @@ PyResult Command_bubblewarp(Client* pClient, CommandDB* db, PyServiceMgr* servic
                     bubbleID, pBubble->GetSystem()->GetName(), pClient->GetSystemName().c_str());
 
         //    NOTE:  see new datasets in beyonce to add here (or call warp command)
-        
+
     // fixme pClient->GetShipSE()->DestinyMgr()->WarpTo(pBubble->GetCenter());
 
     int size(50);

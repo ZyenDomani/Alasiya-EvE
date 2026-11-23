@@ -8,6 +8,7 @@
 
 #include "Client.h"
 #include "ConsoleCommands.h"
+#include "StressTestMgr.h"
 #include "npc/NPC.h"
 #include "npc/NPCAI.h"
 #include "admin/AllCommands.h"
@@ -129,7 +130,7 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
         // test for 'help' command
         if ((strcmp(args.arg(1).c_str(), Help) == 0)
         or (strcmp(args.arg(2).c_str(), Help) == 0))
-            throw CustomError("Translocate: Invalid Arguments - 'help' not avalible for this command.");
+            throw CustomError("Translocate: Invalid Arguments - 'help' not available for this command.");
 
             // decode first arg  -- me, shipID, charID, playerName, itemID {invalid}
         if (args.isNumber(1)) {     // charID, shipID, {invalid}
@@ -227,7 +228,7 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
         if ((strcmp(args.arg(1).c_str(), Help) == 0)
         or (strcmp(args.arg(2).c_str(), Help) == 0)
         or (strcmp(args.arg(3).c_str(), Help) == 0))
-            throw CustomError("Translocate: Invalid Arguments - 'help' not avalible for this command.");
+            throw CustomError("Translocate: Invalid Arguments - 'help' not available for this command.");
 
         // check for coords
         if ((args.isNumber(1))
@@ -335,7 +336,7 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
         or (strcmp(args.arg(2).c_str(), Help) == 0)
         or (strcmp(args.arg(3).c_str(), Help) == 0)
         or (strcmp(args.arg(4).c_str(), Help) == 0))
-            throw CustomError("Translocate: Invalid Arguments - 'help' not avalible for this command.");
+            throw CustomError("Translocate: Invalid Arguments - 'help' not available for this command.");
 
         // check for coords
         if ((args.isNumber(1))
@@ -363,7 +364,7 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
         or (strcmp(args.arg(3).c_str(), Help) == 0)
         or (strcmp(args.arg(4).c_str(), Help) == 0)
         or (strcmp(args.arg(5).c_str(), Help) == 0))
-            throw CustomError("Translocate: Invalid Arguments - 'help' not avalible for this command.");
+            throw CustomError("Translocate: Invalid Arguments - 'help' not available for this command.");
 
         throw CustomError("Translocate: 5 args - This command is currently incomplete.");
     } else {
@@ -892,5 +893,92 @@ PyResult Command_pos(Client* pClient, CommandDB* db, PyServiceMgr* services, con
      * 16:39:26 [CmdDump]       Tuple: 1 elements
      * 16:39:26 [CmdDump]         [ 0] String: '/pos offline 140035963'
      */
+    return nullptr;
+}
+
+PyResult Command_stresstest(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
+    if (pClient == nullptr) // should never hit,
+        throw CustomError("StressTest: Invalid Caller - Client sent NULL.");
+
+    if (args.argCount() < 2)
+        throw CustomError("StressTest: Missing Arguments (use '.stresstest help' for usage)");
+
+    if (args.argCount() > 6)
+        throw CustomError("StressTest: Too Many Arguments");
+
+    Vector3d pt(NULL_ORIGIN);
+    SystemManager* pSysMgr = pClient->SystemMgr();
+    // eventually we can change this to use random belt or make bubble
+    if (pClient->GetShipSE() == nullptr)
+        throw CustomError("StressTest: You must be in space.");
+
+    SystemBubble* pBubble = pClient->GetShipSE()->SysBubble();
+
+/*  design notes:
+ *      .stresstest spawn <npc|ship> <count> [typeid] [spread]
+ *      .stresstest mode <idle|orbit|swarm|warp|combat|follow|random>
+ *      .stresstest status
+ *      .stresstest clear [all]
+ *      .stresstest ttl <minutes>
+ */
+
+    if (args.isNumber(1)) {
+        throw CustomError("StressTest: Invalid - number as first Argument");
+    } else if (strcmp(args.arg(1).c_str(), "help") == 0) {
+        //  {.tr help}  will display the following list of options in notification window
+        std::ostringstream str; // for 'help' printing
+        str << "StressTest Command Processor - Help File<br>"; //120
+        str << ".stresstest help|spawn|mode|status|clear|ttl<br>"; //120
+        str << " spawn <count> [typeid] [spread]<br>";  //85
+        str << " mode <idle|orbit|swarm|warp|combat|follow|random><br>"; //80
+        str << " ttl <minutes><br>"; //77
+        str << "typical use is .stresstest spawn 100<br>";  //35
+        int size = 500;
+        char reply[size];
+        snprintf(reply, size, str.str().c_str());
+        pClient->SendInfoModalMsg(reply);
+        return nullptr;
+    } else if (strcmp(args.arg(1).c_str(), "status") == 0) {
+        sStressTest.Status();
+        return nullptr;
+    } else if (strcmp(args.arg(1).c_str(), "clear") == 0) {
+        sStressTest.Clear(pSysMgr);
+        throw CustomError("StressTest: All Fleets Cleared");
+    } else if (strcmp(args.arg(1).c_str(), "spawn") == 0) {
+        // test for all possible args for 'spawn'
+            uint16 typeID = 0;
+            uint16 count = 0;
+            uint16 spread = 0;
+        // start with highest and fall thru for remaining args
+        switch (args.argCount()) {
+            case 5: {
+                if (args.isNumber(5)) {
+                    spread = atoi(args.arg(5).c_str());
+                } else {
+                    throw CustomError("StressTest: <spread> should be a number.");
+                }
+            }
+            case 4:  {
+                if (args.isNumber(4)) {
+                    // eventually this will be a faction, either id or name
+                    typeID = atoi(args.arg(4).c_str());
+                } else {
+                    throw CustomError("StressTest: <typeID> should be a number.");
+                }
+            }
+            case 3:  {
+                if (args.isNumber(3)) {
+                    count = atoi(args.arg(3).c_str());
+                } else {
+                    throw CustomError("StressTest: <count> should be a number.");
+                }
+            }
+        }
+        sStressTest.Spawn(pSysMgr, pBubble, count, typeID, spread);
+        throw CustomError("StressTest: All Fleets Cleared");
+    }
+
+    throw CustomError("StressTest: Command Processor Incomplete");
+
     return nullptr;
 }

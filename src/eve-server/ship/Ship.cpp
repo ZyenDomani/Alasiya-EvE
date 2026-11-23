@@ -2665,12 +2665,12 @@ void ShipSE::EncodeStateData(Buffer& into) {
                 warp.targX = target.x;
                 warp.targY = target.y;
                 warp.targZ = target.z;
-                warp.warpFactor = mData->warpState.warpSpeedAU * 10;    //ship warp speed in AU x10  (x * 0.1 in client)
+                warp.warpFactor = mData->GetWarpSpeed() * 10;    //ship warp speed in AU x10  (x * 0.1 in client)
                 // warp timing and data
                 if (mData->IsWarping()) {
-                    warp.effectStamp    = mData->GetTicStamp();   //timestamp when warp started
-                    warp.warpDistance   = mData->GetTargetDistance();
-                    warp.minRange       = mData->GetDesiredDistance();
+                    warp.effectStamp    = mData->warpState.startTic;            // tic actual warping started
+                    warp.warpDistance   = mData->warpState.warpDistance;        // total distance
+                    warp.minRange       = mData->GetDesiredDistance();          // 'warp to within' distance
                     /* followRange / warpDistance  total warp distance
                      * -4616189618054758400 -1.0   while aligning
                      * 4802252820405690112   77.28 au

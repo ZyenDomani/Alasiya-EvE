@@ -699,7 +699,7 @@ PyResult PosMgrBound::Handle_AnchorStructure(PyCallArgs &call) {
         mData->SetTargetPoint(anchorPoint);
 
         Vector3d warp_vector = anchorPoint - mData->GetMySE()->GetPosition();
-        mData->SetDistance(distance);
+        mData->SetDesiredDistance(distance);
         mData->SetTargetDistance(warp_vector.Length());
         // expand normal to avoid dupe sqrt since we have distance already
         const double invDist = 1.0 / mData->GetTargetDistance();

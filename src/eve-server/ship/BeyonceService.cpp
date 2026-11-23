@@ -363,7 +363,7 @@ PyResult BeyonceBound::Handle_CmdFollowBall(PyCallArgs &call) {
         mData->SetAutoPilot(true);
 
     mData->SetTargetPoint(mData->GetMySE()->GetPosition());
-    mData->SetDistance(PyRep::IntegerValueI32(args.distance) + mData->GetMySE()->GetRadius() + targetSE->GetRadius());
+    mData->SetDesiredDistance(PyRep::IntegerValueI32(args.distance) + mData->GetMySE()->GetRadius() + targetSE->GetRadius());
 
     BallPark::FollowBall(mData);
 
@@ -426,7 +426,7 @@ PyResult BeyonceBound::Handle_CmdGotoBookmark(PyCallArgs &call) {
         }
 
         mData->SetTargetPoint(targetSE->GetPosition());
-        mData->SetDistance(0);
+        mData->SetDesiredDistance(0);
         BallPark::FollowBall(mData);
     }
 
@@ -480,7 +480,7 @@ PyResult BeyonceBound::Handle_CmdOrbit(PyCallArgs &call) {
     call.client->SetInvul(false);
 
     // not sure if i wanna use desired or target here...currently orbit calc's use desired
-    mData->SetDistance(PyRep::IntegerValueU32(args.range) + mData->GetMySE()->GetRadius() + targetSE->GetRadius());
+    mData->SetDesiredDistance(PyRep::IntegerValueU32(args.range) + mData->GetMySE()->GetRadius() + targetSE->GetRadius());
     //mData->targetDistance = mData->desiredDistance + mData->GetMySE()->GetRadius() + targetSE->GetRadius();
 
     BallPark::OrbitBall(mData);
@@ -768,7 +768,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
 
     Vector3d warp_vector = warpToPoint - shipSE->GetPosition();
     // i dont think this should be sent after altering warpToPoint to account for distance.
-    mData->SetDistance(distance);
+    mData->SetDesiredDistance(distance);
     mData->SetTargetDistance(warp_vector.Length());
     if (mData->GetTargetDistance() < MIN_WARP_DISTANCE) {
         // warp distance too close.  cancel warp and return
@@ -962,7 +962,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuffAutopilot(PyCallArgs &call) {
     mData->warpState.Reset();
     mData->SetTargetPoint(warpToPoint);
     mData->SetTargetSE(targetSE);
-    mData->SetDistance(radius); // this may not be right...
+    mData->SetDesiredDistance(radius); // this may not be right...
 
     mData->warpState.targBubble = sBubbleMgr.GetBubble(targetSE->SystemMgr(), mData->GetTargetPoint());
 

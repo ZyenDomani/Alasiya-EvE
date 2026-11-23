@@ -802,9 +802,14 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
         // 0.5AU from target bubble center.  this will give ship time to warp, change bubbles, warp-in target and be on overview >1s
         startPos.MakeRandomPointOnSphere(ONE_AU_IN_METERS * 0.5);
         SystemBubble* pBubble = sBubbleMgr.GetBubble(m_system, startPos);
+        if (pBubble == nullptr) {
+            sLog.Warning("SpawnMgr::MakeSpawn", "Target Bubble is null for (%0.1f,%0.1f,%0.1f) in %s", \
+                    startPos.x, startPos.y, startPos.z, m_system->GetName());
+            return;
+        }
+
         uint32 bubbleID = 0;
-        if (pBubble != nullptr)
-            bubbleID = pBubble->GetID();
+         bubbleID = pBubble->GetID();
         _log(SPAWN__POP, "SpawnMgr::MakeSpawn - NPC starting bubbleID %u", bubbleID);
     }
 
@@ -813,8 +818,6 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
     Squad* pCurrentSquad = nullptr;
     if ((sClass <= Spawn::Class::BeltSpawn) and (m_toSpawn.size() > 3)) {
         pCurrentSquad = new Squad(m_squadID++);
-
-        // Track the pointer under the Spawn Manager's absolute ownership map
         //m_activeSquads[pBubble->GetID()].push_back(pCurrentSquad);
     }
 
@@ -919,7 +922,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
                     _log(SPAWN__TRACE, "NPC %u assigned to formation slot %u offset: (%.0f, %.0f, %.0f)",
                          pNPC->GetID(), x, formationOffsets[x].x, formationOffsets[x].y, formationOffsets[x].z);
                 } else {*/
-                    // Otherwise: Rookies and Mid-Tier squads use your beautiful staggered individual warp arrivals!
+                    // Otherwise: Rookies and Mid-Tier squads use existing staggered warp arrivals!
                     warpTo.MakeRandomPointOnSphere(sClass * 1000);
 
                 //}
