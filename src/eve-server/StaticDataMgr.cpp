@@ -700,14 +700,94 @@ void StaticDataMgr::Populate() {
     sLog.Cyan("    StaticDataMgr", "Static Data loaded in %.3fms.", (GetTimeMSeconds() - beginTime));
 }
 
-void StaticDataMgr::GetInfo()
-{
-    /* return info about loaded items? */
-    /*
-     * m_systemData;
-     * m_staticData;
-     *
-     */
+void StaticDataMgr::GetInfo() {
+    const std::string finalPath = sConfig.files.StaticDataHtml;
+    const std::string tmpPath   = finalPath + ".tmp";
+
+    std::ofstream out(tmpPath.c_str(), std::ios::out | std::ios::trunc);
+    if (!out.is_open()) {
+        sLog.Error("StaticDataMgr", "GetInfo: Unable to open %s for writing.", tmpPath.c_str());
+        return;
+    }
+
+    auto writeRow = [&out](const char* category, const char* name, size_t count, size_t elemBytes) {
+        const double kb = static_cast<double>(count * elemBytes) / 1024.0;
+        out << "<tr><td>" << category << "</td><td>" << name << "</td><td>" << count
+            << "</td><td>" << std::fixed << std::setprecision(1) << kb << " KB</td></tr>";
+    };
+
+    out << "<!DOCTYPE html><html><head><meta charset='utf-8'>"
+        << "<title>Alasiya-EvE StaticDataMgr Report</title>"
+        << "<style>"
+        << "body{background:#0b0e11;color:#cfd8dc;font-family:Consolas,monospace;font-size:12px;margin:14px;}"
+        << "h2{color:#4fc3f7;border-bottom:1px solid #263238;padding-bottom:4px;}"
+        << "table{width:100%;border-collapse:collapse;margin-bottom:16px;}"
+        << "th{background:#161d24;color:#81d4fa;text-align:left;padding:6px;border:1px solid #263238;}"
+        << "td{padding:5px 6px;border:1px solid #1c252c;}"
+        << "tr:nth-child(even){background:#10151a;}"
+        << "</style></head><body>"
+        << "<h2>Alasiya-EvE :: StaticDataMgr Loaded Tables</h2>"
+        << "<table><tr><th>Domain</th><th>Container</th><th>Entry Count</th><th>Est. Payload</th></tr>";
+
+    writeRow("Inventory", "Categories (m_catData)",          m_catData.size(),        sizeof(Inv::CatData));
+    writeRow("Inventory", "Groups (m_grpData)",              m_grpData.size(),        sizeof(Inv::GrpData));
+    writeRow("Inventory", "Types (m_typeData)",              m_typeData.size(),       sizeof(Inv::TypeData));
+    writeRow("Inventory", "Attributes (m_attrTypeData)",     m_attrTypeData.size(),   sizeof(Inv::AttrTypeData));
+    writeRow("Universe",  "Solar Systems (m_solSysData)",    m_solSysData.size(),     sizeof(SolarSystemData));
+    writeRow("Universe",  "Static Entities (m_staticData)",  m_staticData.size(),     sizeof(StaticData));
+    writeRow("Universe",  "Stations (m_stationSystem)",      m_stationSystem.size(),  sizeof(uint32) * 2);
+    writeRow("Universe",  "WH Regions (m_whRegions)",        m_whRegions.size(),      sizeof(uint32) + sizeof(uint8));
+    writeRow("Factions",  "Factions (m_factionName)",        m_factionName.size(),    32);
+    writeRow("Factions",  "Corporations (m_corpName)",       m_corpName.size(),       32);
+    writeRow("Factions",  "Agents (m_agentSystem)",          m_agentSystem.size(),    sizeof(uint32) * 2);
+    writeRow("Industry",  "Blueprints (m_bpTypeData)",       m_bpTypeData.size(),     sizeof(EvERam::bpTypeData));
+    writeRow("Industry",  "RAM Materials (m_ramMatl)",       m_ramMatl.size(),        sizeof(EvERam::RamMaterials));
+    writeRow("Spawns",    "NPC Faction Groups (m_npcGroups)",m_npcGroups.size(),      sizeof(RatFactionGroups));
+    writeRow("Spawns",    "NPC Spawn Classes (m_npcClasses)",m_npcClasses.size(),     sizeof(RatSpawnClass));
+    writeRow("Loot",      "Loot Groups (m_LootGroupMap)",    m_LootGroupMap.size(),   sizeof(LootGroup));
+    writeRow("Loot",      "Type Profiles (m_TypeToProfile)", m_TypeToProfileMap.size(),sizeof(LootProfile));
+    writeRow("Salvage",   "Ship->Wreck Map",                 m_WrecksToTypesMap.size(),sizeof(uint32) * 2);
+    out << "</table>";
+
+    // Faction Rat Roster Breakdown
+    out << "<h2>Faction NPC Hull Roster (Loaded in m_npcGroups / m_npcTypes)</h2>"
+        << "<table><tr><th>Faction ID</th><th>Faction Name</th><th>Frig</th><th>Dest</th><th>Cruiser</th><th>BC</th><th>BS</th><th>Hauler/Officer</th></tr>";
+
+    for (const auto& fPair : m_factionName) {
+        const uint32 fID = fPair.first;
+        auto range = m_npcGroups.equal_range(fID);
+        if (range.first == range.second)
+            continue;
+
+        uint32 counts[6] = { 0, 0, 0, 0, 0, 0 }; // Frig, Dest, Cruiser, BC, BS, Other
+        for (auto itr = range.first; itr != range.second; ++itr) {
+            const uint8 sClass = itr->second.shipClass;
+            size_t typeCount = 0;
+            auto tRange = m_npcTypes.equal_range(sClass);
+            for (auto tItr = tRange.first; tItr != tRange.second; ++tItr) {
+                auto gItr = tItr->second.find(itr->second.groupID);
+                if (gItr != tItr->second.end())
+                    typeCount += gItr->second.size();
+            }
+
+            if (sClass == NPC::Size::Frigate)        counts[0] += typeCount;
+            else if (sClass == NPC::Size::Destroyer) counts[1] += typeCount;
+            else if (sClass == NPC::Size::Cruiser)   counts[2] += typeCount;
+            else if (sClass == NPC::Size::BCruiser)  counts[3] += typeCount;
+            else if (sClass == NPC::Size::BShip)     counts[4] += typeCount;
+            else                                     counts[5] += typeCount;
+        }
+
+        out << "<tr><td>" << fID << "</td><td>" << fPair.second << "</td>"
+            << "<td>" << counts[0] << "</td><td>" << counts[1] << "</td>"
+            << "<td>" << counts[2] << "</td><td>" << counts[3] << "</td>"
+            << "<td>" << counts[4] << "</td><td>" << counts[5] << "</td></tr>";
+    }
+
+    out << "</table></body></html>";
+    out.close();
+
+    std::rename(tmpPath.c_str(), finalPath.c_str());
 }
 
 void StaticDataMgr::GetCategory(uint8 catID, Inv::CatData& into)
