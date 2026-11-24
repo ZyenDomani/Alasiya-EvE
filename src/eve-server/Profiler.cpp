@@ -110,7 +110,6 @@ void Profile::PrintLine(const char* label, uint8 key) {
         std::printf("%14s: %u over 1s.\n", label, s.over);
 }
 
-
 void Profile::GetSize(size_t cSize, std::string& ret)
 {
     if (cSize > 999999) {

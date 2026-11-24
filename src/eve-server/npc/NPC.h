@@ -141,7 +141,7 @@ public:
     void                SetHauler()                     { m_hauler = true; }
 
     // fake rat warping (set at bubble edge and decel; avoids rat warp overhead)
-    void                EntityWarpIn(MoveData* mData, const Vector3d& origin);
+    void                EntityWarpIn();
 
 private:
     NPCAI*              m_AI;

@@ -503,7 +503,6 @@ void BallPark::InitWarp(MoveData* mData) {
     mData->warpState.cruiseTime    = static_cast<float>(cruiseDuration);
     mData->warpState.decelTime     = static_cast<float>(decelDuration);
     mData->warpState.warpTime      = static_cast<float>(accelDuration + cruiseDuration + decelDuration);
-    mData->warpState.decelStartSec = 0; // set when entering WarpState::Phase::Decel
 
     if (is_log_enabled(DESTINY__WARP_TRACE)) {
         _log(DESTINY__WARP_TRACE, "BallPark::InitWarp():Calculate - %s(%u): Warp will accelerate for %0.1fs, cruise for %0.1fs, then decelerate for %0.1fs, with total time of %0.1fs and warp speed of %lli m/s.", \
@@ -563,7 +562,6 @@ void BallPark::WarpAccel(MoveData* mData, double sec_into_warp) {
             WarpCruise(mData, sec_into_warp);
         } else {
             mData->warpState.phase = WarpState::Phase::Decel;
-            mData->warpState.decelStartSec = sec_into_warp;
             WarpDecel(mData, sec_into_warp);
         }
         return;
@@ -598,7 +596,6 @@ void BallPark::WarpCruise(MoveData* mData, double sec_into_warp) {
 
     if (tCruise >= cruiseDur) {
         mData->warpState.phase = WarpState::Phase::Decel;
-        mData->warpState.decelStartSec = sec_into_warp;
         WarpDecel(mData, sec_into_warp);
         return;
     }

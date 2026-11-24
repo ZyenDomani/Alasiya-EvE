@@ -172,60 +172,97 @@ void NPC::UseArmorRepairer() {
 // do npcs warpto anything other than a point?  no.
 void NPC::WarpTo(SystemBubble* pBubble, Vector3d destPoint, int32 distance) {
     // set ai state to avoid changing this warp command
-    m_AI->SetWarpout();
-
-    MoveData* mData = GetMoveData();
     if (destPoint.isZero()) {
-        BallPark::Stop(mData);
+        BallPark::Stop(m_moveData);
         sLog.Error("NPC::WarpTo()", "DestPoint is zero and pSE is null.");
         return;
     }
 
-    mData->SetMassive(false);
-    mData->warpState.Reset();
-
     Vector3d warp_vector = destPoint - GetPosition();
-    int64 dist = warp_vector.Length();
-    //in the off-chance dist < 1
-    if (dist < 25000) {
+    int64 warpDistance = warp_vector.Length();
+    //in the off-chance dist < 1 - could be set to (unlikely)
+    if (warpDistance < 25000) {
         sLog.Warning("NPC::WarpTo", "warp dist < 25km for %s(%u)", GetName(), GetID());
         return;
     }
 
+    // set state to disallow ai changing this warp command
+    m_AI->SetWarpout();
+    m_moveData->SetMassive(false);
+    m_moveData->warpState.Reset();
+
     // expand normal to avoid dupe sqrt since we have dist already
-    const double invDist = 1.0 / dist;
+    const double invDist = 1.0 / warpDistance;
     Vector3d head = (warp_vector * invDist);
     destPoint -= (head * distance);
-    dist -= distance;
+    warpDistance -= distance;
 
     // required warp data
-    mData->SetHeading(head);
-    mData->SetTargetDistance(dist);
-    mData->SetTargetPoint(destPoint);
-    mData->warpState.targBubble = pBubble;
+    m_moveData->SetHeading(head);
+    m_moveData->SetTargetDistance(warpDistance);
+    m_moveData->SetTargetPoint(destPoint);
+    m_moveData->warpState.targBubble = pBubble;
 
-    BallPark::WarpTo(mData);
+    // copied from BallPark::InitWarp()
+    const double D = static_cast<double>(warpDistance);
+    double S = static_cast<double>(m_moveData->GetWarpSpeed()) * ONE_AU_IN_METERS;
 
-    if (is_log_enabled(NPC__MESSAGE))
-        _log(NPC__MESSAGE, "NPC::WarpTo() %s(%u) %u -> %u, targetPoint: %0.2f,%0.2f,%0.2f  stop distance: %i  targetDistance: %llim", \
-                GetName(), GetID(), SysBubble()->GetID(), mData->warpState.targBubble->GetID(), \
-                destPoint.x, destPoint.y, destPoint.z, distance, dist);
+    S = std::min(S, (D + 1.0) * 0.75);
+
+    const double accelDuration  = std::log(S / 3.0) / 3.0;
+    const double accelDistance  = S / 3.0;
+    const double decelDuration  = std::log(S);
+    const double decelDistance  = S - 1.0;
+    const double cruiseDistance = std::max(0.0, D - accelDistance - decelDistance);
+    const double cruiseDuration = (S > 0.0) ? (cruiseDistance / S) : 0.0;
+
+    m_moveData->warpState.warpDistance  = warpDistance;
+    m_moveData->warpState.warpSpeed     = static_cast<int64>(S);
+    m_moveData->warpState.accelDist     = static_cast<int64>(accelDistance);
+    m_moveData->warpState.cruiseDist    = static_cast<int64>(cruiseDistance);
+    m_moveData->warpState.decelDist     = static_cast<int64>(decelDistance);
+    m_moveData->warpState.accelTime     = static_cast<float>(accelDuration);
+    m_moveData->warpState.cruiseTime    = static_cast<float>(cruiseDuration);
+    m_moveData->warpState.decelTime     = static_cast<float>(decelDuration);
+    m_moveData->warpState.warpTime      = static_cast<float>(accelDuration + cruiseDuration + decelDuration);
+
+    const double entryDist = std::min(245000.0, S * 0.9);
+    float elapsedVirtualSec = accelDuration + cruiseDuration + std::log(S / entryDist);
+    uint32 curTic = m_system->GetTicCount();
+    uint32 arrivalTic = curTic + static_cast<uint32>(std::round(elapsedVirtualSec));
+    m_moveData->warpState.startTic = curTic;
+
+    m_system->AddPendingWarp(arrivalTic, this);
+
+    if (is_log_enabled(NPC__MESSAGE)) {
+        float timeRemaining = arrivalTic - curTic;
+        _log(NPC__MESSAGE, "NPC::WarpTo() %s(%u) setting targetPoint: %0.2f,%0.2f,%0.2f in bubble %u with remaining Time of %0.1fs", \
+        GetName(), GetID(), destPoint.x, destPoint.y, destPoint.z, pBubble->GetID(), timeRemaining);
+    }
 }
 
 // idea taken from ccp's destiny code
-void NPC::EntityWarpIn(MoveData* mData, const Vector3d& origin) {
+void NPC::EntityWarpIn() {
 /*    Pretty much sets srcId at max velocity, in effect faking that it has
  *    already done all aligning and acceleration stuff and can go directly
  *    into doing warpDistance.
  */
 
-/*  get full warp distance, plug data into initwarp,
- *  get decel time from 245km out;  t.decel = ln(s / 245000)
- *  set position to <start = dest - (head * 245km)>
- *  speed should be ~245km/s
- * start tic = now - accelTime - cruiseTime - t.decel
- *
- */
+    const Vector3d& head      = m_moveData->GetDesiredHeading();
+    const Vector3d& destPoint = m_moveData->GetTargetPoint();
+    const double entryDist    = std::min(245000.0, static_cast<double>(m_moveData->warpState.warpSpeed) * 0.9);
+
+    m_moveData->SetBallMode(Ball::Mode::WARP);
+    m_moveData->SetMyVelocity(head * entryDist);
+    m_moveData->warpState.active = true;
+    m_moveData->warpState.phase  = WarpState::Phase::Decel;
+
+    Vector3d& position = GetPositionRef();
+    position.x = destPoint.x - (head.x * entryDist);
+    position.y = destPoint.y - (head.y * entryDist);
+    position.z = destPoint.z - (head.z * entryDist);
+
+    m_system->AddNPC(this);
 }
 
 void NPC::SetResists() {

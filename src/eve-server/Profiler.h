@@ -88,7 +88,7 @@ public:
     }
 
     void Initialize();
-    
+
     void ClearAll();
 
     void PrintProfile();
@@ -96,6 +96,24 @@ public:
     void PrintLine(const char* label, uint8 key);
 
     void GetSize(size_t cSize, std::string& ret);
+    
+    inline double GetAvg(uint8 key) const {
+        if (key >= Profile::Type::Max || m_stats[key].count == 0)
+            return 0.0;
+        return m_stats[key].total / static_cast<double>(m_stats[key].count);
+    }
+
+    inline double GetHi(uint8 key) const {
+        if (key >= Profile::Type::Max)
+            return 0.0;
+        return m_stats[key].hi;
+    }
+
+    inline double GetLo(uint8 key) const {
+        if (key >= Profile::Type::Max)
+            return 0.0;
+        return m_stats[key].lo;
+    }
 
 protected:
     const char* GetKeyName(uint8 key) const;

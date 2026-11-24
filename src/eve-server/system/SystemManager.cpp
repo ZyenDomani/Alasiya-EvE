@@ -216,6 +216,18 @@ bool SystemManager::ProcessTic() {
         m_deleteLater.clear();
     }
 
+    if (!m_npcWarpInMap.empty()) {
+        for (auto itr = m_npcWarpInMap.begin(); itr != m_npcWarpInMap.end(); ) {
+            if (itr->first > m_ticStamp)
+                break; // sorted by tic—nothing else is due yet
+
+            NPC* pNPC = itr->second;
+            itr = m_npcWarpInMap.erase(itr);
+            if (pNPC != nullptr)
+                pNPC->EntityWarpIn();
+        }
+    }
+
     std::map<uint32, SpaceEntity*>::iterator itr = m_ticEntities.begin(), end = m_ticEntities.end();
     while (itr != end) {
         const uint32 curID = itr->first;
@@ -363,6 +375,9 @@ void SystemManager::UnloadSystem() {
     for (auto &cur : m_deleteLater)
         SafeDelete(cur.second);
 
+    for (auto& cur : m_npcWarpInMap)
+        SafeDelete(cur.second);
+
     // save items, then remove from system inventory, item factory and decrement item count
     m_solarSystemRef->GetMyInventory()->Unload();
     _log(PHYSICS__MESSAGE, "SystemManager::UnloadSystem() - map count after unload: %zu npcs, %zu entities, %zu statics.", \
@@ -374,6 +389,7 @@ void SystemManager::UnloadSystem() {
     m_entities.clear();
     m_deleteLater.clear();
     m_ticEntities.clear();
+    m_npcWarpInMap.clear();
     m_staticEntities.clear();
 
     // remove solar system item from ItemFactory
@@ -381,6 +397,17 @@ void SystemManager::UnloadSystem() {
     m_loaded = false;
 }
 
+void SystemManager::ClearStressWarps() {
+    for (auto itr = m_npcWarpInMap.begin(); itr != m_npcWarpInMap.end(); ) {
+        NPC* pNPC = itr->second;
+        if ((pNPC != nullptr) && (pNPC->GetSpawnMgr() == nullptr)) {
+            itr = m_npcWarpInMap.erase(itr);
+            // SafeDelete(pNPC) happens in StressTestMgr::Clear() loop, or delete here if not yet in fleet.entities
+        } else {
+            ++itr;
+        }
+    }
+}
 bool SystemManager::LoadSystemStatics() {
     std::vector<DBSpaceEntity> entities;
 

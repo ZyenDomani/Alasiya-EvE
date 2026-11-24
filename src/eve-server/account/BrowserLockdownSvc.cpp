@@ -67,7 +67,8 @@ PyResult BrowserLockdownService::Handle_GetFlaggedSitesList(PyCallArgs &call)
 
 PyResult BrowserLockdownService::Handle_GetDefaultHomePage(PyCallArgs &call)
 {
-    return new PyWString(HomePageURL);
+    //return new PyWString(HomePageURL);
+    return new PyWString(sConfig.files.StressHtmlUrl);
 }
 
 PyResult BrowserLockdownService::Handle_IsBrowserInLockdown(PyCallArgs &call)

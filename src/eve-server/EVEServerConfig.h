@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    12.14
+    Version:    12.15
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -290,6 +290,9 @@ public:
         std::string imageDir;
         // path to TraderJoe settings
         std::string marketBotSettings;
+        std::string StressHtmlPath;
+        std::string StressHtmlUrl;
+        std::string StaticHtmlPath;
     } files;
 
     // From <net>

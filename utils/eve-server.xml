@@ -1,6 +1,6 @@
 
 <!-- Alasiya EvEmu Server Config
-Version: 12.14 -->
+Version: 12.15 -->
 
 <!--
 unless otherwise noted, ALL fractional values use fuzzy logic.
@@ -45,7 +45,7 @@ boolean can use either 0/1 OR true/false.
         <MaxThreadReport>20</MaxThreadReport>
         <TraderJoe>false</TraderJoe><!-- this will (en/dis)able TraderJoe (market bot) and assiciated code (civilian trade fleet) -->
         <DisableIGB>false</DisableIGB>
-        <BulkDataOD>true</BulkDataOD>  <!-- bool  -OD = OnDemand.  false loads data on server startup.  true loads data on first call -->
+        <BulkDataOD>false</BulkDataOD>  <!-- bool  -OD = OnDemand.  false loads data on server startup.  true loads data on first call -->
         <ModuleAutoOff>true</ModuleAutoOff><!-- bool  - automatically deactivate rr-type module when target is full -->
         <ModuleDamageChance>0.1</ModuleDamageChance>  <!-- chance to apply damage to random modules when shields are depleted -->
         <UnloadOnLinkAll>true</UnloadOnLinkAll>  <!-- bool - unload weapons and link when LinkAll button pressed -->
@@ -131,11 +131,11 @@ boolean can use either 0/1 OR true/false.
         <RadiusMultiplier>1.0</RadiusMultiplier><!-- float  modifiy roid and belt radius.  dont use 0 here -->
         <!-- for PI/Colony -->
         <PIRegenRate>0.05</PIRegenRate>
-        <ColonyTimer>0</ColonyTimer><!-- in minutes.  colony timer set value.  default:30  max: 255-->
-        <DistributionScalar>120</DistributionScalar><!-- int  as stated -->
-        <MinWaveMultiplier>0.3</MinWaveMultiplier><!-- float %  min rand amplitude of index[0]  default:0.35 -->
-        <MaxWaveMultiplier>0.7</MaxWaveMultiplier><!-- float % max rand amplitude of index[0]  default:0.55 -->
-        <WavePopulationDensity>0.7</WavePopulationDensity><!-- float % chance a wave index is populated  default:0.7 -->
+        <ColonyTimer>60</ColonyTimer><!-- in minutes.  colony timer set value.  default:30  max: 255-->
+        <DistributionScalar>30</DistributionScalar><!-- int  as stated -->
+        <MinWaveMultiplier>0.2</MinWaveMultiplier><!-- float %  min rand amplitude of index[0]  default:0.35 -->
+        <MaxWaveMultiplier>0.6</MaxWaveMultiplier><!-- float % max rand amplitude of index[0]  default:0.55 -->
+        <WavePopulationDensity>0.6</WavePopulationDensity><!-- float % chance a wave index is populated  default:0.7 -->
         <YieldMultiplier>5.0</YieldMultiplier><!-- float % extracted resource modifier  default:5.0 -->
     </rates>
 
@@ -179,7 +179,7 @@ boolean can use either 0/1 OR true/false.
     </character>
 
     <npc>
-        <IdleWander>true</IdleWander><!-- bool  npc will wander when idle   must be set to 'true' for WarpOut (below) to work -->
+        <IdleWander>false</IdleWander><!-- bool  npc will wander when idle   must be set to 'true' for WarpOut (below) to work -->
         <WarpOut>600</WarpOut><!-- uint16  time npc wanders around bubble before leaving, in sec (15 min default) -->
         <WarpFollowChance>0.15</WarpFollowChance><!-- float  chance for npc to follow warping player (15% default) -->
         <!-- npc podkilling not implemented yet -->
@@ -190,7 +190,7 @@ boolean can use either 0/1 OR true/false.
         <!-- Spawns are implemented -->
         <RoamingSpawns>true</RoamingSpawns><!-- bool  these are roid rats.  they move -->
         <StaticSpawns>true</StaticSpawns><!-- bool  these are gate rats.  they dont move -->
-        <DefenderMissileChance>0</DefenderMissileChance><!-- chance to use defender.  additive to npc default -->
+        <DefenderMissileChance>1</DefenderMissileChance><!-- chance to use defender.  additive to npc default -->
         <RoamingTimer>300</RoamingTimer><!-- max time between spawn checks, in seconds  5m default (min 30)-->
         <StaticTimer>600</StaticTimer><!-- max time between spawn checks, in seconds  10m default (min 60)-->
         <RespawnTimer>300</RespawnTimer><!-- static time between respawn checks, in seconds.  this affects chain-ratting  5m default -->
@@ -270,12 +270,15 @@ boolean can use either 0/1 OR true/false.
         <EnableWingChat>false</EnableWingChat><!-- bool -->
         <EnableSquadChat>false</EnableSquadChat><!-- bool -->
         <EnableVoiceChat>false</EnableVoiceChat><!-- bool -->
+        <!-- next two are exclusive -->
+        <ReturnAllChannels>true</ReturnAllChannels><!-- bool -->
+        <ReturnMostChannels>true</ReturnMostChannels><!-- bool -->
         <EnforceRookieInHelp>false</EnforceRookieInHelp><!-- bool -->
     </chat>
 
     <cosmic>
         <PIEnabled>true</PIEnabled><!-- bool -->
-        <AnomalyEnabled>true</AnomalyEnabled><!-- bool -->
+        <AnomalyEnabled>false</AnomalyEnabled><!-- bool -->
         <DungeonEnabled>false</DungeonEnabled><!-- bool -->
         <BeltEnabled>true</BeltEnabled><!-- bool -->
         <WormHoleEnabled>true</WormHoleEnabled><!-- bool -->
@@ -354,6 +357,10 @@ boolean can use either 0/1 OR true/false.
         <logSettings>../etc/log.ini</logSettings>
         <cacheDir>../server_cache/</cacheDir>
         <imageDir>../image_cache/</imageDir>
+        <marketBotSettings>../etc/MarketBot.xml</marketBotSettings>
+        <StressHtmlPath>/srv/web/stresstest.html</StressHtmlPath>
+        <StressHtmlUrl>http://localhost/stresstest.html</StressHtmlUrl>
+        <StaticHtmlPath>/srv/web/staticdata.html</StaticHtmlPath>
     </files>
 
     <net>

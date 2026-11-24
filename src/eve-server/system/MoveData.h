@@ -44,7 +44,6 @@ struct WarpState {
     double accelTime     = 0.0;// in s
     double cruiseTime    = 0.0;// in s
     double decelTime     = 0.0;// in s
-    double decelStartSec = 0.0;
 
     // 4-byte aligned group (12 bytes)
     int32 startTic       = 0;   // from sysMgr::GetStamp()
@@ -67,7 +66,6 @@ struct WarpState {
         accelTime      = 0.0f;// in s
         cruiseTime     = 0.0f;// in s
         decelTime      = 0.0f;// in s
-        decelStartSec  = 0.0;
         phase          = Phase::None;
         active         = false;
     }

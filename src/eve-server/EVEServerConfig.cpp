@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    12.14
+    Version:    12.15
 */
 
 
@@ -313,6 +313,9 @@ EVEServerConfig::EVEServerConfig()
     files.cacheDir = "../server_cache/";
     files.imageDir = "../image_cache/";
     files.marketBotSettings = "../etc/MarketBot.xml";
+    files.StressHtmlPath = "/var/www/html/stresstest.html";
+    files.StressHtmlUrl = "http://localhost/stresstest.html";
+    files.StaticHtmlPath = "/var/www/html/staticdata.html";
 
     // net
     net.port = 26000;
@@ -750,10 +753,14 @@ bool EVEServerConfig::ProcessDatabase(const TiXmlElement* ele) {
 }
 
 bool EVEServerConfig::ProcessFiles(const TiXmlElement* ele) {
-    AddValueParser("logDir",           files.logDir);
-    AddValueParser("logSettings",      files.logSettings);
-    AddValueParser("cacheDir",         files.cacheDir);
-    AddValueParser("imageDir",         files.imageDir);
+    AddValueParser("logDir",             files.logDir);
+    AddValueParser("logSettings",        files.logSettings);
+    AddValueParser("cacheDir",           files.cacheDir);
+    AddValueParser("imageDir",           files.imageDir);
+    AddValueParser("marketBotSettings",  files.marketBotSettings);
+    AddValueParser("StressHtmlPath",     files.StressHtmlPath);
+    AddValueParser("StressHtmlUrl",      files.StressHtmlUrl);
+    AddValueParser("StaticHtmlPath",     files.StaticHtmlPath);
 
     const bool result = ParseElementChildren(ele);
 
@@ -761,6 +768,10 @@ bool EVEServerConfig::ProcessFiles(const TiXmlElement* ele) {
     RemoveParser("logSettings");
     RemoveParser("cacheDir");
     RemoveParser("imageDir");
+    RemoveParser("marketBotSettings");
+    RemoveParser("StressHtmlPath");
+    RemoveParser("StressHtmlUrl");
+    RemoveParser("StaticHtmlPath");
 
     return result;
 }

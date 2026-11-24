@@ -33,7 +33,7 @@ public:
 
     void                Clear();
     void                Close();
-    void                GetInfo();
+    void                CreateStatusPage();
 
     PyObject*           GetKeyMap()                     { PyIncRef(m_keyMap); return m_keyMap; }
     PyObjectEx*         GetAgents()                     { PyIncRef(m_agents); return m_agents; }
@@ -165,6 +165,8 @@ public:
     const char*         GetBallModeName(uint8 mode);
 
     uint32              GetWreckFaction(uint32 typeID);
+    uint16              GetRandFactionRat(uint32 factionID);
+    uint32              GetRandomRatFactionID();
 
     // methods to verify valid locationID
     bool                IsStation(uint32 stationID=0);

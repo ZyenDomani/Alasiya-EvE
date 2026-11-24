@@ -220,6 +220,30 @@ namespace Rat {
             Incursion_Supercapital              = 54
         };
     }
+
+    struct Hull {
+        enum {
+            Frigate         = 1,
+            AdvFrigate      = 2,
+            Destroyer       = 3,
+            Cruiser         = 4,
+            AdvCruiser      = 5,
+            BCruiser        = 6,
+            BShip           = 7,
+            Hauler          = 8,
+            Officer         = 9,    // or Rogue Drone Swarm (factionUnknown)
+            OfficerFrig     = 10,
+            OfficerDest     = 11,
+            OfficerCruiser  = 12,
+            OfficerBC       = 13,
+            OfficerBS       = 14,
+            // +14 offset = Deadspace variants (15..21), 22 = Deadspace Drone Swarm
+            CapitalDread    = 30,
+            SleeperFrig     = 40,
+            SleeperCruiser  = 41,
+            SleeperBS       = 42
+        };
+    };
 }
 
 /*

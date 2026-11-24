@@ -11,6 +11,9 @@
  *
  */
 
+#include <fstream>
+#include <cstdio>
+#include <iomanip>
 
 #include "StaticDataMgr.h"
 #include "EVEServerConfig.h"
@@ -19,6 +22,7 @@
 #include "database/EVEDBUtils.h"
 #include "manufacturing/FactoryDB.h"
 #include "map/MapDB.h"
+#include "npc/NPC.h"
 #include "station/StationDB.h"
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/ManagerDB.h"
@@ -51,6 +55,9 @@ int StaticDataMgr::Initialize() {
     //TODO:  check for adding 'extras' here...
 
     Populate();
+
+    CreateStatusPage();
+
     return 1;
 }
 
@@ -700,15 +707,98 @@ void StaticDataMgr::Populate() {
     sLog.Cyan("    StaticDataMgr", "Static Data loaded in %.3fms.", (GetTimeMSeconds() - beginTime));
 }
 
-void StaticDataMgr::GetInfo()
+void StaticDataMgr::CreateStatusPage()
 {
-    /* return info about loaded items? */
-    /*
-     * m_systemData;
-     * m_staticData;
-     *
-     */
+    /* return info about loaded items */
+    const std::string finalPath = sConfig.files.StaticHtmlPath;
+    const std::string tmpPath   = finalPath + ".tmp";
+
+    std::ofstream out(tmpPath.c_str(), std::ios::out | std::ios::trunc);
+    if (!out.is_open()) {
+        sLog.Error("StaticDataMgr", "GetInfo: Unable to open %s for writing.", tmpPath.c_str());
+        return;
+    }
+
+    auto writeRow = [&out](const char* category, const char* name, size_t count, size_t elemBytes) {
+        const double kb = static_cast<double>(count * elemBytes) / 1024.0;
+        out << "<tr><td>" << category << "</td><td>" << name << "</td><td>" << count
+        << "</td><td>" << std::fixed << std::setprecision(1) << kb << " KB</td></tr>";
+    };
+
+    out << "<!DOCTYPE html><html><head><meta charset='utf-8'>"
+    << "<title>Alasiya-EvE StaticDataMgr Report</title>"
+    << "<style>"
+    << "body{background:#0b0e11;color:#cfd8dc;font-family:Consolas,monospace;font-size:12px;margin:14px;}"
+    << "h2{color:#4fc3f7;border-bottom:1px solid #263238;padding-bottom:4px;}"
+    << "table{width:100%;border-collapse:collapse;margin-bottom:16px;}"
+    << "th{background:#161d24;color:#81d4fa;text-align:left;padding:6px;border:1px solid #263238;}"
+    << "td{padding:5px 6px;border:1px solid #1c252c;}"
+    << "tr:nth-child(even){background:#10151a;}"
+    << "</style></head><body>"
+    << "<h2>Alasiya-EvE :: StaticDataMgr Loaded Tables</h2>"
+    << "<table><tr><th>Domain</th><th>Container</th><th>Entry Count</th><th>Est. Payload</th></tr>";
+
+    writeRow("Inventory", "Categories (m_catData)",          m_catData.size(),        sizeof(Inv::CatData));
+    writeRow("Inventory", "Groups (m_grpData)",              m_grpData.size(),        sizeof(Inv::GrpData));
+    writeRow("Inventory", "Types (m_typeData)",              m_typeData.size(),       sizeof(Inv::TypeData));
+    writeRow("Inventory", "Attributes (m_attrTypeData)",     m_attrTypeData.size(),   sizeof(Inv::AttrTypeData));
+    writeRow("Universe",  "Solar Systems (m_solSysData)",    m_solSysData.size(),     sizeof(SolarSystemData));
+    writeRow("Universe",  "Static Entities (m_staticData)",  m_staticData.size(),     sizeof(StaticData));
+    writeRow("Universe",  "Stations (m_stationSystem)",      m_stationSystem.size(),  sizeof(uint32) * 2);
+    writeRow("Universe",  "WH Regions (m_whRegions)",        m_whRegions.size(),      sizeof(uint32) + sizeof(uint8));
+    writeRow("Factions",  "Factions (m_factionName)",        m_factionName.size(),    32);
+    writeRow("Factions",  "Corporations (m_corpName)",       m_corpName.size(),       32);
+    writeRow("Factions",  "Agents (m_agentSystem)",          m_agentSystem.size(),    sizeof(uint32) * 2);
+    writeRow("Industry",  "Blueprints (m_bpTypeData)",       m_bpTypeData.size(),     sizeof(EvERam::bpTypeData));
+    writeRow("Industry",  "RAM Materials (m_ramMatl)",       m_ramMatl.size(),        sizeof(EvERam::RamMaterials));
+    writeRow("Spawns",    "NPC Faction Groups (m_npcGroups)",m_npcGroups.size(),      sizeof(RatFactionGroups));
+    writeRow("Spawns",    "NPC Spawn Classes (m_npcClasses)",m_npcClasses.size(),     sizeof(RatSpawnClass));
+    writeRow("Loot",      "Loot Groups (m_LootGroupMap)",    m_LootGroupMap.size(),   sizeof(LootGroup));
+    writeRow("Loot",      "Type Profiles (m_TypeToProfile)", m_TypeToProfileMap.size(),sizeof(LootProfile));
+    writeRow("Salvage",   "Ship->Wreck Map",                 m_WrecksToTypesMap.size(),sizeof(uint32) * 2);
+    out << "</table>";
+
+    // Faction Rat Roster Breakdown
+    out << "<h2>Faction NPC Hull Roster (Loaded in m_npcGroups / m_npcTypes)</h2>"
+    << "<table><tr><th>Faction ID</th><th>Faction Name</th><th>Frig</th><th>Dest</th><th>Cruiser</th><th>BC</th><th>BS</th><th>Hauler/Officer</th></tr>";
+
+    for (const auto& fPair : m_factionName) {
+        const uint32 fID = fPair.first;
+        auto range = m_npcGroups.equal_range(fID);
+        if (range.first == range.second)
+            continue;
+
+        uint32 counts[6] = { 0, 0, 0, 0, 0, 0 }; // Frig, Dest, Cruiser, BC, BS, Other
+        for (auto itr = range.first; itr != range.second; ++itr) {
+            const uint8 sClass = itr->second.shipClass;
+            size_t typeCount = 0;
+            auto tRange = m_npcTypes.equal_range(sClass);
+            for (auto tItr = tRange.first; tItr != tRange.second; ++tItr) {
+                auto gItr = tItr->second.find(itr->second.groupID);
+                if (gItr != tItr->second.end())
+                    typeCount += gItr->second.size();
+            }
+
+            if (sClass <= NPC::Size::Frigate)        counts[0] += typeCount;
+            else if (sClass == NPC::Size::Destroyer) counts[1] += typeCount;
+            else if (sClass == NPC::Size::Cruiser)   counts[2] += typeCount;
+            else if (sClass == NPC::Size::BCruiser)  counts[3] += typeCount;
+            else if (sClass == NPC::Size::BShip)     counts[4] += typeCount;
+            else                                     counts[5] += typeCount;
+        }
+
+        out << "<tr><td>" << fID << "</td><td>" << fPair.second << "</td>"
+        << "<td>" << counts[0] << "</td><td>" << counts[1] << "</td>"
+        << "<td>" << counts[2] << "</td><td>" << counts[3] << "</td>"
+        << "<td>" << counts[4] << "</td><td>" << counts[5] << "</td></tr>";
+    }
+
+    out << "</table></body></html>";
+    out.close();
+
+    std::rename(tmpPath.c_str(), finalPath.c_str());
 }
+
 
 void StaticDataMgr::GetCategory(uint8 catID, Inv::CatData& into)
 {
@@ -2761,6 +2851,87 @@ uint16 StaticDataMgr::GetHaulerTypeID(uint32 faction, uint8 level) {
         }
     }
     return 22025;  // Degenerate Harvester - failsafe
+}
+
+uint32 StaticDataMgr::GetRandomRatFactionID() {
+    switch (MakeRandomUInt(0, 8)) {
+        // factionNoFaction     = 0,
+        // factionCaldari       = 500001,
+        // factionMinmatar      = 500002,
+        // factionAmarr         = 500003,
+        // factionGallente      = 500004,
+        // factionJove          = 500005,
+        // factionCONCORD       = 500006,
+        // factionAmmatar       = 500007,      // Amarr + Minmatar
+        // factionKhanid        = 500008,
+        case 0: return factionSyndicate; //     = 500009,
+        case 1: return factionGuristas; //       = 500010,      // Caldari + Gallente
+        case 2: return factionAngel; //          = 500011,      // Minmatar + Gallente (depends on skill order)
+        case 3: return factionBloodRaider; //    = 500012,      // Minmatar + Amarr
+        // factionInterBus      = 500013,
+        // factionORE           = 500014,
+        // factionThukker       = 500015,
+        // factionSistersOfEVE  = 500016,
+        case 4: return factionSociety; //        = 500017,      // SoCT
+        case 5: return factionMordusLegion; //   = 500018,
+        case 6: return factionSanshas; //        = 500019,      // Caldari + Amarr
+        case 7: return factionSerpentis; //      = 500020,      // Minmatar + Gallente (depends on skill order)
+        case 8: return factionUnknown; //        = 500021,      // this is rogue drone faction  (took me long enough...20Sep25)
+       // case 0: return "factionSleeper"; //        = 500022
+        default: return factionSanshas;
+    }
+}
+
+uint16 StaticDataMgr::GetRandFactionRat(uint32 factionID)
+{
+    auto range = m_npcGroups.equal_range(factionID);
+    if (range.first == range.second)
+        return Item::Type::GistiiHijacker;
+
+    // Weighted hull roll: 50% Frigate, 15% Destroyer, 20% Cruiser, 10% BC, 5% BS
+    const uint32 roll = MakeRandomUInt(1, 100);
+    uint8 desiredClass = Rat::Hull::Frigate;
+    if (roll <= 50) {
+        desiredClass = Rat::Hull::Frigate;
+    } else if (roll <= 65) {
+        desiredClass = Rat::Hull::Destroyer;
+    } else if (roll <= 85) {
+        desiredClass = Rat::Hull::Cruiser;
+    } else if (roll <= 95) {
+        desiredClass = Rat::Hull::BCruiser;
+    } else {
+        desiredClass = Rat::Hull::BShip;
+    }
+
+    // Prefer matching groups for desiredClass; fall back to any combat class (Frigate..BShip)
+    std::vector<const RatFactionGroups*> preferred;
+    std::vector<const RatFactionGroups*> fallback;
+    for (auto itr = range.first; itr != range.second; ++itr) {
+        const uint8 sClass = itr->second.shipClass;
+        if (sClass >= Rat::Hull::Frigate && sClass <= Rat::Hull::BShip) {
+            fallback.push_back(&itr->second);
+            if (sClass == desiredClass) {
+                preferred.push_back(&itr->second);
+            }
+        }
+    }
+
+    const auto& pool = !preferred.empty() ? preferred : fallback;
+    if (pool.empty())
+        return Item::Type::GistiiHijacker;
+
+    const RatFactionGroups* picked = pool[MakeRandomUInt(0, static_cast<uint32>(pool.size() - 1))];
+
+    auto tRange = m_npcTypes.equal_range(picked->shipClass);
+    for (auto tItr = tRange.first; tItr != tRange.second; ++tItr) {
+        auto gItr = tItr->second.find(picked->groupID);
+        if (gItr != tItr->second.end() && !gItr->second.empty()) {
+            const rt_typeIDs& types = gItr->second;
+            return types[MakeRandomUInt(0, static_cast<uint32>(types.size() - 1))];
+        }
+    }
+
+    return Item::Type::GistiiHijacker;
 }
 
 uint32 StaticDataMgr::GetWreckFaction(uint32 typeID) {

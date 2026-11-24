@@ -117,6 +117,8 @@ public:
     uint16 GetRoidSpawnCount()                          { return m_activeRoidSpawns; }
     uint32 PlayerCount()                                { return m_players; }
     uint32 GetSysNPCCount()                             { return m_npcs.size(); }
+    uint32 GetPendingWarpCount()                        { return m_npcWarpInMap.size(); }
+    void AddPendingWarp(uint32 arrivalTic, NPC* pNPC)   { m_npcWarpInMap.emplace(arrivalTic, pNPC); }
 
     int32 GetTicCount()                                 { return m_ticStamp; }
 
@@ -227,6 +229,8 @@ public:
     /* this is current state of system */
     void SendBallPark(SpaceEntity* mySE) const;
 
+    void ClearStressWarps();
+
 protected:
     /** @todo  this needs more work */
     void PayBounties();
@@ -277,6 +281,7 @@ private:
     std::vector<Civilian*>          m_civilians;
     SpawnBubbleMap                  m_ratBubbles;       // map of id/bubble with rat spawns
     SpawnBubbleMap                  m_roidBubbles;      // map of id/bubble with roid spawns
+    std::multimap<uint32, NPC*>     m_npcWarpInMap;
 
     // --- 4-byte aligned group (Timers, float, int32/uint32) ---
     Timer           m_bountyTimer;      // 20m timer (16 bytes, 4-byte aligned)

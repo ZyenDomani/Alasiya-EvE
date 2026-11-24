@@ -903,7 +903,7 @@ PyResult Command_stresstest(Client* pClient, CommandDB* db, PyServiceMgr* servic
     if (args.argCount() < 2)
         throw CustomError("StressTest: Missing Arguments (use '.stresstest help' for usage)");
 
-    if (args.argCount() > 6)
+    if (args.argCount() > 4)
         throw CustomError("StressTest: Too Many Arguments");
 
     Vector3d pt(NULL_ORIGIN);
@@ -913,6 +913,8 @@ PyResult Command_stresstest(Client* pClient, CommandDB* db, PyServiceMgr* servic
         throw CustomError("StressTest: You must be in space.");
 
     SystemBubble* pBubble = pClient->GetShipSE()->SysBubble();
+    if (pBubble == nullptr)
+        throw CustomError("StressTest: You are not in an active bubble.");
 
 /*  design notes:
  *      .stresstest spawn <npc|ship> <count> [typeid] [spread]
@@ -928,8 +930,8 @@ PyResult Command_stresstest(Client* pClient, CommandDB* db, PyServiceMgr* servic
         //  {.tr help}  will display the following list of options in notification window
         std::ostringstream str; // for 'help' printing
         str << "StressTest Command Processor - Help File<br>"; //120
-        str << ".stresstest help|spawn|mode|status|clear|ttl<br>"; //120
-        str << " spawn <count> [typeid] [spread]<br>";  //85
+        str << ".stresstest <help|spawn|mode|status|clear|ttl><br>"; //120
+        str << " spawn <count> [factionID] [spread]<br>";  //85
         str << " mode <idle|orbit|swarm|warp|combat|follow|random><br>"; //80
         str << " ttl <minutes><br>"; //77
         str << "typical use is .stresstest spawn 100<br>";  //35
@@ -939,43 +941,51 @@ PyResult Command_stresstest(Client* pClient, CommandDB* db, PyServiceMgr* servic
         pClient->SendInfoModalMsg(reply);
         return nullptr;
     } else if (strcmp(args.arg(1).c_str(), "status") == 0) {
-        sStressTest.Status();
+        sStressTest.Status(pClient);
         return nullptr;
     } else if (strcmp(args.arg(1).c_str(), "clear") == 0) {
-        sStressTest.Clear(pSysMgr);
-        throw CustomError("StressTest: All Fleets Cleared");
+        if (args.argCount() > 2 && strcmp(args.arg(2).c_str(), "all") == 0) {
+            sStressTest.ClearAll();
+            pClient->SendNotifyMsg("StressTest: All fleets cleared universe-wide.");
+        } else {
+            sStressTest.Clear(pBubble->GetID());
+            pClient->SendNotifyMsg("StressTest: Cleared fleet in bubble %u.", pBubble->GetID());
+        }
     } else if (strcmp(args.arg(1).c_str(), "spawn") == 0) {
         // test for all possible args for 'spawn'
-            uint16 typeID = 0;
-            uint16 count = 0;
-            uint16 spread = 0;
+        uint16 factionID = 0;
+        uint16 count = 0;
+        uint16 spread = 0;
         // start with highest and fall thru for remaining args
         switch (args.argCount()) {
-            case 5: {
-                if (args.isNumber(5)) {
-                    spread = atoi(args.arg(5).c_str());
+            case 4: {
+                if (args.isNumber(4)) {
+                    spread = atoi(args.arg(4).c_str());
                 } else {
                     throw CustomError("StressTest: <spread> should be a number.");
                 }
             }
-            case 4:  {
-                if (args.isNumber(4)) {
-                    // eventually this will be a faction, either id or name
-                    typeID = atoi(args.arg(4).c_str());
-                } else {
-                    throw CustomError("StressTest: <typeID> should be a number.");
-                }
-            }
             case 3:  {
                 if (args.isNumber(3)) {
-                    count = atoi(args.arg(3).c_str());
+                    // eventually this will be a faction, either id or name
+                    factionID = atoi(args.arg(3).c_str());
+                } else {
+                    throw CustomError("StressTest: <factionID> should be a number.");
+                }
+            }
+            case 2:  {
+                if (args.isNumber(2)) {
+                    count = atoi(args.arg(2).c_str());
                 } else {
                     throw CustomError("StressTest: <count> should be a number.");
                 }
-            }
+            } break;
+            case 1: {
+                throw CustomError("StressTest: Missing Arguments (use '.stresstest help' for usage)");
+            } break;
         }
-        sStressTest.Spawn(pSysMgr, pBubble, count, typeID, spread);
-        throw CustomError("StressTest: All Fleets Cleared");
+        sStressTest.Spawn(pSysMgr, pBubble, count, factionID, spread);
+        throw CustomError("StressTest: Spawned %u ships.", count);
     }
 
     throw CustomError("StressTest: Command Processor Incomplete");
